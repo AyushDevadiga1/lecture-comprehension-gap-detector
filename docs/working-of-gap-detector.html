@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Foundations.md</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<p class="has-line-data" data-line-start="0" data-line-end="1">Here’s the complete picture of your project in plain simple language.</p>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="4" data-line-end="5"><a id="Lecture_Comprehension_Gap_Detector_4"></a>Lecture Comprehension Gap Detector</h1>
+<h2 class="code-line has-line-data" data-line-start="6" data-line-end="7"><a id="The_One_Problem_It_Solves_6"></a>The One Problem It Solves</h2>
+<p class="has-line-data" data-line-start="8" data-line-end="9">You watch a 45-minute recorded lecture. You attempt a quiz or assignment afterwards. You get something wrong. Now what? You have no idea which part of the lecture had the answer. So you either rewatch the entire 45 minutes — which nobody actually does — or you move on without understanding. That gap stays with you for the rest of the semester.</p>
+<p class="has-line-data" data-line-start="10" data-line-end="11">Your system fixes that exact moment.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="14" data-line-end="15"><a id="What_It_Does_Start_to_Finish_14"></a>What It Does — Start to Finish</h2>
+<p class="has-line-data" data-line-start="16" data-line-end="18"><strong>Step 1 — Student pastes a YouTube link or uploads a video file.</strong><br>
+That’s the only thing the student does manually. Everything after this is automatic.</p>
+<p class="has-line-data" data-line-start="19" data-line-end="21"><strong>Step 2 — The system listens to the entire lecture.</strong><br>
+It uses a tool called Whisper — free, runs offline — to convert the full audio into text. But not just plain text. Every word is tagged with the exact second it was spoken. So the system knows that the professor said “activation function” at 14 minutes and 22 seconds.</p>
+<p class="has-line-data" data-line-start="22" data-line-end="24"><strong>Step 3 — The system reads the transcript and finds the important concepts.</strong><br>
+Using NLP it identifies the key topics covered — Activation Functions, Backpropagation, Gradient Descent, and so on. Each concept gets mapped to its exact timestamp range. So the system now has a map — concept by concept, moment by moment, of the entire lecture.</p>
+<p class="has-line-data" data-line-start="25" data-line-end="27"><strong>Step 4 — The system pre-cuts the lecture into concept clips.</strong><br>
+Before the student even takes a quiz, the system has already cut the lecture into short clips — one per concept. “Activation Functions — 14:22 to 17:10.” “Backpropagation — 24:00 to 28:00.” These clips sit ready to play instantly. No scrubbing. No YouTube. No leaving the app.</p>
+<p class="has-line-data" data-line-start="28" data-line-end="30"><strong>Step 5 — The system generates a short assessment.</strong><br>
+5 to 8 questions — one per major concept. The student can choose how they want to be assessed. They can take an MCQ quiz. They can review flashcards. They can read one-line concept summaries. Whichever format suits them. Every question is internally tagged to the concept and the clip it came from.</p>
+<p class="has-line-data" data-line-start="31" data-line-end="33"><strong>Step 6 — Student completes the assessment.</strong><br>
+Takes maybe 5 minutes. Normal quiz experience — select answers, submit.</p>
+<p class="has-line-data" data-line-start="34" data-line-end="36"><strong>Step 7 — The system finds exactly what the student didn’t understand.</strong><br>
+Every wrong answer is traced back to its concept. Every concept is traced back to its clip. The system now knows — this specific student, right now, has a gap in Activation Functions and Backpropagation.</p>
+<p class="has-line-data" data-line-start="37" data-line-end="39"><strong>Step 8 — But before showing the clips, it checks something smarter.</strong><br>
+The system has a concept dependency map. It knows that Backpropagation requires understanding Activation Functions first. So if a student got both wrong, it doesn’t show Backpropagation first — it shows Activation Functions first. Fix the foundation before the concept that builds on it. The rewatch is ordered intelligently, not randomly.</p>
+<p class="has-line-data" data-line-start="40" data-line-end="42"><strong>Step 9 — The student gets a personalised clip playlist.</strong><br>
+Right inside the app. No YouTube tab. No scrubbing. Just:</p>
+<pre><code class="has-line-data" data-line-start="44" data-line-end="52">Your personalised rewatch list:
+
+1. Activation Functions      14:22 – 17:10    (2 min 48 sec)
+2. Backpropagation           24:00 – 28:00    (4 min 00 sec)
+
+Total: 6 minutes 48 seconds
+Instead of: 45 minutes
+</code></pre>
+<p class="has-line-data" data-line-start="53" data-line-end="54">Each clip plays directly in the app the moment the student clicks it.</p>
+<p class="has-line-data" data-line-start="55" data-line-end="57"><strong>Step 10 — Student watches the clips and retakes the assessment.</strong><br>
+Score improves. Improvement is recorded. The system tracks this over time — across multiple lectures, multiple sessions, multiple weeks.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="60" data-line-end="61"><a id="What_the_Student_Sees_Over_Time_60"></a>What the Student Sees Over Time</h2>
+<p class="has-line-data" data-line-start="62" data-line-end="63">The system builds a personal profile for each student. Over a semester it knows — this student consistently struggles with gradient-related concepts. This student has improved on neural networks. This student hasn’t revisited activation functions since Week 3 even though they got it wrong.</p>
+<p class="has-line-data" data-line-start="64" data-line-end="65">Based on this history it proactively reminds the student — “You haven’t reviewed Backpropagation in 12 days. Based on your history you’re likely to forget it by next week.” This is spaced repetition — a scientifically proven method for long-term retention — but driven by the student’s actual weak spots from real lectures, not generic flashcard decks.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="68" data-line-end="69"><a id="What_the_Professor_Sees_68"></a>What the Professor Sees</h2>
+<p class="has-line-data" data-line-start="70" data-line-end="71">There’s a separate faculty dashboard. The professor never set anything up — the system built this automatically from student quiz data.</p>
+<p class="has-line-data" data-line-start="72" data-line-end="73">The professor sees a timeline of their own lecture. Colour-coded. Green where students understood well. Orange where some struggled. Red where the majority got confused.</p>
+<p class="has-line-data" data-line-start="74" data-line-end="75">It tells the professor — “71% of your students failed questions mapped to the segment between 24:00 and 28:00. That explanation of Backpropagation may need to be re-recorded or supplemented with additional notes.”</p>
+<p class="has-line-data" data-line-start="76" data-line-end="77">No professor in India currently gets this feedback about their own recorded lectures. Your system gives it to them automatically, without any extra work on their part.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="80" data-line-end="81"><a id="What_Makes_It_Different_From_Everything_That_Already_Exists_80"></a>What Makes It Different From Everything That Already Exists</h2>
+<p class="has-line-data" data-line-start="82" data-line-end="83"><strong>YouTube timestamps</strong> — static, same for every viewer, tell you where topics are, not whether you understood them. No quiz. No personalisation. No clips based on your performance.</p>
+<p class="has-line-data" data-line-start="84" data-line-end="85"><strong>YouLearn / Knowt / NoteGPT</strong> — generate quizzes and flashcards from video. Stop there. Don’t connect your wrong answer back to the lecture. Don’t extract clips. Don’t order recommendations by concept dependencies. Don’t track your history. Don’t show your professor where you got confused.</p>
+<p class="has-line-data" data-line-start="86" data-line-end="87"><strong>Your system</strong> — takes your wrong answer, finds the clip, checks what you need to understand first, plays it in the app, tracks improvement over time, and tells the professor where to improve their teaching. Nobody else does this as one complete system.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="90" data-line-end="91"><a id="The_Entire_System_in_One_Paragraph_90"></a>The Entire System in One Paragraph</h2>
+<p class="has-line-data" data-line-start="92" data-line-end="93">A student pastes any lecture video link. The system transcribes it, finds the key concepts, maps each concept to a timestamp, cuts the lecture into concept clips, generates a personalised quiz, detects exactly what the student didn’t understand, checks which prerequisite concepts are also missing, orders a rewatch playlist from shortest gap to deepest gap, plays the clips right inside the app, tracks improvement over time across all lectures, and simultaneously shows the professor a heatmap of where their entire class got confused — all automatically, all free, all running on a laptop without any GPU or cloud cost.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="96" data-line-end="97"><a id="The_One_Line_for_Your_Maam_96"></a>The One Line for Your Maam</h2>
+<blockquote>
+<p class="has-line-data" data-line-start="98" data-line-end="99"><em>“Every other tool tells you where a concept is in the video. Ours tells you which concept you personally didn’t understand, cuts that exact clip, checks what you need to learn first, and plays it for you — without you ever leaving the app.”</em></p>
+</blockquote>
+
+</body>
+</html>

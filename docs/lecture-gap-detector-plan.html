@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Foundations.md</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<hr>
+<h1 class="code-line has-line-data" data-line-start="2" data-line-end="3"><a id="Complete_Project_Plan_2"></a>Complete Project Plan</h1>
+<h2 class="code-line has-line-data" data-line-start="3" data-line-end="4"><a id="Lecture_Comprehension_Gap_Detector_3"></a>Lecture Comprehension Gap Detector</h2>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="7" data-line-end="8"><a id="PART_1_Project_Identity_7"></a>PART 1 — Project Identity</h1>
+<p class="has-line-data" data-line-start="9" data-line-end="17"><strong>Full Name:</strong> Lecture Comprehension Gap Detector<br>
+<strong>Short Name:</strong> LecGap<br>
+<strong>Tagline:</strong> <em>“Stop rewatching. Start understanding.”</em><br>
+<strong>Domain:</strong> EdTech — AI/NLP<br>
+<strong>Duration:</strong> 12 months (Sem 7 + Sem 8)<br>
+<strong>Team:</strong> 3 people<br>
+<strong>Stack:</strong> Python, Whisper, KeyBERT, FFmpeg, Streamlit, SQLite<br>
+<strong>Cost:</strong> Rs. 0</p>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="20" data-line-end="21"><a id="PART_2_What_Youre_Building_Scope_Definition_20"></a>PART 2 — What You’re Building (Scope Definition)</h1>
+<h2 class="code-line has-line-data" data-line-start="22" data-line-end="23"><a id="The_NonNegotiable_Core_Must_ship_by_Sem_7_end_22"></a>The Non-Negotiable Core (Must ship by Sem 7 end)</h2>
+<p class="has-line-data" data-line-start="24" data-line-end="25">These three features are your project. Everything else is bonus.</p>
+<p class="has-line-data" data-line-start="26" data-line-end="28"><strong>Core 1 — The Transcription Pipeline</strong><br>
+Any YouTube URL or MP4 → audio extracted → Whisper transcribes with word-level timestamps → concepts identified → timestamps mapped → lecture clips pre-cut and stored.</p>
+<p class="has-line-data" data-line-start="29" data-line-end="31"><strong>Core 2 — The Gap Detection Loop</strong><br>
+Student takes assessment → wrong answers identified → concept dependencies checked → personalised clip playlist generated → clips play inside the app in the correct learning order.</p>
+<p class="has-line-data" data-line-start="32" data-line-end="34"><strong>Core 3 — The Faculty Heatmap</strong><br>
+Aggregated quiz data from all students → confusion rate per concept per timestamp → colour-coded timeline of lecture displayed to professor showing exactly where students got confused.</p>
+<h2 class="code-line has-line-data" data-line-start="35" data-line-end="36"><a id="The_Enhancement_Layer_Target_for_Sem_8_35"></a>The Enhancement Layer (Target for Sem 8)</h2>
+<p class="has-line-data" data-line-start="37" data-line-end="38">These make the project research-grade. Build if Core is solid.</p>
+<ul>
+<li class="has-line-data" data-line-start="39" data-line-end="40">Smart flashcards with clip-linked “watch explanation” button</li>
+<li class="has-line-data" data-line-start="40" data-line-end="41">Concept summary cards (one-line AI summary per concept)</li>
+<li class="has-line-data" data-line-start="41" data-line-end="42">Multi-session student profile and progress tracking</li>
+<li class="has-line-data" data-line-start="42" data-line-end="43">DKT knowledge tracing model for predictive recommendations</li>
+<li class="has-line-data" data-line-start="43" data-line-end="44">Spaced repetition scheduling based on personal forgetting history</li>
+<li class="has-line-data" data-line-start="44" data-line-end="46">LLM-generated questions replacing template MCQs</li>
+</ul>
+<h2 class="code-line has-line-data" data-line-start="46" data-line-end="47"><a id="Future_Scope_Write_in_report_dont_build_46"></a>Future Scope (Write in report, don’t build)</h2>
+<ul>
+<li class="has-line-data" data-line-start="48" data-line-end="49">Multilingual support for Hindi and Marathi</li>
+<li class="has-line-data" data-line-start="49" data-line-end="50">Mobile app</li>
+<li class="has-line-data" data-line-start="50" data-line-end="51">Institution-wide deployment API</li>
+<li class="has-line-data" data-line-start="51" data-line-end="52">Integration with college LMS (Moodle)</li>
+<li class="has-line-data" data-line-start="52" data-line-end="54">Research paper submission</li>
+</ul>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="56" data-line-end="57"><a id="PART_3_Full_System_Architecture_56"></a>PART 3 — Full System Architecture</h1>
+<pre><code class="has-line-data" data-line-start="59" data-line-end="177">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INPUT LAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Student pastes YouTube URL  OR  uploads MP4/audio file
+                    ↓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROCESSING PIPELINE (runs once per lecture)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1 — Audio Extraction
+yt-dlp downloads audio-only stream from YouTube
+(audio only = smaller file, faster processing)
+Output: lecture_audio.mp3
+
+Step 2 — Noise Reduction (optional pre-processing)
+noisereduce library cleans background noise
+Improves Whisper accuracy on low-quality recordings
+Output: lecture_audio_clean.mp3
+
+Step 3 — Transcription
+Whisper (small model, CPU-compatible) processes audio
+Output: transcript with word-level timestamps
+{
+  &quot;text&quot;: &quot;activation functions decide...&quot;,
+  &quot;start&quot;: 14.22,
+  &quot;end&quot;: 17.10
+}
+
+Step 4 — Concept Extraction
+KeyBERT reads transcript in 5-minute chunks
+Identifies top concepts per chunk
+spaCy handles linguistic cleanup
+Output: concept map
+{
+  &quot;Activation Functions&quot;: [14.22, 17.10],
+  &quot;Backpropagation&quot;:      [24.00, 28.00],
+  &quot;Gradient Descent&quot;:     [28.00, 33.15]
+}
+
+Step 5 — Dependency Resolution
+System checks concept map against dependency JSON
+Adds prerequisite ordering to each concept
+{
+  &quot;Backpropagation&quot;: {
+    &quot;timestamps&quot;: [24.00, 28.00],
+    &quot;requires&quot;: [&quot;Activation Functions&quot;, &quot;Loss Functions&quot;]
+  }
+}
+
+Step 6 — Clip Cutting
+FFmpeg cuts one MP4 clip per concept
+Stored locally with concept label as filename
+activation_functions.mp4    (2 min 48 sec)
+backpropagation.mp4         (4 min 00 sec)
+gradient_descent.mp4        (5 min 15 sec)
+
+Step 7 — Quiz Generation
+Template engine creates 1 MCQ per concept
+Question + 4 options (1 correct, 3 distractors)
+Each question tagged internally to concept + clip
+
+All processed data stored in SQLite database.
+Next time same lecture is loaded — instant, no reprocessing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STUDENT INTERACTION LAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Student logs in → selects lecture → takes assessment
+
+Assessment modes:
+  Mode A — MCQ Quiz (5-8 questions)
+  Mode B — Flashcard Review
+  Mode C — Concept Summary Cards
+
+Student submits responses
+System scores responses
+Wrong answers → concepts identified → dependencies checked
+
+Output: personalised clip playlist in correct learning order
+
+Clip 1: Activation Functions    14:22–17:10   (play)
+Clip 2: Backpropagation         24:00–28:00   (play)
+
+Student watches clips inside Streamlit app
+Student retakes assessment
+Improvement score logged
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FACULTY LAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Separate Streamlit tab (professor login)
+
+Lecture timeline displayed horizontally
+Colour intensity per timestamp:
+  Green  = &lt; 30% students confused
+  Orange = 30–60% students confused
+  Red    = &gt; 60% students confused
+
+Below timeline:
+  Per-concept wrong answer rate table
+  &quot;Backpropagation — 71% of students confused (24:00–28:00)&quot;
+  &quot;Consider supplementing or re-recording this segment&quot;
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DATABASE LAYER (SQLite)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tables:
+  lectures      — video URL, title, processed status
+  concepts      — concept name, timestamps, lecture ID
+  clips         — file path, concept ID, duration
+  questions     — question text, options, correct, concept ID
+  students      — student ID, name, email
+  responses     — student ID, question ID, answer, correct, timestamp
+  sessions      — student ID, lecture ID, score, date
+</code></pre>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="180" data-line-end="181"><a id="PART_4_Tech_Stack_Every_Tool_Explained_180"></a>PART 4 — Tech Stack (Every Tool Explained)</h1>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+<th>Why this one</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python 3.10+</td>
+<td>Everything</td>
+<td>Universal ML/NLP language</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>Whisper (small)</td>
+<td>Audio transcription</td>
+<td>Runs on CPU, free, offline</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>yt-dlp</td>
+<td>YouTube audio download</td>
+<td>Actively maintained, supports time ranges</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>noisereduce</td>
+<td>Audio cleaning</td>
+<td>Simple Python library, 2 lines of code</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>KeyBERT</td>
+<td>Concept extraction</td>
+<td>Semantic keyword extraction, not frequency</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>spaCy</td>
+<td>NLP preprocessing</td>
+<td>Fast, production-grade, en_core_web_sm model</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>FFmpeg</td>
+<td>Clip cutting</td>
+<td>Industry standard, lossless cutting</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>Streamlit</td>
+<td>Web app</td>
+<td>Python-native, no frontend knowledge needed</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>SQLite</td>
+<td>Database</td>
+<td>Zero setup, built into Python</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>Plotly</td>
+<td>Faculty heatmap chart</td>
+<td>Interactive timeline visualisation</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>sentence-transformers</td>
+<td>Flashcard generation</td>
+<td>Semantic similarity for distractor generation</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>Ollama + Gemma-2B</td>
+<td>Concept summary cards</td>
+<td>Runs locally, no API cost</td>
+<td>Free</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="197" data-line-end="198"><strong>Total infrastructure cost: Rs. 0</strong></p>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="201" data-line-end="202"><a id="PART_5_Team_Division_201"></a>PART 5 — Team Division</h1>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Person</th>
+<th>Owns</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Aayush (you)</strong></td>
+<td>Pipeline infrastructure, SQLite database, Streamlit app, deployment</td>
+<td>MLOps track — pipeline + serve is your strength</td>
+</tr>
+<tr>
+<td><strong>Person 2 (GPU access)</strong></td>
+<td>Whisper transcription, KeyBERT concept extraction, quiz generation, DKT model (Sem 8)</td>
+<td>Compute-heavy tasks</td>
+</tr>
+<tr>
+<td><strong>Person 3</strong></td>
+<td>FFmpeg clip cutting, faculty dashboard, flashcard system, spaced repetition</td>
+<td>Frontend + data visualisation</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="209" data-line-end="210"><strong>Rule:</strong> Nobody works in isolation. Every feature is reviewed by all three before it’s merged.</p>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="213" data-line-end="214"><a id="PART_6_Month_by_Month_Build_Plan_213"></a>PART 6 — Month by Month Build Plan</h1>
+<h2 class="code-line has-line-data" data-line-start="215" data-line-end="216"><a id="Semester_7_Build_the_Engine_215"></a>Semester 7 — Build the Engine</h2>
+<hr>
+<p class="has-line-data" data-line-start="219" data-line-end="220"><strong>Month 1 — Foundation &amp; Research</strong></p>
+<p class="has-line-data" data-line-start="221" data-line-end="222">Week 1:</p>
+<ul>
+<li class="has-line-data" data-line-start="222" data-line-end="223">Set up shared GitHub repository with proper branch structure</li>
+<li class="has-line-data" data-line-start="223" data-line-end="224">Every member installs Python environment with all libraries</li>
+<li class="has-line-data" data-line-start="224" data-line-end="225">Read 2 base papers (Gabajiwala 2022, Das 2021) — everyone, not just one person</li>
+<li class="has-line-data" data-line-start="225" data-line-end="227">Watch 3 NPTEL lectures you’ll use as test data throughout Sem 7</li>
+</ul>
+<p class="has-line-data" data-line-start="227" data-line-end="228">Week 2:</p>
+<ul>
+<li class="has-line-data" data-line-start="228" data-line-end="229">Build audio extraction — yt-dlp downloads audio from YouTube URL</li>
+<li class="has-line-data" data-line-start="229" data-line-end="230">Test on 5 different YouTube lectures — different quality, different accents</li>
+<li class="has-line-data" data-line-start="230" data-line-end="232">Document which lecture qualities work and which don’t (this becomes your limitations section)</li>
+</ul>
+<p class="has-line-data" data-line-start="232" data-line-end="233">Week 3:</p>
+<ul>
+<li class="has-line-data" data-line-start="233" data-line-end="234">Integrate Whisper transcription</li>
+<li class="has-line-data" data-line-start="234" data-line-end="235">Test on the same 5 lectures</li>
+<li class="has-line-data" data-line-start="235" data-line-end="236">Measure accuracy by comparing transcript to actual lecture content</li>
+<li class="has-line-data" data-line-start="236" data-line-end="238">Tune model size — tiny vs small vs medium — find CPU-friendly sweet spot</li>
+</ul>
+<p class="has-line-data" data-line-start="238" data-line-end="239">Week 4:</p>
+<ul>
+<li class="has-line-data" data-line-start="239" data-line-end="240">Build the SQLite schema — all tables defined, migrations written</li>
+<li class="has-line-data" data-line-start="240" data-line-end="241">Build lecture ingestion — URL in, transcript out, stored in DB</li>
+<li class="has-line-data" data-line-start="241" data-line-end="243">End of month deliverable: paste any YouTube URL, get a timestamped transcript stored in database</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="245" data-line-end="246"><strong>Month 2 — Concept Extraction &amp; Dependency Map</strong></p>
+<p class="has-line-data" data-line-start="247" data-line-end="248">Week 1:</p>
+<ul>
+<li class="has-line-data" data-line-start="248" data-line-end="249">Integrate KeyBERT — extract top 10 concepts per lecture</li>
+<li class="has-line-data" data-line-start="249" data-line-end="250">Test on your 5 NPTEL lectures — are the concepts actually meaningful?</li>
+<li class="has-line-data" data-line-start="250" data-line-end="252">Tune chunk size (5-minute chunks vs 10-minute chunks) based on results</li>
+</ul>
+<p class="has-line-data" data-line-start="252" data-line-end="253">Week 2:</p>
+<ul>
+<li class="has-line-data" data-line-start="253" data-line-end="254">Map concepts to timestamp ranges</li>
+<li class="has-line-data" data-line-start="254" data-line-end="255">Build concept-to-timestamp table in SQLite</li>
+<li class="has-line-data" data-line-start="255" data-line-end="257">Manual review — check if extracted concepts match what the lecture actually covered</li>
+</ul>
+<p class="has-line-data" data-line-start="257" data-line-end="258">Week 3:</p>
+<ul>
+<li class="has-line-data" data-line-start="258" data-line-end="259">Build the dependency JSON for 3 domains: ML fundamentals, DSA, Computer Networks</li>
+<li class="has-line-data" data-line-start="259" data-line-end="260">Structure: concept → list of prerequisites</li>
+<li class="has-line-data" data-line-start="260" data-line-end="262">50-100 concepts per domain is sufficient for a demo</li>
+</ul>
+<p class="has-line-data" data-line-start="262" data-line-end="263">Week 4:</p>
+<ul>
+<li class="has-line-data" data-line-start="263" data-line-end="264">Integrate dependency resolution into pipeline</li>
+<li class="has-line-data" data-line-start="264" data-line-end="265">Given a set of failed concepts, system outputs ordered rewatch list</li>
+<li class="has-line-data" data-line-start="265" data-line-end="267">End of month deliverable: given any lecture + list of failed concepts, outputs ordered concept sequence</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="269" data-line-end="270"><strong>Month 3 — FFmpeg Clip Cutting + Quiz Generation</strong></p>
+<p class="has-line-data" data-line-start="271" data-line-end="272">Week 1:</p>
+<ul>
+<li class="has-line-data" data-line-start="272" data-line-end="273">Build FFmpeg clip cutter — given timestamps, extract MP4 clip</li>
+<li class="has-line-data" data-line-start="273" data-line-end="274">Store clips with concept label as filename</li>
+<li class="has-line-data" data-line-start="274" data-line-end="276">Test: does the clip start and end at the right moment?</li>
+</ul>
+<p class="has-line-data" data-line-start="276" data-line-end="277">Week 2:</p>
+<ul>
+<li class="has-line-data" data-line-start="277" data-line-end="278">Build template-based MCQ generator</li>
+<li class="has-line-data" data-line-start="278" data-line-end="279">One question per concept</li>
+<li class="has-line-data" data-line-start="279" data-line-end="280">3 distractor options using WordNet or nearby transcript terms</li>
+<li class="has-line-data" data-line-start="280" data-line-end="282">Store questions in SQLite linked to concept and clip</li>
+</ul>
+<p class="has-line-data" data-line-start="282" data-line-end="283">Week 3:</p>
+<ul>
+<li class="has-line-data" data-line-start="283" data-line-end="284">Build quiz interface in Streamlit</li>
+<li class="has-line-data" data-line-start="284" data-line-end="285">Student sees questions, selects answers, submits</li>
+<li class="has-line-data" data-line-start="285" data-line-end="287">System scores and identifies wrong answers</li>
+</ul>
+<p class="has-line-data" data-line-start="287" data-line-end="288">Week 4:</p>
+<ul>
+<li class="has-line-data" data-line-start="288" data-line-end="289">Connect wrong answers to dependency resolver to clip playlist</li>
+<li class="has-line-data" data-line-start="289" data-line-end="291">End of month deliverable: student takes quiz → gets personalised clip playlist</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="293" data-line-end="294"><strong>Month 4 — In-App Clip Playback + Student Experience</strong></p>
+<p class="has-line-data" data-line-start="295" data-line-end="296">Week 1:</p>
+<ul>
+<li class="has-line-data" data-line-start="296" data-line-end="297">Embed clips in Streamlit using <code>st.video()</code></li>
+<li class="has-line-data" data-line-start="297" data-line-end="298">Clips play in sequence — clip 1 finishes, clip 2 starts</li>
+<li class="has-line-data" data-line-start="298" data-line-end="300">Student never leaves the app</li>
+</ul>
+<p class="has-line-data" data-line-start="300" data-line-end="301">Week 2:</p>
+<ul>
+<li class="has-line-data" data-line-start="301" data-line-end="302">Add student login (simple email + password, no OAuth needed)</li>
+<li class="has-line-data" data-line-start="302" data-line-end="303">Sessions stored in SQLite — student can return and see their history</li>
+<li class="has-line-data" data-line-start="303" data-line-end="305">Add before/after score comparison</li>
+</ul>
+<p class="has-line-data" data-line-start="305" data-line-end="306">Week 3:</p>
+<ul>
+<li class="has-line-data" data-line-start="306" data-line-end="307">Add flashcard mode — front: concept name, back: one-line definition + “Watch clip” button</li>
+<li class="has-line-data" data-line-start="307" data-line-end="309">Add concept summary card mode — Ollama generates one-paragraph summary per concept</li>
+</ul>
+<p class="has-line-data" data-line-start="309" data-line-end="310">Week 4:</p>
+<ul>
+<li class="has-line-data" data-line-start="310" data-line-end="311">Full integration test — every feature working end to end</li>
+<li class="has-line-data" data-line-start="311" data-line-end="312">Test on 5 different lectures from scratch</li>
+<li class="has-line-data" data-line-start="312" data-line-end="314">End of month deliverable: complete student-facing system working</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="316" data-line-end="317"><strong>Month 5 — Faculty Dashboard</strong></p>
+<p class="has-line-data" data-line-start="318" data-line-end="319">Week 1:</p>
+<ul>
+<li class="has-line-data" data-line-start="319" data-line-end="320">Build faculty login (separate role from student)</li>
+<li class="has-line-data" data-line-start="320" data-line-end="322">Faculty can upload lecture and see which students have watched and quizzed</li>
+</ul>
+<p class="has-line-data" data-line-start="322" data-line-end="323">Week 2:</p>
+<ul>
+<li class="has-line-data" data-line-start="323" data-line-end="324">Build confusion aggregation — per concept, calculate % students who got it wrong</li>
+<li class="has-line-data" data-line-start="324" data-line-end="326">Build Plotly timeline chart — lecture duration on X axis, confusion rate as colour intensity</li>
+</ul>
+<p class="has-line-data" data-line-start="326" data-line-end="327">Week 3:</p>
+<ul>
+<li class="has-line-data" data-line-start="327" data-line-end="328">Add per-concept table below timeline</li>
+<li class="has-line-data" data-line-start="328" data-line-end="329">“Backpropagation — 71% confusion — timestamp 24:00–28:00 — Consider reviewing”</li>
+<li class="has-line-data" data-line-start="329" data-line-end="331">Add export to PDF option (optional but impressive)</li>
+</ul>
+<p class="has-line-data" data-line-start="331" data-line-end="332">Week 4:</p>
+<ul>
+<li class="has-line-data" data-line-start="332" data-line-end="334">End of month deliverable: working faculty dashboard with real aggregated data from at least 10 simulated student sessions</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="336" data-line-end="337"><strong>Month 6 — Polish, Testing, Documentation</strong></p>
+<p class="has-line-data" data-line-start="338" data-line-end="339">Week 1-2:</p>
+<ul>
+<li class="has-line-data" data-line-start="339" data-line-end="340">User testing — get 10-15 actual students from your college to use it</li>
+<li class="has-line-data" data-line-start="340" data-line-end="341">Collect feedback — what confuses them, what they love, what breaks</li>
+<li class="has-line-data" data-line-start="341" data-line-end="343">Fix the top 5 issues they report</li>
+</ul>
+<p class="has-line-data" data-line-start="343" data-line-end="344">Week 3:</p>
+<ul>
+<li class="has-line-data" data-line-start="344" data-line-end="345">Write the Sem 7 report — problem statement, architecture, results, limitations, future scope</li>
+<li class="has-line-data" data-line-start="345" data-line-end="347">Record a 3-minute demo video of the complete system working</li>
+</ul>
+<p class="has-line-data" data-line-start="347" data-line-end="348">Week 4:</p>
+<ul>
+<li class="has-line-data" data-line-start="348" data-line-end="349">Sem 7 submission</li>
+<li class="has-line-data" data-line-start="349" data-line-end="351">End of Sem 7 deliverable: complete working system, tested on real users, documented</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="353" data-line-end="354"><a id="Semester_8_Make_It_Intelligent_353"></a>Semester 8 — Make It Intelligent</h2>
+<hr>
+<p class="has-line-data" data-line-start="357" data-line-end="358"><strong>Month 7 — DKT Knowledge Tracing</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="359" data-line-end="360">Install pyKT library</li>
+<li class="has-line-data" data-line-start="360" data-line-end="361">Feed student response history from SQLite into DKT model</li>
+<li class="has-line-data" data-line-start="361" data-line-end="362">DKT predicts probability of knowing each concept for each student</li>
+<li class="has-line-data" data-line-start="362" data-line-end="363">System uses predictions to proactively schedule review before the student asks</li>
+<li class="has-line-data" data-line-start="363" data-line-end="365">Test: does DKT predict forgetting accurately after 1-2 weeks?</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="367" data-line-end="368"><strong>Month 8 — Spaced Repetition Scheduler</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="369" data-line-end="370">Implement SM-2 algorithm (10 lines of code)</li>
+<li class="has-line-data" data-line-start="370" data-line-end="371">Every concept gets a next-review date per student</li>
+<li class="has-line-data" data-line-start="371" data-line-end="372">System sends reminder notifications (Streamlit notification or email)</li>
+<li class="has-line-data" data-line-start="372" data-line-end="374">DKT + SM-2 combined: personalised review schedule that adapts to actual performance</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="376" data-line-end="377"><strong>Month 9 — LLM Quiz Upgrade</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="378" data-line-end="379">Integrate Ollama + Mistral 7B locally (GPU peer handles this)</li>
+<li class="has-line-data" data-line-start="379" data-line-end="380">Replace template MCQs with LLM-generated contextual questions</li>
+<li class="has-line-data" data-line-start="380" data-line-end="381">Questions are now based on what the professor actually said, not just the concept name in general</li>
+<li class="has-line-data" data-line-start="381" data-line-end="383">A/B comparison — do LLM questions lead to better learning outcomes than template questions?</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="385" data-line-end="386"><strong>Month 10 — Experiment Tracking + Validation Study</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="387" data-line-end="388">Integrate MLflow for experiment tracking</li>
+<li class="has-line-data" data-line-start="388" data-line-end="391">Run a proper user study — 30 students, split into two groups
+<ul>
+<li class="has-line-data" data-line-start="389" data-line-end="390">Group A uses your system</li>
+<li class="has-line-data" data-line-start="390" data-line-end="391">Group B rewatches lectures normally</li>
+</ul>
+</li>
+<li class="has-line-data" data-line-start="391" data-line-end="392">Compare quiz improvement scores between groups</li>
+<li class="has-line-data" data-line-start="392" data-line-end="394">This data is your results section and the basis for a paper</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="396" data-line-end="397"><strong>Month 11 — Report Writing + Paper Draft</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="398" data-line-end="399">Write complete Sem 8 report</li>
+<li class="has-line-data" data-line-start="399" data-line-end="400">Draft research paper — target ICACCI or IEEE EDUCON</li>
+<li class="has-line-data" data-line-start="400" data-line-end="402">Prepare viva presentation — 15 slides, 10-minute demo rehearsal</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="404" data-line-end="405"><strong>Month 12 — Final Viva Preparation</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="406" data-line-end="407">Practice demo until it runs in under 5 minutes from URL paste to clip playing</li>
+<li class="has-line-data" data-line-start="407" data-line-end="408">Prepare answers to every possible viva question (we’ve already covered most of them)</li>
+<li class="has-line-data" data-line-start="408" data-line-end="410">Final submission</li>
+</ul>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="412" data-line-end="413"><a id="PART_7_Demo_Script_Exactly_What_to_Show_in_Viva_412"></a>PART 7 — Demo Script (Exactly What to Show in Viva)</h1>
+<p class="has-line-data" data-line-start="414" data-line-end="415">This is the 5-minute demo that wins the room.</p>
+<p class="has-line-data" data-line-start="416" data-line-end="418"><strong>Minute 0-1 — Setup</strong><br>
+Open Streamlit app in browser. Say: “This is LecGap. I’m going to paste a real NPTEL lecture link right now.”</p>
+<p class="has-line-data" data-line-start="419" data-line-end="420">Paste the URL. Click process. Show the progress bar running. (Pre-processed — it loads in 10 seconds.)</p>
+<p class="has-line-data" data-line-start="421" data-line-end="423"><strong>Minute 1-2 — Show the concept map</strong><br>
+Transcript appears. Concept map appears. Say: “The system has identified 7 key concepts in this 45-minute lecture and mapped each one to its exact timestamp. Watch what happens when a student takes the quiz.”</p>
+<p class="has-line-data" data-line-start="424" data-line-end="426"><strong>Minute 2-3 — Take the quiz live</strong><br>
+Log in as a student. Take the 7-question quiz. Deliberately get 2 questions wrong — Activation Functions and Backpropagation.</p>
+<p class="has-line-data" data-line-start="427" data-line-end="429"><strong>Minute 3-4 — Show the gap detection</strong><br>
+Submit quiz. Show the dependency check running. Say: “The system noticed that Backpropagation requires Activation Functions. So it’s showing Activation Functions first, then Backpropagation — not in the order I got them wrong, but in the order I need to learn them.”</p>
+<p class="has-line-data" data-line-start="430" data-line-end="431">Two clips appear. Click clip 1. It plays instantly inside the app.</p>
+<p class="has-line-data" data-line-start="432" data-line-end="434"><strong>Minute 4-5 — Show the faculty dashboard</strong><br>
+Switch to faculty tab. Show the lecture timeline with a red zone at 24:00. Say: “This student is the 8th person to get Backpropagation wrong. The system has now flagged this segment as a high-confusion zone for the professor.”</p>
+<p class="has-line-data" data-line-start="435" data-line-end="436">Stop. Let it sit. Don’t say anything for 3 seconds.</p>
+<p class="has-line-data" data-line-start="437" data-line-end="438">That silence is your close.</p>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="441" data-line-end="442"><a id="PART_8_Answers_to_Every_Viva_Question_441"></a>PART 8 — Answers to Every Viva Question</h1>
+<p class="has-line-data" data-line-start="443" data-line-end="445"><strong>Q: YouTube already has timestamps.</strong><br>
+A: YouTube timestamps tell every viewer where topics are. Our system tells each student which concept they personally didn’t understand and plays only that clip. YouTube has no idea whether you understood the content.</p>
+<p class="has-line-data" data-line-start="446" data-line-end="448"><strong>Q: YouLearn/Knowt already does quiz generation.</strong><br>
+A: They generate quizzes and stop. They don’t connect your wrong answer back to the lecture clip. They don’t check concept dependencies. They don’t show the professor where their class got confused. We do all three.</p>
+<p class="has-line-data" data-line-start="449" data-line-end="451"><strong>Q: What if Whisper gives wrong transcription?</strong><br>
+A: We pre-process audio with noise reduction. We tested on 5 lecture quality levels. The system displays the transcript before quiz generation so the user can verify. For our demo we use NPTEL lectures which have studio quality. Handling poor audio is documented as a known limitation and future work.</p>
+<p class="has-line-data" data-line-start="452" data-line-end="454"><strong>Q: How is the concept dependency map built?</strong><br>
+A: For Sem 7 — manually curated JSON for ML, DSA, and Networks. 200 concepts, well-known prerequisites. In Sem 8 we automate this using co-occurrence analysis on the transcript. Manual curation is a practical engineering decision, not a flaw.</p>
+<p class="has-line-data" data-line-start="455" data-line-end="457"><strong>Q: What’s the ML in this project?</strong><br>
+A: Three ML components. Whisper — deep learning ASR model. KeyBERT — transformer-based semantic keyword extraction. DKT in Sem 8 — LSTM-based knowledge tracing. Plus the data pipeline, serving layer, and experiment tracking — full MLOps stack.</p>
+<p class="has-line-data" data-line-start="458" data-line-end="460"><strong>Q: How is this better than a professor just adding chapters to their video?</strong><br>
+A: Chapters are static — same for every student. Our system is dynamic and personalised — two students watching the same lecture get different clip playlists based on their individual quiz performance. A professor would need to manually quiz every student and manually map their answers to chapters. We do this automatically for every student every session.</p>
+<p class="has-line-data" data-line-start="461" data-line-end="463"><strong>Q: Did you validate this actually helps students learn?</strong><br>
+A: In Sem 7 — before/after quiz score comparison shows improvement after watching recommended clips. In Sem 8 — formal user study with 30 students, control group vs system group, measuring actual exam score correlation. That validation data is in our report.</p>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="466" data-line-end="467"><a id="PART_9_GitHub_Repository_Structure_466"></a>PART 9 — GitHub Repository Structure</h1>
+<pre><code class="has-line-data" data-line-start="469" data-line-end="503">lecgap/
+│
+├── pipeline/
+│   ├── downloader.py       # yt-dlp audio extraction
+│   ├── transcriber.py      # Whisper integration
+│   ├── concept_extractor.py# KeyBERT + spaCy
+│   ├── clip_cutter.py      # FFmpeg wrapper
+│   └── quiz_generator.py   # Template MCQ generation
+│
+├── models/
+│   ├── dependency_graph.json  # Concept prerequisites
+│   └── dkt_model.py           # DKT (Sem 8)
+│
+├── app/
+│   ├── main.py             # Streamlit entry point
+│   ├── student_view.py     # Quiz + clip playlist
+│   ├── faculty_view.py     # Confusion heatmap
+│   └── auth.py             # Login system
+│
+├── database/
+│   ├── schema.sql          # SQLite table definitions
+│   └── db_manager.py       # All DB operations
+│
+├── data/
+│   ├── clips/              # Generated video clips
+│   └── transcripts/        # Stored transcripts
+│
+├── tests/
+│   └── test_pipeline.py    # Unit tests
+│
+├── requirements.txt
+├── README.md
+└── demo_video.mp4          # 3-minute demo for submission
+</code></pre>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="506" data-line-end="507"><a id="PART_10_The_Three_Rules_That_Keep_This_Project_on_Track_506"></a>PART 10 — The Three Rules That Keep This Project on Track</h1>
+<p class="has-line-data" data-line-start="508" data-line-end="510"><strong>Rule 1 — Core before enhancement.</strong><br>
+If Core 1, 2, and 3 are not fully working, no team member touches enhancement features. Not even a line of DKT code before the faculty heatmap is live.</p>
+<p class="has-line-data" data-line-start="511" data-line-end="513"><strong>Rule 2 — Demo on real data from Week 4 onwards.</strong><br>
+Every monthly milestone must be demonstrated on a real NPTEL lecture, not synthetic data. If it only works on test data you wrote yourself, it’s not done.</p>
+<p class="has-line-data" data-line-start="514" data-line-end="516"><strong>Rule 3 — Every limitation is documented, not hidden.</strong><br>
+When something doesn’t work perfectly — audio quality, wrong concept extraction, slow processing — write it in the report as a known limitation with a proposed solution. An honest limitation is strong. A hidden failure discovered in viva is catastrophic.</p>
+<hr>
+
+</body>
+</html>
