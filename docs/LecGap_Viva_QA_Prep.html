@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LecGap — Viva Prep: Questions & Answers</title>
+<style>
+  :root {
+    --navy: #173764;
+    --teal: #0CC0DF;
+    --bg: #F7FAFC;
+    --card: #FFFFFF;
+    --border: #E1E8F0;
+    --text: #1F2D3D;
+    --muted: #5B6B7F;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy), #0f2647);
+    color: white;
+    padding: 32px 20px 26px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+  }
+  header p {
+    margin: 0;
+    color: #cfe0f2;
+    font-size: 0.95rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 22px 16px 60px;
+  }
+  .howto {
+    background: #EAF6FA;
+    border: 1px solid #BEE7F0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 26px;
+    font-size: 0.92rem;
+    color: var(--navy);
+  }
+  .category {
+    margin-bottom: 30px;
+  }
+  .category h2 {
+    font-size: 1.1rem;
+    color: var(--navy);
+    border-left: 5px solid var(--teal);
+    padding-left: 10px;
+    margin: 0 0 12px;
+  }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 13px 16px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .q-num {
+    color: var(--teal);
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  summary::after {
+    content: "+";
+    margin-left: auto;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  details[open] summary::after { content: "\2212"; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  .answer {
+    padding: 4px 16px 16px 16px;
+    color: var(--text);
+    font-size: 0.96rem;
+  }
+  .answer .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--navy);
+    background: #E6ECF5;
+    border-radius: 5px;
+    padding: 2px 7px;
+    margin-bottom: 8px;
+  }
+  .tag.honest {
+    color: #8a5300;
+    background: #FBEBD0;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    padding: 10px 16px 40px;
+  }
+  @media print {
+    header { background: var(--navy) !important; -webkit-print-color-adjust: exact; }
+    details { break-inside: avoid; border: 1px solid #ccc; }
+    summary::after { display: none; }
+    details:not([open]) .answer { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LecGap — Viva Prep</h1>
+  <p>Anticipated questions from peers, teachers, and mentors — with grounded answers, so nothing catches the team off guard.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="howto">
+    Tap any question to reveal the answer. Everything here reflects what's actually in <strong>docs/DECISIONS.md</strong>, <strong>docs/EVALUATION.md</strong>, and <strong>docs/LIMITATIONS.md</strong> — nothing here overclaims beyond what the project can actually back up.
+  </div>
+
+  <div class="category">
+    <h2>1. "Isn't this just an existing app?"</h2>
+
+    <details>
+      <summary><span class="q-num">Q1.</span> YouLearn, Knowt, and NotebookLM already generate quizzes and flashcards from lecture video — how is this different?</summary>
+      <div class="answer">
+        Those tools quiz you and flag what you got wrong, but they treat every wrong answer independently — they have no model of which concept depends on which. LecGap automatically learns that dependency structure, evaluates it against a public benchmark, and uses it to decide the correct order to relearn things in, not just what to review.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q2.</span> YouTube already has chapters and a searchable transcript — why do we need this?</summary>
+      <div class="answer">
+        Chapters are static and identical for every viewer, and they only ever describe what's spoken aloud. LecGap's remediation is personalized to each student's actual quiz performance, and its visual extraction (CLIP + OCR) catches concepts shown on a slide or board but never said out loud — something chapter markers structurally can't do.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q3.</span> Isn't NotebookLM's "Mind Map" feature the same as your concept graph?</summary>
+      <div class="answer">
+        NotebookLM's Mind Map is a generic, undirected visualization of related topics — it doesn't decide that concept A must be understood before concept B, and it isn't evaluated for correctness. Our graph is directional, trained, and scored against a labeled benchmark (LectureBank), which is a fundamentally different, more rigorous claim.
+      </div>
+    </details>
+  </div>
+
+  <div class="category">
+    <h2>2. "Is any of this actually novel?"</h2>
+
+    <details>
+      <summary><span class="q-num">Q4.</span> Prerequisite relation learning has existed since 2015 — what's actually new here?</summary>
+      <div class="answer">
+        We don't claim to have invented the technique — it's a real, established NLP research area, and we say so directly in our own documentation. What's new is closing the loop: taking an automatically-learned, evaluated prerequisite graph and using it to power real student remediation and instructor analytics, then correcting that graph over time using real usage signals. That closed loop — not the underlying technique — is our contribution.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q5.</span> If this is genuinely valuable, why hasn't a big company already built it?</summary>
+      <div class="answer">
+        Parts of it individually exist — the base quiz loop at scale (YouLearn, Knowt), and generic prerequisite research (LectureBank). What we haven't found anywhere is the specific combination: an automatically-learned, benchmark-evaluated, continuously self-correcting prerequisite graph tied to both personalized remediation and classroom analytics in one working system. It likely sits at the intersection of a few research threads that simply haven't been combined this way yet.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q6.</span> Deep Knowledge Tracing already predicts what a student knows — how is your refinement loop different?</summary>
+      <div class="answer">
+        DKT predicts an individual student's mastery from their own response history. Our refinement loop uses aggregated signals across many students to correct the underlying prerequisite graph itself — improving the model everyone benefits from, not just one student's personal prediction.
+      </div>
+    </details>
+  </div>
+
+  <div class="category">
+    <h2>3. Technical &amp; methodology</h2>
+
+    <details>
+      <summary><span class="q-num">Q7.</span> What do you evaluate the prerequisite classifier against, and why that dataset specifically?</summary>
+      <div class="answer">
+        LectureBank 1.0 — 1,352 lecture files across 60 courses, with 208 manually labeled prerequisite pairs, spanning NLP, ML, AI, DL, and IR. We deliberately use the original 1.0 dataset rather than the larger "LectureBank2.0" extension, because 2.0 is drawn largely from NLP specifically, while 1.0's five-domain spread is a closer match to our ML/DL test lectures.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q8.</span> Why fine-tune a pretrained model instead of training your own classifier from scratch?</summary>
+      <div class="answer">
+        208 labeled pairs is too small to train a reliable classifier from zero — that risks overfitting badly. Fine-tuning a pretrained embedding model, combined with cross-validation instead of a single train/test split, is the standard and defensible approach for a benchmark this size.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q9.</span> How do you catch a concept that's shown on a slide or board but never spoken aloud?</summary>
+      <div class="answer">
+        We sample video frames at scene changes and run them through CLIP (matches frames to concept text, zero-shot, no training needed) and OCR (reads on-screen text and equations). Anything found there is merged into the same concept list produced by spoken-content extraction.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q10.</span> Won't the concept graph become unmanageably large as more lectures get added?</summary>
+      <div class="answer">
+        No — the graph is scoped per-course, not global, the same way LectureBank itself is structured. A single course realistically has 50–150 concepts. New concepts are checked against existing graph nodes via embedding similarity before being added, so near-duplicates collapse into one node instead of multiplying.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q11.</span> What happens if Whisper mis-transcribes part of a lecture?</summary>
+      <div class="answer">
+        We use word-level timestamps, and the transcript is visible before concept extraction runs, so errors can be caught and corrected. For the demo we use clear, studio-quality recordings such as NPTEL lectures. Inconsistent audio quality is documented as a known limitation rather than hidden.
+      </div>
+    </details>
+  </div>
+
+  <div class="category">
+    <h2>4. Honesty about validation limits</h2>
+
+    <details>
+      <summary><span class="q-num">Q12.</span> How do you actually know the refinement loop works?</summary>
+      <div class="answer">
+        <span class="tag honest">Stated limitation</span>
+        We validate it with a controlled recovery experiment: define a hidden ground-truth prerequisite graph, generate synthetic students (LLM personas that genuinely reason through each quiz question based on a randomized subset of concepts they've been "taught"), run our refinement loop on their quiz patterns, and measure whether our system's guessed graph converges toward the hidden one over time.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q13.</span> So you haven't actually tested this on real students yet?</summary>
+      <div class="answer">
+        <span class="tag honest">Stated limitation</span>
+        Correct — and that's stated directly in our documentation, not glossed over. This experiment proves the refinement <em>mechanism</em> can recover known structure from noisy behavioral signals; it does not prove real students behave exactly like the simulation. A real classroom pilot is explicitly future work.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q14.</span> Why not just recruit real students to test it instead of simulating them?</summary>
+      <div class="answer">
+        We considered a small real pilot, but reliably recruiting volunteers within our timeline was judged unrealistic for this team. The LLM-persona approach was chosen specifically to produce realistic, patterned errors — driven by actual reasoning over a defined "known concepts" subset — rather than statistical noise, making it a legitimate stand-in given that constraint.
+      </div>
+    </details>
+  </div>
+
+  <div class="category">
+    <h2>5. Feasibility, team, and timeline</h2>
+
+    <details>
+      <summary><span class="q-num">Q15.</span> Your team has 4 people — what happens if not everyone contributes equally?</summary>
+      <div class="answer">
+        We've planned for that directly. Our roadmap has an explicit cut-priority list: the taught-vs-learned divergence view goes first, then the visual-extraction (CLIP/OCR) track — while the prerequisite classifier and refinement loop, which are the project's actual technical claim, are never cut.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q16.</span> Is this scope realistic across two semesters?</summary>
+      <div class="answer">
+        Semester 7 is scoped to planning, architecture design, and complete documentation — which is already done. All implementation happens in Semester 8. We structured the build into phases ordered by complexity rather than binding it to arbitrary semester dates, since deadlines tend to slip regardless of how they're set.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q17.</span> What's the single biggest technical risk in this project?</summary>
+      <div class="answer">
+        The prerequisite classifier's accuracy, given how small the labeled benchmark is (208 pairs). We mitigate this by fine-tuning a pretrained model rather than training from scratch, and by cross-validating rather than relying on one train/test split.
+      </div>
+    </details>
+  </div>
+
+  <div class="category">
+    <h2>6. "Why does this matter?" — the big picture</h2>
+
+    <details>
+      <summary><span class="q-num">Q18.</span> Couldn't a professor just manually tag which concepts are prerequisites instead of learning them automatically?</summary>
+      <div class="answer">
+        They could, but it doesn't scale — every course, every semester, someone has to redo it by hand, and a hand-written list never improves from how students actually use it. Automatic extraction plus refinement removes that manual burden and gets more accurate the more the system is used.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q19.</span> Why should the instructor dashboard matter if this is graded on the ML component?</summary>
+      <div class="answer">
+        It doesn't replace the ML contribution — it's downstream of it, and it's proof the contribution is useful. The dashboard can only show "taught order vs. learned order" divergence because the underlying graph is learned and evaluated; a static or hand-curated graph couldn't support that feature in any way grounded in real evidence.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="q-num">Q20.</span> Is this solving a real problem, or is it just impressive-sounding engineering?</summary>
+      <div class="answer">
+        Both, and deliberately so. The underlying problem — no personalized, evidence-based diagnosis of what a student needs to relearn, and no instructor visibility into classroom-wide confusion — is real. We address it with an approach that's evaluated and honestly scoped, rather than a black box we're asking the panel to take on faith.
+      </div>
+    </details>
+  </div>
+
+</div>
+
+<footer>
+  LecGap Viva Prep &middot; grounded in docs/DECISIONS.md, docs/EVALUATION.md, and docs/LIMITATIONS.md &middot; keep this updated as the project evolves
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LecGap — Explained Simply</title>
+<style>
+  :root {
+    --navy: #173764;
+    --teal: #0CC0DF;
+    --bg: #F7FAFC;
+    --card: #FFFFFF;
+    --border: #E1E8F0;
+    --text: #1F2D3D;
+    --muted: #5B6B7F;
+    --better-bg: #EAFBF7;
+    --better-border: #9FE6D6;
+    --analogy-bg: #FFF6E8;
+    --analogy-border: #F2D8A0;
+    --honest-bg: #FBEBD0;
+    --example-bg: #EEF3FF;
+    --example-border: #C9D8F5;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.62;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy), #0f2647);
+    color: white;
+    padding: 34px 20px 26px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: clamp(1.5rem, 5vw, 2.1rem); }
+  header p { margin: 0 auto; color: #cfe0f2; max-width: 640px; font-size: 0.97rem; }
+
+  nav {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    justify-content: center;
+    z-index: 10;
+    font-size: 0.78rem;
+  }
+  nav a {
+    color: var(--navy);
+    text-decoration: none;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: #EEF3F9;
+    white-space: nowrap;
+  }
+  nav a:hover { background: var(--teal); color: white; }
+
+  .wrap { max-width: 800px; margin: 0 auto; padding: 26px 16px 70px; }
+
+  section { margin-bottom: 44px; scroll-margin-top: 56px; }
+  section h2 {
+    color: var(--navy);
+    font-size: 1.3rem;
+    border-left: 6px solid var(--teal);
+    padding-left: 12px;
+    margin: 0 0 14px;
+  }
+  section h3 {
+    color: var(--navy);
+    font-size: 1.05rem;
+    margin: 22px 0 8px;
+  }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .better {
+    background: var(--better-bg);
+    border: 1px solid var(--better-border);
+    border-left: 5px solid #14b892;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 16px 0;
+    font-size: 0.94rem;
+  }
+  .better .label {
+    display: block; font-weight: 800; color: #0d7a63;
+    font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px;
+  }
+
+  .analogy {
+    background: var(--analogy-bg);
+    border: 1px solid var(--analogy-border);
+    border-left: 5px solid #d9a441;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 16px 0;
+    font-size: 0.94rem;
+  }
+  .analogy .label {
+    display: block; font-weight: 800; color: #8a5300;
+    font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px;
+  }
+
+  .honest {
+    background: var(--honest-bg);
+    border-left: 5px solid #b5760a;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 16px 0;
+    font-size: 0.94rem;
+  }
+  .honest .label {
+    display: block; font-weight: 800; color: #7a4d00;
+    font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px;
+  }
+
+  .example {
+    background: var(--example-bg);
+    border: 1px solid var(--example-border);
+    border-left: 5px solid #4a6fd4;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 16px 0;
+    font-size: 0.93rem;
+  }
+  .example .label {
+    display: block; font-weight: 800; color: #2c4694;
+    font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .example code {
+    background: #dfe7fb; padding: 1px 5px; border-radius: 4px; font-size: 0.88em;
+  }
+
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .step .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: var(--navy); color: white;
+    border-radius: 50%; font-weight: 700; font-size: 0.85rem; margin-right: 8px; flex-shrink: 0;
+  }
+  .step h3 { margin: 0 0 8px; display: flex; align-items: center; }
+  .term {
+    background: #E6ECF5; color: var(--navy); font-weight: 700;
+    padding: 1px 6px; border-radius: 4px; font-size: 0.92em;
+  }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 14px 0;
+    background: white; border-radius: 8px; overflow: hidden;
+  }
+  th, td { padding: 9px 10px; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+  th { background: var(--navy); color: white; font-size: 0.82rem; }
+  td.yes { color: #0d7a63; font-weight: 700; }
+  td.no { color: #b23b3b; }
+  tr:nth-child(even) td { background: #FAFCFE; }
+  .lecgap-col { background: #EAFBF7 !important; font-weight: 600; }
+
+  details.glossary {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+  }
+  details.glossary summary {
+    cursor: pointer; padding: 11px 14px; font-weight: 700; color: var(--navy); list-style: none;
+  }
+  details.glossary summary::-webkit-details-marker { display: none; }
+  details.glossary summary::before { content: "\25B8  "; color: var(--teal); }
+  details.glossary[open] summary::before { content: "\25BE  "; }
+  details.glossary .gloss-body { padding: 0 14px 13px; font-size: 0.92rem; color: var(--text); }
+
+  .tldr {
+    background: var(--navy); color: white; border-radius: 10px;
+    padding: 16px 18px; font-size: 1.02rem; margin: 10px 0 24px;
+  }
+  .tldr strong { color: var(--teal); }
+
+  .slide-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 12px;
+  }
+  .slide-card .slide-badge {
+    display: inline-block; background: var(--navy); color: white; font-weight: 700;
+    font-size: 0.75rem; border-radius: 6px; padding: 2px 9px; margin-bottom: 8px;
+  }
+  .slide-card h4 { margin: 0 0 8px; color: var(--navy); font-size: 1rem; }
+  .slide-card .whats-on { font-size: 0.9rem; color: var(--text); margin-bottom: 8px; }
+  .slide-card .tip {
+    font-size: 0.87rem; color: #2c4694; background: var(--example-bg);
+    border-radius: 6px; padding: 8px 10px; margin-top: 6px;
+  }
+  .slide-card .tip strong { color: #1f3577; }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 10px 16px 40px; }
+
+  @media print {
+    nav { display: none; }
+    header { background: var(--navy) !important; -webkit-print-color-adjust: exact; }
+    details:not([open]) .gloss-body { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LecGap, Explained Simply</h1>
+  <p>No jargon left unexplained. Read this top to bottom and you'll be able to explain the whole project — and present the slide deck — to anyone, in your own words.</p>
+</header>
+
+<nav>
+  <a href="#tldr">TL;DR</a>
+  <a href="#problem">The Problem</a>
+  <a href="#existing">What Already Exists</a>
+  <a href="#idea">The Big Idea</a>
+  <a href="#steps">How It Works</a>
+  <a href="#proof">Proving It Works</a>
+  <a href="#compare">Comparison Table</a>
+  <a href="#glossary">Glossary</a>
+  <a href="#honest">What We're NOT Claiming</a>
+  <a href="#ppt">PPT Slide Guide</a>
+</nav>
+
+<div class="wrap">
+
+  <section id="tldr">
+    <div class="tldr">
+      In one line: <strong>LecGap watches a lecture, figures out which concepts you need to understand before others, and uses that to fix exactly what you're confused about — while also showing the professor where the whole class got stuck.</strong> It's the only system that does all three parts, evaluates itself while doing it, and gets smarter the more it's used.
+    </div>
+  </section>
+
+  <section id="problem">
+    <h2>1. The Problem — In Plain English</h2>
+    <p>
+      Recorded lectures are everywhere now — NPTEL, Coursera, YouTube EDU channels, and every college that started recording classes during and after COVID. This isn't a niche situation anymore; it's how a huge number of students actually learn a huge portion of their coursework. And yet the experience of watching one hasn't improved much in a decade — it's still just a long video with a scrub bar.
+    </p>
+    <p>
+      Imagine you're watching a 45-minute recorded lecture on neural networks. Halfway through, the professor explains "backpropagation" and you're completely lost. What do you do? You could rewatch the whole video, but that wastes time. You could Google it, but now you're reading a totally different explanation that might not match how your professor teaches it, using different notation and different examples.
+    </p>
+    <p>
+      Here's the real problem: you probably didn't get confused at "backpropagation" itself — you got confused because you never fully understood <em>activation functions</em>, which backpropagation depends on. But nothing tells you that. You just know you're lost, not <em>why</em> you're lost or <em>what to fix first</em>. So you either give up, or you brute-force rewatch everything, hoping you stumble back onto the part that actually matters.
+    </p>
+    <div class="analogy">
+      <span class="label">Think of it like...</span>
+      A textbook has an index, a table of contents, and chapter dependencies clearly implied by its structure — "Chapter 4 assumes you've read Chapter 2." A video lecture has none of that. It's just one long stream you have to sit through, with no map of what depends on what.
+    </div>
+    <p>
+      This compounds over an entire course. If you're a little shaky on Week 3's material, and Week 3 is secretly a prerequisite for Week 4, 5, and 6, that one small gap quietly grows into a much bigger one by the time you reach the exam — and by then it's genuinely hard to tell which of the ten things you don't understand is the actual root cause.
+    </p>
+    <p>
+      And it's not just students who are stuck. The professor has no idea that 70% of the class silently got lost at the exact same point in the video — they only find out during exams, when it's too late to help, and when there's no way to know if the confusion was about that specific concept or something taught two weeks earlier that it depended on.
+    </p>
+  </section>
+
+  <section id="existing">
+    <h2>2. What Already Exists (and Why It's Not Enough)</h2>
+
+    <h3>Tools like YouLearn, Knowt, and NotebookLM</h3>
+    <p>
+      These are real, popular apps (YouLearn alone reports millions of users) that let you paste in a lecture video and get back a quiz, flashcards, and a summary of what you got wrong. Genuinely useful — but they treat every question you got wrong as a separate, unconnected fact. They don't know that missing question 3 is <em>because</em> you never understood the idea from question 1. NotebookLM goes a step further with a "Mind Map" feature that visualizes how topics relate — but it's a generic, undirected web of connections, not a system that decides "A must come before B" and can be checked for being right or wrong.
+    </p>
+
+    <h3>YouTube's own chapters and captions</h3>
+    <p>
+      YouTube can split a video into chapters and let you search the spoken transcript. But chapters are the same for every single viewer — they don't adapt to what <em>you</em> specifically don't understand. And if a professor draws a diagram on a whiteboard without narrating it, YouTube's caption search has nothing to find, because it only "hears" a lecture, it never "sees" it.
+    </p>
+
+    <h3>Deep Knowledge Tracing (DKT) — real research, not a lecture tool</h3>
+    <p>
+      This is an established academic technique that estimates the probability a specific student "knows" a given concept, based on their past quiz answers. It's genuinely useful and we take inspiration from it — but it predicts an individual's mastery, it doesn't build or maintain a map of which concepts depend on which, and it was never designed to work directly on raw lecture video.
+    </p>
+
+    <h3>Adaptive learning platforms — Khan Academy, ALEKS</h3>
+    <p>
+      These do have real prerequisite logic — ALEKS in particular is well known for adapting to what a student does and doesn't know. But that logic is built by hand, once, into a fixed, hand-authored course structure that the platform's own creators wrote. You can't point either tool at an arbitrary lecture video from your own professor and have it work — the prerequisite map only exists because humans built the entire curriculum around it in advance.
+    </p>
+
+    <h3>"Couldn't a professor just tag the prerequisites by hand?"</h3>
+    <p>
+      Technically yes, and it's actually what the very first version of this project's plan proposed. But it doesn't scale: someone has to sit down and manually decide every single "concept A needs concept B" relationship, for every course, every semester, and redo it whenever the syllabus changes even slightly. And a hand-written list can never improve itself — it's frozen the moment it's written, no matter how students actually use it.
+    </p>
+
+    <div class="better">
+      <span class="label">Why LecGap is different — #1</span>
+      Every tool above either treats your wrong answers as a flat, unconnected list, or requires a human to build the prerequisite structure by hand in advance. LecGap is the only one that learns which concepts depend on which <strong>automatically, directly from raw lecture content</strong> — and then checks its own accuracy against a real, human-labeled answer key, rather than assuming it got it right.
+    </div>
+  </section>
+
+  <section id="idea">
+    <h2>3. The Big Idea</h2>
+    <p>
+      The core idea behind LecGap is simple to say, even though it takes real engineering to build: <strong>automatically figure out which concepts in a course require which other concepts, use that map to fix learning gaps in the right order, and keep improving that map using real data — instead of freezing it the moment it's built.</strong>
+    </p>
+    <div class="analogy">
+      <span class="label">Think of it like...</span>
+      A video game's skill tree. You can't unlock the "advanced fire spell" until you've unlocked "basic fire spell." LecGap builds that same kind of tree, but for the concepts in your course — automatically, by watching the lecture, instead of a human manually deciding the tree by hand.
+    </div>
+    <p>
+      There are really three separate insights stacked on top of each other here, and it's worth pulling them apart because each one answers a different objection:
+    </p>
+    <ol>
+      <li><strong>Learn it automatically, not by hand.</strong> This is what makes it scale to any course, not just ones someone has already curated.</li>
+      <li><strong>Prove it's right, don't just assume it.</strong> This is what separates LecGap from a system that just "sounds smart" — every claim about accuracy is checked against real, independently-labeled data.</li>
+      <li><strong>Let it keep learning, don't freeze it.</strong> This is what turns a one-time script into a system that actually gets better the longer it's used — the same way a spam filter improves the more real email it sees.</li>
+    </ol>
+    <p>
+      Almost every existing tool does at most one of these three things. LecGap does all three, in one working pipeline.
+    </p>
+  </section>
+
+  <section id="steps">
+    <h2>4. How It Actually Works — Step by Step</h2>
+    <p>Here's the full journey, from a raw lecture video to a smarter classroom. Every technical term is explained the moment it shows up, and a couple of steps include a worked example so the idea has something concrete to hang onto.</p>
+
+    <div class="step">
+      <h3><span class="step-num">1</span> Turning speech into text</h3>
+      <p>
+        First, the system needs to know what was actually said. We use <span class="term">Whisper</span>, a speech-to-text AI (built by OpenAI) that listens to the lecture audio and writes it out as text, with a timestamp on every sentence — so we always know <em>when</em> something was said, down to the second. This timestamped transcript is the raw material every later step is built on.
+      </p>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">2</span> Figuring out what's actually being taught</h3>
+      <p>
+        Now we have a transcript, but a transcript isn't the same as a list of concepts. We use an <span class="term">LLM</span> (Large Language Model — the same kind of AI behind ChatGPT or Claude) to read the transcript and pull out the actual ideas being taught. It can even catch concepts the professor never says by name — like recognizing a lecture is really about the "bias-variance tradeoff" even if that exact phrase is never spoken aloud.
+      </p>
+      <p>
+        But some things are only ever shown, never said — a diagram, an equation on a whiteboard, a bullet point on a slide. For that, we use <span class="term">CLIP</span> (an AI that matches images to text descriptions, without needing to be specially trained for lectures) and <span class="term">OCR</span> ("Optical Character Recognition" — software that reads text out of an image, like scanning a photo of a whiteboard). To keep this efficient, we don't process every single video frame — we only sample frames at scene changes (e.g. when the camera cuts or the slide changes), which is enough to catch new visual content without wasting compute on near-identical frames.
+      </p>
+      <div class="better">
+        <span class="label">Why LecGap is different — #2</span>
+        Every competitor listed above only processes <em>audio</em>. If a professor silently writes an equation on the board, those tools never even know it happened. LecGap "watches" the video too, not just "listens" to it.
+      </div>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">3</span> Figuring out what needs to be learned first</h3>
+      <p>
+        This is the heart of the whole project. For every pair of concepts, the system has to decide: does understanding concept A actually require understanding concept B first? We do this with a model that's been through <span class="term">fine-tuning</span> — meaning we take an AI that already has a broad, general understanding of language (rather than starting from nothing) and give it focused extra training specifically on identifying prerequisite relationships.
+      </p>
+      <div class="analogy">
+        <span class="label">Think of it like...</span>
+        Hiring a chef who already knows how to cook in general, then giving them a short course on your restaurant's specific menu — instead of teaching someone to cook from absolute zero. It's faster and far more reliable, especially since we only have a modest amount of labeled example data (a few hundred examples) to learn from.
+      </div>
+      <p>
+        Behind the scenes, concepts are represented as <span class="term">embeddings</span> — a way of turning ideas into points on an invisible map, so that similar ideas sit close together and the computer can measure "how related" two concepts are, rather than just checking if they share the same words.
+      </p>
+      <p>
+        One practical detail worth knowing: we don't check every possible pair of concepts against every other. A single course might have 100+ concepts, which means tens of thousands of possible pairs — far too many to check exhaustively. Instead, we only check pairs that are likely candidates in the first place (concepts that appear close together in time, or that are semantically similar), and an LLM reasoning pass double-checks the classifier's guess and explains <em>why</em> it thinks one concept precedes another — that explanation later shows up in the instructor dashboard.
+      </p>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">4</span> Drawing the map</h3>
+      <p>
+        Once we know which concepts depend on which, we connect them into a <span class="term">directed graph</span> — think of it as a one-way flowchart, with arrows pointing from "must-learn-first" concepts toward the ones that depend on them, and never looping back on itself. We build this using a tool called NetworkX.
+      </p>
+      <p>
+        As new lectures get added, newly found concepts are checked against what's already in the graph using embedding similarity, so "Gradient Descent" from one lecture and "GD optimization" from a different lecture get merged into a single node instead of creating a confusing duplicate.
+      </p>
+      <div class="example">
+        <span class="label">Why this doesn't spiral out of control</span>
+        The graph only ever contains the concepts from <em>one course</em> — realistically 50 to 150 concepts — not an attempt to map all of human knowledge. Building one giant graph connecting every concept in every field is a genuinely different, much harder research problem (the kind of effort projects like Wikidata have spent years on), and it's simply not what LecGap is trying to do.
+      </div>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">5</span> Cutting the video into bite-sized pieces</h3>
+      <p>
+        Using the timestamps from Step 1, we use a tool called FFmpeg to physically cut the lecture video into short clips — one per concept — so a student never has to scrub through a 45-minute video to find the 90 seconds that actually matter to them.
+      </p>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">6</span> The quiz and the personalized fix</h3>
+      <p>
+        A student takes a short quiz. If they get a question wrong, the system doesn't just say "you got this wrong" — it checks the graph from Step 4 and shows them the clips in the <em>correct learning order</em>, starting from the true root cause, not just the symptom.
+      </p>
+      <div class="better">
+        <span class="label">Why LecGap is different — #3</span>
+        This is the exact feature nothing else on the market has: turning "here's what you got wrong" into "here's what to relearn, and in what order, based on an actual model of how concepts depend on each other."
+      </div>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">7</span> Getting smarter over time</h3>
+      <p>
+        Here's the part that makes LecGap a living system instead of a one-time script: if lots of students keep failing concept B right after struggling with concept A, that real pattern gets fed back in to correct the graph — strengthening a connection the system got right, or fixing one it got wrong. This is called a <span class="term">refinement loop</span>, and it uses a technique called <span class="term">weak supervision</span> — using indirect, imperfect real-world signals (like quiz patterns) to improve a model, instead of needing a human to hand-label everything perfectly.
+      </p>
+      <div class="honest">
+        <span class="label">Being honest about this part</span>
+        We don't have access to hundreds of real students yet, so we test this loop using <strong>synthetic students</strong> — an AI is prompted to "role-play" as a student who has only learned a specific, randomized set of concepts, and it genuinely reasons through quiz questions the way that student would. This proves the <em>mechanism</em> works — it does not yet prove real human students behave exactly like the simulation. We say this plainly rather than hiding it.
+      </div>
+      <div class="example">
+        <span class="label">A worked example</span>
+        Say the real (hidden) order is: <code>Loss Functions &rarr; Gradient Descent &rarr; Backpropagation &rarr; Neural Networks</code>. We keep this hidden from the system — it's our private answer key. We then simulate 500 "students," each knowing a random subset of these four concepts. A simulated student who doesn't know Gradient Descent will realistically also struggle with Backpropagation, because our LLM-persona student reasons through the question honestly rather than just rolling dice. We feed all of these simulated quiz results into the system's own guessed graph (which starts out imperfect, like a real model would). If, after processing this data, the system's guess lines up more closely with the hidden four-step order than it did before, that's real, measurable evidence the refinement mechanism works.
+      </div>
+    </div>
+
+    <div class="step">
+      <h3><span class="step-num">8</span> Helping the professor</h3>
+      <p>
+        Every student's quiz results get combined into a dashboard for the instructor — a <span class="term">confusion heatmap</span> (think of a weather map, but instead of temperature, it shows where in the lecture the most students got confused). It also shows something no other tool does: where the <em>order the professor taught things in</em> doesn't match the order the data says students actually needed to learn them in.
+      </p>
+      <div class="example">
+        <span class="label">Why this matters concretely</span>
+        Imagine a professor teaches Concept Y in week 3 and Concept X (which the data shows Y actually depends on) in week 5. Nobody would notice this just from watching the class — but LecGap's dashboard would flag it directly, giving the instructor a concrete, evidence-backed reason to consider reordering their syllabus next semester.
+      </div>
+      <div class="better">
+        <span class="label">Why LecGap is different — #4</span>
+        Every AI study tool we compared against is built only for individual students — there's no concept of a "classroom" at all. LecGap is the only one that closes the loop back to the person teaching the class, not just the people learning from it.
+      </div>
+    </div>
+  </section>
+
+  <section id="proof">
+    <h2>5. Proving It Actually Works (Not Just Claiming It)</h2>
+    <p>
+      Anyone can claim their AI "understands" prerequisites. The difference between a claim and a fact is evaluation — so here's exactly how we check ourselves, in plain terms.
+    </p>
+    <h3>The benchmark: LectureBank</h3>
+    <p>
+      LectureBank is a public dataset built by researchers (not us) — <strong>1,352 real lecture files from 60 real courses</strong>, with <strong>208 concept pairs</strong> that real people manually checked and labeled as "yes, this is a genuine prerequisite" or "no, it isn't," spanning five subjects (NLP, Machine Learning, AI, Deep Learning, and Information Retrieval). It's an answer key we didn't write ourselves — so when we test our classifier against it, the score is real, not something we can quietly fudge.
+    </p>
+    <p>
+      There's actually a larger, newer version called "LectureBank2.0," but we deliberately use the original 1.0 version instead — 2.0 is described by its own creators as drawn largely from NLP specifically, while 1.0's spread across five different subjects is a much closer match to the kind of ML/DL lectures we're actually testing on.
+    </p>
+    <h3>What "accuracy" actually means here</h3>
+    <p>
+      We measure two things, both standard in machine learning: <strong>precision</strong> ("of all the prerequisite connections we claimed were real, how many actually were, according to the answer key?") and <strong>recall</strong> ("of all the real prerequisite connections in the answer key, how many did we actually catch?"). We also use <span class="term">cross-validation</span> — splitting the labeled data into several chunks, testing on each chunk in turn while training on the rest — so our score reflects real performance, not a lucky one-time split of the data.
+    </p>
+    <h3>The recovery test for the refinement loop</h3>
+    <p>
+      As described in Step 7 above: hide a known-correct concept map, simulate realistic student behavior against it, and measure whether our system's guess gets more accurate over time. This is a standard, legitimate technique used in real machine learning research when live data isn't available yet — not something we invented to dodge real testing.
+    </p>
+  </section>
+
+  <section id="compare">
+    <h2>6. The Full Comparison, At a Glance</h2>
+    <table>
+      <tr>
+        <th>Capability</th>
+        <th class="lecgap-col">LecGap</th>
+        <th>YouLearn / Knowt</th>
+        <th>NotebookLM</th>
+        <th>YouTube chapters</th>
+        <th>Khan Academy / ALEKS</th>
+      </tr>
+      <tr>
+        <td>Quiz &amp; flashcards from a lecture</td>
+        <td class="yes lecgap-col">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+        <td class="no">No (fixed curriculum, not lecture-based)</td>
+      </tr>
+      <tr>
+        <td>Understands which concepts depend on which</td>
+        <td class="yes lecgap-col">Yes — learned &amp; evaluated</td>
+        <td class="no">No</td>
+        <td class="no">No (generic "Mind Map" only)</td>
+        <td class="no">No</td>
+        <td class="yes">Yes — but hand-built, fixed content</td>
+      </tr>
+      <tr>
+        <td>Works on any raw lecture video</td>
+        <td class="yes lecgap-col">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No — locked to their own curriculum</td>
+      </tr>
+      <tr>
+        <td>Catches concepts shown but never spoken</td>
+        <td class="yes lecgap-col">Yes (CLIP + OCR)</td>
+        <td class="no">No (audio-only)</td>
+        <td class="no">No (audio-only)</td>
+        <td class="no">No</td>
+        <td class="no">N/A</td>
+      </tr>
+      <tr>
+        <td>Personalizes remediation order per student</td>
+        <td class="yes lecgap-col">Yes</td>
+        <td class="no">Partially (flags weak spots, no order)</td>
+        <td class="no">No</td>
+        <td class="no">No (same for everyone)</td>
+        <td class="yes">Yes, within its own fixed content</td>
+      </tr>
+      <tr>
+        <td>Improves itself from real usage over time</td>
+        <td class="yes lecgap-col">Yes (refinement loop)</td>
+        <td class="no">No</td>
+        <td class="no">No</td>
+        <td class="no">No</td>
+        <td class="no">No (curriculum is fixed by its authors)</td>
+      </tr>
+      <tr>
+        <td>Instructor / classroom-level analytics</td>
+        <td class="yes lecgap-col">Yes</td>
+        <td class="no">No</td>
+        <td class="no">No</td>
+        <td class="no">No</td>
+        <td class="no">No</td>
+      </tr>
+    </table>
+  </section>
+
+  <section id="glossary">
+    <h2>7. Quick Glossary — Every Term In One Place</h2>
+
+    <details class="glossary"><summary>Whisper</summary><div class="gloss-body">A speech-to-text AI made by OpenAI. It listens to audio and converts it into written text with timestamps.</div></details>
+
+    <details class="glossary"><summary>LLM (Large Language Model)</summary><div class="gloss-body">The type of AI behind tools like ChatGPT and Claude — trained on huge amounts of text so it can read, summarize, and reason about language.</div></details>
+
+    <details class="glossary"><summary>CLIP</summary><div class="gloss-body">An AI model that can match images to text descriptions without needing extra training for a specific task — used here to understand what's shown visually in a lecture.</div></details>
+
+    <details class="glossary"><summary>OCR (Optical Character Recognition)</summary><div class="gloss-body">Software that reads and extracts text from an image — like turning a photo of a whiteboard into actual, searchable text.</div></details>
+
+    <details class="glossary"><summary>Fine-tuning</summary><div class="gloss-body">Taking an AI model that's already broadly trained and giving it focused extra training on a specific task, instead of training a brand-new model completely from zero.</div></details>
+
+    <details class="glossary"><summary>Embeddings</summary><div class="gloss-body">A way of representing words or ideas as points on an invisible map, so ideas that mean similar things end up located close together — letting a computer measure "how related" two things are.</div></details>
+
+    <details class="glossary"><summary>Directed graph / DAG</summary><div class="gloss-body">A diagram made of boxes connected by one-way arrows, with no loops ("Directed Acyclic Graph") — used here to represent "this concept must be understood before that one."</div></details>
+
+    <details class="glossary"><summary>Prerequisite graph</summary><div class="gloss-body">The specific directed graph LecGap builds for a course, mapping out which concepts depend on which others.</div></details>
+
+    <details class="glossary"><summary>NetworkX</summary><div class="gloss-body">A Python software library used for building, storing, and analyzing graphs like the prerequisite graph — handles things like detecting cycles and ordering nodes correctly.</div></details>
+
+    <details class="glossary"><summary>FFmpeg</summary><div class="gloss-body">A widely-used tool for editing and processing video/audio files — here, used to cut a lecture into short, concept-specific clips.</div></details>
+
+    <details class="glossary"><summary>Refinement loop</summary><div class="gloss-body">The part of LecGap that watches real quiz results over time and uses them to correct and improve its concept graph.</div></details>
+
+    <details class="glossary"><summary>Weak supervision</summary><div class="gloss-body">A machine learning technique that improves a model using indirect, imperfect real-world signals (like patterns in quiz answers) instead of needing every example to be perfectly hand-labeled by a person.</div></details>
+
+    <details class="glossary"><summary>Synthetic students</summary><div class="gloss-body">AI-simulated "students," each given a randomized set of concepts they supposedly know, used to test whether LecGap's refinement loop actually works before testing it on real people.</div></details>
+
+    <details class="glossary"><summary>Benchmark</summary><div class="gloss-body">A public dataset with known, correct answers, used to test how accurate a system really is — instead of just trusting a system's own claims.</div></details>
+
+    <details class="glossary"><summary>LectureBank</summary><div class="gloss-body">The specific benchmark LecGap is evaluated against — 1,352 real lecture files and 208 human-labeled prerequisite concept pairs across five subjects.</div></details>
+
+    <details class="glossary"><summary>Precision &amp; recall</summary><div class="gloss-body">Two ways of scoring accuracy. Precision: of everything we claimed was true, how much actually was? Recall: of everything that was actually true, how much did we catch?</div></details>
+
+    <details class="glossary"><summary>Cross-validation</summary><div class="gloss-body">Splitting a dataset into several chunks and testing a model on each chunk in turn (while training on the rest), so the accuracy score reflects real performance rather than one lucky split of the data.</div></details>
+
+    <details class="glossary"><summary>Confusion heatmap</summary><div class="gloss-body">A visual, color-coded timeline showing exactly where in a lecture the most students got confused — similar to a weather map, but for confusion instead of temperature.</div></details>
+
+    <details class="glossary"><summary>DKT (Deep Knowledge Tracing)</summary><div class="gloss-body">An established academic technique that predicts the probability a specific student currently understands a given concept, based on their history of past answers.</div></details>
+
+    <details class="glossary"><summary>Decoupled architecture</summary><div class="gloss-body">Building the "brain" of the system (the backend, which does the actual processing) separately from the "face" of the system (the frontend, which is what the user sees and clicks on) — so either half can be changed without breaking the other.</div></details>
+  </section>
+
+  <section id="honest">
+    <h2>8. What We're NOT Claiming</h2>
+    <p>Being able to teach this project well also means being honest about its edges — a confident presenter who knows the limits sounds far more credible than one who claims perfection.</p>
+    <div class="honest">
+      <span class="label">Stated plainly</span>
+      We are not claiming to have invented prerequisite-relation learning — it's existing academic research, active since at least 2015. We are not claiming the refinement loop has been proven on real classrooms yet — only in a controlled simulation. We are not claiming perfect accuracy outside the subjects LectureBank covers. What we <em>are</em> claiming is the specific combination — automatic extraction, evaluated prerequisites, personalized remediation, self-correction, and instructor analytics, all in one working system — which nothing else currently does.
+    </div>
+  </section>
+
+  <section id="ppt">
+    <h2>9. PPT Slide Guide — What's On Each Slide, And Why</h2>
+    <p>
+      This is a walkthrough of the actual review presentation, slide by slide — what's literally written on it, why that slide exists at all (what question it answers for a reviewer), and a tip for what to say out loud that goes beyond the bullet points.
+    </p>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 1</span>
+      <h4>Title Slide</h4>
+      <div class="whats-on">College name, project title (LecGap), team members, guide's name, domain (AIML), group number, year and semester.</div>
+      <div class="tip"><strong>Presenter tip:</strong> Nothing to explain here — it's the formal cover page every reviewer expects to see first.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 2</span>
+      <h4>Abstract</h4>
+      <div class="whats-on">The whole project compressed into five short lines: the problem, why existing tools fall short, what LecGap actually does, what it produces, and that it keeps improving itself.</div>
+      <div class="tip"><strong>Presenter tip:</strong> Treat this as your 30-second elevator pitch. If someone only remembers one slide, this should be the one that sticks — say it slowly and confidently, it's the summary of everything else.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 3</span>
+      <h4>Problem Statement</h4>
+      <div class="whats-on">The pain point in plain terms: students can't diagnose exactly what they're missing, existing tools treat mistakes independently, and instructors have no visibility into classroom-wide confusion.</div>
+      <div class="tip"><strong>Presenter tip:</strong> This slide exists to make the reviewer <em>feel</em> the problem before you show the solution. Consider opening with the "I got lost at backpropagation" scenario from Section 1 above — a relatable story lands better than a bullet list alone.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 4</span>
+      <h4>Brief Literature Review</h4>
+      <div class="whats-on">What already exists: consumer AI study tools, the LectureBank benchmark paper, cross-domain prerequisite learning research, recent LLM-based extraction work, Deep Knowledge Tracing, and adaptive platforms like Khan Academy.</div>
+      <div class="tip"><strong>Presenter tip:</strong> This slide proves you did your homework — it directly defuses "did you know X already exists?" questions before they're even asked, since the answer is already sitting on the slide.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 5</span>
+      <h4>Research Gap</h4>
+      <div class="whats-on">The specific hole nobody else fills: no system combines auto-extraction, remediation, and instructor analytics together; prerequisite models are usually trained once and frozen; existing extraction is audio-only.</div>
+      <div class="tip"><strong>Presenter tip:</strong> This is your most important slide for answering "why does this deserve to be a project at all?" Pair it directly with Section 6's comparison table if a reviewer wants more detail than the slide shows.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 6</span>
+      <h4>Project Objectives</h4>
+      <div class="whats-on">Six concrete goals: extract concepts from audio and visuals, classify prerequisites with benchmarked accuracy, personalize remediation, refine automatically from usage, give instructors diagnostic insight, and validate everything rigorously.</div>
+      <div class="tip"><strong>Presenter tip:</strong> Each objective here maps directly onto one stage of the pipeline in Slide 8 — mentioning that connection out loud makes the presentation feel like one coherent system instead of a list of separate goals.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 7</span>
+      <h4>Proposed Methodology</h4>
+      <div class="whats-on">The step-by-step build process in short form: transcribe, extract concepts, classify prerequisites, construct the graph, segment clips and quiz, then remediate and refine.</div>
+      <div class="tip"><strong>Presenter tip:</strong> This is the text version of the diagram on the next slide. Use this slide to narrate the process in words while gesturing toward where it's headed, then let Slide 8 do the visual heavy lifting.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 8</span>
+      <h4>System Architecture / Flowchart</h4>
+      <div class="whats-on">A visual, 8-box flowchart of the entire pipeline, from transcription through to the faculty dashboard, with arrows showing the order things happen in.</div>
+      <div class="tip"><strong>Presenter tip:</strong> This is usually the slide people remember. Walk through it left to right, top row then bottom row, and explicitly point out where the two outputs split off — student remediation and instructor analytics both come from the same underlying pipeline.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 9</span>
+      <h4>Dataset Description</h4>
+      <div class="whats-on">The three data sources: real lecture recordings (NPTEL/YouTube), the LectureBank benchmark for evaluation, and synthetic student data for testing the refinement loop.</div>
+      <div class="tip"><strong>Presenter tip:</strong> If asked "where's your data from," this slide is your direct answer — emphasize that LectureBank is an independent, third-party benchmark, not something your team invented or labeled yourselves.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 10</span>
+      <h4>AI/ML Techniques and Algorithms</h4>
+      <div class="whats-on">The specific tools mapped to each stage: Whisper, LLM + CLIP + OCR, fine-tuned embeddings, NetworkX graphs, and weak supervision.</div>
+      <div class="tip"><strong>Presenter tip:</strong> Reviewers often use this slide to gauge technical depth. Be ready to explain <em>why</em> each tool was picked (see Section 4 above for the reasoning behind each choice), not just name-drop them.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 11</span>
+      <h4>Project Timeline</h4>
+      <div class="whats-on">Semester 7 (already complete: architecture, benchmark selection, documentation) and Semester 8, broken into Build, Validate, and Finalize phases.</div>
+      <div class="tip"><strong>Presenter tip:</strong> Emphasize that Semester 7's deliverable — the full documentation set — is already done. It signals the team is on schedule and not just talking about a plan.</div>
+    </div>
+
+    <div class="slide-card">
+      <span class="slide-badge">Slide 12</span>
+      <h4>References</h4>
+      <div class="whats-on">The two academic papers this project builds on (LectureBank, AAAI 2019, and the cross-domain extension, ACL 2021), plus the three consumer tools referenced for comparison.</div>
+      <div class="tip"><strong>Presenter tip:</strong> Keep this slide up during Q&amp;A if possible — it's a handy reference to point back to if someone asks "where did that benchmark come from?"</div>
+    </div>
+
+  </section>
+
+</div>
+
+<footer>
+  LecGap, Explained Simply &middot; written so any teammate can teach this project confidently, in their own words &middot; keep it updated as the project evolves
+</footer>
+
+</body>
+</html>
