@@ -1,0 +1,39 @@
+name: lecgap
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch
+  - torchvision
+  - torchaudio
+  - ffmpeg
+  - pip
+  - pip:
+      - openai-whisper
+      - transformers
+      - sentence-transformers
+      - fastapi
+      - uvicorn[standard]
+      - streamlit
+      - networkx
+      - pyvis
+      - pillow
+      - pytesseract
+      - opencv-python-headless
+      - groq
+      - python-dotenv
+      - sqlalchemy
+      - pydantic
+      - scikit-learn
+      - pandas
+
+# Setup:
+#   conda env create -f environment.yml
+#   conda activate lecgap
+#
+# GPU users: swap the `pytorch torchvision torchaudio` line above for a
+# CUDA-specific install per https://pytorch.org/get-started/locally/ —
+# this file defaults to CPU-only so it works for every teammate regardless
+# of hardware. See plan/DECISIONS.md for why conda was chosen over venv.

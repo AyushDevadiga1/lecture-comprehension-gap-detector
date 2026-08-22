@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Environments
+.env
+.venv/
+venv/
+
+# Data (raw lectures, processed artifacts, downloaded benchmark — never commit these)
+data/raw/*
+data/processed/*
+data/lecturebank/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/lecturebank/.gitkeep
+
+# Generated clips / media
+*.mp4
+*.mp3
+*.wav
+
+# Local DB
+*.db
+*.sqlite3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Qodo / AI tool metadata (local only)
+.qodo/
