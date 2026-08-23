@@ -42,24 +42,54 @@ where this project's claims stop.
 
 ## Project status
 
-Topic finalized. Currently in documentation-first planning, before
-implementation begins. See `docs/DECISIONS.md` for what's actually locked
-in vs. still open — this file exists specifically so the plan stays
-grounded in what was actually decided, not in anything generated and never
-confirmed.
+Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
+
+- **Phase 0 — Setup & research: done.** Environment verified; test lectures in `data/raw/`.
+- **Phase 1 — Transcription pipeline: done.** Lecture upload → background Whisper
+  transcription → timestamped segments persisted to SQLite, served over the API.
+  Verified end-to-end against a real CampusX lecture recording.
+- **Next: Phase 2 — LLM-based concept extraction** (spoken/implicit concepts via Groq).
+
+The technical core — prerequisite classification (Phase 3) and the refinement
+loop (Phase 7) — is deliberately scheduled after this supporting infrastructure.
 
 ## Team
 
 4 members, including Ayush. See `docs/TEAM.md` for roles and an honest
 risk note on team reliability.
 
+## Quickstart
+
+```bash
+# 1. Environment (conda; CPU-only PyTorch default so it works on any machine)
+conda env create -f environment.yml
+conda activate lecgap
+
+# 2. Start the backend
+uvicorn backend.main:app --reload          # API docs at http://127.0.0.1:8000/docs
+
+# 3. Ingest a lecture (any ffmpeg-readable audio/video)
+curl -X POST http://127.0.0.1:8000/lectures \
+     -F "file=@my_lecture.mp4" -F "course_id=ml"
+
+# 4. Poll until status is "ready", then read transcript segments
+curl http://127.0.0.1:8000/lectures/1
+
+# 5. (Later phases) Student / faculty UI
+streamlit run frontend/app.py
+```
+
+Configuration: `WHISPER_MODEL` (default `base`) selects Whisper size;
+`LECGAP_DATABASE_URL` overrides the SQLite location (`data/lecgap.db`).
+Raw media and the database are git-ignored — never commit them.
+
 ## Docs index
 
 | File | Contents |
 |---|---|
-| `docs/ARCHITECTURE.md` | Full 8-stage pipeline, stage by stage, tech stack |
-| `docs/EVALUATION.md` | How the prerequisite classifier and refinement loop are tested |
-| `docs/ROADMAP.md` | Phased build plan (complexity-based, not semester-bound) |
-| `docs/DECISIONS.md` | Confirmed vs. open decisions, and why |
-| `docs/LIMITATIONS.md` | Honest scope boundaries and known weak points |
-| `docs/TEAM.md` | Roles, ownership, and risk notes |
+| `plan/ARCHITECTURE.md` | Full 8-stage pipeline, stage by stage, tech stack |
+| `plan/EVALUATION.md` | How the prerequisite classifier and refinement loop are tested |
+| `plan/ROADMAP.md` | Phased build plan (complexity-based, not semester-bound) |
+| `plan/DECISIONS.md` | Confirmed vs. open decisions, and why |
+| `plan/LIMITATIONS.md` | Honest scope boundaries and known weak points |
+| `plan/TEAM.md` | Roles, ownership, and risk notes |
