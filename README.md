@@ -36,8 +36,8 @@ infrastructure, not the pitch. None of those tools do:
   instructor-facing analytics
 - A mechanism that gets more accurate over time from real usage signals
 
-See `docs/EVALUATION.md` for how the prerequisite graph and refinement loop
-are actually tested, and `docs/LIMITATIONS.md` for an honest account of
+See `plan/EVALUATION.md` for how the prerequisite graph and refinement loop
+are actually tested, and `plan/LIMITATIONS.md` for an honest account of
 where this project's claims stop.
 
 ## Project status
@@ -48,6 +48,9 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
 - **Phase 1 — Transcription pipeline: done.** Lecture upload → background Whisper
   transcription → timestamped segments persisted to SQLite, served over the API.
   Verified end-to-end against a real CampusX lecture recording.
+- **Phase 2 foundation — LLM access layer: done.** Cached Groq-first client with
+  local-Ollama fallback, rate-limit backoff, and token-usage accounting; `/health`
+  reports which AI backends are usable.
 - **Next: Phase 2 — LLM-based concept extraction** (spoken/implicit concepts via Groq).
 
 The technical core — prerequisite classification (Phase 3) and the refinement
@@ -55,7 +58,7 @@ loop (Phase 7) — is deliberately scheduled after this supporting infrastructur
 
 ## Team
 
-4 members, including Ayush. See `docs/TEAM.md` for roles and an honest
+4 members, including Ayush. See `plan/TEAM.md` for roles and an honest
 risk note on team reliability.
 
 ## Quickstart
@@ -65,22 +68,35 @@ risk note on team reliability.
 conda env create -f environment.yml
 conda activate lecgap
 
-# 2. Start the backend
+# 2. Configure AI access (only Groq needs a key; Ollama is an optional fallback)
+cp .env.example .env        # then paste your key into GROQ_API_KEY=...
+# No Ollama install required — the local backend is only used if Groq is unavailable.
+
+# 3. Start the backend
 uvicorn backend.main:app --reload          # API docs at http://127.0.0.1:8000/docs
 
-# 3. Ingest a lecture (any ffmpeg-readable audio/video)
+# 4. Ingest a lecture (any ffmpeg-readable audio/video)
 curl -X POST http://127.0.0.1:8000/lectures \
      -F "file=@my_lecture.mp4" -F "course_id=ml"
 
-# 4. Poll until status is "ready", then read transcript segments
+# 5. Poll until status is "ready", then read transcript segments
 curl http://127.0.0.1:8000/lectures/1
+curl http://127.0.0.1:8000/health   # shows which LLM backends are usable
 
-# 5. (Later phases) Student / faculty UI
+# 6. (Later phases) Student / faculty UI
 streamlit run frontend/app.py
 ```
 
-Configuration: `WHISPER_MODEL` (default `base`) selects Whisper size;
-`LECGAP_DATABASE_URL` overrides the SQLite location (`data/lecgap.db`).
+Configuration:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `GROQ_API_KEY` | *(required for LLM features)* | `.env`; Groq chat models |
+| `WHISPER_MODEL` | `base` | local Whisper size (`tiny`…`large-v3`) |
+| `LECGAP_DATABASE_URL` | `sqlite:///data/lecgap.db` | database location override |
+| `LECGAP_GROQ_MODEL` | `openai/gpt-oss-20b` | chat model used by the pipeline |
+| `LECGAP_OLLAMA_MODEL` / `LECGAP_OLLAMA_URL` | `llama3.2` / `http://127.0.0.1:11434` | final-fallback local backend |
+
 Raw media and the database are git-ignored — never commit them.
 
 ## Docs index
