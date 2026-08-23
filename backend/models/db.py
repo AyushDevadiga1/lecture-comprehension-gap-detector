@@ -5,9 +5,10 @@ the frontend (see plan/ARCHITECTURE.md, "Decoupled architecture").
 Tables are added incrementally as each phase actually needs to persist
 something — not speculatively:
 
-    Phase 1 (current):  lectures, transcript_segments
-    Later phases:       concepts, concept_edges, clips, quiz_questions,
-                        quiz_responses, students, refinement_log
+    Phase 1:  lectures, transcript_segments
+    Phase 2:  llm_cache (prompt-hash keyed; quota protection)
+    Later:    concepts, concept_edges, clips, quiz_questions,
+              quiz_responses, students, refinement_log
 
 Lecture.status lifecycle: uploaded -> transcribing -> ready | error
 """
@@ -72,6 +73,18 @@ class TranscriptSegment(Base):
     text = Column(Text, nullable=False)
 
     lecture = relationship("Lecture", back_populates="segments")
+
+
+class LLMCache(Base):
+    __tablename__ = "llm_cache"
+
+    key = Column(String, primary_key=True)
+    backend = Column(String, nullable=False)
+    model = Column(String, nullable=False)
+    response_text = Column(Text, nullable=False)
+    prompt_tokens = Column(Integer, nullable=True)
+    completion_tokens = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
 
 def init_db() -> None:
