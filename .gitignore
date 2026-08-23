@@ -34,3 +34,8 @@ Thumbs.db
 
 # Qodo / AI tool metadata (local only)
 .qodo/
+
+# Local working notes / progress tracker (never commit)
+WORKLOG.md
+
+.env
