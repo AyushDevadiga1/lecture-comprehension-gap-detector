@@ -2,19 +2,78 @@
 SQLite persistence layer — sits behind the API, never touched directly by
 the frontend (see plan/ARCHITECTURE.md, "Decoupled architecture").
 
-Planned tables (fill in with SQLAlchemy models as each stage is built):
+Tables are added incrementally as each phase actually needs to persist
+something — not speculatively:
 
-  lectures        — id, course_id, source_path, title, processed_at
-  concepts        — id, course_id, name, embedding, source ('spoken'|'visual')
-  concept_edges   — id, course_id, from_concept_id, to_concept_id, confidence
-  clips           — id, concept_id, lecture_id, file_path, start, end
-  quiz_questions  — id, concept_id, question_text, options, correct_option
-  quiz_responses  — id, student_id, question_id, chosen_option, correct, ts
-  students        — id, name, email
-  refinement_log  — id, course_id, round, edge_id, delta_confidence, ts
+    Phase 1 (current):  lectures, transcript_segments
+    Later phases:       concepts, concept_edges, clips, quiz_questions,
+                        quiz_responses, students, refinement_log
+
+Lecture.status lifecycle: uploaded -> transcribing -> ready | error
 """
 
-# TODO (Phase 1 onward, incrementally): define SQLAlchemy models for the
-# tables above as each pipeline stage needs them — don't build the full
-# schema speculatively up front, add tables as each phase actually needs
-# to persist something.
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DB_PATH = REPO_ROOT / "data" / "lecgap.db"
+DATABASE_URL = os.getenv("LECGAP_DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+Base = declarative_base()
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class Lecture(Base):
+    __tablename__ = "lectures"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(String, nullable=False, index=True)
+    title = Column(String, nullable=False)
+    source_path = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="uploaded")
+    error = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+
+    segments = relationship(
+        "TranscriptSegment",
+        back_populates="lecture",
+        cascade="all, delete-orphan",
+        order_by="TranscriptSegment.idx",
+    )
+
+
+class TranscriptSegment(Base):
+    __tablename__ = "transcript_segments"
+
+    id = Column(Integer, primary_key=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), nullable=False, index=True)
+    idx = Column(Integer, nullable=False)
+    start_s = Column(Float, nullable=False)
+    end_s = Column(Float, nullable=False)
+    text = Column(Text, nullable=False)
+
+    lecture = relationship("Lecture", back_populates="segments")
+
+
+def init_db() -> None:
+    DEFAULT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    Base.metadata.create_all(bind=engine)
