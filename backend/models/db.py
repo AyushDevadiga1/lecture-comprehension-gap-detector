@@ -6,8 +6,8 @@ Tables are added incrementally as each phase actually needs to persist
 something — not speculatively:
 
     Phase 1:  lectures, transcript_segments
-    Phase 2:  llm_cache (prompt-hash keyed; quota protection)
-    Later:    concepts, concept_edges, clips, quiz_questions,
+    Phase 2:  llm_cache (prompt-hash keyed; quota protection), concepts
+    Later:    concept_edges, clips, quiz_questions,
               quiz_responses, students, refinement_log
 
 Lecture.status lifecycle: uploaded -> transcribing -> ready | error
@@ -61,6 +61,13 @@ class Lecture(Base):
         order_by="TranscriptSegment.idx",
     )
 
+    concepts = relationship(
+        "Concept",
+        back_populates="lecture",
+        cascade="all, delete-orphan",
+        order_by="Concept.id",
+    )
+
 
 class TranscriptSegment(Base):
     __tablename__ = "transcript_segments"
@@ -85,6 +92,22 @@ class LLMCache(Base):
     prompt_tokens = Column(Integer, nullable=True)
     completion_tokens = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class Concept(Base):
+    __tablename__ = "concepts"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(String, nullable=False, index=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    source = Column(String, nullable=False, default="spoken")
+    implicit = Column(Integer, nullable=False, default=0)
+    start_s = Column(Float, nullable=True)
+    end_s = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    lecture = relationship("Lecture", back_populates="concepts")
 
 
 def init_db() -> None:
