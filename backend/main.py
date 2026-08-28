@@ -5,11 +5,16 @@ Run locally with:
     uvicorn backend.main:app --reload
 """
 
+from pathlib import Path
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from backend.api import routes
 from backend.models.db import init_db
 from backend.pipeline.llm import backend_status
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 init_db()
 
