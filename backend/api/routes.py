@@ -3,9 +3,10 @@ API routes — the Streamlit frontend talks to the pipeline only through
 these, never by importing backend/pipeline/* directly.
 
 Current endpoints:
-    POST /lectures        — upload media, kick off background transcription
-    GET  /lectures        — list all ingested lectures
-    GET  /lectures/{id}   — status + transcript segments once ready
+    POST /lectures            — upload media, kick off background transcription
+    GET  /lectures            — list all ingested lectures
+    GET  /lectures/{id}       — status + transcript segments + concepts
+    POST /lectures/{id}/concepts — run concept extraction (Stage 2, spoken)
 """
 
 import re
@@ -24,7 +25,8 @@ from fastapi import (
 )
 from pydantic import BaseModel, ConfigDict
 
-from backend.models.db import Lecture, SessionLocal, TranscriptSegment
+from backend.models.db import Concept, Lecture, SessionLocal, TranscriptSegment
+from backend.pipeline.extract_concepts import extract_spoken_concepts
 from backend.pipeline.transcribe import transcribe
 
 router = APIRouter()
@@ -55,8 +57,20 @@ class LectureOut(BaseModel):
     processed_at: Optional[datetime] = None
 
 
+class ConceptOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    source: str
+    implicit: bool
+    start_s: Optional[float] = None
+    end_s: Optional[float] = None
+
+
 class LectureDetailOut(LectureOut):
     segments: List[SegmentOut] = []
+    concepts: List[ConceptOut] = []
 
 
 def _safe_filename(name: str) -> str:
@@ -154,4 +168,70 @@ def get_lecture(lecture_id: int) -> Lecture:
         if lecture is None:
             raise HTTPException(status_code=404, detail="Lecture not found")
         _ = lecture.segments  # force-load before session closes
+        db.refresh(lecture, ["concepts"])
         return lecture
+
+
+@router.post("/lectures/{lecture_id}/concepts", response_model=LectureDetailOut)
+def run_concept_extraction(
+    lecture_id: int, background_tasks: BackgroundTasks
+) -> Lecture:
+    """Extract (spoken) concepts for a lecture. Runs in background; results
+    appear on GET /lectures/{id} once done. Concept rows are replaced on
+    re-run (idempotent, cached LLM calls keep re-runs free)."""
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        if lecture.status != "ready":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Lecture status is '{lecture.status}'; must be 'ready' before extraction",
+            )
+        lecture_id_out = lecture.id
+
+    background_tasks.add_task(_extract_concepts_worker, lecture_id_out)
+    with SessionLocal() as db:
+        return db.get(Lecture, lecture_id_out)
+
+
+def _extract_concepts_worker(lecture_id: int) -> None:
+    """Background worker: run spoken concept extraction and persist rows."""
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            return
+        docs = [
+            {"start_s": s.start_s, "end_s": s.end_s, "text": s.text}
+            for s in lecture.segments
+        ]
+        course_id = lecture.course_id
+
+    try:
+        concepts = extract_spoken_concepts(docs)
+    except Exception as exc:  # noqa: BLE001 — any failure is fine to surface
+        with SessionLocal() as db:
+            lecture = db.get(Lecture, lecture_id)
+            if lecture is not None:
+                lecture.error = f"{type(exc).__name__}: {exc}"[:2000]
+                db.commit()
+        return
+
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            return
+        db.query(Concept).filter(Concept.lecture_id == lecture_id).delete()
+        for c in concepts:
+            db.add(
+                Concept(
+                    course_id=course_id,
+                    lecture_id=lecture_id,
+                    name=c["name"],
+                    source=c["source"],
+                    implicit=int(c["implicit"]),
+                    start_s=c.get("start_s"),
+                    end_s=c.get("end_s"),
+                )
+            )
+        db.commit()
