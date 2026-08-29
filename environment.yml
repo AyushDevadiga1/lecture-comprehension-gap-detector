@@ -28,6 +28,7 @@ dependencies:
       - pydantic
       - scikit-learn
       - pandas
+      - pytest
 
 # Setup:
 #   conda env create -f environment.yml
