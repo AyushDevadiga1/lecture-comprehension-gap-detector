@@ -83,22 +83,30 @@ def get_candidate_pairs(
     return candidates
 
 
-def _pair_features(pairs, cached_vecs: Dict[str, np.ndarray]) -> np.ndarray:
+def _pair_features(pairs, cached_vecs: Dict[str, np.ndarray], *, interactions: bool = True) -> np.ndarray:
     """Assemble concatenated (A, B) feature vectors via a name->vec cache.
 
-    Returns an (n, 2*d) numpy array, assembled by row-indexing the cached
-    matrix so repeated names are encoded once and cheaply looked up.
+    Returns an (n, 2*d [+ i]) numpy array where the optional interaction
+    block adds the element-wise difference |A-B|, element-wise product A*B,
+    and the cosine similarity — cheap asymmetry/asociation signals a linear
+    head can use to answer 'does A precede B?' without a cross-attention net.
     """
     names = sorted(set(n for pair in pairs for n in pair))
     index = {n: i for i, n in enumerate(names)}
     mat = np.stack([cached_vecs[n] for n in names])
-    rows = []
     la, lb = [], []
     for a, b in pairs:
-        ia, ib = index[a], index[b]
-        la.append(ia)
-        lb.append(ib)
-    return np.concatenate([mat[la], mat[lb]], axis=1)
+        la.append(index[a])
+        lb.append(index[b])
+    A = mat[la]
+    B = mat[lb]
+    cols = [A, B]
+    if interactions:
+        cols.append(np.abs(A - B))
+        cols.append(A * B)
+        norm = np.linalg.norm(A, axis=1, keepdims=True) * np.linalg.norm(B, axis=1, keepdims=True)
+        cols.append((A * B).sum(axis=1, keepdims=True) / np.maximum(norm, 1e-8))
+    return np.concatenate(cols, axis=1)
 
 
 class PrerequisiteClassifier:
@@ -115,6 +123,7 @@ class PrerequisiteClassifier:
         self._encoder = None
         self._vec_cache: Dict[str, np.ndarray] = {}
         self._head = None
+        self._interactions: bool = True
 
     def _get_encoder(self):
         if self._encoder is None:
@@ -137,8 +146,9 @@ class PrerequisiteClassifier:
         pairs,
         labels,
         *,
-        balance: str = "class_weight",
-        max_neg_ratio: Optional[float] = None,
+        balance: str = "undersample",
+        max_neg_ratio: Optional[float] = 16,
+        interactions: bool = True,
         random_state: Optional[int] = None,
     ) -> "PrerequisiteClassifier":
         """Train the logistic head.
@@ -154,9 +164,10 @@ class PrerequisiteClassifier:
         """
         from sklearn.linear_model import LogisticRegression
 
+        self._interactions = interactions
         pair_list = list(pairs)
         cache = self._vectors_for([n for pair in pair_list for n in pair])
-        X = _pair_features(pair_list, cache)
+        X = _pair_features(pair_list, cache, interactions=interactions)
         y = np.asarray(list(labels))
 
         if balance == "undersample":
@@ -180,7 +191,7 @@ class PrerequisiteClassifier:
     def predict_proba(self, pairs: Sequence[Tuple[str, str]]) -> List[float]:
         pair_list = list(pairs)
         cache = self._vectors_for([n for pair in pair_list for n in pair])
-        X = _pair_features(pair_list, cache)
+        X = _pair_features(pair_list, cache, interactions=self._interactions)
         return [float(p[1]) for p in self._head.predict_proba(X)]
 
     def predict(self, pairs: Sequence[Tuple[str, str]], threshold: float = 0.5) -> List[int]:
