@@ -48,13 +48,22 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
 - **Phase 1 — Transcription pipeline: done.** Lecture upload → background Whisper
   transcription → timestamped segments persisted to SQLite, served over the API.
   Verified end-to-end against a real CampusX lecture recording.
-- **Phase 2 foundation — LLM access layer: done.** Cached Groq-first client with
-  local-Ollama fallback, rate-limit backoff, and token-usage accounting; `/health`
-  reports which AI backends are usable.
-- **Next: Phase 2 — LLM-based concept extraction** (spoken/implicit concepts via Groq).
+- **Phase 2 — LLM-based concept extraction: done.** Spoken concepts extracted
+  from transcript segments (chunked, cache-first LLM calls) and de-duplicated
+  into a `concepts` table; served over the API.
+- **Phase 3 — Prerequisite classification (core): baseline done.** 
+  - `backend/pipeline/classify_prerequisites.py` — candidate-pair pre-filter
+    (temporal + embedding similarity) and a **fine-tuned-classifier** baseline:
+    frozen MiniLM encoder + logistic head over the LectureBank pairs.
+  - `scripts/evaluate_classifier.py` — nested 5-fold CV with honest
+    threshold selection; **F1 0.569** on LectureBank 1.0.
+  - Fine-tuning infrastructure for the transformer encoder itself is built
+    (`backend/pipeline/fine_tune.py`, `scripts/kaggle_fine_tune.py`,
+    `notebooks/kaggle_fine_tune.ipynb`); heavy CV/training runs on Kaggle GPU
+    and exports a model loadable on local CPU.
 
-The technical core — prerequisite classification (Phase 3) and the refinement
-loop (Phase 7) — is deliberately scheduled after this supporting infrastructure.
+The refinement loop (Phase 7) remains the second core claim, scheduled after
+this infrastructure is stable.
 
 ## Team
 
@@ -85,6 +94,19 @@ curl http://127.0.0.1:8000/health   # shows which LLM backends are usable
 
 # 6. (Later phases) Student / faculty UI
 streamlit run frontend/app.py
+```
+
+Tests and benchmarks:
+
+```bash
+# Unit tests (stubbed LLM — zero API usage, isolated test DB)
+python -m pytest tests
+
+# Phase 3 benchmark — frozen-encoder baseline, 5-fold CV on LectureBank
+python scripts/evaluate_classifier.py
+
+# Phase 3 fine-tuned encoder (heavy) — run the Kaggle notebook on GPU, or:
+python scripts/kaggle_fine_tune.py --epochs 1   # CPU smoke run
 ```
 
 Configuration:

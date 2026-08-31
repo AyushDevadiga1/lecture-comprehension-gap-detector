@@ -29,6 +29,7 @@ dependencies:
       - scikit-learn
       - pandas
       - pytest
+      - datasets
 
 # Setup:
 #   conda env create -f environment.yml
