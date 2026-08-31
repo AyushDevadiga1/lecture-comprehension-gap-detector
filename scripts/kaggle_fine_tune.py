@@ -9,10 +9,11 @@ never the test fold).
 
 Runs identically on:
   * Local CPU:  & D:\\Anaconda3\\envs\\lecgap\\python.exe scripts/kaggle_fine_tune.py --epochs 1
-  * Kaggle GPU: python scripts/kaggle_fine_tune.py --input-dir /kaggle/input/lecturebank \
+  * Kaggle GPU: python scripts/kaggle_fine_tune.py --input-dir /kaggle/input/datasets/ayushdevadiga/lecturebank \\
                    --output-dir /kaggle/working --epochs 3
 
-CSVs expected (upload as a Kaggle dataset named 'lecturebank'):
+CSVs expected (upload as a Kaggle dataset under your account — adjust the
+input-dir if your dataset slug differs):
   prerequisite_annotation.csv :: (Source_Topic_ID, Target_Topic_ID, If_prerequisite)
   208topics.csv               :: (id, Topic, Topic_Link)
 
@@ -115,6 +116,31 @@ def run_cv(X, y, *, max_neg_ratio, epochs, batch_size, lr, device):
     return sum(m["f1"] for m in metrics) / n
 
 
+def _resolve_input_dir(input_dir: str) -> str:
+    """Return a directory containing both lecturebank CSVs.
+
+    If ``input_dir`` already holds them, use it as-is. Otherwise, on Kaggle,
+    scan the standard input roots for the two CSVs (the dataset slug is not
+    always predictable — e.g. /kaggle/input/datasets/<user>/<slug>/).
+    """
+    def present(d):
+        return os.path.isfile(os.path.join(d, "prerequisite_annotation.csv")) and \
+            os.path.isfile(os.path.join(d, "208topics.csv"))
+
+    if present(input_dir):
+        return input_dir
+
+    roots = []
+    if os.path.isdir("/kaggle/input"):
+        roots.append("/kaggle/input")
+    for root in roots:
+        for dirpath, dirnames, filenames in os.walk(root):
+            if "prerequisite_annotation.csv" in filenames and "208topics.csv" in filenames:
+                print(f"Found lecturebank data at {dirpath}", flush=True)
+                return dirpath
+    return input_dir
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input-dir", default="data/lecturebank")
@@ -126,8 +152,9 @@ def main():
     ap.add_argument("--device", default=None)
     args = ap.parse_args()
 
-    annot = os.path.join(args.input_dir, "prerequisite_annotation.csv")
-    topics = os.path.join(args.input_dir, "208topics.csv")
+    input_dir = _resolve_input_dir(args.input_dir)
+    annot = os.path.join(input_dir, "prerequisite_annotation.csv")
+    topics = os.path.join(input_dir, "208topics.csv")
     name_of, pairs = load_data(annot, topics)
     X = [(a, b) for a, b, _ in pairs]
     y = [l for _, _, l in pairs]
