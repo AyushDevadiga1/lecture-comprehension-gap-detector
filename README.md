@@ -60,7 +60,9 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
   - Fine-tuning infrastructure for the transformer encoder itself is built
     (`backend/pipeline/fine_tune.py`, `scripts/kaggle_fine_tune.py`,
     `notebooks/kaggle_fine_tune.ipynb`); heavy CV/training runs on Kaggle GPU
-    and exports a model loadable on local CPU.
+    and exports a model loadable on local CPU. A first GPU fine-tune run
+    (epochs=3) landed at **F1 0.519** — the frozen encoder remains the better
+    classifier on this small dataset for now.
 
 The refinement loop (Phase 7) remains the second core claim, scheduled after
 this infrastructure is stable.

@@ -13,9 +13,11 @@ venv/
 data/raw/*
 data/processed/*
 data/lecturebank/*
+data/models/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/lecturebank/.gitkeep
+!data/models/.gitkeep
 
 # Generated clips / media
 *.mp4
