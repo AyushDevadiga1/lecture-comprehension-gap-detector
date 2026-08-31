@@ -87,12 +87,20 @@ def main():
         _code(
             "INPUT_DIR = '/kaggle/input/datasets/ayushdevadiga/lecturebank'\n"
             "\n"
+            "# --tune runs a fast single-split sweep over the grids below, picks the\n"
+            "# best (epochs, lr, max_neg_ratio) by val-F1, then runs the full 5-fold\n"
+            "# CV and exports the final model with that config. Edit the grids to\n"
+            "# shrink/expand the search (each config trains once on a single split).\n"
             "!python /kaggle/working/kaggle_fine_tune.py \\\n"
             "    --input-dir {INPUT_DIR} \\\n"
             "    --output-dir /kaggle/working/model \\\n"
-            "    --epochs 3 --batch-size 32 --lr 2e-5 --max-neg-ratio 8\n"
+            "    --batch-size 32 \\\n"
+            "    --tune \\\n"
+            "    --epochs-grid 2,3 \\\n"
+            "    --lr-grid 1e-5,2e-5,5e-5 \\\n"
+            "    --ratio-grid 4,8\n"
             "\n"
-            "print('\\nFine-tuned model is in /kaggle/working/model/ — download it for local CPU inference.')"
+            "print('\\nBest-config 5-fold CV done; fine-tuned model is in /kaggle/working/model/ — download for CPU inference.')"
         ),
     ]
 
