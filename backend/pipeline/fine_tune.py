@@ -83,6 +83,8 @@ def fine_tune_cross_encoder(
     epochs: int = 3,
     batch_size: int = 32,
     lr: float = 2e-5,
+    weight_decay: float = 0.0,
+    grad_clip: Optional[float] = None,
     seed: int = 42,
     device: str = None,
 ):
@@ -91,6 +93,9 @@ def fine_tune_cross_encoder(
     Returns (model, tokenizer) with the trained weights. The full network
     (transformer body + classification head) is trained — this is the
     "fine-tune, don't train from scratch" step the plan calls for.
+    ``weight_decay`` (L2 on non-bias/norm params, per common practice) and
+    ``grad_clip`` (max gradient norm) help fight the overfitting/instability
+    seen on the small LectureBank positive pool.
     """
     import torch
     from torch.utils.data import DataLoader, TensorDataset
@@ -118,7 +123,16 @@ def fine_tune_cross_encoder(
     dataset = TensorDataset(enc["input_ids"], enc["attention_mask"], labels)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    optimizer = AdamW(model.parameters(), lr=lr)
+    # Apply weight decay only to 2D (weight) params, not biases/norms — standard.
+    decay = [p for n, p in model.named_parameters() if p.dim() >= 2]
+    no_decay = [p for n, p in model.named_parameters() if p.dim() < 2]
+    optimizer = AdamW(
+        [
+            {"params": decay, "weight_decay": weight_decay},
+            {"params": no_decay, "weight_decay": 0.0},
+        ],
+        lr=lr,
+    )
     loss_fn = BCEWithLogitsLoss()
 
     model.train()
@@ -130,6 +144,8 @@ def fine_tune_cross_encoder(
             logits = model(input_ids=ids, attention_mask=mask, labels=None).logits
             loss = loss_fn(logits.squeeze(-1), lbl)
             loss.backward()
+            if grad_clip is not None:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
             optimizer.step()
             total += loss.item()
         avg = total / max(1, len(loader))

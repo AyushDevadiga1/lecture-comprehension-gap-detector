@@ -1,21 +1,60 @@
-"""Regenerates notebooks/kaggle_fine_tune.ipynb by embedding the actual
+"""Regenerates the Kaggle fine-tune notebooks by embedding the actual
 backend/pipeline/fine_tune.py and scripts/kaggle_fine_tune.py sources directly
-into the notebook cells.
+into notebook cells.
 
-The notebook is fully self-contained (no GitHub fetch) so it works even when
-run without network access to the repo. Re-run this any time those two source
-files change so the notebook stays in sync:
+The notebooks are fully self-contained (no GitHub fetch) so they work even when
+run without network access to the repo. Re-run this any time those source files
+change so the notebooks stay in sync:
 
-  & D:\\Anaconda3\\envs\\lecgap\\python.exe scripts/make_kaggle_notebook.py
+  & D:\\Anaconda3\\envs\\lecgap\\python.exe scripts/make_kaggle_notebook.py            (MiniLM)
+  & D:\\Anaconda3\\envs\\lecgap\\python.exe scripts/make_kaggle_notebook.py --backbone mpnet   (bigger backbone)
 """
 
+import argparse
 import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FINE_TUNE = os.path.join(ROOT, "backend", "pipeline", "fine_tune.py")
 KAGGLE = os.path.join(ROOT, "scripts", "kaggle_fine_tune.py")
-OUT = os.path.join(ROOT, "notebooks", "kaggle_fine_tune.ipynb")
+
+# Backbone presets: <backbone> -> notebook filename, HF model id, and a tuning
+# grid sized to that model (bigger models = more time per epoch, so fewer epochs
+# and a smaller learning rate).
+PRESETS = {
+    "minilm": {
+        "out": "kaggle_fine_tune.ipynb",
+        "base_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "title": "MiniLM cross-encoder fine-tune",
+        "batch_size": 32,
+        "epochs_grid": "8,10,12",
+        "lr_grid": "2e-5,5e-5",
+        "ratio_grid": "8",
+        # MiniLM has kept improving with more epochs (e3->0.49, e5->0.53,
+        # e8->0.554); push further + add weight-decay/grad-clip to cut the
+        # val-vs-CV overfitting gap.
+        "sweep_note": (
+            "MiniLM has been improving with every epoch bump (e3->0.49, e5->0.53, "
+            "e8->0.554); this sweep pushes to 8/10/12 and adds weight-decay + "
+            "grad-clip to close the val-vs-CV overfitting gap."
+        ),
+    },
+    "mpnet": {
+        "out": "kaggle_fine_tune_mpnet.ipynb",
+        "base_model": "sentence-transformers/all-mpnet-base-v2",
+        "title": "Bigger-backbone (MPNet) cross-encoder fine-tune",
+        "batch_size": 16,
+        "epochs_grid": "3,4,5",
+        "lr_grid": "1e-5,2e-5",
+        "ratio_grid": "8",
+        "sweep_note": (
+            "MPNet (~420M params) has ~4-5x more capacity than MiniLM, so fewer "
+            "epochs and a smaller learning rate are used. This is the 'better "
+            "alternative' hypothesis: if the 913-positive pool is capacity-starved "
+            "by MiniLM, a bigger backbone should finally beat the frozen baseline."
+        ),
+    },
+}
 
 
 def _md(text):
@@ -26,18 +65,28 @@ def _code(text):
     return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": text.split("\n")}
 
 
-def main():
+def build_notebook(preset):
     with open(FINE_TUNE, encoding="utf-8") as f:
         fine_tune_src = f.read()
     with open(KAGGLE, encoding="utf-8") as f:
         kaggle_src = f.read()
 
+    p = preset
+    title = p["title"]
+    base_model = p["base_model"]
+    batch_size = p["batch_size"]
+    epochs_grid = p["epochs_grid"]
+    lr_grid = p["lr_grid"]
+    ratio_grid = p["ratio_grid"]
+    sweep_note = p["sweep_note"]
+
     cells = [
         _md(
-            "# LecGap Phase 3 — Fine-tune prerequisite classifier (GPU)\n"
+            f"# LecGap Phase 3 — {title} (GPU)\n"
             "\n"
-            "This notebook fine-tunes a cross-encoder transformer over **LectureBank 1.0**\n"
-            "prerequisite pairs and evaluates it with the same nested 5-fold CV used locally.\n"
+            "Fine-tunes a cross-encoder transformer over **LectureBank 1.0** "
+            f"prerequisite pairs (backbone **`{base_model}`**) and evaluates it with the "
+            "same nested 5-fold CV used locally.\n"
             "\n"
             "**Input (Kaggle dataset):** two CSVs are expected at\n"
             "`/kaggle/input/datasets/ayushdevadiga/lecturebank/`\n"
@@ -52,7 +101,7 @@ def main():
             "`model/` folder and load it on CPU for inference in the LecGap pipeline.\n"
             "\n"
             "Set **Accelerator = GPU T4** and **Internet = On** (Internet is only needed to\n"
-            "download the pretrained MiniLM checkpoint; the notebook code itself is embedded)."
+            "download the pretrained checkpoint; the notebook code itself is embedded)."
         ),
         _code(
             "import torch\n"
@@ -90,9 +139,8 @@ def main():
         _md(
             "### 3. Train + evaluate + export (staging)\n"
             "\n"
-            "Runs a hyperparameter sweep over the grids below, picks the best config by "
-            "val-F1, then runs the full 5-fold CV and exports the final model. To fight "
-            "the small-positive overfitting seen at 2–3 epochs, try **higher epochs** here.\n"
+            + sweep_note
+            + "\n"
             "\n"
             "Outputs go to `/kaggle/working/staging/` (model + `metrics.json`). Nothing is "
             "finalized yet — the **last cell** copies the model into the shipped "
@@ -100,26 +148,32 @@ def main():
             "frozen baseline (0.569)."
         ),
         _code(
-            "INPUT_DIR = '/kaggle/input/datasets/ayushdevadiga/lecturebank'\n"
-            "STAGING = '/kaggle/working/staging'\n"
-            "\n"
-            "# Edit the grids to shrink/expand the search. Each config trains ONCE on a\n"
-            "# single split, so cost = (#configs) x (avg epochs) epochs of T4 time.\n"
-            "# Trying more epochs directly addresses the underfitting/overfitting we saw\n"
-            "# at low epochs (2-3). Note: the missing 'classifier' head + 'position_ids'\n"
-            "# notes are now suppressed (they are expected task-shape noise, not errors).\n"
-            "!python /kaggle/working/kaggle_fine_tune.py \\\n"
-            "    --input-dir {INPUT_DIR} \\\n"
-            "    --output-dir {STAGING}/model \\\n"
-            "    --metrics-out {STAGING}/metrics.json \\\n"
-            "    --batch-size 32 \\\n"
-            "    --tune \\\n"
-            "    --epochs-grid 3,4,5 \\\n"
-            "    --lr-grid 1e-5,2e-5,5e-5 \\\n"
-            "    --ratio-grid 4,8\n"
-            "\n"
-            "print('\\nStaging done. Model in {STAGING}/model, metrics in {STAGING}/metrics.json')\n"
-            "print('Now run the LAST cell to ship the model only if jagged F1 beats the baseline.')"
+            (
+                "INPUT_DIR = '/kaggle/input/datasets/ayushdevadiga/lecturebank'\n"
+                "STAGING = '/kaggle/working/staging'\n"
+                "BASE_MODEL = '%s'\n"
+                "\n"
+                "# Each config trains ONCE on a single split; cost = (#configs) x (avg epochs)\n"
+                "# epochs of T4 time. Backbone + grids are set from the notebook preset above.\n"
+                "# weight-decay + grad-clip are in to curb the val-vs-CV overfitting gap.\n"
+                "# The 'classifier' head + 'position_ids' LOAD-REPORT notes are suppressed\n"
+                "# (expected task-shape noise, not errors).\n"
+                "!python /kaggle/working/kaggle_fine_tune.py \\\n"
+                "    --input-dir {INPUT_DIR} \\\n"
+                "    --output-dir {STAGING}/model \\\n"
+                "    --metrics-out {STAGING}/metrics.json \\\n"
+                "    --base-model {BASE_MODEL} \\\n"
+                "    --batch-size %d \\\n"
+                "    --weight-decay 0.01 --grad-clip 1.0 \\\n"
+                "    --tune \\\n"
+                "    --epochs-grid %s \\\n"
+                "    --lr-grid %s \\\n"
+                "    --ratio-grid %s\n"
+                "\n"
+                "print('\\nStaging done. Model in {STAGING}/model, metrics in {STAGING}/metrics.json')\n"
+                "print('Now run the LAST cell to ship the model only if staged F1 beats the baseline.')"
+            )
+            % (base_model, batch_size, epochs_grid, lr_grid, ratio_grid)
         ),
         _md(
             "### 4. FINALIZE — store the model outputs (run manually)\n"
@@ -130,7 +184,10 @@ def main():
             "It reads `staging/metrics.json`, prints the summary, and if `F1 > 0.569` copies "
             "the fine-tuned model into the shipped `/kaggle/working/model/` folder (what you "
             "download and drop into the repo). If the run is not better, **don't run this "
-            "cell** — the final `model/` folder simply won't be produced."
+            "cell** — the final `model/` folder simply won't be produced.\n"
+            "\n"
+            "> Make sure you run this cell in the SAME kernel session as the training cell "
+            "above (i.e. after cell 3 has finished), or `staging/metrics.json` won't exist yet."
         ),
         _code(
             "import json, os, shutil, glob\n"
@@ -138,7 +195,6 @@ def main():
             "BASELINE_F1 = 0.569  # frozen-encoder benchmark (evaluate_classifier.py)\n"
             "STAGING = '/kaggle/working/staging'\n"
             "FINAL = '/kaggle/working/model'\n"
-            "\n"
             "with open(os.path.join(STAGING, 'metrics.json')) as f:\n"
             "    m = json.load(f)\n"
             "cfg = m['config']\n"
@@ -180,9 +236,17 @@ def main():
         "nbformat_minor": 4,
     }
 
-    with open(OUT, "w", encoding="utf-8") as f:
+    out = os.path.join(ROOT, "notebooks", p["out"])
+    with open(out, "w", encoding="utf-8") as f:
         json.dump(nb, f, indent=1)
-    print(f"Wrote {OUT} ({len(cells)} cells)")
+    print(f"Wrote {out} ({len(cells)} cells)")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--backbone", choices=sorted(PRESETS), default="minilm")
+    args = ap.parse_args()
+    build_notebook(PRESETS[args.backbone])
 
 
 if __name__ == "__main__":

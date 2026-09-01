@@ -58,7 +58,7 @@ def load_data(annot_file, topics_file):
     return name_of, pairs
 
 
-def run_cv(X, y, *, max_neg_ratio, epochs, batch_size, lr, device):
+def run_cv(X, y, *, max_neg_ratio, epochs, batch_size, lr, base_model, weight_decay, grad_clip, device):
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     metrics = []
     for fold, (tr_idx, te_idx) in enumerate(skf.split(X, y)):
@@ -81,6 +81,9 @@ def run_cv(X, y, *, max_neg_ratio, epochs, batch_size, lr, device):
             epochs=epochs,
             batch_size=batch_size,
             lr=lr,
+            base_model=base_model,
+            weight_decay=weight_decay,
+            grad_clip=grad_clip,
             device=device,
         )
 
@@ -140,7 +143,7 @@ def _train_val_test_split(X, y, random_state=42):
     )
 
 
-def tune_hyperparams(X, y, *, epochs_grid, lr_grid, ratio_grid, batch_size, device):
+def tune_hyperparams(X, y, *, epochs_grid, lr_grid, ratio_grid, batch_size, base_model, weight_decay, grad_clip, device):
     """Single-split hyperparameter sweep over a small grid.
 
     Returns the best (epochs, lr, max_neg_ratio) by val-F1. Fast on GPU —
@@ -154,7 +157,9 @@ def tune_hyperparams(X, y, *, epochs_grid, lr_grid, ratio_grid, batch_size, devi
             for ratio in ratio_grid:
                 triples = build_train_triples(tr_pairs, tr_labels, max_neg_ratio=ratio)
                 model, tok = fine_tune_cross_encoder(
-                    triples, epochs=e, batch_size=batch_size, lr=lr, device=device
+                    triples, epochs=e, batch_size=batch_size, lr=lr,
+                    base_model=base_model, weight_decay=weight_decay,
+                    grad_clip=grad_clip, device=device,
                 )
                 va_logits = predict_pairs(model, tok, va_pairs)
                 best_f, best_t = (0.0, 0.0)
@@ -207,6 +212,12 @@ def main():
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--lr", type=float, default=2e-5)
     ap.add_argument("--max-neg-ratio", type=int, default=8)
+    ap.add_argument("--base-model", default=None,
+                    help="HF model id to fine-tune from (default fine_tune._DEF_BASE)")
+    ap.add_argument("--weight-decay", type=float, default=0.0,
+                    help="L2 weight decay on head params to fight overfitting")
+    ap.add_argument("--grad-clip", type=float, default=None,
+                    help="max gradient norm to clip (None = no clipping)")
     ap.add_argument("--device", default=None)
     ap.add_argument("--metrics-out", default=None,
                     help="optional JSON path to dump the CV summary + chosen config")
@@ -230,6 +241,12 @@ def main():
     print(f"Loaded {len(pairs)} pairs across {len(name_of)} topics; "
           f"balance {Counter(y)}", flush=True)
 
+    base_model = args.base_model
+    if base_model is None:
+        from backend.pipeline.fine_tune import _DEF_BASE
+        base_model = _DEF_BASE
+    print(f"Backbone: {base_model}", flush=True)
+
     epochs, lr, max_neg_ratio = args.epochs, args.lr, args.max_neg_ratio
     if args.tune:
         eg = [int(s) for s in args.epochs_grid.split(",")]
@@ -238,7 +255,9 @@ def main():
         print("\nTuning hyperparameters on a single split...", flush=True)
         epochs, lr, max_neg_ratio = tune_hyperparams(
             X, y, epochs_grid=eg, lr_grid=lg, ratio_grid=rg,
-            batch_size=args.batch_size, device=args.device,
+            batch_size=args.batch_size, base_model=base_model,
+            weight_decay=args.weight_decay, grad_clip=args.grad_clip,
+            device=args.device,
         )
 
     result = run_cv(
@@ -247,6 +266,9 @@ def main():
         epochs=epochs,
         batch_size=args.batch_size,
         lr=lr,
+        base_model=base_model,
+        weight_decay=args.weight_decay,
+        grad_clip=args.grad_clip,
         device=args.device,
     )
 
@@ -255,7 +277,9 @@ def main():
     triples = build_train_triples(X, y, max_neg_ratio=max_neg_ratio)
     model, tok = fine_tune_cross_encoder(
         triples, epochs=epochs, batch_size=args.batch_size,
-        lr=lr, device=args.device,
+        lr=lr, base_model=base_model,
+        weight_decay=args.weight_decay, grad_clip=args.grad_clip,
+        device=args.device,
     )
     out = export_model(model, tok, args.output_dir)
     print(f"Exported fine-tuned model to {out}", flush=True)
@@ -266,7 +290,8 @@ def main():
                 "config": {
                     "epochs": epochs, "lr": lr,
                     "max_neg_ratio": max_neg_ratio, "batch_size": args.batch_size,
-                    "used_tune": args.tune,
+                    "base_model": base_model, "weight_decay": args.weight_decay,
+                    "grad_clip": args.grad_clip, "used_tune": args.tune,
                 },
                 "cv": result,
                 "tuned_f1": round(result["avgs"]["f1"], 4),
