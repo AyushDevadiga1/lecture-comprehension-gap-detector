@@ -23,6 +23,7 @@ download and CPU inference in the main pipeline.
 
 import argparse
 import csv
+import json
 import os
 import sys
 
@@ -108,12 +109,18 @@ def run_cv(X, y, *, max_neg_ratio, epochs, batch_size, lr, device):
             flush=True,
         )
     n = len(metrics)
+    avgs = {
+        "p": sum(m["p"] for m in metrics) / n,
+        "r": sum(m["r"] for m in metrics) / n,
+        "f1": sum(m["f1"] for m in metrics) / n,
+        "acc": sum(m["acc"] for m in metrics) / n,
+    }
     print("\n=== 5-fold CV (fine-tuned) summary ===")
-    print(f"Precision (avg): {sum(m['p'] for m in metrics) / n:.3f}")
-    print(f"Recall    (avg): {sum(m['r'] for m in metrics) / n:.3f}")
-    print(f"F1        (avg): {sum(m['f1'] for m in metrics) / n:.3f}")
-    print(f"Accuracy  (avg): {sum(m['acc'] for m in metrics) / n:.3f}")
-    return sum(m["f1"] for m in metrics) / n
+    print(f"Precision (avg): {avgs['p']:.3f}")
+    print(f"Recall    (avg): {avgs['r']:.3f}")
+    print(f"F1        (avg): {avgs['f1']:.3f}")
+    print(f"Accuracy  (avg): {avgs['acc']:.3f}")
+    return {"avgs": avgs, "folds": metrics}
 
 
 def _train_val_test_split(X, y, random_state=42):
@@ -201,6 +208,8 @@ def main():
     ap.add_argument("--lr", type=float, default=2e-5)
     ap.add_argument("--max-neg-ratio", type=int, default=8)
     ap.add_argument("--device", default=None)
+    ap.add_argument("--metrics-out", default=None,
+                    help="optional JSON path to dump the CV summary + chosen config")
     ap.add_argument("--tune", action="store_true",
                     help="run a fast single-split hyperparameter sweep first, "
                          "then use the best config for the full CV + export")
@@ -232,7 +241,7 @@ def main():
             batch_size=args.batch_size, device=args.device,
         )
 
-    run_cv(
+    result = run_cv(
         X, y,
         max_neg_ratio=max_neg_ratio,
         epochs=epochs,
@@ -250,6 +259,19 @@ def main():
     )
     out = export_model(model, tok, args.output_dir)
     print(f"Exported fine-tuned model to {out}", flush=True)
+
+    if args.metrics_out:
+        with open(args.metrics_out, "w", encoding="utf-8") as f:
+            json.dump({
+                "config": {
+                    "epochs": epochs, "lr": lr,
+                    "max_neg_ratio": max_neg_ratio, "batch_size": args.batch_size,
+                    "used_tune": args.tune,
+                },
+                "cv": result,
+                "tuned_f1": round(result["avgs"]["f1"], 4),
+            }, f, indent=2)
+        print(f"Wrote metrics to {args.metrics_out}", flush=True)
 
 
 

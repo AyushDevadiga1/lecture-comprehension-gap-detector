@@ -20,6 +20,16 @@ from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
 
+# Keep the transformers LOAD REPORT (UNEXPECTED / MISSING keys emitted when loading
+# a sentence-encoder checkpoint into a sequence-classification head) out of the log.
+# The MISSING classifier weights are intentionally freshly-initialized head params
+# and the UNEXPECTED position_ids are a benign task-shape mismatch — both expected.
+import logging as _logging
+import transformers as _transformers
+
+_transformers.logging.set_verbosity_error()
+_logging.getLogger("transformers").setLevel(_logging.ERROR)
+
 _DEF_BASE = "sentence-transformers/all-MiniLM-L6-v2"
 
 
