@@ -7,6 +7,9 @@ Current endpoints:
     GET  /lectures            — list all ingested lectures
     GET  /lectures/{id}       — status + transcript segments + concepts
     POST /lectures/{id}/concepts — run concept extraction (Stage 2, spoken)
+    POST /courses/{id}/graph  — build/persist the per-course prerequisite
+                                 graph (Stage 4) in the background
+    GET  /courses/{id}/graph  — fetch a course's persisted graph + learner order
 """
 
 import re
@@ -25,7 +28,16 @@ from fastapi import (
 )
 from pydantic import BaseModel, ConfigDict
 
-from backend.models.db import Concept, Lecture, SessionLocal, TranscriptSegment
+from backend.models.db import (
+    Concept,
+    GraphEdge,
+    GraphNode,
+    Lecture,
+    SessionLocal,
+    TranscriptSegment,
+)
+from backend.pipeline.build_graph import ConceptGraph, build_graph_from_pairs
+from backend.pipeline.classify_prerequisites import classify_course_pairs
 from backend.pipeline.extract_concepts import extract_spoken_concepts
 from backend.pipeline.transcribe import transcribe
 
@@ -71,6 +83,27 @@ class ConceptOut(BaseModel):
 class LectureDetailOut(LectureOut):
     segments: List[SegmentOut] = []
     concepts: List[ConceptOut] = []
+
+
+class GraphEdgeOut(BaseModel):
+    source: str
+    target: str
+    confidence: float
+
+
+class CourseGraphOut(BaseModel):
+    course_id: str
+    nodes: List[str]
+    edges: List[GraphEdgeOut] = []
+    node_count: int
+    edge_count: int
+    is_dag: bool
+    topological_order: List[str]
+
+
+class CourseBuildOut(BaseModel):
+    status: str
+    course_id: str
 
 
 def _safe_filename(name: str) -> str:
@@ -232,6 +265,91 @@ def _extract_concepts_worker(lecture_id: int) -> None:
                     implicit=int(c["implicit"]),
                     start_s=c.get("start_s"),
                     end_s=c.get("end_s"),
+                )
+            )
+        db.commit()
+
+
+@router.get("/courses/{course_id}/graph", response_model=CourseGraphOut)
+def get_course_graph(course_id: str) -> CourseGraphOut:
+    """Fetch a course's persisted prerequisite graph and learner order.
+
+    The stored edges/nodes are already acyclic (cycles were broken at build
+    time by dropping lowest-confidence edges), so this recomputes the
+    topological order from the persisted rows.
+    """
+    with SessionLocal() as db:
+        node_rows = (
+            db.query(GraphNode)
+            .filter(GraphNode.course_id == course_id)
+            .order_by(GraphNode.id)
+            .all()
+        )
+        if not node_rows:
+            raise HTTPException(status_code=404, detail="No graph for this course")
+        edge_rows = db.query(GraphEdge).filter(GraphEdge.course_id == course_id).all()
+
+    graph = ConceptGraph()
+    graph.add_concepts([n.name for n in node_rows])
+    for e in edge_rows:
+        graph.add_edge(e.source, e.target, e.confidence)
+    graph.resolve_cycles()
+    return CourseGraphOut(course_id=course_id, **graph.to_dict())
+
+
+@router.post("/courses/{course_id}/graph", response_model=CourseBuildOut, status_code=202)
+def build_course_graph(
+    course_id: str, background_tasks: BackgroundTasks
+) -> CourseBuildOut:
+    """Build (or rebuild) the prerequisite graph for a course in the background.
+
+    Collects the course's extracted concepts, scores candidate pairs with the
+    LectureBank-trained classifier (Stage 3), and persists the deduplicated
+    nodes + acyclic edges (Stage 4). Rows are replaced per course on re-run,
+    so the Stage 7 refinement loop can update the graph safely.
+    """
+    background_tasks.add_task(_build_course_graph_worker, course_id.strip())
+    return CourseBuildOut(status="queued", course_id=course_id.strip())
+
+
+def _build_course_graph_worker(course_id: str) -> None:
+    """Background worker: dedup concept names, score edges, persist per-course."""
+    with SessionLocal() as db:
+        rows = (
+            db.query(Concept)
+            .filter(Concept.course_id == course_id)
+            .order_by(Concept.id)
+            .all()
+        )
+        if not rows:
+            return
+        concepts = [
+            {"name": c.name, "start_s": c.start_s, "end_s": c.end_s} for c in rows
+        ]
+    names = sorted({c["name"] for c in concepts})
+
+    graph = ConceptGraph()
+    graph.add_concepts(names)
+    try:
+        confirmed = classify_course_pairs(concepts)
+    except ValueError:
+        confirmed = []  # LectureBank absent on this deployment -> nodes-only
+    for e in confirmed:
+        graph.add_edge(e["a"], e["b"], e["confidence"])
+    graph.resolve_cycles()
+
+    with SessionLocal() as db:
+        db.query(GraphNode).filter(GraphNode.course_id == course_id).delete()
+        db.query(GraphEdge).filter(GraphEdge.course_id == course_id).delete()
+        for name in graph.nodes():
+            db.add(GraphNode(course_id=course_id, name=name))
+        for e in graph.edges():
+            db.add(
+                GraphEdge(
+                    course_id=course_id,
+                    source=e["source"],
+                    target=e["target"],
+                    confidence=e["confidence"],
                 )
             )
         db.commit()

@@ -244,3 +244,69 @@ def llm_reasoning_check(
         "backend": result.backend,
         "cached": result.cached,
     }
+
+
+def _load_lecturebank(lecturebank_dir) -> List[Tuple[str, str, int]]:
+    """(name_a, name_b, label) triples from data/lecturebank (see evaluate_classifier)."""
+    import csv
+
+    name_of = {}
+    topics_file = os.path.join(lecturebank_dir, "208topics.csv")
+    if os.path.exists(topics_file):
+        with open(topics_file, newline="", encoding="utf-8") as f:
+            for row in csv.reader(f):
+                if len(row) >= 2:
+                    name_of[row[0]] = row[1]
+
+    pairs: List[Tuple[str, str, int]] = []
+    annot_file = os.path.join(lecturebank_dir, "prerequisite_annotation.csv")
+    if os.path.exists(annot_file):
+        with open(annot_file, newline="", encoding="utf-8") as f:
+            for src, tgt, label in csv.reader(f):
+                if src in name_of and tgt in name_of:
+                    pairs.append((name_of[src], name_of[tgt], int(label)))
+    return pairs
+
+
+def classify_course_pairs(
+    concepts: List[Dict],
+    *,
+    threshold: float = 0.5,
+    lecturebank_dir: Optional[str] = None,
+) -> List[Dict]:
+    """Course-scoped bridge into Stage 4 (graph construction).
+
+    Takes a course's extracted concepts, generates candidate (A, B) pairs
+    with get_candidate_pairs, and scores them with a PrerequisiteClassifier
+    fitted on LectureBank (same recipe as the Phase 3 evaluation).
+
+    Returns confirmed pairs as [{"a": name, "b": name, "confidence": p}] for
+    p >= threshold, ready for build_graph.add_edge.
+    """
+    if lecturebank_dir is None:
+        lecturebank_dir = os.path.join(
+            os.path.dirname(__file__), "..", "..", "data", "lecturebank"
+        )
+    lib = _load_lecturebank(lecturebank_dir)
+    if not lib:
+        raise ValueError(
+            f"No LectureBank data at {lecturebank_dir}; prerequisite edges "
+            "cannot be learned without it."
+        )
+
+    candidates = get_candidate_pairs(concepts)
+    if not candidates:
+        return []
+
+    clf = PrerequisiteClassifier().fit(
+        [(a, b) for a, b, _ in lib],
+        [lbl for _, _, lbl in lib],
+        balance="undersample",
+        max_neg_ratio=16,
+    )
+    probs = clf.predict_proba(candidates)
+    return [
+        {"a": a, "b": b, "confidence": float(p)}
+        for (a, b), p in zip(candidates, probs)
+        if p >= threshold
+    ]

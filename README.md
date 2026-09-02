@@ -66,6 +66,20 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
     **Decision: the frozen-encoder baseline (F1 0.569) is locked in as the
     Phase 3 classifier.** Fine-tuning infra remains usable/reproducible for
     future iterations.
+- **Phase 4 — Graph construction: done.** Confirmed prerequisite pairs become a
+  per-course prerequisite DAG (`backend/pipeline/build_graph.py`):
+  - *Deduplication:* new concept names are checked against existing graph nodes
+    via embedding similarity before being added, so "Gradient Descent" and
+    "GD optimization" from different lectures collapse into one node.
+  - *Cycle resolution:* cycles are broken by dropping the lowest-confidence
+    edge (confidence-weighted), then the graph is topologically sorted to give
+    the learner order.
+  - *Persistence:* nodes/edges live in `graph_nodes`/`graph_edges` SQLite tables
+    per course (not a pickled file), so the Stage 7 refinement loop can swap
+    edges safely.
+  - Exposed via `POST /courses/{id}/graph` (background build: dedup +
+    LectureBank-trained classifier scores candidate pairs) and
+    `GET /courses/{id}/graph` (persisted nodes/edges + learner order).
 
 The refinement loop (Phase 7) remains the second core claim, scheduled after
 this infrastructure is stable.

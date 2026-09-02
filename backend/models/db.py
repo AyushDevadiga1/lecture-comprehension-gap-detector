@@ -7,8 +7,8 @@ something — not speculatively:
 
     Phase 1:  lectures, transcript_segments
     Phase 2:  llm_cache (prompt-hash keyed; quota protection), concepts
-    Later:    concept_edges, clips, quiz_questions,
-              quiz_responses, students, refinement_log
+    Phase 4:  graph_nodes, graph_edges (per-course prerequisite graph)
+    Later:    clips, quiz_questions, quiz_responses, students, refinement_log
 
 Lecture.status lifecycle: uploaded -> transcribing -> ready | error
 """
@@ -108,6 +108,36 @@ class Concept(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
     lecture = relationship("Lecture", back_populates="concepts")
+
+
+class GraphNode(Base):
+    """Canonical concept node in a course's prerequisite graph (Phase 4).
+
+    One row per deduplicated concept name, per course. Edges reference nodes
+    by name (dedup makes names stable across lectures); re-running graph
+    construction replaces a course's rows as a set, so Stage 7 refinement can
+    update edges safely.
+    """
+
+    __tablename__ = "graph_nodes"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class GraphEdge(Base):
+    """Prerequisite edge A -> B (A must precede B) with classifier confidence."""
+
+    __tablename__ = "graph_edges"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(String, nullable=False, index=True)
+    source = Column(String, nullable=False)
+    target = Column(String, nullable=False)
+    confidence = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
 
 def init_db() -> None:
