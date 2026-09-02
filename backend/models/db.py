@@ -9,7 +9,9 @@ something — not speculatively:
     Phase 2:  llm_cache (prompt-hash keyed; quota protection), concepts
     Phase 4:  graph_nodes, graph_edges (per-course prerequisite graph)
     Phase 5:  clips (one ffmpeg cut per concept, per lecture)
-    Later:    quiz_questions, quiz_responses, students, refinement_log
+    Phase 6:  quiz_questions, quiz_responses (student quiz loop)
+    Phase 8:  quiz_responses aggregates power the faculty dashboard
+    Later:    students, refinement_log
 
 Lecture.status lifecycle: uploaded -> transcribing -> ready | error
 """
@@ -171,6 +173,50 @@ class Clip(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
     lecture = relationship("Lecture", back_populates="clips")
+
+
+class ConceptItem(Base):
+    """A quiz question targeting one concept of one course (Phase 6).
+
+    Free-text question + optional distractors. `order` is the suggested
+    concept order within the quiz (from the course's learner order).
+    """
+
+    __tablename__ = "quiz_questions"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(String, nullable=False, index=True)
+    concept = Column(String, nullable=False)
+    question = Column(Text, nullable=False)
+    distractor_a = Column(String, nullable=True)
+    distractor_b = Column(String, nullable=True)
+    distractor_c = Column(String, nullable=True)
+    order = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class QuizResponse(Base):
+    """One student's answer to one quiz question (Phase 6).
+
+    `correct` is the ground-truth correctness of the answer; time-to-answer
+    (`latency_s`) and the wrong option selected (`selected`) additionally
+    feed the confusion heatmap (Phase 8).
+    """
+
+    __tablename__ = "quiz_responses"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(String, nullable=False, index=True)
+    student_id = Column(String, nullable=False, index=True)
+    question_id = Column(Integer, ForeignKey("quiz_questions.id"), nullable=False)
+    concept = Column(String, nullable=False)
+    selected = Column(String, nullable=True)
+    correct = Column(Integer, nullable=False)
+    latency_s = Column(Float, nullable=True)
+    attempt = Column(Integer, nullable=False, default=1)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    question = relationship("ConceptItem")
 
 
 def init_db() -> None:
