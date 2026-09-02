@@ -31,7 +31,8 @@ MODULES = {
     "backend.pipeline.classify_prerequisites": ("Phase 3", "#8bc34a"),
     "backend.pipeline.build_graph": ("Phase 4", "#8bc34a"),
     "backend.pipeline.segment_clips": ("Phase 5", "#8bc34a"),
-    "backend.pipeline.refine": ("Phase 7", "#f44336"),
+    "backend.pipeline.quiz": ("Phase 6", "#8bc34a"),
+    "backend.pipeline.refine": ("Phase 7", "#8bc34a"),
     "frontend.app": ("Frontend shell", "#3f51b5"),
 }
 

@@ -94,6 +94,53 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
 The refinement loop (Phase 7) remains the second core claim, scheduled after
 this infrastructure is stable.
 
+## Project status — continued (Phases 6–8)
+
+- **Phase 6 — Quiz loop & remediation ordering: done.** When a student misses a
+  question, the API returns the *correct learning order* built from the
+  prerequisite graph:
+  - `backend/pipeline/quiz.py` — `select_remediation_sequence` (transitive
+    upstream closure, ordered by learner order) + `order_quiz`.
+  - DB: `quiz_questions` + `quiz_responses` tables.
+  - Routes: `POST /quizzes`, `POST /quizzes/submit` (returns the remediation
+    sequence for the missed concepts), `GET /students/{sid}/remediation`,
+    `GET /courses/{id}/stats`.
+- **Phase 7 — Refinement loop + synthetic-student validation (core claim): done.**
+  The learned graph improves from *real* quiz performance signals —
+  `backend/pipeline/refine.py` (`run_refinement_round` pushes edges whose
+  successor is mastered by the same students who mastered the source, and
+  sinks edges whose successor is chronically missed; `score_recovery`
+  measures precision/recall/F1 against a held-out ground-truth graph).
+  `scripts/recovery_experiment.py` runs the controlled synthetic-student
+  experiment: **F1 0.571 → 0.750 (+0.179)** after one refinement round,
+  recovering a weak-but-correct edge and surfacing the spurious one. This is
+  deliberately kept **separate from real quiz data** (`plan/LIMITATIONS.md`
+  #5) — it validates the mechanism, not a deployment claim.
+- **Phase 8 — Faculty dashboard: done.** `GET /courses/{id}/stats` powers the
+  faculty tab in `frontend/app.py`: a confusion heatmap (miss rate per
+  concept per prerequisite) plus the *taught-vs-learned* divergence (where
+  the order concepts were covered differs from the learner order the graph
+  suggests). The frontend is a **thin HTTP client** — it never imports
+  `backend/`, and the same endpoints power both the student remediation tab
+  and the faculty tab.
+
+### Frontend
+
+```bash
+streamlit run frontend/app.py
+```
+
+Student tab: upload a lecture → process → take the ordered quiz → get the
+personalized remediation sequence with per-concept clip playback. Faculty
+tab: heatmap of concept miss rates + taught-vs-learned divergence, both
+served by the API (`GET /courses/{id}/stats`).
+
+### Recovery experiment (Phase 7 validator)
+
+```bash
+python scripts/recovery_experiment.py   # controlled synthetic-student refinement demo
+```
+
 ## Team
 
 4 members, including Ayush. See `plan/TEAM.md` for roles and an honest
@@ -137,6 +184,9 @@ python scripts/make_project_graph.py       # -> data/processed/project_graph.htm
 
 # Phase 3 benchmark — frozen-encoder baseline, 5-fold CV on LectureBank
 python scripts/evaluate_classifier.py
+
+# Phase 7 validator — synthetic-student recovery experiment (controlled)
+python scripts/recovery_experiment.py
 
 # Phase 3 fine-tuned encoder (heavy) — run a Kaggle notebook on GPU, or a CPU smoke run:
 python scripts/kaggle_fine_tune.py --epochs 1                # CPU smoke run

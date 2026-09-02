@@ -17,39 +17,48 @@ Consumes from `backend.*`:
 ## backend.api.routes.py
 
 Defines:
-- `_safe_filename` — line 130
-- `_process_lecture` — line 134
-- `upload_lecture` — line 176
-- `list_lectures` — line 213
-- `get_lecture` — line 219
-- `run_concept_extraction` — line 230
-- `_extract_concepts_worker` — line 255
-- `cut_lecture_clips` — line 299
-- `list_lecture_clips` — line 335
-- `_cut_clips_worker` — line 350
-- `get_course_graph` — line 389
-- `build_course_graph` — line 416
-- `_build_course_graph_worker` — line 430
+- `_safe_filename` — line 182
+- `_process_lecture` — line 186
+- `upload_lecture` — line 228
+- `list_lectures` — line 265
+- `get_lecture` — line 271
+- `run_concept_extraction` — line 282
+- `_extract_concepts_worker` — line 307
+- `cut_lecture_clips` — line 351
+- `list_lecture_clips` — line 387
+- `_cut_clips_worker` — line 402
+- `get_course_graph` — line 441
+- `_course_graph_dict` — line 467
+- `build_course_graph` — line 478
+- `_build_course_graph_worker` — line 492
+- `create_quiz` — line 538
+- `submit_quiz` — line 589
+- `get_remediation` — line 666
+- `course_stats` — line 728
+- `_clips_by_concept` — line 798
 
 Consumes from `backend.*`:
 - `backend.models.db.Clip`
 - `backend.models.db.Concept`
+- `backend.models.db.ConceptItem`
 - `backend.models.db.GraphEdge`
 - `backend.models.db.GraphNode`
 - `backend.models.db.Lecture`
+- `backend.models.db.QuizResponse`
 - `backend.models.db.SessionLocal`
 - `backend.models.db.TranscriptSegment`
 - `backend.pipeline.build_graph.ConceptGraph`
 - `backend.pipeline.classify_prerequisites`
 - `backend.pipeline.extract_concepts.extract_spoken_concepts`
+- `backend.pipeline.quiz.select_remediation_sequence`
 - `backend.pipeline.segment_clips.cut_concept_clips`
 - `backend.pipeline.transcribe.transcribe`
 
 ## backend.models.db.py
 
 Defines:
-- `utcnow` — line 42
-- `init_db` — line 176
+- `utcnow` — line 44
+- `init_db` — line 222
 
 Consumes from `backend.*`: *(none)*
 
@@ -159,12 +168,19 @@ Consumes from `backend.*`: *(none)*
 
 ## backend.pipeline.refine.py
 
-Defines: *(none — script/module)*
+Defines:
+- `_edges_of` — line 33
+- `run_refinement_round` — line 39
+- `score_recovery` — line 91
+- `generate_synthetic_students` — line 121
 
 Consumes from `backend.*`: *(none)*
 
 ## frontend.app.py
 
-Defines: *(none — script/module)*
+Defines:
+- `_get` — line 24
+- `_post` — line 30
+- `_pick_course` — line 45
 
 Consumes from `backend.*`: *(none)*

@@ -12,6 +12,9 @@ Current endpoints:
     POST /courses/{id}/graph  — build/persist the per-course prerequisite
                                  graph (Stage 4) in the background
     GET  /courses/{id}/graph  — fetch a course's persisted graph + learner order
+    POST /quizzes             — make a quiz from a course's concepts (Stage 6)
+    POST /quizzes/{id}/submit — record a student's answers + get remediation
+    GET  /courses/{id}/stats  — confusion heatmap + divergence (Stage 8)
 """
 
 import re
@@ -23,6 +26,7 @@ from typing import List, Optional
 from fastapi import (
     APIRouter,
     BackgroundTasks,
+    Body,
     File,
     Form,
     HTTPException,
@@ -33,14 +37,17 @@ from pydantic import BaseModel, ConfigDict
 from backend.models.db import (
     Clip,
     Concept,
+    ConceptItem,
     GraphEdge,
     GraphNode,
     Lecture,
+    QuizResponse,
     SessionLocal,
     TranscriptSegment,
 )
 from backend.pipeline.build_graph import ConceptGraph
 from backend.pipeline.extract_concepts import extract_spoken_concepts
+from backend.pipeline.quiz import select_remediation_sequence
 from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
 
@@ -125,6 +132,51 @@ class ClipBatchOut(BaseModel):
     lecture_id: int
     status: str
     clips: List[ClipOut] = []
+
+
+class QuizQuestionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    concept: str
+    question: str
+    distractor_a: Optional[str] = None
+    distractor_b: Optional[str] = None
+    distractor_c: Optional[str] = None
+
+
+class QuizOut(BaseModel):
+    quiz_id: int
+    course_id: str
+    student_id: str
+    questions: List[QuizQuestionOut] = []
+
+
+class QuizAnswerIn(BaseModel):
+    question_id: int
+    selected: Optional[str] = None
+    correct: bool
+    latency_s: Optional[float] = None
+
+
+class QuizSubmitIn(BaseModel):
+    course_id: str
+    student_id: str
+    answers: List[QuizAnswerIn]
+
+
+class WatchItemOut(BaseModel):
+    concept: str
+    failed: bool
+    clip: Optional[str] = None
+
+
+class QuizSubmitOut(BaseModel):
+    quiz_id: int
+    student_id: str
+    score: int
+    total: int
+    remediation: List[WatchItemOut] = []
 
 
 def _safe_filename(name: str) -> str:
@@ -412,6 +464,16 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
     return CourseGraphOut(course_id=course_id, **graph.to_dict())
 
 
+def _course_graph_dict(course_id: str) -> dict:
+    """Course graph as plain dict {edges, topological_order} for pipeline helpers."""
+    out = get_course_graph(course_id)
+    return {
+        "edges": [{"source": e.source, "target": e.target,
+                   "confidence": e.confidence} for e in out.edges],
+        "topological_order": out.topological_order,
+    }
+
+
 @router.post("/courses/{course_id}/graph", response_model=CourseBuildOut, status_code=202)
 def build_course_graph(
     course_id: str, background_tasks: BackgroundTasks
@@ -470,3 +532,278 @@ def _build_course_graph_worker(course_id: str) -> None:
                 )
             )
         db.commit()
+
+
+@router.post("/quizzes", response_model=QuizOut, status_code=201)
+def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> QuizOut:
+    """Build a quiz from a course's extracted concepts.
+
+    Questions are generated from the concepts (a simple probe per concept);
+    future work replaces the probe template with an LLM-generated question
+    per concept (no extra tables needed — ConceptItem already holds them).
+    """
+    with SessionLocal() as db:
+        concepts = (
+            db.query(Concept)
+            .filter(Concept.course_id == course_id)
+            .order_by(Concept.id)
+            .all()
+        )
+        if not concepts:
+            raise HTTPException(status_code=404, detail="No concepts for course")
+        names = sorted({c.name for c in concepts})
+
+    # learners order from the graph if present, else alphabetic
+    try:
+        graph = get_course_graph(course_id)
+        order = graph.topological_order
+        names = [n for n in order if n in set(names)] or names
+    except HTTPException:
+        pass
+
+    with SessionLocal() as db:
+        db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
+        new_ids = []
+        for i, name in enumerate(names):
+            item = ConceptItem(
+                course_id=course_id,
+                concept=name,
+                question=(f"Which statement about '{name}' is correct?"),
+                order=i,
+            )
+            db.add(item)
+            db.flush()
+            new_ids.append(item.id)
+        db.commit()
+        rows = db.query(ConceptItem).filter(ConceptItem.id.in_(new_ids)).all()
+
+    return QuizOut(
+        quiz_id=rows[0].id if rows else 0,
+        course_id=course_id,
+        student_id=student_id,
+        questions=[QuizQuestionOut.model_validate(r) for r in sorted(rows, key=lambda r: r.order)],
+    )
+
+
+@router.post("/quizzes/submit", response_model=QuizSubmitOut)
+def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
+    """Record a student's answers and return their remediation sequence.
+
+    Failed concepts feed the prerequisite graph (Stage 4) to produce the
+    dependency-ordered watch list. Re-submitting for the same student+course
+    appends with `attempt` incremented per distinct question.
+    """
+    with SessionLocal() as db:
+        for a in payload.answers:
+            quest = db.get(ConceptItem, a.question_id)
+            if quest is None:
+                raise HTTPException(status_code=404,
+                                    detail=f"Question {a.question_id} not found")
+            prev = (
+                db.query(QuizResponse)
+                .filter(
+                    QuizResponse.course_id == payload.course_id,
+                    QuizResponse.student_id == payload.student_id,
+                    QuizResponse.question_id == a.question_id,
+                )
+                .count()
+            )
+            db.add(
+                QuizResponse(
+                    course_id=payload.course_id,
+                    student_id=payload.student_id,
+                    question_id=a.question_id,
+                    concept=quest.concept,
+                    selected=a.selected,
+                    correct=int(a.correct),
+                    latency_s=a.latency_s,
+                    attempt=prev + 1,
+                )
+            )
+        db.commit()
+
+    # return the remediation computed from this (now-persisted) submission
+    with SessionLocal() as db:
+        responses = (
+            db.query(QuizResponse)
+            .filter(
+                QuizResponse.course_id == payload.course_id,
+                QuizResponse.student_id == payload.student_id,
+            )
+            .order_by(QuizResponse.id)
+            .all()
+        )
+        score = sum(r.correct for r in responses)
+        total = len(responses)
+        failed = sorted({r.concept for r in responses if not r.correct})
+
+    try:
+        graph_dict = _course_graph_dict(payload.course_id)
+    except HTTPException:
+        graph_dict = {"edges": [], "topological_order": sorted(
+            {c.concept for c in responses})}
+
+    clips = _clips_by_concept(payload.course_id)
+    seq = select_remediation_sequence(graph_dict, failed)
+    watch = [
+        {
+            "concept": item["concept"],
+            "failed": item["failed"],
+            "clip": clips.get(item["concept"]),
+        }
+        for item in seq
+    ]
+    return QuizSubmitOut(
+        quiz_id=payload.answers[0].question_id if payload.answers else 0,
+        student_id=payload.student_id,
+        score=score,
+        total=total,
+        remediation=watch,
+    )
+
+
+@router.get("/students/{student_id}/remediation", response_model=QuizSubmitOut)
+def get_remediation(student_id: str, course_id: str) -> QuizSubmitOut:
+    """Dependency-ordered remediation for a student's latest quiz on a course.
+
+    Failed concepts (= wrong answers) are lifted with everything upstream of
+    them from the course's prerequisite graph, ordered so prerequisites are
+    watched/studied first. Clips (when cut) are attached for playback.
+    """
+    with SessionLocal() as db:
+        qid = (
+            db.query(QuizResponse.question_id)
+            .filter(
+                QuizResponse.course_id == course_id,
+                QuizResponse.student_id == student_id,
+            )
+            .order_by(QuizResponse.id.desc())
+            .first()
+        )
+        if qid is None:
+            raise HTTPException(status_code=404, detail="No quiz responses for student/course")
+        question_id = qid[0]
+
+        question = db.get(ConceptItem, question_id)
+        responses = (
+            db.query(QuizResponse)
+            .filter(
+                QuizResponse.course_id == course_id,
+                QuizResponse.student_id == student_id,
+            )
+            .order_by(QuizResponse.id)
+            .all()
+        )
+        score = sum(r.correct for r in responses)
+        total = len(responses)
+        failed = sorted({r.concept for r in responses if not r.correct})
+
+    try:
+        graph_dict = _course_graph_dict(course_id)
+    except HTTPException:
+        graph_dict = {"edges": [], "topological_order": sorted(
+            {r.concept for r in responses})}
+
+    clips = _clips_by_concept(course_id)
+    seq = select_remediation_sequence(graph_dict, failed)
+    watch = []
+    for item in seq:
+        if item["failed"] or item["concept"] in clips:
+            watch.append({
+                "concept": item["concept"],
+                "failed": item["failed"],
+                "clip": clips.get(item["concept"]),
+            })
+
+    return QuizSubmitOut(
+        quiz_id=question_id,
+        student_id=student_id,
+        score=score,
+        total=total,
+        remediation=watch,
+    )
+
+
+@router.get("/courses/{course_id}/stats")
+def course_stats(course_id: str) -> dict:
+    """Stage 8 — confusion heatmap + taught-vs-learned divergence.
+
+    Heatmap: per concept, wrong-answer rate (0..1) across students (optionally
+    bucketed by attempt — a single first-attempt number here, extendable).
+    Divergence: index of each concept in the ORDER TAUGHT (lecture sequence,
+    i.e. earliest concept timestamp) vs. the ORDER the learned graph says it
+    should be LEARNED (topological). Concepts with a big gap are the
+    divergence view.
+    """
+    with SessionLocal() as db:
+        rows = (
+            db.query(QuizResponse)
+            .filter(QuizResponse.course_id == course_id)
+            .all()
+        )
+        concepts = (
+            db.query(Concept)
+            .filter(Concept.course_id == course_id)
+            .order_by(Concept.start_s)
+            .all()
+        )
+
+    per_concept: dict = {}
+    for r in rows:
+        per_concept.setdefault(r.concept, [0, 0])
+        per_concept[r.concept][1] += 1
+        if not r.correct:
+            per_concept[r.concept][0] += 1
+
+    # order taught = earliest mention (start_s) of each concept in lectures
+    taught_order = []
+    seen = set()
+    for c in concepts:
+        if c.name not in seen:
+            seen.add(c.name)
+            taught_order.append(c.name)
+
+    try:
+        learned_order = get_course_graph(course_id).topological_order
+    except HTTPException:
+        learned_order = taught_order
+
+    heatmap = [
+        {"concept": name, "wrong": wrong, "attempts": total,
+         "rate": (wrong / total) if total else 0.0}
+        for name, (wrong, total) in per_concept.items()
+    ]
+    heatmap.sort(key=lambda x: -x["rate"])
+
+    divergence = []
+    for name in set(taught_order) | set(learned_order):
+        ti = taught_order.index(name) if name in taught_order else None
+        li = learned_order.index(name) if name in learned_order else None
+        if ti is not None and li is not None:
+            divergence.append(
+                {"concept": name, "taught_idx": ti, "learned_idx": li,
+                 "gap": li - ti}
+            )
+    divergence.sort(key=lambda x: -abs(x["gap"]))
+
+    return {
+        "course_id": course_id,
+        "heatmap": heatmap,
+        "divergence": divergence,
+        "taught_order": taught_order,
+        "learned_order": learned_order,
+    }
+
+
+def _clips_by_concept(course_id: str) -> dict:
+    """Concept name -> first ok clip path, for a course (via its lectures)."""
+    with SessionLocal() as db:
+        rows = (
+            db.query(Clip).join(Lecture, Clip.lecture_id == Lecture.id)
+            .filter(Lecture.course_id == course_id, Clip.ok == 1)
+            .all()
+        )
+    out: dict = {}
+    for clip in rows:
+        out.setdefault(clip.concept_name, clip.path)
+    return out
