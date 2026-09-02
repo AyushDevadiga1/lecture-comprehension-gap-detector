@@ -80,6 +80,16 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
   - Exposed via `POST /courses/{id}/graph` (background build: dedup +
     LectureBank-trained classifier scores candidate pairs) and
     `GET /courses/{id}/graph` (persisted nodes/edges + learner order).
+- **Phase 5 — Clip segmentation: done.** One ffmpeg clip per concept per
+  timestamp range (`backend/pipeline/segment_clips.py`, pure):
+  - `cut_clip` — stream-copy `ffmpeg -ss/-to` cut for a single concept range;
+    surfaces timeout/missing-binary/ffmpeg errors per clip instead of
+    aborting the batch.
+  - `cut_concept_clips` — batch worker writing
+    `data/processed/clips/<lecture_id>/<concept>__<start>-<end>.mp4`,
+    skipping concepts without timestamps.
+  - Cut clips persisted in the `clips` table; API:
+    `POST /lectures/{id}/clips` (background cut) + `GET /lectures/{id}/clips`.
 
 The refinement loop (Phase 7) remains the second core claim, scheduled after
 this infrastructure is stable.

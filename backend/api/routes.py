@@ -7,6 +7,8 @@ Current endpoints:
     GET  /lectures            — list all ingested lectures
     GET  /lectures/{id}       — status + transcript segments + concepts
     POST /lectures/{id}/concepts — run concept extraction (Stage 2, spoken)
+    POST /lectures/{id}/clips — cut one ffmpeg clip per concept (Stage 5)
+    GET  /lectures/{id}/clips — list a lecture's cut clips
     POST /courses/{id}/graph  — build/persist the per-course prerequisite
                                  graph (Stage 4) in the background
     GET  /courses/{id}/graph  — fetch a course's persisted graph + learner order
@@ -29,6 +31,7 @@ from fastapi import (
 from pydantic import BaseModel, ConfigDict
 
 from backend.models.db import (
+    Clip,
     Concept,
     GraphEdge,
     GraphNode,
@@ -39,6 +42,7 @@ from backend.models.db import (
 from backend.pipeline.build_graph import ConceptGraph, build_graph_from_pairs
 from backend.pipeline.classify_prerequisites import classify_course_pairs
 from backend.pipeline.extract_concepts import extract_spoken_concepts
+from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
 
 router = APIRouter()
@@ -104,6 +108,24 @@ class CourseGraphOut(BaseModel):
 class CourseBuildOut(BaseModel):
     status: str
     course_id: str
+
+
+class ClipOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    concept_name: str
+    start_s: float
+    end_s: float
+    path: str
+    ok: bool
+    error: Optional[str] = None
+
+
+class ClipBatchOut(BaseModel):
+    lecture_id: int
+    status: str
+    clips: List[ClipOut] = []
 
 
 def _safe_filename(name: str) -> str:
@@ -265,6 +287,97 @@ def _extract_concepts_worker(lecture_id: int) -> None:
                     implicit=int(c["implicit"]),
                     start_s=c.get("start_s"),
                     end_s=c.get("end_s"),
+                )
+            )
+        db.commit()
+
+
+@router.post("/lectures/{lecture_id}/clips", response_model=ClipBatchOut,
+             status_code=202)
+def cut_lecture_clips(
+    lecture_id: int, background_tasks: BackgroundTasks
+) -> ClipBatchOut:
+    """Cut one ffmpeg clip per concept with timestamps, in the background.
+
+    Needs a ready lecture with concepts extracted (steps 4-5 in the
+    quickstart). Clips are written under data/processed/clips/<lecture_id>/
+    and persisted as `clips` rows; re-runs replace the lecture's rows.
+    """
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        if lecture.status != "ready":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Lecture status is '{lecture.status}'; must be 'ready' to cut clips",
+            )
+        has_concepts = (
+            db.query(Concept.id)
+            .filter(Concept.lecture_id == lecture_id)
+            .first()
+            is not None
+        )
+        if not has_concepts:
+            raise HTTPException(
+                status_code=409,
+                detail="No concepts extracted yet; run POST /lectures/{id}/concepts first",
+            )
+        lecture_id_out = lecture.id
+
+    background_tasks.add_task(_cut_clips_worker, lecture_id_out)
+    return ClipBatchOut(lecture_id=lecture_id_out, status="queued")
+
+
+@router.get("/lectures/{lecture_id}/clips", response_model=ClipBatchOut)
+def list_lecture_clips(lecture_id: int) -> ClipBatchOut:
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        rows = (
+            db.query(Clip)
+            .filter(Clip.lecture_id == lecture_id)
+            .order_by(Clip.id)
+            .all()
+        )
+        clips = [ClipOut.model_validate(r) for r in rows]
+    return ClipBatchOut(lecture_id=lecture_id, status="ready", clips=clips)
+
+
+def _cut_clips_worker(lecture_id: int) -> None:
+    """Background worker: cut one clip per concept and persist the rows."""
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            return
+        media_path = lecture.source_path
+        concepts = [
+            {
+                "name": c.name,
+                "start_s": c.start_s,
+                "end_s": c.end_s,
+                "concept_id": c.id,
+            }
+            for c in lecture.concepts
+        ]
+
+    out_dir = REPO_ROOT / "data" / "processed" / "clips" / str(lecture_id)
+    results = cut_concept_clips(str(media_path) if media_path else "", concepts, out_dir)
+
+    with SessionLocal() as db:
+        db.query(Clip).filter(Clip.lecture_id == lecture_id).delete()
+        for concept, res in zip(concepts, results):
+            db.add(
+                Clip(
+                    lecture_id=lecture_id,
+                    concept_id=concept["concept_id"],
+                    concept_name=concept["name"],
+                    start_s=concept["start_s"] or 0.0,
+                    end_s=concept["end_s"] or 0.0,
+                    path=res["path"] if res["path"] else "",
+                    ok=int(bool(res["ok"])),
+                    error=res.get("error"),
                 )
             )
         db.commit()

@@ -8,7 +8,8 @@ something — not speculatively:
     Phase 1:  lectures, transcript_segments
     Phase 2:  llm_cache (prompt-hash keyed; quota protection), concepts
     Phase 4:  graph_nodes, graph_edges (per-course prerequisite graph)
-    Later:    clips, quiz_questions, quiz_responses, students, refinement_log
+    Phase 5:  clips (one ffmpeg cut per concept, per lecture)
+    Later:    quiz_questions, quiz_responses, students, refinement_log
 
 Lecture.status lifecycle: uploaded -> transcribing -> ready | error
 """
@@ -66,6 +67,13 @@ class Lecture(Base):
         back_populates="lecture",
         cascade="all, delete-orphan",
         order_by="Concept.id",
+    )
+
+    clips = relationship(
+        "Clip",
+        back_populates="lecture",
+        cascade="all, delete-orphan",
+        order_by="Clip.id",
     )
 
 
@@ -138,6 +146,31 @@ class GraphEdge(Base):
     target = Column(String, nullable=False)
     confidence = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class Clip(Base):
+    """An ffmpeg-cut clip for one concept of one lecture (Phase 5).
+
+    Points at the video file under data/processed/clips/<lecture_id>/; the
+    concept it demonstrates and its timestamp range are kept so the
+    remediation loop (Stage 6/7) can play clips back in prerequisite order.
+    Re-running clip generation replaces a lecture's rows as a set.
+    """
+
+    __tablename__ = "clips"
+
+    id = Column(Integer, primary_key=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), nullable=False, index=True)
+    concept_id = Column(Integer, ForeignKey("concepts.id"), nullable=True)
+    concept_name = Column(String, nullable=False)
+    start_s = Column(Float, nullable=False)
+    end_s = Column(Float, nullable=False)
+    path = Column(String, nullable=False)
+    ok = Column(Integer, nullable=False, default=0)
+    error = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    lecture = relationship("Lecture", back_populates="clips")
 
 
 def init_db() -> None:
