@@ -131,6 +131,10 @@ Tests and benchmarks:
 # Unit tests (stubbed LLM — zero API usage, isolated test DB)
 python -m pytest tests
 
+# Regenerate the committed function inventory + dev-time module graph
+python scripts/make_function_map.py        # -> plan/FUNCTION_MAP.md (committed)
+python scripts/make_project_graph.py       # -> data/processed/project_graph.html
+
 # Phase 3 benchmark — frozen-encoder baseline, 5-fold CV on LectureBank
 python scripts/evaluate_classifier.py
 
@@ -163,3 +167,4 @@ Raw media and the database are git-ignored — never commit them.
 | `plan/DECISIONS.md` | Confirmed vs. open decisions, and why |
 | `plan/LIMITATIONS.md` | Honest scope boundaries and known weak points |
 | `plan/TEAM.md` | Roles, ownership, and risk notes |
+| `plan/FUNCTION_MAP.md` | Auto-generated function inventory (what each module defines + consumes) — regenerate with `scripts/make_function_map.py` |

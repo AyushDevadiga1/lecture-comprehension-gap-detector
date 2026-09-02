@@ -31,7 +31,13 @@ import numpy as np
 
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
-from sentence_transformers import SentenceTransformer, util
+
+def _st():
+    """Lazy-load sentence_transformers (torch ≈ 35–60 s cold) only when the
+    encoder is actually needed — keeps API boot and pure test paths fast."""
+    from sentence_transformers import SentenceTransformer, util
+
+    return SentenceTransformer, util
 
 
 def get_candidate_pairs(
@@ -66,6 +72,7 @@ def get_candidate_pairs(
                     candidates.append((a["name"], b["name"]))
 
     # 2. Embedding similarity (across everything, incl. far-apart concepts).
+    SentenceTransformer, util = _st()
     names = [c["name"] for c in concepts]
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     vecs = model.encode(names, convert_to_tensor=False)
@@ -127,6 +134,7 @@ class PrerequisiteClassifier:
 
     def _get_encoder(self):
         if self._encoder is None:
+            SentenceTransformer, _util = _st()
             self._encoder = SentenceTransformer(self.embedding_model)
         return self._encoder
 

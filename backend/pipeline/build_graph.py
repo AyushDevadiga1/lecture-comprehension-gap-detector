@@ -154,6 +154,24 @@ class ConceptGraph:
     def is_dag(self) -> bool:
         return nx.is_directed_acyclic_graph(self._g)
 
+    def add_concepts_verbatim(self, names) -> list:
+        """Add names as nodes WITHOUT re-running embedding dedup.
+
+        For reloads from the persisted graph (nodes are already canonical
+        post-dedup), so no model load is needed just to re-add them.
+        """
+        canonical = []
+        for raw in names:
+            name = str(raw).strip()
+            if not name:
+                canonical.append("")
+                continue
+            self._canon[name] = name
+            if not self._g.has_node(name):
+                self._g.add_node(name)
+            canonical.append(name)
+        return canonical
+
     def resolve_cycles(self) -> list:
         """Break every cycle by removing its lowest-confidence edge.
 

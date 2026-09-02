@@ -39,8 +39,7 @@ from backend.models.db import (
     SessionLocal,
     TranscriptSegment,
 )
-from backend.pipeline.build_graph import ConceptGraph, build_graph_from_pairs
-from backend.pipeline.classify_prerequisites import classify_course_pairs
+from backend.pipeline.build_graph import ConceptGraph
 from backend.pipeline.extract_concepts import extract_spoken_concepts
 from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
@@ -247,7 +246,10 @@ def run_concept_extraction(
 
     background_tasks.add_task(_extract_concepts_worker, lecture_id_out)
     with SessionLocal() as db:
-        return db.get(Lecture, lecture_id_out)
+        lecture = db.get(Lecture, lecture_id_out)
+        _ = lecture.segments  # force-load before session closes
+        db.refresh(lecture, ["concepts"])
+        return lecture
 
 
 def _extract_concepts_worker(lecture_id: int) -> None:
@@ -403,7 +405,7 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
         edge_rows = db.query(GraphEdge).filter(GraphEdge.course_id == course_id).all()
 
     graph = ConceptGraph()
-    graph.add_concepts([n.name for n in node_rows])
+    graph.add_concepts_verbatim([n.name for n in node_rows])  # stored names are canonical
     for e in edge_rows:
         graph.add_edge(e.source, e.target, e.confidence)
     graph.resolve_cycles()
@@ -427,6 +429,8 @@ def build_course_graph(
 
 def _build_course_graph_worker(course_id: str) -> None:
     """Background worker: dedup concept names, score edges, persist per-course."""
+    from backend.pipeline import classify_prerequisites
+
     with SessionLocal() as db:
         rows = (
             db.query(Concept)
@@ -444,7 +448,7 @@ def _build_course_graph_worker(course_id: str) -> None:
     graph = ConceptGraph()
     graph.add_concepts(names)
     try:
-        confirmed = classify_course_pairs(concepts)
+        confirmed = classify_prerequisites.classify_course_pairs(concepts)
     except ValueError:
         confirmed = []  # LectureBank absent on this deployment -> nodes-only
     for e in confirmed:
