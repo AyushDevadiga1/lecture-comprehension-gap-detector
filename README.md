@@ -51,25 +51,21 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
 - **Phase 2 — LLM-based concept extraction: done.** Spoken concepts extracted
   from transcript segments (chunked, cache-first LLM calls) and de-duplicated
   into a `concepts` table; served over the API.
-- **Phase 3 — Prerequisite classification (core): baseline done, fine-tune in progress.**
+- **Phase 3 — Prerequisite classification (core): done — frozen-encoder baseline adopted.**
   - `backend/pipeline/classify_prerequisites.py` — candidate-pair pre-filter
-    (temporal + embedding similarity) and a **fine-tuned-classifier** baseline:
-    frozen MiniLM encoder + logistic head over the LectureBank pairs.
+    (temporal + embedding similarity) and the **adopted classifier**: frozen
+    MiniLM encoder + logistic head over the LectureBank pairs.
   - `scripts/evaluate_classifier.py` — nested 5-fold CV with honest
     threshold selection; **F1 0.569** on LectureBank 1.0.
-  - Fine-tuning infrastructure for the transformer encoder is in
-    `backend/pipeline/fine_tune.py` (with `weight_decay`/`grad_clip` support),
-    `scripts/kaggle_fine_tune.py` (`--tune` sweep, `--base-model`,
-    `--weight-decay`, `--grad-clip`, `--metrics-out`), and two self-contained
-    notebooks for Kaggle GPU:
-    - `notebooks/kaggle_fine_tune.ipynb` — MiniLM backbone push (epochs 8/10/12).
-    - `notebooks/kaggle_fine_tune_mpnet.ipynb` — bigger backbone
-      (`all-mpnet-base-v2`), the current "better alternative" experiment.
-  - Both notebooks stage results to `metrics.json` and only ship
-    `/kaggle/working/model/` via a manual FINALIZE cell if the CV F1 beats the
-    frozen baseline (0.569). So far the cross-encoder keeps improving with
-    epochs (e3→0.49, e5→0.53, **e8→0.554**) but has **not yet** out-scored the
-    frozen encoder — a decision is pending on the latest (both) GPU runs.
+  - Cross-encoder fine-tuning (MiniLM *and* bigger MPNet backbone) was
+    exhaustively explored as the "better alternative" via the Kaggle GPU
+    notebooks (`notebooks/kaggle_fine_tune.ipynb`,
+    `notebooks/kaggle_fine_tune_mpnet.ipynb`). More epochs helped (e3→0.49,
+    e5→0.53, e8→0.554) but every configuration plateaued ~F1 0.55 and **never
+    beat the frozen baseline** (MiniLM e8: 0.554, MPNet e4: 0.550 vs 0.569).
+    **Decision: the frozen-encoder baseline (F1 0.569) is locked in as the
+    Phase 3 classifier.** Fine-tuning infra remains usable/reproducible for
+    future iterations.
 
 The refinement loop (Phase 7) remains the second core claim, scheduled after
 this infrastructure is stable.
