@@ -196,7 +196,12 @@ python scripts/make_project_graph.py       # -> data/processed/project_graph.htm
 python scripts/evaluate_classifier.py
 
 # Phase 7 validator — synthetic-student recovery experiment (controlled)
-python scripts/recovery_experiment.py
+python scripts/recovery_experiment.py                 # real LLM personas (default)
+python scripts/recovery_experiment.py --mode structural  # offline (no quota)
+
+# Live-UI smoke test — seed a scratch DB, then drive the student/faculty tabs' calls
+python scripts/smoke_ui.py                            # seeds data/smoke_lecgap.db + a real clip
+python scripts/smoke_drive.py                         # all checks should print PASS
 
 # Phase 3 fine-tuned encoder (heavy) — run a Kaggle notebook on GPU, or a CPU smoke run:
 python scripts/kaggle_fine_tune.py --epochs 1                # CPU smoke run
