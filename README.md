@@ -107,14 +107,24 @@ this infrastructure is stable.
     `GET /courses/{id}/stats`.
 - **Phase 7 — Refinement loop + synthetic-student validation (core claim): done.**
   The learned graph improves from *real* quiz performance signals —
-  `backend/pipeline/refine.py` (`run_refinement_round` pushes edges whose
-  successor is mastered by the same students who mastered the source, and
-  sinks edges whose successor is chronically missed; `score_recovery`
-  measures precision/recall/F1 against a held-out ground-truth graph).
-  `scripts/recovery_experiment.py` runs the controlled synthetic-student
-  experiment: **F1 0.571 → 0.750 (+0.179)** after one refinement round,
-  recovering a weak-but-correct edge and surfacing the spurious one. This is
-  deliberately kept **separate from real quiz data** (`plan/LIMITATIONS.md`
+  `backend/pipeline/refine.py`. `run_refinement_round` applies the plan's
+  directional **co-failure** rule: if students consistently *fail* concept B
+  right after also struggling with concept A, that edge A→B is reinforced;
+  if they fail A but are fine with B, the edge is sunk. `generate_synthetic_students`
+  realizes the plan's Claim-2 method: each synthetic student is **an LLM persona**
+  (defaulting to `llm.complete`) prompted to roleplay a student taught a
+  randomized subset of the hidden graph, then genuinely attempts one
+  knowledge-check per concept — producing realistic, patterned errors, not
+  statistical noise. `score_recovery` reports precision/recall/F1 against the
+  hidden ground truth. `scripts/recovery_experiment.py` runs the controlled
+  experiment (both real-LLM and an offline `--mode structural` analog):
+  - **Real LLM personas** (N=8, Groq, temp 0, prompt-cached): **F1 0.571 → 0.750
+    (+0.179)** — reinforces all true edges above threshold (recall ↑), though the
+    spurious edge isn't fully sunk at small N (real personas are noisy).
+  - **Structural analog** (N=200, deterministic): **F1 0.571 → 0.857 (+0.286)**,
+    precision 0.667 → 1.000 — the spurious edge sinks below threshold and all
+    true edges are reinforced, isolating the mechanism cleanly.
+  This is deliberately kept **separate from real quiz data** (`plan/LIMITATIONS.md`
   #5) — it validates the mechanism, not a deployment claim.
 - **Phase 8 — Faculty dashboard: done.** `GET /courses/{id}/stats` powers the
   faculty tab in `frontend/app.py`: a confusion heatmap (miss rate per

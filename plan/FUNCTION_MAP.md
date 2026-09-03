@@ -169,12 +169,14 @@ Consumes from `backend.*`: *(none)*
 ## backend.pipeline.refine.py
 
 Defines:
-- `_edges_of` — line 33
-- `run_refinement_round` — line 39
-- `score_recovery` — line 91
-- `generate_synthetic_students` — line 121
+- `_edges_of` — line 35
+- `run_refinement_round` — line 41
+- `score_recovery` — line 96
+- `_concepts_of` — line 126
+- `generate_synthetic_students` — line 134
 
-Consumes from `backend.*`: *(none)*
+Consumes from `backend.*`:
+- `backend.pipeline.llm`
 
 ## frontend.app.py
 
