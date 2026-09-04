@@ -185,7 +185,11 @@ streamlit run frontend/app.py
 Tests and benchmarks:
 
 ```bash
-# Unit tests (stubbed LLM — zero API usage, isolated test DB)
+# Unit tests (stubbed/monkeypatched LLM + whisper + encoder — zero API usage,
+# zero model/weight download, isolated test DB). 84 tests across:
+#   transcription, LLM layer, concept extraction, prerequisite classifier,
+#   graph construction, clip segmentation, quiz + refinement, fine-tune helpers,
+#   and API integration.
 python -m pytest tests
 
 # Regenerate the committed function inventory + dev-time module graph
