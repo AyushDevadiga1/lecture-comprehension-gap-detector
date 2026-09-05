@@ -40,6 +40,11 @@ line in this file. When in doubt, this file wins.
 - **Process:** markdown documentation is written and agreed *before*
   implementation begins, in a decoupled (not monolithic-script)
   architecture.
+- **Environment management:** conda, in practice. The dev machine runs a
+  conda env named `lecgap` (`D:\Anaconda3\envs\lecgap`, Python 3.10.20),
+  and every documented command in the README targets it. Locked after
+  working exclusively with conda through Phase 1 — no reason to revisit
+  unless a teammate's machine workflow requires it.
 - **Repo location:** this folder, `lecture-comprehension-gap-detector`,
   on the Desktop.
 - **Backend/frontend split (accepted as starting point, open to
@@ -53,9 +58,6 @@ line in this file. When in doubt, this file wins.
   working plan rather than challenged line by line.
 
 ## Proposed — not yet confirmed
-
-- **Environment management (conda vs. venv)** — currently being
-  discussed. Not yet locked in.
 
 ## How to use this file
 

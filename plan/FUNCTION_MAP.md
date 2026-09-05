@@ -65,15 +65,15 @@ Consumes from `backend.*`: *(none)*
 ## backend.pipeline.llm.py
 
 Defines:
-- `_parse_reset_seconds` — line 44
-- `_cache_key` — line 59
-- `_cache_get` — line 64
-- `_cache_put` — line 72
-- `_call_groq` — line 87
-- `_ollama_reachable` — line 134
-- `_call_ollama` — line 143
-- `complete` — line 169
-- `backend_status` — line 212
+- `_parse_reset_seconds` — line 47
+- `_cache_key` — line 55
+- `_cache_get` — line 60
+- `_cache_put` — line 68
+- `_call_groq` — line 83
+- `_ollama_reachable` — line 130
+- `_call_ollama` — line 139
+- `complete` — line 165
+- `backend_status` — line 208
 
 Consumes from `backend.*`:
 - `backend.models.db.LLMCache`
@@ -82,10 +82,20 @@ Consumes from `backend.*`:
 ## backend.pipeline.transcribe.py
 
 Defines:
-- `_get_model` — line 20
-- `transcribe` — line 29
+- `_get_model` — line 49
+- `_ffmpeg_available` — line 58
+- `_probe_duration` — line 62
+- `_chunk_seconds` — line 78
+- `_downmix_to_flac` — line 92
+- `_split_flac` — line 108
+- `_seg_bounds` — line 130
+- `_transcribe_chunk` — line 138
+- `_transcribe_groq` — line 194
+- `transcribe` — line 227
 
-Consumes from `backend.*`: *(none)*
+Consumes from `backend.*`:
+- `backend.pipeline.llm.SLEEP_CAP_S`
+- `backend.pipeline.llm._parse_reset_seconds`
 
 ## backend.pipeline.extract_concepts.py
 
