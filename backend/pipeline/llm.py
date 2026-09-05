@@ -4,8 +4,10 @@ LLM access layer — foundation for Phase 2 (concept extraction).
 Backend priority order:
 
     1. SQLite cache      identical prompt never re-calls any API (zero cost)
-    2. Groq API          fast; scarce free-tier quota, protected by the cache
-                         and rate-limit-aware backoff on HTTP 429
+    2. Groq API          fast; shared Developer-plan quota (live-verified:
+                         30 req + 8K tokens/min, 1K req + 200K tokens/day
+                         for gpt-oss-20b), protected by the cache and
+                         rate-limit-aware backoff on HTTP 429
     3. Ollama (local)    final fallback — unlimited but requires a local
                          install; most machines won't have it, so it is
                          strictly last resort
@@ -16,6 +18,7 @@ where the answer came from and what it cost.
 
 import hashlib
 import os
+import re
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -43,16 +46,9 @@ class LLMResult:
 
 def _parse_reset_seconds(raw: str) -> float:
     """Parse Groq reset strings like '644ms', '1m26.4s', '2h3m45s'."""
-    total, number, unit = 0.0, "", ""
-    for ch in raw:
-        if ch.isdigit() or ch == ".":
-            number += ch
-        else:
-            unit += ch
-            if unit in ("ms", "s", "m", "h"):
-                value = float(number or 0)
-                total += value * {"ms": 0.001, "s": 1, "m": 60, "h": 3600}[unit]
-                number, unit = "", ""
+    total = 0.0
+    for num, unit in re.findall(r"([0-9.]+)\s*(ms|s|m|h)", raw or ""):
+        total += float(num or 0) * {"ms": 0.001, "s": 1, "m": 60, "h": 3600}[unit]
     return total
 
 

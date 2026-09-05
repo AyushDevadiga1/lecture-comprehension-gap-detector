@@ -86,3 +86,14 @@ def test_backend_status_reports_configured_flags():
     assert "groq_configured" in st
     assert "ollama_reachable" in st
     assert isinstance(st["groq_configured"], bool)
+
+
+def test_parse_reset_seconds_handles_all_units():
+    from backend.pipeline.llm import _parse_reset_seconds
+
+    assert _parse_reset_seconds("644ms") == pytest.approx(0.644)
+    assert _parse_reset_seconds("500ms") == pytest.approx(0.5)  # 'ms' beat 'm'
+    assert _parse_reset_seconds("1m26.4s") == pytest.approx(86.4)
+    assert _parse_reset_seconds("2h3m45s") == pytest.approx(7425.0)
+    assert _parse_reset_seconds("60s") == pytest.approx(60.0)
+    assert _parse_reset_seconds("") == 0.0

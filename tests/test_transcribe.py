@@ -339,3 +339,70 @@ def test_chunk_seconds_math():
     assert tr._chunk_seconds(3600.0, 1_200_000_000, limit) == 60
     # 100 MB over 2 h w/ mono speech audio is sparse -> capped by max_s
     assert tr._chunk_seconds(7200.0, 100_000_000, limit) == 900
+
+
+def _make_rate_limit_error(reset="500ms"):
+    """Construct a real groq.RateLimitError backed by a genuine httpx 429
+    response so the SDK's exception plumbing works exactly as in production."""
+    import httpx
+
+    import groq
+
+    resp = httpx.Response(
+        429,
+        request=httpx.Request(
+            "POST", "https://api.groq.com/openai/v1/audio/transcriptions"
+        ),
+        headers={"x-ratelimit-reset-requests": reset},
+    )
+    return groq.RateLimitError("rate limited", response=resp, body=None)
+
+
+class _FlakyAudio:
+    """Fakes `client.audio.transcriptions.create`, failing N times before OK."""
+
+    def __init__(self, resp, failures=2, reset="500ms"):
+        self.resp = resp
+        self.failures = failures
+        self.reset = reset
+        self.attempts = 0
+        self.transcriptions = self
+
+    def create(self, **kwargs):
+        self.attempts += 1
+        if self.attempts <= self.failures:
+            raise _make_rate_limit_error(self.reset)
+        return self.resp
+
+
+def test_groq_chunk_retries_on_rate_limit_429(monkeypatch, tmp_path):
+    chunk = tmp_path / "chunk_000.flac"
+    chunk.write_bytes(b"audio-bytes")
+
+    flaky = _FlakyAudio(_FakeResp(text="recovered  ", segments=None))
+    client = type("C", (), {"audio": flaky})()
+    sleeps = []
+    monkeypatch.setattr(tr.time, "sleep", lambda s: sleeps.append(s))
+    monkeypatch.setattr(tr, "_probe_duration", lambda _: 5.0)
+
+    out = tr._transcribe_chunk(client, str(chunk), offset=0.0)
+
+    assert flaky.attempts == 3  # 2 rate-limits, then success
+    assert sleeps == [0.5, 0.5]  # each backed off by the reset window
+    assert out == [{"start": 0.0, "end": 5.0, "text": "recovered"}]
+
+
+def test_groq_chunk_rate_limit_exhaustion_raises(monkeypatch, tmp_path):
+    chunk = tmp_path / "chunk_000.flac"
+    chunk.write_bytes(b"audio-bytes")
+
+    always = _FlakyAudio(None, failures=99, reset="3600s")
+    client = type("C", (), {"audio": always})()
+    sleeps = []
+    monkeypatch.setattr(tr.time, "sleep", lambda s: sleeps.append(s))
+
+    with pytest.raises(RuntimeError, match="rate limit exhausted"):
+        tr._transcribe_chunk(client, str(chunk), offset=0.0)
+
+    assert always.attempts == 1  # long reset > SLEEP_CAP -> raise immediately
+    assert sleeps == []

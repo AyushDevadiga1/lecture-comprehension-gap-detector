@@ -17,7 +17,7 @@ Two independent tracks feed one combined concept list:
                                           (see plan/ROADMAP.md — cuttable).
 
 Chunking is quota-aware: concepts are extracted per transcript chunk so a
-lecture course stays within the free-tier token window, and every LLM call is
+lecture course stays inside the per-minute token window, and every LLM call is
 cached for repeat-free (zero-cost) re-runs during development.
 """
 
@@ -27,8 +27,8 @@ from typing import Dict, List
 
 from backend.pipeline.llm import complete
 
-# Keep each transcript chunk comfortably inside the free-tier input limits
-# even at 4x transcript-to-token ratio.
+# ~12K chars ≈ ~3K tokens per chunk (plus <500 output each) — well inside
+# the Developer-plan 8K tokens/min window even during a burst of extractions.
 MAX_CHARS_PER_CHUNK = int(12000)
 
 SYSTEM_PROMPT = (

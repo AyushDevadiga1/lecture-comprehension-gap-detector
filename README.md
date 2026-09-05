@@ -187,7 +187,7 @@ Tests and benchmarks:
 
 ```bash
 # Unit tests (stubbed/monkeypatched LLM + whisper + encoder — zero API usage,
-# zero model/weight download, isolated test DB). 94 tests across:
+# zero model/weight download, isolated test DB). 97 tests across:
 #   transcription, LLM layer, concept extraction, prerequisite classifier,
 #   graph construction, clip segmentation, quiz + refinement, fine-tune helpers,
 #   and API integration.
@@ -227,6 +227,20 @@ Configuration:
 | `LECGAP_DATABASE_URL` | `sqlite:///data/lecgap.db` | database location override |
 | `LECGAP_GROQ_MODEL` | `openai/gpt-oss-20b` | chat model used by the pipeline |
 | `LECGAP_OLLAMA_MODEL` / `LECGAP_OLLAMA_URL` | `llama3.2` / `http://127.0.0.1:11434` | final-fallback local backend |
+
+Groq rate limits — **Developer plan, live-verified on this key**:
+
+| Endpoint | Per minute | Per day |
+|---|---|---|
+| Chat (`openai/gpt-oss-20b`) | 30 req · 8K tokens | 1K req · 200K tokens |
+| Whisper (`whisper-large-v3-turbo`) | 20 req · 7.2K audio-sec | 2K req · 28.8K audio-sec |
+
+Budget guardrails already in place: the test suite makes **zero** API calls
+(stubbed LLM/Whisper/encoder — unlimited re-runs); identical LLM prompts are
+SQLite-cached so re-runs are free; concept-extraction chunks (~3K tokens) sit
+well inside the per-minute window; and both LLM and Whisper paths back off on
+HTTP 429 instead of failing. A 1-hour lecture ≈ 3.6K audio-sec → ~13% of the
+daily Whisper budget.
 
 Raw media and the database are git-ignored — never commit them.
 

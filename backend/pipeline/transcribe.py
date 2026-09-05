@@ -17,7 +17,9 @@ Two backends, chosen with the WHISPER_BACKEND env var:
             a 1-hour lecture transcribes in roughly a minute of wall-clock
             (upload dominates). Audio is downmixed to mono 16 kHz FLAC and,
             if needed, split into chunks that fit the API upload limit, so
-            multi-hour files work too.
+            multi-hour files work too. Rate-limited (Developer plan: 20
+            req/min, 2K req/day, 7.2K audio-sec/hr); HTTP 429s back off and
+            retry — they never crash the background worker.
 
 Both return the exact same segment shape
 ([{"start": float, "end": float, "text": str}, ...]) so downstream
@@ -28,14 +30,18 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from typing import Dict, List
+
+from backend.pipeline.llm import SLEEP_CAP_S, _parse_reset_seconds
 
 BACKEND = os.getenv("WHISPER_BACKEND", "local")
 MODEL_SIZE = os.getenv("WHISPER_MODEL", "base")
 GROQ_WHISPER_MODEL = os.getenv("GROQ_WHISPER_MODEL", "whisper-large-v3-turbo")
 GROQ_UPLOAD_LIMIT = int(
-    os.getenv("GROQ_WHISPER_UPLOAD_LIMIT", str(24 * 1024 * 1024))  # 24 MiB, under the 25 MiB free tier
+    os.getenv("GROQ_WHISPER_UPLOAD_LIMIT", str(24 * 1024 * 1024))  # 24 MiB — conservative, auto-chunked anyway
 )
+MAX_TRANSCRIBE_RETRIES = int(os.getenv("LECGAP_WHISPER_RETRIES", "2"))
 
 _model_cache: Dict[str, object] = {}
 
@@ -130,14 +136,44 @@ def _seg_bounds(seg) -> tuple:
 
 
 def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, float | str]]:
-    """Transcribe one chunk with Groq and shift timestamps by the chunk offset."""
-    with open(chunk_path, "rb") as fh:
-        resp = client.audio.transcriptions.create(
-            model=GROQ_WHISPER_MODEL,
-            file=(os.path.basename(chunk_path), fh),
-            response_format="verbose_json",
-            timestamp_granularities=["segment"],
-        )
+    """Transcribe one chunk with Groq and shift timestamps by the chunk offset.
+
+    HTTP 429 (rate limit) is retried with respect for Groq's reset header
+    (mirrors llm._call_groq), so bursty build/test uploads back off instead of
+    failing the lecture row. Retry count via LECGAP_WHISPER_RETRIES (default 2
+    re-attempts).
+    """
+    from groq import RateLimitError
+
+    resp = None
+    last_error = None
+    for attempt in range(MAX_TRANSCRIBE_RETRIES + 1):
+        try:
+            with open(chunk_path, "rb") as fh:
+                resp = client.audio.transcriptions.create(
+                    model=GROQ_WHISPER_MODEL,
+                    file=(os.path.basename(chunk_path), fh),
+                    response_format="verbose_json",
+                    timestamp_granularities=["segment"],
+                )
+            break
+        except RateLimitError as exc:
+            last_error = exc
+            reset = 60.0
+            try:
+                reset = _parse_reset_seconds(
+                    exc.response.headers.get("x-ratelimit-reset-requests", "60s")
+                )
+            except Exception:
+                pass
+            if attempt == MAX_TRANSCRIBE_RETRIES or reset > SLEEP_CAP_S:
+                raise RuntimeError(
+                    f"Groq Whisper rate limit exhausted (window resets in {reset:.0f}s). "
+                    "Wait, or switch WHISPER_BACKEND=local for the offline backend."
+                ) from exc
+            time.sleep(min(reset, SLEEP_CAP_S))
+    if resp is None:
+        raise RuntimeError(f"Groq Whisper call failed after retries: {last_error}")
 
     segments = getattr(resp, "segments", None)
     if not segments:
