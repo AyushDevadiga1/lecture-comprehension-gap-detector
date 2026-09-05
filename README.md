@@ -166,6 +166,7 @@ conda activate lecgap
 # 2. Configure AI access (only Groq needs a key; Ollama is an optional fallback)
 cp .env.example .env        # then paste your key into GROQ_API_KEY=...
 # No Ollama install required — the local backend is only used if Groq is unavailable.
+# Want instant transcription? set WHISPER_BACKEND=groq in .env (1-hr lecture -> ~1 min).
 
 # 3. Start the backend
 uvicorn backend.main:app --reload          # API docs at http://127.0.0.1:8000/docs
@@ -186,7 +187,7 @@ Tests and benchmarks:
 
 ```bash
 # Unit tests (stubbed/monkeypatched LLM + whisper + encoder — zero API usage,
-# zero model/weight download, isolated test DB). 84 tests across:
+# zero model/weight download, isolated test DB). 94 tests across:
 #   transcription, LLM layer, concept extraction, prerequisite classifier,
 #   graph construction, clip segmentation, quiz + refinement, fine-tune helpers,
 #   and API integration.
@@ -218,8 +219,11 @@ Configuration:
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GROQ_API_KEY` | *(required for LLM features)* | `.env`; Groq chat models |
-| `WHISPER_MODEL` | `base` | local Whisper size (`tiny`…`large-v3`) |
+| `GROQ_API_KEY` | *(required for LLM/transcription features)* | `.env`; Groq chat + Whisper models |
+| `WHISPER_BACKEND` | `local` | transcription engine: `local` (openai-whisper, offline) or `groq` (hosted, **~216× real-time**) |
+| `WHISPER_MODEL` | `base` | local Whisper size (`tiny`…`large-v3`); ignored when `WHISPER_BACKEND=groq` |
+| `GROQ_WHISPER_MODEL` | `whisper-large-v3-turbo` | hosted model used by `WHISPER_BACKEND=groq` ($0.04/audio-hour) |
+| `GROQ_WHISPER_UPLOAD_LIMIT` | `25165824` | per-upload byte cap; audio is auto-chunked to fit |
 | `LECGAP_DATABASE_URL` | `sqlite:///data/lecgap.db` | database location override |
 | `LECGAP_GROQ_MODEL` | `openai/gpt-oss-20b` | chat model used by the pipeline |
 | `LECGAP_OLLAMA_MODEL` / `LECGAP_OLLAMA_URL` | `llama3.2` / `http://127.0.0.1:11434` | final-fallback local backend |
