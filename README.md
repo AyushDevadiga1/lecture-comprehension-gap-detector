@@ -243,6 +243,50 @@ prerequisite graph → cut clips → quiz & remediate → learn & refine.** See
 [`working.md`](working.md) for the fully annotated version with a
 module-by-module walkthrough and the API-key table.
 
+### Example end-to-end run (real)
+
+One of our smoke clips (`data/raw/lec2__smoketest_3min.mp4`, 180 s, Hinglish —
+CampusX MLR lecture) run through the *actual* system: real Whisper on CPU, a
+real Groq LLM extraction call, the LectureBank-trained classifier, real ffmpeg
+cuts, and the live quiz/analytics endpoints. Every arrow below is a real code
+path, and every stage's output lands in the run folder.
+
+```mermaid
+flowchart LR
+    IN(["INPUT<br/>lec2__smoketest_3min.mp4<br/>180 s · Hinglish (CampusX)"])
+    T["Stage 1 · transcribe.py<br/>real Whisper · local CPU"]
+    SEG[("73 timestamped segments<br/>→ 01_transcript.json")]
+    EX["Stage 2 · extract_concepts.py<br/>+ llm.py · Groq chat"]
+    CONC[("11 concepts · 7 implicit / 4 explicit<br/>→ 02_concepts.json")]
+    GT["Stages 3+4 · classify_prerequisites.py<br/>+ build_graph.py · LectureBank"]
+    GR[("11-node DAG · 6 edges<br/>→ 03_graph.json")]
+    SC["Stage 5 · segment_clips.py · ffmpeg"]
+    CPS[("11/11 clip videos<br/>→ 04_clips.json + clips/*.mp4")]
+    QZ["Stage 6 · quiz.py<br/>+ /quizzes · /quizzes/submit"]
+    QZR[("11 questions in learner order<br/>score 7/11 → remediation watch-list<br/>→ 05_quiz.json + 06_remediation.json")]
+    ST["Stage 8 · /courses/ml/stats"]
+    STT[("confusion heatmap + taught-vs-learned<br/>divergence → 07_stats.json")]
+    IN --> T --> SEG --> EX --> CONC --> GT --> GR --> SC --> CPS --> QZ --> QZR
+    QZR --> ST --> STT
+    classDef in fill:#fde064,stroke:#b58900,color:#111;
+    classDef mod fill:#dcfce7,stroke:#16a34a,color:#111;
+    classDef out fill:#f3e8ff,stroke:#9333ea,color:#111;
+    class IN in;
+    class T,EX,GT,SC,QZ,ST mod;
+    class SEG,CONC,GR,CPS,QZR,STT out;
+```
+
+The run folder `data/samples/run_20260911_084230/` holds every artifact above
+plus `report.html` (a browser-openable chart mapping each stage → module →
+output) and `run_manifest.json` (machine-readable record). Reproduce it any
+time:
+
+```bash
+python scripts/sample_run.py                 # runs this clip end-to-end
+python scripts/sample_run.py --clip data/raw/lec1__smoketest_3min.mp4
+python scripts/sample_run.py --report data/samples/run_20260911_084230  # rebuild the chart
+```
+
 ### Frontend
 
 ```bash
