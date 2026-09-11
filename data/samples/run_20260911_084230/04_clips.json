@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "concept_name": "Multiple Linear Regression",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Multiple Linear Regression__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 2,
+    "concept_name": "Simple Linear Regression",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Simple Linear Regression__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 3,
+    "concept_name": "Independent Variables",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Independent Variables__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 4,
+    "concept_name": "Dependent Variable",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dependent Variable__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 5,
+    "concept_name": "Linear Model",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linear Model__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 6,
+    "concept_name": "Regression Coefficients",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Regression Coefficients__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 7,
+    "concept_name": "Least Squares Estimation",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Least Squares Estimation__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 8,
+    "concept_name": "Model Extension",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Model Extension__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 9,
+    "concept_name": "Specialization of a Model",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Specialization of a Model__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 10,
+    "concept_name": "High-Dimensional Data Visualization",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\High-Dimensional Data Visualization__30-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 11,
+    "concept_name": "Data Set Structure (Input/Output Columns)",
+    "start_s": 30.0,
+    "end_s": 179.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data Set Structure _Input_Output Columns___30-180.mp4",
+    "ok": true,
+    "error": null
+  }
+]

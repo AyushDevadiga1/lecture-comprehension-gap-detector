@@ -1,0 +1,64 @@
+{
+  "course_id": "ml",
+  "nodes": [
+    "Data Set Structure (Input/Output Columns)",
+    "Dependent Variable",
+    "High-Dimensional Data Visualization",
+    "Independent Variables",
+    "Least Squares Estimation",
+    "Linear Model",
+    "Model Extension",
+    "Multiple Linear Regression",
+    "Regression Coefficients",
+    "Simple Linear Regression",
+    "Specialization of a Model"
+  ],
+  "edges": [
+    {
+      "source": "Independent Variables",
+      "target": "Dependent Variable",
+      "confidence": 0.8932901595500504
+    },
+    {
+      "source": "Independent Variables",
+      "target": "Regression Coefficients",
+      "confidence": 0.503278261408138
+    },
+    {
+      "source": "Linear Model",
+      "target": "Multiple Linear Regression",
+      "confidence": 0.6844721020296434
+    },
+    {
+      "source": "Regression Coefficients",
+      "target": "Multiple Linear Regression",
+      "confidence": 0.5817586541172141
+    },
+    {
+      "source": "Simple Linear Regression",
+      "target": "Multiple Linear Regression",
+      "confidence": 0.84332769841963
+    },
+    {
+      "source": "Simple Linear Regression",
+      "target": "Linear Model",
+      "confidence": 0.6548507707463741
+    }
+  ],
+  "node_count": 11,
+  "edge_count": 6,
+  "is_dag": true,
+  "topological_order": [
+    "Data Set Structure (Input/Output Columns)",
+    "High-Dimensional Data Visualization",
+    "Independent Variables",
+    "Least Squares Estimation",
+    "Model Extension",
+    "Simple Linear Regression",
+    "Specialization of a Model",
+    "Dependent Variable",
+    "Regression Coefficients",
+    "Linear Model",
+    "Multiple Linear Regression"
+  ]
+}

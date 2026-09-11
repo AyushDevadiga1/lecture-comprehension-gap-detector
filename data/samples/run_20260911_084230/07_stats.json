@@ -1,0 +1,165 @@
+{
+  "course_id": "ml",
+  "heatmap": [
+    {
+      "concept": "Data Set Structure (Input/Output Columns)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Least Squares Estimation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Specialization of a Model",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Linear Model",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "High-Dimensional Data Visualization",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Independent Variables",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Model Extension",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Simple Linear Regression",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Dependent Variable",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Regression Coefficients",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Multiple Linear Regression",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "Data Set Structure (Input/Output Columns)",
+      "taught_idx": 10,
+      "learned_idx": 0,
+      "gap": -10
+    },
+    {
+      "concept": "Multiple Linear Regression",
+      "taught_idx": 0,
+      "learned_idx": 10,
+      "gap": 10
+    },
+    {
+      "concept": "High-Dimensional Data Visualization",
+      "taught_idx": 9,
+      "learned_idx": 1,
+      "gap": -8
+    },
+    {
+      "concept": "Linear Model",
+      "taught_idx": 4,
+      "learned_idx": 9,
+      "gap": 5
+    },
+    {
+      "concept": "Simple Linear Regression",
+      "taught_idx": 1,
+      "learned_idx": 5,
+      "gap": 4
+    },
+    {
+      "concept": "Dependent Variable",
+      "taught_idx": 3,
+      "learned_idx": 7,
+      "gap": 4
+    },
+    {
+      "concept": "Model Extension",
+      "taught_idx": 7,
+      "learned_idx": 4,
+      "gap": -3
+    },
+    {
+      "concept": "Regression Coefficients",
+      "taught_idx": 5,
+      "learned_idx": 8,
+      "gap": 3
+    },
+    {
+      "concept": "Least Squares Estimation",
+      "taught_idx": 6,
+      "learned_idx": 3,
+      "gap": -3
+    },
+    {
+      "concept": "Specialization of a Model",
+      "taught_idx": 8,
+      "learned_idx": 6,
+      "gap": -2
+    },
+    {
+      "concept": "Independent Variables",
+      "taught_idx": 2,
+      "learned_idx": 2,
+      "gap": 0
+    }
+  ],
+  "taught_order": [
+    "Multiple Linear Regression",
+    "Simple Linear Regression",
+    "Independent Variables",
+    "Dependent Variable",
+    "Linear Model",
+    "Regression Coefficients",
+    "Least Squares Estimation",
+    "Model Extension",
+    "Specialization of a Model",
+    "High-Dimensional Data Visualization",
+    "Data Set Structure (Input/Output Columns)"
+  ],
+  "learned_order": [
+    "Data Set Structure (Input/Output Columns)",
+    "High-Dimensional Data Visualization",
+    "Independent Variables",
+    "Least Squares Estimation",
+    "Model Extension",
+    "Simple Linear Regression",
+    "Specialization of a Model",
+    "Dependent Variable",
+    "Regression Coefficients",
+    "Linear Model",
+    "Multiple Linear Regression"
+  ]
+}

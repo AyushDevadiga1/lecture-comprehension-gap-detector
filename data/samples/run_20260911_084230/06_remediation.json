@@ -1,0 +1,33 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 7,
+  "total": 11,
+  "remediation": [
+    {
+      "concept": "Data Set Structure (Input/Output Columns)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data Set Structure _Input_Output Columns___30-180.mp4"
+    },
+    {
+      "concept": "Least Squares Estimation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Least Squares Estimation__30-180.mp4"
+    },
+    {
+      "concept": "Simple Linear Regression",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Simple Linear Regression__30-180.mp4"
+    },
+    {
+      "concept": "Specialization of a Model",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Specialization of a Model__30-180.mp4"
+    },
+    {
+      "concept": "Linear Model",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linear Model__30-180.mp4"
+    }
+  ]
+}

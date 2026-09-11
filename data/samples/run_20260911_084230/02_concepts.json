@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "name": "Multiple Linear Regression",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 2,
+    "name": "Simple Linear Regression",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 3,
+    "name": "Independent Variables",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 4,
+    "name": "Dependent Variable",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 5,
+    "name": "Linear Model",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 6,
+    "name": "Regression Coefficients",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 7,
+    "name": "Least Squares Estimation",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 8,
+    "name": "Model Extension",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 9,
+    "name": "Specialization of a Model",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 10,
+    "name": "High-Dimensional Data Visualization",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  },
+  {
+    "id": 11,
+    "name": "Data Set Structure (Input/Output Columns)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 30.0,
+    "end_s": 179.8
+  }
+]

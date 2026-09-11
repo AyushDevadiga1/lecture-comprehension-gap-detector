@@ -1,0 +1,95 @@
+{
+  "quiz_id": 1,
+  "course_id": "ml",
+  "student_id": "sample-student",
+  "questions": [
+    {
+      "id": 1,
+      "concept": "Data Set Structure (Input/Output Columns)",
+      "question": "Which statement about 'Data Set Structure (Input/Output Columns)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 2,
+      "concept": "High-Dimensional Data Visualization",
+      "question": "Which statement about 'High-Dimensional Data Visualization' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 3,
+      "concept": "Independent Variables",
+      "question": "Which statement about 'Independent Variables' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 4,
+      "concept": "Least Squares Estimation",
+      "question": "Which statement about 'Least Squares Estimation' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 5,
+      "concept": "Model Extension",
+      "question": "Which statement about 'Model Extension' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 6,
+      "concept": "Simple Linear Regression",
+      "question": "Which statement about 'Simple Linear Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 7,
+      "concept": "Specialization of a Model",
+      "question": "Which statement about 'Specialization of a Model' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 8,
+      "concept": "Dependent Variable",
+      "question": "Which statement about 'Dependent Variable' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 9,
+      "concept": "Regression Coefficients",
+      "question": "Which statement about 'Regression Coefficients' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 10,
+      "concept": "Linear Model",
+      "question": "Which statement about 'Linear Model' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 11,
+      "concept": "Multiple Linear Regression",
+      "question": "Which statement about 'Multiple Linear Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    }
+  ]
+}

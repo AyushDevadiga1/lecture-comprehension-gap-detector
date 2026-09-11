@@ -1,0 +1,49 @@
+{
+  "run_id": "run_20260911_084230",
+  "course": "ml",
+  "student": "sample-student",
+  "clip": "data\\raw\\lec2__smoketest_3min.mp4",
+  "started": "20260911_084230",
+  "steps": [
+    {
+      "stage": 0,
+      "name": "input",
+      "artifact": "00_input__lec2__smoketest_3min.mp4"
+    }
+  ],
+  "finished": "08:52:20",
+  "transcript_segments": 73,
+  "concepts": 11,
+  "graph": {
+    "nodes": 11,
+    "edges": 6,
+    "is_dag": true,
+    "order": [
+      "Data Set Structure (Input/Output Columns)",
+      "High-Dimensional Data Visualization",
+      "Independent Variables",
+      "Least Squares Estimation",
+      "Model Extension",
+      "Simple Linear Regression",
+      "Specialization of a Model",
+      "Dependent Variable",
+      "Regression Coefficients",
+      "Linear Model",
+      "Multiple Linear Regression"
+    ]
+  },
+  "clips_ok": 11,
+  "quiz_questions": 11,
+  "score": "7/11",
+  "artifacts": [
+    "00_input__lec2__smoketest_3min.mp4",
+    "01_transcript.json",
+    "02_concepts.json",
+    "03_graph.json",
+    "04_clips.json",
+    "05_quiz.json",
+    "06_remediation.json",
+    "07_stats.json",
+    "lecgap.db"
+  ]
+}

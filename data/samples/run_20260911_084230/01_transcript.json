@@ -1,0 +1,440 @@
+[
+  {
+    "idx": 0,
+    "start_s": 30.0,
+    "end_s": 31.7,
+    "text": "which is mx plus b."
+  },
+  {
+    "idx": 1,
+    "start_s": 31.7,
+    "end_s": 34.7,
+    "text": "So basically you have to find n or b"
+  },
+  {
+    "idx": 2,
+    "start_s": 34.7,
+    "end_s": 36.3,
+    "text": "or how it is found."
+  },
+  {
+    "idx": 3,
+    "start_s": 36.3,
+    "end_s": 38.8,
+    "text": "In the last video, we have seen in detail."
+  },
+  {
+    "idx": 4,
+    "start_s": 38.8,
+    "end_s": 42.8,
+    "text": "Now comes the question, what is multiple linear regression?"
+  },
+  {
+    "idx": 5,
+    "start_s": 42.8,
+    "end_s": 45.8,
+    "text": "So multiple regression, linear regression,"
+  },
+  {
+    "idx": 6,
+    "start_s": 45.8,
+    "end_s": 46.8,
+    "text": "the case is now coming."
+  },
+  {
+    "idx": 7,
+    "start_s": 46.8,
+    "end_s": 48.8,
+    "text": "When you see a data set,"
+  },
+  {
+    "idx": 8,
+    "start_s": 48.8,
+    "end_s": 52.3,
+    "text": "when you have more columns in input,"
+  },
+  {
+    "idx": 9,
+    "start_s": 52.3,
+    "end_s": 54.0,
+    "text": "like I will give you one example."
+  },
+  {
+    "idx": 10,
+    "start_s": 54.0,
+    "end_s": 55.8,
+    "text": "Let's say you have x1,"
+  },
+  {
+    "idx": 11,
+    "start_s": 55.8,
+    "end_s": 58.8,
+    "text": "x2, x3,"
+  },
+  {
+    "idx": 12,
+    "start_s": 58.8,
+    "end_s": 59.8,
+    "text": "and y."
+  },
+  {
+    "idx": 13,
+    "start_s": 59.8,
+    "end_s": 61.8,
+    "text": "So x1, x2, x3."
+  },
+  {
+    "idx": 14,
+    "start_s": 61.8,
+    "end_s": 63.8,
+    "text": "These are three columns, your input columns,"
+  },
+  {
+    "idx": 15,
+    "start_s": 63.8,
+    "end_s": 65.8,
+    "text": "or independent columns."
+  },
+  {
+    "idx": 16,
+    "start_s": 65.8,
+    "end_s": 66.8,
+    "text": "And the y here,"
+  },
+  {
+    "idx": 17,
+    "start_s": 66.8,
+    "end_s": 68.8,
+    "text": "or your dependent column,"
+  },
+  {
+    "idx": 18,
+    "start_s": 68.8,
+    "end_s": 69.8,
+    "text": "output column."
+  },
+  {
+    "idx": 19,
+    "start_s": 69.8,
+    "end_s": 70.8,
+    "text": "Now here,"
+  },
+  {
+    "idx": 20,
+    "start_s": 70.8,
+    "end_s": 72.8,
+    "text": "this case,"
+  },
+  {
+    "idx": 21,
+    "start_s": 72.8,
+    "end_s": 75.8,
+    "text": "when multiple linear regression will apply."
+  },
+  {
+    "idx": 22,
+    "start_s": 75.8,
+    "end_s": 77.8,
+    "text": "So let's take an example,"
+  },
+  {
+    "idx": 23,
+    "start_s": 77.8,
+    "end_s": 80.8,
+    "text": "like we took this example in simple linear regression,"
+  },
+  {
+    "idx": 24,
+    "start_s": 80.8,
+    "end_s": 82.8,
+    "text": "that cgp was input,"
+  },
+  {
+    "idx": 25,
+    "start_s": 82.8,
+    "end_s": 84.8,
+    "text": "and lax on it,"
+  },
+  {
+    "idx": 26,
+    "start_s": 84.8,
+    "end_s": 85.8,
+    "text": "our output."
+  },
+  {
+    "idx": 27,
+    "start_s": 86.8,
+    "end_s": 88.8,
+    "text": "Here, this transform version could be,"
+  },
+  {
+    "idx": 28,
+    "start_s": 88.8,
+    "end_s": 90.8,
+    "text": "that you have cgp,"
+  },
+  {
+    "idx": 29,
+    "start_s": 90.8,
+    "end_s": 91.8,
+    "text": "information,"
+  },
+  {
+    "idx": 30,
+    "start_s": 91.8,
+    "end_s": 93.8,
+    "text": "you have gender,"
+  },
+  {
+    "idx": 31,
+    "start_s": 93.8,
+    "end_s": 94.8,
+    "text": "information,"
+  },
+  {
+    "idx": 32,
+    "start_s": 94.8,
+    "end_s": 95.8,
+    "text": "you have IQ,"
+  },
+  {
+    "idx": 33,
+    "start_s": 95.8,
+    "end_s": 96.8,
+    "text": "information."
+  },
+  {
+    "idx": 34,
+    "start_s": 96.8,
+    "end_s": 98.8,
+    "text": "And then you have to predict lp."
+  },
+  {
+    "idx": 35,
+    "start_s": 98.8,
+    "end_s": 99.8,
+    "text": "So,"
+  },
+  {
+    "idx": 36,
+    "start_s": 99.8,
+    "end_s": 101.8,
+    "text": "this simple satisfaction,"
+  },
+  {
+    "idx": 37,
+    "start_s": 101.8,
+    "end_s": 103.8,
+    "text": "here is not to be explained."
+  },
+  {
+    "idx": 38,
+    "start_s": 103.8,
+    "end_s": 104.8,
+    "text": "So if you have,"
+  },
+  {
+    "idx": 39,
+    "start_s": 104.8,
+    "end_s": 106.8,
+    "text": "there are many variables in the input,"
+  },
+  {
+    "idx": 40,
+    "start_s": 106.8,
+    "end_s": 109.8,
+    "text": "that is multiple linear regression."
+  },
+  {
+    "idx": 41,
+    "start_s": 109.8,
+    "end_s": 110.8,
+    "text": "And honestly,"
+  },
+  {
+    "idx": 42,
+    "start_s": 110.8,
+    "end_s": 112.8,
+    "text": "more than three times,"
+  },
+  {
+    "idx": 43,
+    "start_s": 112.8,
+    "end_s": 114.8,
+    "text": "when you will work on real world data,"
+  },
+  {
+    "idx": 44,
+    "start_s": 114.8,
+    "end_s": 117.8,
+    "text": "you will have to apply multiple linear regression,"
+  },
+  {
+    "idx": 45,
+    "start_s": 117.8,
+    "end_s": 120.8,
+    "text": "because you will have the data,"
+  },
+  {
+    "idx": 46,
+    "start_s": 120.8,
+    "end_s": 123.8,
+    "text": "you will have more columns in the input."
+  },
+  {
+    "idx": 47,
+    "start_s": 123.8,
+    "end_s": 125.8,
+    "text": "So, then you have asked the question,"
+  },
+  {
+    "idx": 48,
+    "start_s": 125.8,
+    "end_s": 127.8,
+    "text": "why did you have to read simple linear regression?"
+  },
+  {
+    "idx": 49,
+    "start_s": 127.8,
+    "end_s": 129.8,
+    "text": "When it is not so useful, why should I read it?"
+  },
+  {
+    "idx": 50,
+    "start_s": 129.8,
+    "end_s": 130.8,
+    "text": "That is why I read it,"
+  },
+  {
+    "idx": 51,
+    "start_s": 130.8,
+    "end_s": 132.8,
+    "text": "because the simple linear regression,"
+  },
+  {
+    "idx": 52,
+    "start_s": 132.8,
+    "end_s": 133.8,
+    "text": "which you have learnt,"
+  },
+  {
+    "idx": 53,
+    "start_s": 133.8,
+    "end_s": 135.8,
+    "text": "it is applicable,"
+  },
+  {
+    "idx": 54,
+    "start_s": 135.8,
+    "end_s": 137.8,
+    "text": "it is multiple linear regression."
+  },
+  {
+    "idx": 55,
+    "start_s": 137.8,
+    "end_s": 138.8,
+    "text": "So, what happens,"
+  },
+  {
+    "idx": 56,
+    "start_s": 138.8,
+    "end_s": 140.8,
+    "text": "if you think about the lower dimension,"
+  },
+  {
+    "idx": 57,
+    "start_s": 140.8,
+    "end_s": 143.8,
+    "text": "then you can visualize it in higher dimension."
+  },
+  {
+    "idx": 58,
+    "start_s": 143.8,
+    "end_s": 146.8,
+    "text": "So, that is why I have read the concept of simple linear regression,"
+  },
+  {
+    "idx": 59,
+    "start_s": 146.8,
+    "end_s": 149.8,
+    "text": "and now I will read multiple linear regression."
+  },
+  {
+    "idx": 60,
+    "start_s": 149.8,
+    "end_s": 151.8,
+    "text": "So, multiple linear regression is just,"
+  },
+  {
+    "idx": 61,
+    "start_s": 151.8,
+    "end_s": 154.8,
+    "text": "an extension of simple linear regression,"
+  },
+  {
+    "idx": 62,
+    "start_s": 154.8,
+    "end_s": 156.8,
+    "text": "or else you can call it the old age,"
+  },
+  {
+    "idx": 63,
+    "start_s": 156.8,
+    "end_s": 159.8,
+    "text": "that simple linear regression is just a specialization of,"
+  },
+  {
+    "idx": 64,
+    "start_s": 159.8,
+    "end_s": 161.8,
+    "text": "multiple linear regression."
+  },
+  {
+    "idx": 65,
+    "start_s": 161.8,
+    "end_s": 162.8,
+    "text": "That means,"
+  },
+  {
+    "idx": 66,
+    "start_s": 162.8,
+    "end_s": 164.8,
+    "text": "if multiple linear regression is only one variable,"
+  },
+  {
+    "idx": 67,
+    "start_s": 164.8,
+    "end_s": 167.8,
+    "text": "then simple linear regression becomes the next one."
+  },
+  {
+    "idx": 68,
+    "start_s": 167.8,
+    "end_s": 169.8,
+    "text": "Now, the question is,"
+  },
+  {
+    "idx": 69,
+    "start_s": 169.8,
+    "end_s": 172.8,
+    "text": "what happens if I have multiple linear regression,"
+  },
+  {
+    "idx": 70,
+    "start_s": 172.8,
+    "end_s": 174.8,
+    "text": "to solve the problem."
+  },
+  {
+    "idx": 71,
+    "start_s": 174.8,
+    "end_s": 176.8,
+    "text": "Very simple, you do exactly the same thing"
+  },
+  {
+    "idx": 72,
+    "start_s": 176.8,
+    "end_s": 179.8,
+    "text": "which you do in simple linear regression."
+  }
+]
