@@ -41,7 +41,13 @@ GROQ_WHISPER_MODEL = os.getenv("GROQ_WHISPER_MODEL", "whisper-large-v3-turbo")
 GROQ_UPLOAD_LIMIT = int(
     os.getenv("GROQ_WHISPER_UPLOAD_LIMIT", str(24 * 1024 * 1024))  # 24 MiB — conservative, auto-chunked anyway
 )
+# Hard per-request duration cap. Groq's Whisper can return HTTP 500 on some
+# longer single chunks (observed at ~560 s on a 21-min lecture), even though
+# shorter slices of the same audio pass — so split unconditionally to a
+# proven-safe length. Tune with GROQ_WHISPER_MAX_CHUNK_S.
+GROQ_MAX_CHUNK_S = int(os.getenv("GROQ_WHISPER_MAX_CHUNK_S", "300"))
 MAX_TRANSCRIBE_RETRIES = int(os.getenv("LECGAP_WHISPER_RETRIES", "2"))
+TRANSCRIBE_500_BACKOFF_S = float(os.getenv("LECGAP_WHISPER_500_BACKOFF", "5"))
 
 _model_cache: Dict[str, object] = {}
 
@@ -105,26 +111,42 @@ def _downmix_to_flac(src: str, dst_flac: str) -> str:
     return dst_flac
 
 
-def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int) -> List[str]:
-    """Slice a FLAC into adjacent chunk_s-second pieces, returning sorted paths."""
-    out = subprocess.run(
-        [
-            "ffmpeg", "-y", "-i", flac_path, "-f", "segment",
-            "-segment_time", str(chunk_s), "-reset_timestamps", "1",
-            "-c:a", "flac", os.path.join(chunk_dir, "chunk_%03d.flac"),
-        ],
-        capture_output=True,
-        check=False,
-        text=True,
-    )
-    if out.returncode != 0:
-        raise RuntimeError(f"ffmpeg chunking failed: {out.stderr.strip()}")
-    chunks = sorted(
-        p for p in os.listdir(chunk_dir) if p.startswith("chunk_") and p.endswith(".flac")
-    )
+def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
+                duration: float = 0.0) -> List[str]:
+    """Slice a FLAC into adjacent chunk_s-second pieces, returning sorted paths.
+
+    Each piece is a clean, freshly-encoded standalone FLAC (seek + re-encode),
+    NOT an ffmpeg ``-f segment`` cut: segmentation leaves the trailing piece in
+    a shape Groq's parser rejects with HTTP 500, even though the same audio
+    passes when re-encoded (observed on a 21-min lecture). Per-piece encoding
+    guarantees every chunk is a byte-valid FLAC document.
+    """
+    if not duration:
+        duration = _probe_duration(flac_path)
+    chunks: List[str] = []
+    start = 0.0
+    idx = 0
+    while start < duration:
+        t = min(float(chunk_s), duration - start)
+        path = os.path.join(chunk_dir, f"chunk_{idx:03d}.flac")
+        out = subprocess.run(
+            [
+                "ffmpeg", "-y", "-nostdin", "-v", "error",
+                "-ss", f"{start:.3f}", "-t", f"{t:.3f}",
+                "-i", flac_path, "-c:a", "flac", path,
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        if out.returncode != 0 or not os.path.exists(path):
+            raise RuntimeError(f"ffmpeg chunking failed: {out.stderr.strip()}")
+        chunks.append(path)
+        start += chunk_s
+        idx += 1
     if not chunks:
         raise RuntimeError("ffmpeg chunking produced no files")
-    return [os.path.join(chunk_dir, c) for c in chunks]
+    return chunks
 
 
 def _seg_bounds(seg) -> tuple:
@@ -140,10 +162,12 @@ def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, 
 
     HTTP 429 (rate limit) is retried with respect for Groq's reset header
     (mirrors llm._call_groq), so bursty build/test uploads back off instead of
-    failing the lecture row. Retry count via LECGAP_WHISPER_RETRIES (default 2
+    failing the lecture row. HTTP 500s (Groq audio backend flakiness on some
+    chunk shapes) are retried with a fixed backoff TOO, since they are
+    transient in practice. Retry count via LECGAP_WHISPER_RETRIES (default 2
     re-attempts).
     """
-    from groq import RateLimitError
+    from groq import InternalServerError, RateLimitError
 
     resp = None
     last_error = None
@@ -172,6 +196,14 @@ def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, 
                     "Wait, or switch WHISPER_BACKEND=local for the offline backend."
                 ) from exc
             time.sleep(min(reset, SLEEP_CAP_S))
+        except InternalServerError as exc:
+            last_error = exc
+            if attempt == MAX_TRANSCRIBE_RETRIES:
+                raise RuntimeError(
+                    "Groq Whisper returned HTTP 500 repeatedly. "
+                    "Let it cool down, or switch WHISPER_BACKEND=local for the offline backend."
+                ) from exc
+            time.sleep(TRANSCRIBE_500_BACKOFF_S)
     if resp is None:
         raise RuntimeError(f"Groq Whisper call failed after retries: {last_error}")
 
@@ -211,9 +243,10 @@ def _transcribe_groq(media_path: str) -> List[Dict[str, float | str]]:
         size = os.path.getsize(flac)
         duration = _probe_duration(flac)
 
-        chunk_s = _chunk_seconds(duration, size, GROQ_UPLOAD_LIMIT)
+        chunk_s = _chunk_seconds(duration, size, GROQ_UPLOAD_LIMIT,
+                                 max_s=GROQ_MAX_CHUNK_S)
         if chunk_s:
-            chunks = _split_flac(flac, tmp, chunk_s)
+            chunks = _split_flac(flac, tmp, chunk_s, duration)
             offsets = [float(i * chunk_s) for i in range(len(chunks))]
         else:
             chunks, offsets = [flac], [0.0]
