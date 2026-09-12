@@ -41,7 +41,7 @@ sys.path.insert(0, str(REPO))
 
 COURSE = "ml"
 STUDENT = "sample-student"
-POLL_TIMEOUT_S = 960
+POLL_TIMEOUT_S = 2400
 
 
 def fail(msg: str) -> None:
@@ -93,9 +93,17 @@ def main() -> None:
     ap.add_argument("--out", default=None, help="output folder (default data/samples/run_<ts>)")
     ap.add_argument("--course", default=COURSE)
     ap.add_argument("--student", default=STUDENT)
+    ap.add_argument("--backend", default=None, choices=["local", "groq"],
+                    help="WHISPER_BACKEND for this run (default: WHISPER_BACKEND env or 'local')")
+    ap.add_argument("--no-copy-clips", action="store_true",
+                    help="don't copy the cut clip videos into the run folder "
+                         "(JSON record only — keeps big runs lean)")
     ap.add_argument("--report", default=None,
                     help="rebuild report.html + manifest from an existing run dir (no pipeline)")
     args = ap.parse_args()
+
+    if args.backend is not None:
+        os.environ["WHISPER_BACKEND"] = args.backend
 
     if args.report:
         run_dir = Path(args.report)
@@ -187,13 +195,17 @@ def main() -> None:
     ).json()
     clips = batch["clips"]
     save(out, "04_clips.json", clips)
-    clips_dir = out / "clips"
-    clips_dir.mkdir(exist_ok=True)
     ok_count = 0
-    for c in clips:
-        if c["ok"] and c["path"]:
-            shutil.copy2(c["path"], clips_dir / Path(c["path"]).name)
-            ok_count += 1
+    if not args.no_copy_clips:
+        clips_dir = out / "clips"
+        clips_dir.mkdir(exist_ok=True)
+        for c in clips:
+            if c["ok"] and c["path"]:
+                shutil.copy2(c["path"], clips_dir / Path(c["path"]).name)
+                ok_count += 1
+    else:
+        ok_count = sum(1 for c in clips if c["ok"])
+        print("    (clip videos not copied — see data/processed/clips/ for the files)")
     print(f"STAGE 5 clips: {ok_count}/{len(clips)} cut OK")
 
     # ---- Stage 6: quiz (learner-order questions) ----
@@ -398,7 +410,7 @@ Open <code>run_manifest.json</code> for the machine-readable record.</p>
 <div class="arrow">▼</div>
 {card(5, "Clip segmentation", "backend/pipeline/segment_clips.py (ffmpeg)", "04_clips.json",
       f"One playable video per concept — <b>{sum(1 for c in clips if c['ok'])}/{len(clips)} cut OK</b> "
-      f"into <code>clips/</code>.<ul>{clip_preview}</ul>")}
+      f"under <code>data/processed/clips/</code> (paths recorded here).<ul>{clip_preview}</ul>")}
 <div class="arrow">▼</div>
 {card(6, "Quiz + remediation", "backend/pipeline/quiz.py + routes.py", "05_quiz.json · 06_remediation.json",
       f"Questions asked in learner order; answers graded; missed concepts lifted with their upstream "
