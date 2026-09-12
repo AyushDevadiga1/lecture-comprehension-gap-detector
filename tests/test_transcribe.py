@@ -251,7 +251,7 @@ def test_groq_splits_and_offsets_oversized_files(monkeypatch):
     monkeypatch.setattr(tr, "_probe_duration", lambda _: 60.0)
     monkeypatch.setattr(tr, "_chunk_seconds", lambda *a, **k: 30)
     monkeypatch.setattr(
-        tr, "_split_flac", lambda flac, d, s: [Path(d, "chunk_000.flac"), Path(d, "chunk_001.flac")]
+        tr, "_split_flac", lambda flac, d, s, duration=None: [Path(d, "chunk_000.flac"), Path(d, "chunk_001.flac")]
     )
 
     def fake_transcribe_chunk(client, chunk, offset):
@@ -269,6 +269,32 @@ def test_groq_splits_and_offsets_oversized_files(monkeypatch):
         {"start": 30.0, "end": 31.0, "text": "c30"},
     ]
     assert all(isinstance(s["start"], float) for s in out)
+
+
+def test_split_flac_reencodes_each_chunk(monkeypatch, tmp_path):
+    flac = tmp_path / "audio.flac"
+    flac.write_bytes(b"f")
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        Path(cmd[-1]).write_bytes(b"chunk")
+        return tr.subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(tr.subprocess, "run", fake_run)
+
+    chunks = tr._split_flac(str(flac), str(tmp_path), 300, duration=650.0)
+
+    assert [Path(c).name for c in chunks] == [
+        "chunk_000.flac",
+        "chunk_001.flac",
+        "chunk_002.flac",
+    ]
+    assert len(calls) == 3
+    for cmd in calls:
+        assert "-f" not in cmd and "segment" not in cmd  # not a `-f segment` cut
+        assert "-ss" in cmd and "-t" in cmd
+    assert calls[-1][calls[-1].index("-t") + 1] == "50.000"  # tail remainder, 650 - 600
 
 
 def test_groq_chunk_maps_segments_and_strips_text(tmp_path):
@@ -339,6 +365,9 @@ def test_chunk_seconds_math():
     assert tr._chunk_seconds(3600.0, 1_200_000_000, limit) == 60
     # 100 MB over 2 h w/ mono speech audio is sparse -> capped by max_s
     assert tr._chunk_seconds(7200.0, 100_000_000, limit) == 900
+    # explicit hard duration cap (Groq 500 resilience) overrides max_s default
+    assert tr._chunk_seconds(7200.0, 100_000_000, limit, max_s=300) == 300
+    assert tr._chunk_seconds(240.0, 5_000_000, limit, max_s=300) == 0  # fits, still no split
 
 
 def _make_rate_limit_error(reset="500ms"):
@@ -406,3 +435,67 @@ def test_groq_chunk_rate_limit_exhaustion_raises(monkeypatch, tmp_path):
 
     assert always.attempts == 1  # long reset > SLEEP_CAP -> raise immediately
     assert sleeps == []
+
+
+def _make_internal_server_error():
+    """Real groq.InternalServerError backed by a genuine httpx 500 response."""
+    import httpx
+
+    import groq
+
+    resp = httpx.Response(
+        500,
+        request=httpx.Request(
+            "POST", "https://api.groq.com/openai/v1/audio/transcriptions"
+        ),
+    )
+    return groq.InternalServerError("boom", response=resp, body=None)
+
+
+class _Flaky500Audio:
+    """Fakes `client.audio.transcriptions.create`, failing 2x with 500 then OK."""
+
+    def __init__(self, resp, failures=2):
+        self.resp = resp
+        self.failures = failures
+        self.attempts = 0
+        self.transcriptions = self
+
+    def create(self, **kwargs):
+        self.attempts += 1
+        if self.attempts <= self.failures:
+            raise _make_internal_server_error()
+        return self.resp
+
+
+def test_groq_chunk_retries_on_transient_500(monkeypatch, tmp_path):
+    chunk = tmp_path / "chunk_000.flac"
+    chunk.write_bytes(b"audio-bytes")
+
+    flaky = _Flaky500Audio(_FakeResp(text="recovered ", segments=None))
+    client = type("C", (), {"audio": flaky})()
+    sleeps = []
+    monkeypatch.setattr(tr.time, "sleep", lambda s: sleeps.append(s))
+    monkeypatch.setattr(tr, "_probe_duration", lambda _: 6.0)
+
+    out = tr._transcribe_chunk(client, str(chunk), offset=2.0)
+
+    assert flaky.attempts == 3  # 2x HTTP 500, then success
+    assert sleeps == [tr.TRANSCRIBE_500_BACKOFF_S, tr.TRANSCRIBE_500_BACKOFF_S]
+    assert out == [{"start": 2.0, "end": 8.0, "text": "recovered"}]
+
+
+def test_groq_chunk_500_exhaustion_raises(monkeypatch, tmp_path):
+    chunk = tmp_path / "chunk_000.flac"
+    chunk.write_bytes(b"audio-bytes")
+
+    always = _Flaky500Audio(None, failures=99)
+    client = type("C", (), {"audio": always})()
+    sleeps = []
+    monkeypatch.setattr(tr.time, "sleep", lambda s: sleeps.append(s))
+
+    with pytest.raises(RuntimeError, match="HTTP 500 repeatedly"):
+        tr._transcribe_chunk(client, str(chunk), offset=0.0)
+
+    assert always.attempts == 3  # exhausted after the retry budget
+    assert sleeps == [tr.TRANSCRIBE_500_BACKOFF_S] * 2  # last attempt raises, no sleep
