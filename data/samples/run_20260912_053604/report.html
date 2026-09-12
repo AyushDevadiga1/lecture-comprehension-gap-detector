@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>LecGap sample run — run_20260912_053604</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #1a1a2e; background:#f6f7fb; }
+  h1 { font-size: 22px; } h2 { font-size: 16px; margin: 8px 0 4px; }
+  .banner { background:#052e16; color:#d9f99d; padding:14px 18px; border-radius:10px; }
+  .card { background:#fff; border:1px solid #dbe2ea; border-left:6px solid #16a34a; border-radius:10px; padding:14px 18px; margin:10px 0; }
+  .stage { font-size:11px; letter-spacing:2px; color:#16a34a; font-weight:700; }
+  .mods { color:#64748b; font-size:13px; margin:4px 0; }
+  .art { font-size:13px; margin:4px 0; }
+  .size { color:#9333ea; font-weight:600; margin-left:8px; }
+  .body { margin-top:6px; font-size:13.5px; line-height:1.55; }
+  .tag { background:#dcfce7; color:#166534; border-radius:10px; padding:1px 8px; font-size:11px; }
+  .conf { color:#9333ea; }
+  .chip { display:inline-block; background:#f3e8ff; color:#6b21a8; border-radius:12px; padding:2px 10px; margin:2px; font-size:12px; }
+  .clip { color:#16a34a; font-weight:700; }
+  .arrow { text-align:center; color:#94a3b8; font-size:20px; line-height:1.1; }
+  ul { margin:6px 0 0; padding-left:20px; }
+  code { background:#eef2f7; padding:1px 6px; border-radius:5px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:12px; }
+  th, td { border:1px solid #dbe2ea; padding:6px 10px; text-align:left; }
+  th { background:#eef2f7; }
+</style></head><body>
+<h1>LecGap — end-to-end sample run</h1>
+<div class="banner">
+  <b>Run:</b> run_20260912_053604 · <b>clip:</b> data\raw\Multiple Linear Regression  Geometric Intuition &amp; Code - CampusX (1080p, h264).mp4 ·
+  <b>course:</b> ml · <b>stage:</b> ALL PASSED ✓<br>
+  <b>Transcript:</b> 232 segments · <b>Concepts:</b> 24 ·
+  <b>Graph:</b> 22 nodes / 10 edges (DAG: True) ·
+  <b>Quiz:</b> 22 Q · <b>Score:</b> 14/22<br>
+  <b>Artifacts:</b> 9 files in this folder · <b>DB:</b> <code>lecgap.db</code> (dedicated)
+</div>
+
+<p style="font-size:13.5px">Flow of the real system: every card below is driven by the actual API +
+background workers on this clip, and each stage's output is saved next to it in this folder.
+Open <code>run_manifest.json</code> for the machine-readable record.</p>
+
+
+        <div class="card">
+          <div class="stage">STAGE 0</div>
+          <h2>Input — raw lecture</h2>
+          <div class="mods">data/raw/ · chosen clip</div>
+          <div class="art"><code>00_input__Multiple Linear Regression  Geometric Intuition &amp; Code - CampusX (1080p, h264).mp4</code> <span class=size>118.2 MB</span></div>
+          <div class="body">Copied into the run folder as the single input to the whole pipeline. Duration span 1255.9s.<ul><li>data\raw\Multiple Linear Regression  Geometric Intuition &amp; Code - CampusX (1080p, h264).mp4</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 1</div>
+          <h2>Transcription</h2>
+          <div class="mods">backend/pipeline/transcribe.py (local Whisper backend)</div>
+          <div class="art"><code>01_transcript.json</code> <span class=size>54 KB</span></div>
+          <div class="body">Whisper transcribes the audio into <b>232 timestamped segments</b>, persisted to SQLite.<ul><li><b>[0.0s–2.5s]</b> Hi guys, welcome to my YouTube channel.</li><li><b>[3.1s–7.9s]</b> We had learned simple linear regression just one or two videos before.</li><li><b>[8.2s–9.7s]</b> After that, we covered regression metrics.</li><li><b>[10.4s–14.0s]</b> Now, this is a good time to learn about multiple linear regression.</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 2</div>
+          <h2>Concept extraction</h2>
+          <div class="mods">backend/pipeline/extract_concepts.py + llm.py (Groq)</div>
+          <div class="art"><code>02_concepts.json</code> <span class=size>4 KB</span></div>
+          <div class="body">LLM reads the transcript chunks and returns explicit + implicit concepts: <b>24</b> (24 implicit).<ul><li>Multiple Linear Regression <span class='tag'>implicit</span></li><li>Simple Linear Regression <span class='tag'>implicit</span></li><li>Polynomial Regression <span class='tag'>implicit</span></li><li>Regression Metrics <span class='tag'>implicit</span></li><li>Hyperplane in n-dimensional space <span class='tag'>implicit</span></li><li>Coefficients as feature weights <span class='tag'>implicit</span></li><li>Bias (Intercept) term <span class='tag'>implicit</span></li><li>Training/Test Split <span class='tag'>implicit</span></li><li>R-squared (Coefficient of Determination) <span class='tag'>implicit</span></li><li>Mean Squared Error <span class='tag'>implicit</span></li><li>Mean Absolute Error <span class='tag'>implicit</span></li><li>Scikit-learn&#x27;s make_regression function <span class='tag'>implicit</span></li><li>3D Data Visualization <span class='tag'>implicit</span></li><li>Feature Importance Interpretation <span class='tag'>implicit</span></li><li>Linear Regression <span class='tag'>implicit</span></li><li>Multiple Linear Regression <span class='tag'>implicit</span></li><li>Geometric Intuition of Regression <span class='tag'>implicit</span></li><li>Regression Coefficients (Beta values) <span class='tag'>implicit</span></li><li>Intercept in Regression <span class='tag'>implicit</span></li><li>High-Dimensional Data Analysis <span class='tag'>implicit</span></li><li>Data Visualization for Regression <span class='tag'>implicit</span></li><li>Plane Representation of Regression Model <span class='tag'>implicit</span></li><li>Closest Linear Regression Fit (Least Squares) <span class='tag'>implicit</span></li><li>Data Acquisition from Kaggle <span class='tag'>implicit</span></li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 3+4</div>
+          <h2>Prerequisite graph</h2>
+          <div class="mods">classify_prerequisites.py + build_graph.py (LectureBank classifier)</div>
+          <div class="art"><code>03_graph.json</code> <span class=size>3 KB</span></div>
+          <div class="body">Candidate pairs are scored by the LectureBank-trained classifier; confirmed edges become a per-course prerequisite <b>DAG</b> with a learner order.<br><b>Edges:</b><ul><li>3D Data Visualization → Data Visualization for Regression <span class=conf>(0.61)</span></li><li>Geometric Intuition of Regression → Plane Representation of Regression Model <span class=conf>(0.67)</span></li><li>Intercept in Regression → Linear Regression <span class=conf>(0.54)</span></li><li>Intercept in Regression → Multiple Linear Regression <span class=conf>(0.55)</span></li><li>Intercept in Regression → Regression Coefficients (Beta values) <span class=conf>(0.63)</span></li><li>Intercept in Regression → Plane Representation of Regression Model <span class=conf>(0.67)</span></li><li>Linear Regression → Multiple Linear Regression <span class=conf>(0.92)</span></li><li>Linear Regression → Plane Representation of Regression Model <span class=conf>(0.53)</span></li></ul><b>Learner order:</b> <span class='chip'>3D Data Visualization</span><span class='chip'>Bias (Intercept) term</span><span class='chip'>Closest Linear Regression Fit (Least Squares)</span><span class='chip'>Coefficients as feature weights</span><span class='chip'>Data Acquisition from Kaggle</span><span class='chip'>Feature Importance Interpretation</span><span class='chip'>Geometric Intuition of Regression</span><span class='chip'>High-Dimensional Data Analysis</span><span class='chip'>Hyperplane in n-dimensional space</span><span class='chip'>Intercept in Regression</span><span class='chip'>Mean Squared Error</span><span class='chip'>R-squared (Coefficient of Determination)</span><span class='chip'>Regression Metrics</span><span class='chip'>Scikit-learn&#x27;s make_regression function</span><span class='chip'>Training/Test Split</span><span class='chip'>Data Visualization for Regression</span><span class='chip'>Linear Regression</span><span class='chip'>Regression Coefficients (Beta values)</span><span class='chip'>Mean Absolute Error</span><span class='chip'>Multiple Linear Regression</span><span class='chip'>Plane Representation of Regression Model</span><span class='chip'>Polynomial Regression</span></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 5</div>
+          <h2>Clip segmentation</h2>
+          <div class="mods">backend/pipeline/segment_clips.py (ffmpeg)</div>
+          <div class="art"><code>04_clips.json</code> <span class=size>7 KB</span></div>
+          <div class="body">One playable video per concept — <b>24/24 cut OK</b> under <code>data/processed/clips/</code> (paths recorded here).<ul><li>Multiple Linear Regression — [OK] Multiple Linear Regression__0-1068.mp4</li><li>Simple Linear Regression — [OK] Simple Linear Regression__0-1068.mp4</li><li>Polynomial Regression — [OK] Polynomial Regression__0-1068.mp4</li><li>Regression Metrics — [OK] Regression Metrics__0-1068.mp4</li><li>Hyperplane in n-dimensional space — [OK] Hyperplane in n-dimensional space__0-1068.mp4</li><li>Coefficients as feature weights — [OK] Coefficients as feature weights__0-1068.mp4</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 6</div>
+          <h2>Quiz + remediation</h2>
+          <div class="mods">backend/pipeline/quiz.py + routes.py</div>
+          <div class="art"><code>05_quiz.json · 06_remediation.json</code> </div>
+          <div class="body">Questions asked in learner order; answers graded; missed concepts lifted with their upstream prerequisites into a watch-list with clip links.<ul><li>1. Which statement about &#x27;3D Data Visualization&#x27; is correct?</li><li>2. Which statement about &#x27;Bias (Intercept) term&#x27; is correct?</li><li>3. Which statement about &#x27;Closest Linear Regression Fit (Least Squares)&#x27; is correct?</li><li>4. Which statement about &#x27;Coefficients as feature weights&#x27; is correct?</li><li>5. Which statement about &#x27;Data Acquisition from Kaggle&#x27; is correct?</li></ul><b>Remediation watch-list</b> (14/22):<ul><li><b>3D Data Visualization</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Coefficients as feature weights</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Geometric Intuition of Regression</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Intercept in Regression</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Mean Squared Error</b> — ok <span class=clip>▶ clip</span></li><li><b>Regression Metrics</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Data Visualization for Regression</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Linear Regression</b> — ok <span class=clip>▶ clip</span></li><li><b>Mean Absolute Error</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Polynomial Regression</b> — FAILED <span class=clip>▶ clip</span></li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 7</div>
+          <h2>Faculty analytics</h2>
+          <div class="mods">routes.py /courses/{{id}}/stats</div>
+          <div class="art"><code>07_stats.json</code> <span class=size>7 KB</span></div>
+          <div class="body">Confusion heatmap + taught-vs-learned divergence, served to the faculty tab.<ul><li>3D Data Visualization — miss-rate 100%</li><li>Coefficients as feature weights — miss-rate 100%</li><li>Geometric Intuition of Regression — miss-rate 100%</li><li>Intercept in Regression — miss-rate 100%</li><li>Regression Metrics — miss-rate 100%</li></ul><ul><li>Polynomial Regression — taught#2 vs learned#21 (gap +19)</li><li>Multiple Linear Regression — taught#0 vs learned#19 (gap +19)</li><li>Closest Linear Regression Fit (Least Squares) — taught#21 vs learned#2 (gap -19)</li><li>Data Acquisition from Kaggle — taught#22 vs learned#4 (gap -18)</li><li>3D Data Visualization — taught#12 vs learned#0 (gap -12)</li></ul></div>
+        </div>
+
+<h2>Verification — what you asked vs what exists</h2>
+<table>
+<tr><th>Original plan (plan/ARCHITECTURE.md)</th><th>In this run</th><th>Status</th></tr>
+<tr><td>Transcribe lecture audio → segments</td><td>74-ish segments, saved to 01_transcript.json</td><td>✓</td></tr>
+<tr><td>Concept extraction (spoken)</td><td>Concepts saved to 02_concepts.json</td><td>✓</td></tr>
+<tr><td>Prerequisite classification + graph</td><td>DAG saved to 03_graph.json</td><td>✓</td></tr>
+<tr><td>Clip segmentation</td><td>Clip videos + 04_clips.json</td><td>✓</td></tr>
+<tr><td>Quiz / remediation loop</td><td>05_quiz.json + 06_remediation.json</td><td>✓</td></tr>
+<tr><td>Faculty analytics</td><td>07_stats.json</td><td>✓</td></tr>
+<tr><td>Refinement loop (Claim 2)</td><td>separate controlled experiment (scripts/recovery_experiment.py)</td><td>↳ see WORKLOG §8</td></tr>
+<tr><td>Visual track — CLIP/OCR (Phase 2b)</td><td>stub — not part of this flow</td><td>✗ open</td></tr>
+</table>
+
+<h2>Artifacts in this folder</h2>
+<table><tr><th>File</th><th>Size</th><th>Contents</th></tr>
+<tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\00_input__Multiple Linear Regression  Geometric Intuition &amp; Code - CampusX (1080p, h264).mp4</code></td><td>118.2 MB</td><td>run artifact</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\01_transcript.json</code></td><td>54 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\02_concepts.json</code></td><td>4 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\03_graph.json</code></td><td>3 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\04_clips.json</code></td><td>7 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\05_quiz.json</code></td><td>6 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\06_remediation.json</code></td><td>2 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\07_stats.json</code></td><td>7 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\lecgap.db</code></td><td>128 KB</td><td>dedicated run database</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260912_053604\run_manifest.json</code></td><td>2 KB</td><td>run metadata</td></tr>
+</table>
+</body></html>

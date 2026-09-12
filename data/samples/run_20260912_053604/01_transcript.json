@@ -1,0 +1,1394 @@
+[
+  {
+    "idx": 0,
+    "start_s": 0.0,
+    "end_s": 2.5,
+    "text": "Hi guys, welcome to my YouTube channel."
+  },
+  {
+    "idx": 1,
+    "start_s": 3.12,
+    "end_s": 7.9199996,
+    "text": "We had learned simple linear regression just one or two videos before."
+  },
+  {
+    "idx": 2,
+    "start_s": 8.179999,
+    "end_s": 9.74,
+    "text": "After that, we covered regression metrics."
+  },
+  {
+    "idx": 3,
+    "start_s": 10.44,
+    "end_s": 14.0199995,
+    "text": "Now, this is a good time to learn about multiple linear regression."
+  },
+  {
+    "idx": 4,
+    "start_s": 14.62,
+    "end_s": 15.82,
+    "text": "We will talk about that in today's video."
+  },
+  {
+    "idx": 5,
+    "start_s": 16.68,
+    "end_s": 17.68,
+    "text": "So, let's start the video."
+  },
+  {
+    "idx": 6,
+    "start_s": 18.24,
+    "end_s": 20.68,
+    "text": "So guys, if you remember, I had told you about linear regression,"
+  },
+  {
+    "idx": 7,
+    "start_s": 21.68,
+    "end_s": 23.64,
+    "text": "that there are three main types."
+  },
+  {
+    "idx": 8,
+    "start_s": 23.64,
+    "end_s": 27.22,
+    "text": "So, one of them is simple linear regression."
+  },
+  {
+    "idx": 9,
+    "start_s": 27.22,
+    "end_s": 32.079998,
+    "text": "The second one is multiple linear regression"
+  },
+  {
+    "idx": 10,
+    "start_s": 32.079998,
+    "end_s": 36.379997,
+    "text": "And the third one is polynomial regression"
+  },
+  {
+    "idx": 11,
+    "start_s": 36.379997,
+    "end_s": 38.719997,
+    "text": "So, we have no problem with polynomial regression"
+  },
+  {
+    "idx": 12,
+    "start_s": 38.719997,
+    "end_s": 42.1,
+    "text": "Because it's a little bit of a topic"
+  },
+  {
+    "idx": 13,
+    "start_s": 42.1,
+    "end_s": 45.78,
+    "text": "We have a simple linear regression"
+  },
+  {
+    "idx": 14,
+    "start_s": 45.78,
+    "end_s": 49.42,
+    "text": "If you have this kind of data set"
+  },
+  {
+    "idx": 15,
+    "start_s": 49.42,
+    "end_s": 51.84,
+    "text": "You have only one input column"
+  },
+  {
+    "idx": 16,
+    "start_s": 51.84,
+    "end_s": 53.52,
+    "text": "And one output column"
+  },
+  {
+    "idx": 17,
+    "start_s": 53.52,
+    "end_s": 56.66,
+    "text": "And your output column is a numerical column"
+  },
+  {
+    "idx": 18,
+    "start_s": 56.66,
+    "end_s": 61.16,
+    "text": "So this is a simple linear regression case."
+  },
+  {
+    "idx": 19,
+    "start_s": 61.16,
+    "end_s": 65.159996,
+    "text": "What did you do? Just a quick revision."
+  },
+  {
+    "idx": 20,
+    "start_s": 65.159996,
+    "end_s": 69.159996,
+    "text": "You can plot the x quantity, y quantity."
+  },
+  {
+    "idx": 21,
+    "start_s": 69.159996,
+    "end_s": 88.979996,
+    "text": "You can see that these two quantities are linear like this If it was linear like this you could draw a line which you can see"
+  },
+  {
+    "idx": 22,
+    "start_s": 88.979996,
+    "end_s": 91.36,
+    "text": "\u0935\u093f\u091a \u0907\u0938 M X plus B"
+  },
+  {
+    "idx": 23,
+    "start_s": 91.36,
+    "end_s": 93.5,
+    "text": "\u0935\u093f\u091a \u092c\u0947\u0938\u093f\u0915\u0932\u0940 \u0906\u092a\u0915\u094b M \u0914\u0930 B"
+  },
+  {
+    "idx": 24,
+    "start_s": 93.5,
+    "end_s": 95.5,
+    "text": "\u092b\u093e\u0907\u0902\u0921 \u0915\u0930\u0928\u093e \u0939\u094b\u0924\u093e \u0925\u093e \u0914\u0930 \u0935\u094b \u0915\u0948\u0938\u0947"
+  },
+  {
+    "idx": 25,
+    "start_s": 95.5,
+    "end_s": 97.46,
+    "text": "\u092b\u093e\u0907\u0902\u0921 \u0939\u094b\u0924\u093e \u0939\u0948 \u092f\u0939 \u0939\u092e\u0928\u0947 \u0932\u093e\u0938\u094d\u091f \u0935\u0940\u0921\u093f\u092f\u094b \u092e\u0947\u0902"
+  },
+  {
+    "idx": 26,
+    "start_s": 97.46,
+    "end_s": 98.6,
+    "text": "\u092c\u0939\u0941\u0924 \u0921\u0940\u091f\u0947\u0932 \u092e\u0947\u0902 \u0926\u0947\u0916\u093e"
+  },
+  {
+    "idx": 27,
+    "start_s": 98.6,
+    "end_s": 100.82,
+    "text": "\u0928\u093e\u0935 \u0915\u092e\u0938 \u0926\u093e \u0915\u094d\u0935\u0947\u0938\u094d\u091a\u093f\u0928 \u0915\u093f \u0935\u093e\u091f \u0907\u0938"
+  },
+  {
+    "idx": 28,
+    "start_s": 100.82,
+    "end_s": 102.66,
+    "text": "\u092e\u0932\u094d\u091f\u0940\u092a\u0932 \u0932\u0940\u0928\u093f\u092f\u0930 \u0930\u093f\u0917\u094d\u0930\u0947\u0936\u0928"
+  },
+  {
+    "idx": 29,
+    "start_s": 102.66,
+    "end_s": 132.66,
+    "text": "\u0938\u094b \u092e\u0932\u094d\u091f\u093f\u092a\u0932 \u0930\u093f\u0917\u094d\u0930\u0947\u0936\u0928, \u0932\u093f\u0928\u093f\u092f\u0930 \u0930\u093f\u0917\u094d\u0930\u0947\u0936\u0928 \u0915\u093e \u0915\u0947\u0938 \u0924\u092c \u0906\u0924\u093e \u0939\u0948, \u091c\u092c \u0906\u092a\u0915\u0947 \u0935\u093e\u0938 \u090f\u0915 \u0910\u0938\u093e \u0921\u0947\u091f\u093e \u0938\u0947\u091f \u0939\u094b, \u091c\u092c \u0906\u092a\u0915\u0947 \u092c\u093e\u0938 \u0907\u0928\u094d\u092a\u0941\u091f \u092e\u0947\u0902 \u090f\u0915 \u0938\u0947 \u091c\u093e\u0927\u093e \u0915\u0949\u0932\u0902\u0938 \u0939\u094b\u0924\u0947 \u0939\u094b, \u091c\u0948\u0938\u0947 \u0915\u093f I'll give you one example, \u0932\u091f \u0938\u0947 \u0906\u092a\u0915\u0947 \u092c\u093e\u0938 X1 \u0939\u0948, X2 \u0939\u0948, X3 \u0939\u0948, \u0914\u0930 \u092b\u093f\u0930 Y \u0939\u0948, \u0924\u094b X1, X2, X3, \u092f\u0939 \u0924\u0940\u0928 \u0915\u0949\u0932\u0902\u0938"
+  },
+  {
+    "idx": 30,
+    "start_s": 132.66,
+    "end_s": 141.54001,
+    "text": "\u090f\u0915 \u0915\u0947\u0938 \u0939\u0948 \u091c\u092c \u092e\u0932\u094d\u091f\u093f\u092a\u0932 \u0932\u0940\u0928\u0947\u0930 \u0930\u0947\u0917\u094d\u0930\u0947\u0936\u0928 \u0905\u092a\u094d\u0932\u093e\u0908 \u0939\u094b\u0917\u093e \u090f\u0915 \u091c\u0932\u094d\u0926\u0940 \u0938\u0947 \u090f\u0915\u094d\u091c\u093e\u092e\u092a\u0932 \u0926\u0947\u0916 \u0932\u0947\u0924\u0947 \u0939\u0948\u0902 \u091c\u0948\u0938\u0947 \u0915\u093f \u0939\u092e\u0928\u0947 \u0938\u093f\u0902\u092a\u0932 \u0932\u0940\u0928\u0947\u0930 \u0930\u0947\u0917\u094d\u0930\u0947\u0936\u0928 \u092e\u0947\u0902 \u092f\u0939 \u090f\u0915\u094d\u091c\u093e\u092e\u092a\u0932 \u0932\u0947 \u0906\u0924\u093e \u0915\u093f"
+  },
+  {
+    "idx": 31,
+    "start_s": 141.54001,
+    "end_s": 163.84,
+    "text": "CGPA input lakhs per annum output transformed version could be CGPA information gender information"
+  },
+  {
+    "idx": 32,
+    "start_s": 163.84,
+    "end_s": 166.84,
+    "text": "\u0924\u094b \u0905\u0917\u0930 \u0906\u092a\u0915\u0947 \u092a\u093e\u0938 \u0915\u092d\u0940 \u092d\u0940 \u090f\u0915 \u0938\u0947 \u091c\u093c\u094d\u092f\u093e\u0926\u093e \u0935\u0947\u0930\u093f\u092f\u092c\u0932\u094d\u0938 \u0939\u0948\u0902"
+  },
+  {
+    "idx": 33,
+    "start_s": 166.84,
+    "end_s": 169.4,
+    "text": "\u0907\u0902\u092a\u0941\u091f \u092e\u0947\u0902 \u0928\u093e \u0907\u0938 \u092e\u0932\u094d\u091f\u093f\u092a\u0932 \u0932\u0940\u0928\u093f\u092f\u0930 \u0930\u093f\u0917\u094d\u0930\u0947\u0936\u0928"
+  },
+  {
+    "idx": 34,
+    "start_s": 169.4,
+    "end_s": 172.8,
+    "text": "\u0914\u0930 \u0913\u0928\u0947\u0938\u0932\u0940 \u091c\u093c\u094d\u092f\u093e\u0926\u093e \u0924\u0930 \u091f\u093e\u0907\u092e\u094d\u0938 \u091c\u092c \u0906\u092a"
+  },
+  {
+    "idx": 35,
+    "start_s": 172.8,
+    "end_s": 175.16,
+    "text": "\u0930\u093f\u092f\u0932 \u0935\u0932\u094d\u0932 \u0921\u0947\u091f\u093e \u092a\u0947 \u0915\u093e\u092e \u0915\u0930\u094b\u0917\u0947 \u0906\u092a\u0915\u094b"
+  },
+  {
+    "idx": 36,
+    "start_s": 175.16,
+    "end_s": 177.32,
+    "text": "multiple linear regression \u0939\u0940 apply \u0915\u0930\u0928\u093e"
+  },
+  {
+    "idx": 37,
+    "start_s": 177.32,
+    "end_s": 179.48,
+    "text": "\u092a\u0921\u093c\u0947\u0917\u093e \u0915\u094d\u092f\u094b\u0902\u0915\u093f mostly \u0906\u092a\u0915\u0947 \u092a\u093e\u0938"
+  },
+  {
+    "idx": 38,
+    "start_s": 179.48,
+    "end_s": 181.45999,
+    "text": "\u091c\u094b data \u0906\u090f\u0917\u093e \u0909\u0938\u0915\u0947 input \u092e\u0947\u0902"
+  },
+  {
+    "idx": 39,
+    "start_s": 181.45999,
+    "end_s": 182.88,
+    "text": "\u090f\u0915 \u0938\u0947 \u091c\u093c\u094d\u092f\u093e\u0926\u093e columns \u0939\u094b\u0917\u093e"
+  },
+  {
+    "idx": 40,
+    "start_s": 182.88,
+    "end_s": 185.45999,
+    "text": "\u0924\u094b \u092b\u093f\u0930 \u0906\u092a\u0915\u0947 \u0926\u093f\u0935\u093e\u0917\u0947 question \u0906\u092f\u093e \u0939\u094b\u0917\u093e"
+  },
+  {
+    "idx": 41,
+    "start_s": 185.45999,
+    "end_s": 187.28,
+    "text": "\u0915\u093f \u092b\u093f\u0930 \u0906\u092a\u0915\u0947 simple linear regression \u0915\u094d\u092f\u094b\u0902 \u092a\u0922\u093c\u093e"
+  },
+  {
+    "idx": 42,
+    "start_s": 187.28,
+    "end_s": 189.62,
+    "text": "\u091c\u092c \u0907\u0924\u0928\u093e useful \u0939\u0948 \u0939\u0940 \u0928\u0939\u0940\u0902 \u0924\u094b \u092a\u0922\u093c\u093e \u0915\u094d\u092f\u094b\u0902"
+  },
+  {
+    "idx": 43,
+    "start_s": 189.62,
+    "end_s": 192.34,
+    "text": "\u0907\u0938\u0932\u093f\u090f \u092a\u0922\u093c\u093e \u0915\u094d\u092f\u094b\u0902\u0915\u093f simple linear regression \u092e\u0947\u0902"
+  },
+  {
+    "idx": 44,
+    "start_s": 192.34,
+    "end_s": 197.02,
+    "text": "\u091c\u094b \u0906\u092a\u0928\u0947 \u0938\u0940\u0916\u093e, \u0935\u094b as it is applicable \u0939\u0948 multiple linear regression \u092e\u0947\u0902."
+  },
+  {
+    "idx": 45,
+    "start_s": 197.38,
+    "end_s": 200.76,
+    "text": "So \u0939\u094b\u0924\u093e \u0915\u094d\u092f\u093e \u0939\u0948 \u0915\u093f \u0905\u0917\u0930 \u0906\u092a lower dimension \u092e\u0947\u0902 \u091a\u0940\u091c\u094b\u0902 \u0915\u094b \u0938\u094b\u091a \u092a\u093e\u0913, \u0938\u092e\u091d \u092a\u093e\u0913,"
+  },
+  {
+    "idx": 46,
+    "start_s": 201.08,
+    "end_s": 203.26,
+    "text": "\u0924\u094b \u0906\u092a \u0909\u0938\u0915\u094b higher dimension \u092e\u0947\u0902 visualize \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u094b."
+  },
+  {
+    "idx": 47,
+    "start_s": 203.56,
+    "end_s": 206.76,
+    "text": "That is why \u092e\u0948\u0902\u0928\u0947 \u0906\u092a\u0915\u094b simple linear regression \u0915\u093e concept \u092a\u0939\u0932\u0947 \u092a\u0922\u093c\u093e\u092f\u093e"
+  },
+  {
+    "idx": 48,
+    "start_s": 206.76,
+    "end_s": 209.2,
+    "text": "\u0914\u0930 \u0905\u092a\u0928\u0947 \u0906\u092a\u0915\u094b multiple linear regression \u092a\u0922\u093c\u093e\u090a\u0917\u093e."
+  },
+  {
+    "idx": 49,
+    "start_s": 209.36,
+    "end_s": 214.48001,
+    "text": "So multiple linear regression is just an extension of simple linear regression"
+  },
+  {
+    "idx": 50,
+    "start_s": 214.48001,
+    "end_s": 231.72,
+    "text": "simple linear regression is just a specialization of multiple linear regression multiple linear regression variable simple linear regression question multiple linear regression"
+  },
+  {
+    "idx": 51,
+    "start_s": 231.78,
+    "end_s": 232.82,
+    "text": "\u0924\u094b \u0915\u094d\u092f\u093e \u0915\u0930\u0928\u093e \u092a\u0921\u093c\u0924\u093e \u0939\u0948,"
+  },
+  {
+    "idx": 52,
+    "start_s": 233.3,
+    "end_s": 235.42,
+    "text": "to solve the problem, \u092c\u0939\u0941\u0924 simple \u0939\u0948,"
+  },
+  {
+    "idx": 53,
+    "start_s": 235.52,
+    "end_s": 236.82,
+    "text": "\u0906\u092a exactly \u092d\u0908 \u0915\u0930\u0924\u0947 \u0939\u094b,"
+  },
+  {
+    "idx": 54,
+    "start_s": 237.3,
+    "end_s": 239.76,
+    "text": "\u091c\u094b \u0906\u092a simple linear regression \u092e\u0947\u0902 \u0915\u0930\u0924\u0947 \u0939\u094b,"
+  },
+  {
+    "idx": 55,
+    "start_s": 240.1,
+    "end_s": 241.26,
+    "text": "just to simplify things,"
+  },
+  {
+    "idx": 56,
+    "start_s": 241.52,
+    "end_s": 243.06,
+    "text": "\u092e\u0948\u0902 x3 \u0915\u094b \u0939\u091f\u093e \u0930\u0939\u0942,"
+  },
+  {
+    "idx": 57,
+    "start_s": 243.06,
+    "end_s": 245.16,
+    "text": "\u0914\u0930 \u092f\u0939\u093e\u0902 \u0938\u0947 \u092e\u0948\u0902 gender \u0915\u094b \u0939\u091f\u093e \u0930\u0939\u0942\u0902"
+  },
+  {
+    "idx": 58,
+    "start_s": 245.16,
+    "end_s": 247.18,
+    "text": "\u0938\u094b \u092e\u0924\u0932\u092c \u092e\u093f\u0930\u0947 \u092a\u093e\u0938 \u091c\u094b data \u0939\u0948 \u0935\u094b \u0910\u0938\u093e \u0926\u093f\u0916\u0924\u093e \u0939\u0948"
+  },
+  {
+    "idx": 59,
+    "start_s": 247.18,
+    "end_s": 249.7,
+    "text": "X1, X2, Y"
+  },
+  {
+    "idx": 60,
+    "start_s": 249.7,
+    "end_s": 251.2,
+    "text": "\u092e\u093f\u0930\u0947 \u092a\u093e\u0938 \u0926\u094b input columns \u0939\u0948"
+  },
+  {
+    "idx": 61,
+    "start_s": 251.2,
+    "end_s": 253.1,
+    "text": "\u090f\u0915 output column \u0939\u0948"
+  },
+  {
+    "idx": 62,
+    "start_s": 253.1,
+    "end_s": 255.66,
+    "text": "\u0914\u0930 \u0907\u0938\u0915\u094b \u0905\u0917\u0930 \u0939\u092e \u0925\u094b\u0921\u093c\u093e \u0938\u092e\u091d\u0928\u0947 \u0915\u0947 terms \u092e\u0947\u0902 \u092c\u093e\u0924 \u0915\u0930\u0947\u0902"
+  },
+  {
+    "idx": 63,
+    "start_s": 255.66,
+    "end_s": 257.34,
+    "text": "\u0924\u094b CGP \u0939\u0948 \u0939\u092e\u093e\u0930\u093e X1 \u0939\u0948"
+  },
+  {
+    "idx": 64,
+    "start_s": 257.34,
+    "end_s": 260.1,
+    "text": "IQ \u0939\u092e\u093e\u0930\u093e X2 \u0939\u0948"
+  },
+  {
+    "idx": 65,
+    "start_s": 260.1,
+    "end_s": 262.22,
+    "text": "\u0914\u0930 LP \u0939\u0948 \u0939\u092e\u093e\u0930\u093e Y \u0939\u0948"
+  },
+  {
+    "idx": 66,
+    "start_s": 262.22,
+    "end_s": 263.52,
+    "text": "\u092f\u0939 data set \u0939\u092e\u093e\u0930\u0947 \u092a\u093e\u0938 \u0939\u0948"
+  },
+  {
+    "idx": 67,
+    "start_s": 263.52,
+    "end_s": 274.52,
+    "text": "\u0915\u094d\u092f\u094b\u0902 \u092e\u0948\u0902\u0928\u0947 \u090f\u0915 \u0915\u0949\u0932\u092e \u0939\u091f\u093e \u0926\u093f\u092f\u093e \u0915\u094d\u092f\u094b\u0902\u0915\u093f \u092e\u0948\u0902 \u0906\u092a\u0915\u094b 3D \u092e\u0947\u0902 \u0926\u093f\u0916\u093e\u0928\u093e \u091a\u093e\u0939\u0924\u093e \u0939\u0942\u0902 \u0939\u092e human beings maximum 3D \u092e\u0947\u0902 \u0926\u0947\u0916 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902 \u092f\u0939 data 4D \u0939\u094b \u091c\u093e\u0924\u093e \u0914\u0930 4D \u0939\u094b \u091c\u093e\u0924\u093e \u0924\u094b \u092e\u0948\u0902 \u0906\u092a\u0915\u094b \u0926\u093f\u0916\u093e\u0928\u0940 \u092a\u093e\u0924\u093e \u0915\u093f \u0915\u0948\u0938\u0947 \u0915\u093e\u092e \u0915\u0930 \u0930\u0939\u093e \u0939\u0948"
+  },
+  {
+    "idx": 68,
+    "start_s": 274.52,
+    "end_s": 286.98,
+    "text": "\u0924\u094b, see the funda is very simple, \u0906\u092a \u092b\u093f\u0930 \u0938\u0947 \u0915\u094d\u092f\u093e \u0915\u0930\u094b\u0917\u0947, \u0906\u092a \u0921\u0947\u091f\u093e \u0915\u094b plot \u0915\u0930\u094b\u0917\u0947, \u0907\u0938 \u092c\u093e\u0930 \u0906\u092a \u0907\u0938\u0915\u094b 3D graph \u092e\u0947\u0902 plot \u0915\u0930\u094b \u091c\u094b, \u0916\u0947\u0902\u0917 \u0939\u0948, \u0906\u092a \u0907\u0938\u0915\u094b 3D graph \u092e\u0947\u0902 plot \u0915\u0930\u094b\u0917\u0947,"
+  },
+  {
+    "idx": 69,
+    "start_s": 288.26,
+    "end_s": 299.98,
+    "text": "I'm not very good at 3D level \u092a\u0930 draw \u0915\u0930\u0928\u093e, \u0916\u0947\u0902\u0917 \u0939\u0948 \u0906\u092a \u0910\u0938\u0947 draw \u0915\u0930\u094b\u0917\u0947, this is your CGPA, this is your IQ,"
+  },
+  {
+    "idx": 70,
+    "start_s": 300.0,
+    "end_s": 307.7599998,
+    "text": "\u0905\u092c \u092b\u093f\u0930 \u0938\u0947 \u0906\u092a\u0915\u094b \u0915\u094d\u092f\u093e \u0915\u0930\u0928\u093e \u0939\u0948 \u0938\u094b\u091a\u094b \u0905\u0917\u0930 \u0906\u092a\u0915\u094b"
+  },
+  {
+    "idx": 71,
+    "start_s": 307.7599998,
+    "end_s": 315.0,
+    "text": "1D \u092e\u0947\u0902 2D \u092e\u0947\u0902 \u0906\u092a \u090f\u0915 line \u0921\u094d\u0930\u0949 \u0915\u0930\u0915\u0947 prediction \u0915\u0930 \u0930\u0939\u0947 \u0939\u094b \u0924\u094b \u0909\u0938\u0915\u093e"
+  },
+  {
+    "idx": 72,
+    "start_s": 315.0,
+    "end_s": 318.9,
+    "text": "equivalent 3D \u092e\u0947\u0902 \u0915\u094d\u092f\u093e \u0939\u094b \u0938\u0915\u0924\u0947 \u0939\u0948\u0902 I guess \u0906\u092a\u0915\u094b \u0938\u092e\u091d \u092e\u0947\u0902 \u0906 \u0930\u0939\u093e \u0939\u0948"
+  },
+  {
+    "idx": 73,
+    "start_s": 318.9,
+    "end_s": 324.8,
+    "text": "it would be a plane so 3D \u0915\u0947 case \u092e\u0947\u0902 \u0915\u094d\u092f\u093e \u0915\u0930\u094b\u0917\u0947 \u0906\u092a \u090f\u0915 plane \u0921\u094d\u0930\u0949 \u0915\u0930\u094b\u0917\u0947"
+  },
+  {
+    "idx": 74,
+    "start_s": 324.8,
+    "end_s": 327.88,
+    "text": "\u091c\u094b \u0915\u093f \u0907\u0938 \u092a\u0942\u0930\u0947 \u0921\u0947\u091f\u093e \u0915\u094b \u0915\u093e\u091f\u0947\u0917\u093e"
+  },
+  {
+    "idx": 75,
+    "start_s": 327.88,
+    "end_s": 331.06,
+    "text": "\u0938\u094b \u0906\u092a \u0910\u0938\u0947 \u0938\u092e\u091d\u094b \u0915\u093f \u0907\u0938 \u092a\u094d\u0932\u0947\u0928 \u0915\u0947"
+  },
+  {
+    "idx": 76,
+    "start_s": 331.06,
+    "end_s": 333.04,
+    "text": "\u0915\u0941\u091b \u092a\u0949\u0907\u0902\u091f\u094d\u0938 \u0909\u092a\u0930 \u0939\u094b\u0902\u0917\u0947"
+  },
+  {
+    "idx": 77,
+    "start_s": 333.04,
+    "end_s": 335.2,
+    "text": "\u0915\u0941\u091b \u092a\u0949\u0907\u0902\u091f\u094d\u0938 \u0928\u0940\u091a\u0947 \u0939\u094b\u0902\u0917\u0947"
+  },
+  {
+    "idx": 78,
+    "start_s": 335.2,
+    "end_s": 336.739998,
+    "text": "\u092e\u0924\u0932\u092c \u0905\u092a\u0928\u0947 \u0930\u0942\u092e \u0915\u094b \u0907\u092e\u093e\u091c\u093f\u0928 \u0915\u0930\u094b"
+  },
+  {
+    "idx": 79,
+    "start_s": 336.739998,
+    "end_s": 338.32,
+    "text": "\u0909\u0938 \u0930\u0942\u092e \u092e\u0947\u0902 \u092a\u0949\u0907\u0902\u091f\u094d\u0938 \u0939\u0935\u093e \u092e\u0947\u0902 \u0939\u0948"
+  },
+  {
+    "idx": 80,
+    "start_s": 338.32,
+    "end_s": 340.8,
+    "text": "\u0914\u0930 \u0906\u092a \u0915\u094d\u092f\u093e \u0915\u0930\u0947\u0902 \u090f\u0915 \u092b\u094d\u0932\u093e\u091f \u0936\u0940\u091f \u0938\u0947"
+  },
+  {
+    "idx": 81,
+    "start_s": 340.8,
+    "end_s": 342.7,
+    "text": "\u092a\u0942\u0930\u0947 \u0915\u0947 \u092a\u0942\u0930\u0947 points \u0915\u094b \u0915\u093e\u091f \u0930\u0939\u0947\u0902,"
+  },
+  {
+    "idx": 82,
+    "start_s": 343.079998,
+    "end_s": 344.94,
+    "text": "and the whole idea is \u0915\u093f \u0935\u094b \u091c\u094b sheet \u0939\u0948,"
+  },
+  {
+    "idx": 83,
+    "start_s": 345.6,
+    "end_s": 346.899998,
+    "text": "\u0935\u094b \u091c\u094b flat sheet \u0939\u0948,"
+  },
+  {
+    "idx": 84,
+    "start_s": 347.44,
+    "end_s": 348.62,
+    "text": "\u0935\u094b \u0938\u093e\u0930\u0947 points \u0915\u0947"
+  },
+  {
+    "idx": 85,
+    "start_s": 348.62,
+    "end_s": 350.68,
+    "text": "\u092c\u0939\u0941\u0924 close \u0930\u0939\u0928\u0947 \u0915\u093e try \u0915\u0930\u0947\u0917\u0940,"
+  },
+  {
+    "idx": 86,
+    "start_s": 350.86,
+    "end_s": 352.18,
+    "text": "there could be a lot of sheets,"
+  },
+  {
+    "idx": 87,
+    "start_s": 352.53999699999997,
+    "end_s": 354.079998,
+    "text": "\u0906\u092a \u092c\u0939\u0941\u0924 \u0924\u0930\u0939 \u0938\u0947 sheets \u0930\u0916 \u0938\u0915\u0924\u0947 \u0939\u094b,"
+  },
+  {
+    "idx": 88,
+    "start_s": 354.48,
+    "end_s": 356.64,
+    "text": "I don't have anything right now except my"
+  },
+  {
+    "idx": 89,
+    "start_s": 356.64,
+    "end_s": 358.94,
+    "text": "drawing board, so you can have a lot"
+  },
+  {
+    "idx": 90,
+    "start_s": 358.94,
+    "end_s": 360.36,
+    "text": "of sheets, right,"
+  },
+  {
+    "idx": 91,
+    "start_s": 360.699997,
+    "end_s": 362.15999999999997,
+    "text": "\u0910\u0938\u093e \u092d\u0940 \u0939\u094b \u0938\u0915\u0924\u093e \u0939\u0948, \u0910\u0938\u093e \u092d\u0940 \u0939\u094b \u0938\u0915\u0924\u093e \u0939\u0948,"
+  },
+  {
+    "idx": 92,
+    "start_s": 362.15999999999997,
+    "end_s": 364.2,
+    "text": "\u0907\u0938 3D plane \u092e\u0947\u0902 \u0915\u093f\u0938\u0940 \u092d\u0940 \u0924\u0930\u0939 \u0915\u093e sheet \u0939\u094b \u0938\u0915\u0924\u093e \u0939\u0948,"
+  },
+  {
+    "idx": 93,
+    "start_s": 364.2,
+    "end_s": 368.04,
+    "text": "\u092c\u091f \u0906\u092a \u090f\u0915 \u0910\u0938\u093e sheet \u092f\u093e \u090f\u0915 \u0910\u0938\u093e plane draw \u0915\u0930\u0928\u0947 \u0915\u093e try \u0915\u0930\u094b\u0917\u0947,"
+  },
+  {
+    "idx": 94,
+    "start_s": 368.04,
+    "end_s": 400.0,
+    "text": "points close that is the whole idea 3D 4D 4D 4D 4D"
+  },
+  {
+    "idx": 95,
+    "start_s": 400.0,
+    "end_s": 430.0,
+    "text": "\u0924\u094b \u0939\u092e\u0928\u0947 2D \u092e\u0947\u0902 \u091c\u092c \u0915\u093e\u092e \u0915\u0930 \u0930\u0939\u0947 \u0925\u0947, simple linear regression \u092e\u0947\u0902, \u0924\u094b \u0939\u092e \u092f\u0939 equation solve \u0915\u0930 \u0930\u0939\u0947 \u0925\u0947, y is equal to mx plus b, \u0920\u0940\u0915 \u0939\u0948, \u0914\u0930 \u0939\u092e\u0947\u0902 \u0928\u093f\u0915\u093e\u0932\u0928\u093e \u0915\u094d\u092f\u093e \u0925\u093e, m \u0914\u0930 b, \u0907\u0938\u0940 \u0915\u094b \u091c\u092c \u0906\u092a 3D \u092e\u0947\u0902 \u0932\u0947\u0915\u0947 \u0906\u0913\u0917\u0947, \u0924\u094b \u092f\u0939 equation \u092c\u0928 \u091c\u093e\u0924\u093e \u0939\u0948, y is equal to, \u0907\u0938 \u092c\u093e\u0930 \u0906\u092a\u0915\u0947 x, \u092e\u0924\u0932\u092c \u0906\u092a\u0915\u093e y \u0907\u0938 \u0907\u0938 \u092a\u0930 depend \u0928\u0939\u0940\u0902 \u0915\u0930 \u0930\u0939\u093e \u0939\u0948, \u0905\u092c \u0906\u092a\u0915\u093e y x1 \u0914\u0930"
+  },
+  {
+    "idx": 96,
+    "start_s": 430.0,
+    "end_s": 434.32,
+    "text": "x1 plus n x2 plus b."
+  },
+  {
+    "idx": 97,
+    "start_s": 434.91999999999996,
+    "end_s": 438.64,
+    "text": "\u0925\u094b\u0921\u093c\u093e \u0938\u093e \u0914\u0930 consistent behavior \u0915\u0947 \u0932\u093f\u090f \u0906\u092a \u0915\u094d\u092f\u093e \u0932\u093f\u0916\u0924\u0947 \u0939\u094b? \u0906\u092a \u0932\u093f\u0916\u0924\u0947 \u0939\u094b \u0907\u0938\u0915\u094b \u0910\u0938\u0947."
+  },
+  {
+    "idx": 98,
+    "start_s": 439.12,
+    "end_s": 443.56,
+    "text": "b \u0915\u0947 \u092c\u0926\u0932\u0947 \u0906\u092a \u0932\u093f\u0916\u0924\u0947 \u0939\u094b beta not. \u092f\u0939 \u092e\u0948\u0902 \u0925\u094b\u0921\u093c\u093e \u0938\u093e\u092c \u0915\u094b literature \u0938\u092e\u091d\u093e \u0930\u0939\u093e \u0939\u0942\u0901."
+  },
+  {
+    "idx": 99,
+    "start_s": 444.76000999999997,
+    "end_s": 474.15999999999997,
+    "text": "beta 1 x1 plus 2 X2"
+  },
+  {
+    "idx": 100,
+    "start_s": 474.15999999999997,
+    "end_s": 487.8,
+    "text": "\u0924\u094b \u092e\u0948\u0902 \u092f\u0939 \u0907\u0915\u094d\u0935\u0947\u0936\u0928 \u0938\u091a \u0915\u0930 \u0930\u0939\u093e \u0925\u093e \u092c\u0940\u091f\u093e \u0928\u094c\u0924 \u092a\u094d\u0932\u0938 \u0935\u093f\u091f\u093e \u0935\u0928 \u090f\u0915\u094d\u0938 \u0935\u0928 \u092a\u094d\u0932\u0938 \u092c\u0940\u091f\u093e \u091f\u0942"
+  },
+  {
+    "idx": 101,
+    "start_s": 487.8,
+    "end_s": 517.8,
+    "text": "\u090f\u0915\u094d\u0938\u094d\u091f\u0942 \u092a\u094d\u0932\u0938 \u092c\u0940\u091f\u093e 3 \u090f\u0915\u094d\u0938\u094d\u091f\u094d\u0930\u0940 \u0914\u0930 \u0907\u0938-\u0938 \u0928\u092e\u091f \u091a\u093e\u0930 \u091a\u0940\u091c\u0947 \u0928\u093f\u0915\u093e\u0932\u0928\u0947 \u0917\u093e\u0932\u0947 \u0915\u093e \u091f\u093e \u092c\u0940\u091f\u093e \u0928\u094c\u091f \u092c\u0940\u091f\u093e 1 \u092c\u0940\u091f\u093e 2 \u090f\u0902\u0926 \u091f\u094d\u0930\u0940 \u0920\u0940\u0915 \u0939\u0948 \u0905\u092c \u0906\u092a \u0907\u0938\u0915\u094b \u0908\u091c\u0932\u0940 \u090f\u0915\u094d\u0938\u094d\u091f \u0905\u0915\u094d\u0938\u0930\u093e\u0907\u092c \u0915\u0930 \u0938\u0947\u092a\u094d\u0924\u0947 \u0939\u094b \u0925\u094b \u090f\u0902\u0921 \u0926\u093f\u092e\u0947\u0902\u0936\u0928\u0932 \u0921\u0947\u091f\u093e \u0938\u0947\u091f \u091c\u093e\u0917 \u0906\u092a\u0915\u0947 \u0905\u092a\u0915\u0947 \u092a\u093e\u0938 \u090f\u0928 \u0907\u0902\u092a"
+  },
+  {
+    "idx": 102,
+    "start_s": 517.8,
+    "end_s": 550.0,
+    "text": ""
+  },
+  {
+    "idx": 103,
+    "start_s": 550.0,
+    "end_s": 574.14,
+    "text": "\u092f\u0939\u093e\u0902 \u0917\u0930\u0924\u093e \u0910\u0938\u093e \u0932\u093f\u090f\u0915 \u0915\u094b \u0921\u093f\u0936\u0928 \u0915\u094b \u0905\u092c \u0906\u092a\u0915\u094b \u091c\u0902\u0926\u0940 \u0938\u0947 \u090f\u0915\u0941\u0921\u093c\u093e"
+  },
+  {
+    "idx": 104,
+    "start_s": 574.14,
+    "end_s": 582.78,
+    "text": "\u0932\u0941\u092e\u0928\u0932\u0940 \u0907\u0902\u091f\u0930\u094d\u092a\u0947\u091f\u0947\u0936\u0928 \u0926\u0947\u0924\u093e \u0939\u0942\u0902 \u091a\u0940\u091c\u094b\u0902 \u0915\u093e \u092f\u0939 \u092e\u0948\u0902\u0928\u0947 \u0906\u092a\u0915\u094b \u0938\u093f\u0902\u092a\u0932 \u0932\u093f\u0928\u0947\u0930 \u0930\u093f\u0917\u094d\u0930\u0947\u0936\u0928 \u092e\u0947\u0902 \u092d\u0940 \u0926\u093f\u092f\u093e \u0925\u093e \u0915\u093f \u0905\u0917\u0930 \u0906\u092a\u0915\u0947 \u092a\u093e\u0938"
+  },
+  {
+    "idx": 105,
+    "start_s": 582.78,
+    "end_s": 599.9799800000001,
+    "text": "\u090f\u0915\u094d\u0937\u093f\u0915 \u0909\u0930\u093e\u091f \u0939\u0948\u0964 \u092f\u0939\u093e\u0902 \u092a\u0930 \u090f\u0915\u094d\u0937\u093f\u0915 \u092a\u094d\u0930\u0915\u094d\u0930\u093e\u0907\u0936\u094d\u091a,"
+  },
+  {
+    "idx": 106,
+    "start_s": 600.0,
+    "end_s": 602.4199998,
+    "text": "\u0914\u0930 X2 \u0915\u094d\u092f\u093e \u0939\u0948?"
+  },
+  {
+    "idx": 107,
+    "start_s": 602.9199998,
+    "end_s": 604.62,
+    "text": "IQ. \u0924\u094b \u0906\u092a \u0907\u0938 equation \u0915\u094b"
+  },
+  {
+    "idx": 108,
+    "start_s": 604.62,
+    "end_s": 606.2,
+    "text": "rewrite \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u094b \u0914\u0930 by the way"
+  },
+  {
+    "idx": 109,
+    "start_s": 606.2,
+    "end_s": 607.56,
+    "text": "Y \u0906\u092a\u0915\u093e \u0915\u094d\u092f\u093e \u0939\u0948? LPA."
+  },
+  {
+    "idx": 110,
+    "start_s": 608.139999,
+    "end_s": 610.48,
+    "text": "\u0924\u094b \u0905\u0917\u0930 \u0906\u092a\u0915\u094b \u0915\u093f\u0938\u0940 \u092d\u0940 student \u0915\u093e LPA value"
+  },
+  {
+    "idx": 111,
+    "start_s": 610.48,
+    "end_s": 612.54,
+    "text": "calculate \u0915\u0930\u0928\u093e \u0939\u0948 \u0914\u0930 \u0905\u0917\u0930 \u0906\u092a\u0915\u0947 \u092a\u093e\u0938"
+  },
+  {
+    "idx": 112,
+    "start_s": 612.54,
+    "end_s": 614.62,
+    "text": "beta not, beta 1 \u0914\u0930 beta 2 \u0939\u0948"
+  },
+  {
+    "idx": 113,
+    "start_s": 614.62,
+    "end_s": 615.82,
+    "text": "training \u0915\u0930\u0928\u0947 \u0915\u0947 \u092c\u093e\u0926"
+  },
+  {
+    "idx": 114,
+    "start_s": 615.82,
+    "end_s": 618.039999,
+    "text": "\u0924\u094b \u092f\u0947 equation \u092c\u0938 \u0907\u0924\u0928\u093e \u0939\u0948"
+  },
+  {
+    "idx": 115,
+    "start_s": 618.039999,
+    "end_s": 620.26,
+    "text": "\u0915\u093f \u0906\u092a beta 1 \u0915\u094b multiply \u0915\u0930 \u0926\u094b\u0917\u0947"
+  },
+  {
+    "idx": 116,
+    "start_s": 620.26,
+    "end_s": 621.98,
+    "text": "CGPA \u0938\u0947"
+  },
+  {
+    "idx": 117,
+    "start_s": 621.98,
+    "end_s": 624.84,
+    "text": "\u0914\u0930 beta 2 \u0915\u094b multiply \u0915\u0930 \u0926\u094b\u0917\u0947"
+  },
+  {
+    "idx": 118,
+    "start_s": 624.84,
+    "end_s": 626.0,
+    "text": "IQ \u0938\u0947"
+  },
+  {
+    "idx": 119,
+    "start_s": 626.0,
+    "end_s": 633.44,
+    "text": "\u0907\u0938 \u0907\u0938 \u0907\u0938 \u0907\u0915\u094d\u0935\u0947\u0936\u0928 \u0915\u093f\u0938\u0940 \u092d\u0940 \u0928\u090f \u092c\u091a\u094d\u091a\u0947 \u0915\u0947 \u0932\u093f\u090f \u0905\u0917\u0930 \u092e\u0941\u091d\u0947 \u092a\u0924\u093e \u0915\u0930\u0928\u093e \u0939\u0948 \u0909\u0938\u0915\u093e \u092a\u093e\u0915\u0947\u091c \u0915\u093f\u0924\u0928\u0947 \u0915\u093e \u0932\u0917\u0947\u0917\u093e \u0924\u094b \u092e\u0941\u091d\u0947 \u092c\u0938 \u0909\u0938\u0915\u093e \u0906\u0907\u0915\u094d\u0935 \u091a\u093e\u0939\u093f\u090f"
+  },
+  {
+    "idx": 120,
+    "start_s": 633.44,
+    "end_s": 644.98,
+    "text": "CGPA \u091a\u093e\u0939\u093f\u090f, beta 0, beta 1, beta 2 \u0915\u093e value \u091a\u093e\u0939\u093f\u090f \u0914\u0930 \u092e\u0947\u0930\u093e \u0915\u093e\u092e \u0939\u094b \u091c\u093e\u090f\u0917\u093e, \u0920\u0947\u0915 \u0939\u0948, \u0905\u092c \u092f\u0947 coefficients \u0915\u094d\u092f\u093e represent \u0915\u0930 \u0930\u0939\u0947 \u0939\u0948, \u092f\u0947 \u0939\u092e\u0928\u0947 \u092a\u0939\u0932\u0947 \u092a\u0947 \u0921\u093f\u0938\u0915\u094d\u0938 \u0915\u093f\u092f\u093e \u0925\u093e, \u092f\u0947 coefficients are like weights,"
+  },
+  {
+    "idx": 121,
+    "start_s": 644.98,
+    "end_s": 648.26,
+    "text": "these coefficients are like weights"
+  },
+  {
+    "idx": 122,
+    "start_s": 648.26,
+    "end_s": 651.04,
+    "text": "\u091c\u0948\u0938\u0947 \u0915\u093f beta 2 \u0907\u0938 equation \u092e\u0947\u0902 \u0915\u094d\u092f\u093e \u092c\u0924\u093e \u0930\u0939\u093e \u0939\u0948"
+  },
+  {
+    "idx": 123,
+    "start_s": 651.04,
+    "end_s": 652.46,
+    "text": "beta 2 \u092f\u0947 \u092c\u0924\u093e \u0930\u0939\u093e \u0939\u0948"
+  },
+  {
+    "idx": 124,
+    "start_s": 652.46,
+    "end_s": 653.82,
+    "text": "\u0907\u0938 equation \u092e\u0947\u0902 \u0915\u093f LPA"
+  },
+  {
+    "idx": 125,
+    "start_s": 653.82,
+    "end_s": 656.02,
+    "text": "calculate \u0915\u0930\u0928\u0947 \u092e\u0947\u0902"
+  },
+  {
+    "idx": 126,
+    "start_s": 656.02,
+    "end_s": 658.1,
+    "text": "IQ \u0915\u093e \u0915\u093f\u0924\u0928\u093e weightage \u0939\u0948"
+  },
+  {
+    "idx": 127,
+    "start_s": 658.1,
+    "end_s": 659.7,
+    "text": "\u0924\u094b \u0905\u0917\u0930 beta 2"
+  },
+  {
+    "idx": 128,
+    "start_s": 659.7,
+    "end_s": 662.14,
+    "text": "\u092c\u0939\u0941\u0924 \u0939\u0940 \u0915\u092e \u0939\u0948 \u0924\u094b \u0907\u0938\u0915\u093e \u092e\u0924\u0932\u092c \u0939\u0948"
+  },
+  {
+    "idx": 129,
+    "start_s": 662.14,
+    "end_s": 664.1,
+    "text": "\u0915\u093f LPA \u0915\u094b calculate \u0915\u0930\u0928\u0947 \u092e\u0947\u0902"
+  },
+  {
+    "idx": 130,
+    "start_s": 664.1,
+    "end_s": 665.94,
+    "text": "IQ \u0915\u093e \u0909\u0924\u0928\u093e \u091c\u0930\u0942\u0930\u0924 \u0928\u0939\u0940\u0902 \u0939\u0948"
+  },
+  {
+    "idx": 131,
+    "start_s": 665.94,
+    "end_s": 668.5,
+    "text": "\u092f\u093e \u092b\u093f\u0930 \u0910\u0938\u0947 \u092c\u094b\u0932 \u0938\u0915\u0924\u0947 \u0939\u094b \u0915\u093f LPA \u0915\u093e \u091c\u094b value \u0939\u0948"
+  },
+  {
+    "idx": 132,
+    "start_s": 668.5,
+    "end_s": 680.14,
+    "text": "1 LPA CGPA LPA CGPA"
+  },
+  {
+    "idx": 133,
+    "start_s": 680.14,
+    "end_s": 685.3,
+    "text": "\u0909\u0924\u0928\u093e \u0921\u093f\u092a\u0947\u0902\u0921 \u0928\u0939\u0940\u0902 \u0915\u0930\u0924\u093e \u0905\u0917\u0930 \u092c\u0940\u091f\u093e 1 is greater than \u092c\u0940\u091f\u093e 2 \u0924\u094b \u0906\u092a"
+  },
+  {
+    "idx": 134,
+    "start_s": 685.3,
+    "end_s": 700.479996,
+    "text": "\u0906\u092a\u0915\u094b \u092c\u0924\u093e \u0930\u0939\u0947 \u0939\u0948\u0902 \u0915\u093f \u0906\u092a\u0915\u093e \u0915\u094c\u0928 \u0938\u0947 \u0907\u0902\u092a\u0942\u091f \u0915\u0949\u0932\u092e\u094d\u0938 \u091c\u093e\u0927\u093e \u0935\u0948\u0932\u094d\u092f\u094b\u092c\u0932 \u0939\u0948 \u0920\u0940\u0915 \u0939\u0948 \u0914\u0930 \u092b\u093f\u0930 \u092e\u0948\u0902\u0928\u0947 \u0906\u092a\u0915\u094b \u092c\u0924\u093e\u092f\u093e \u0925\u093e \u0915\u093f \u092f\u0939 \u092c\u0940\u091f\u093e \u0928\u0949\u091f \u0915\u094d\u092f\u093e \u0930\u093f\u092a\u094d\u0930\u0938\u0902\u091f \u0915\u0930\u0924\u093e \u0939\u0948"
+  },
+  {
+    "idx": 135,
+    "start_s": 700.479996,
+    "end_s": 711.520004,
+    "text": "\u0924\u094b \u0907\u0938 \u092c\u0940\u091f\u093e\u0928\u094c\u091f \u0907\u0938 \u0911\u092a\u0938\u0947\u091f \u0924\u094b \u0915\u0932 \u0915\u094b \u0905\u0917\u0930 \u0906\u092a\u0915\u093e CGPA \u092d\u0940 0 \u0939\u0948 IQ \u092d\u0940 0 \u0939\u0948 \u0924\u094b LPA \u0915\u093e \u0915\u094d\u092f\u093e \u0935\u0948\u0932\u094d\u092f\u094b\u0902 \u0939\u094b\u0917\u093e \u0935\u094b \u0907\u0938 \u0911\u092b\u0938\u0947\u091f \u0938\u0947 \u0921\u093f\u0938\u093e\u0907\u0921 \u0939\u094b\u0924\u093e \u0939\u0948"
+  },
+  {
+    "idx": 136,
+    "start_s": 711.520004,
+    "end_s": 715.619995,
+    "text": "\u0907\u0902\u091f\u0930\u0938\u0947\u091f \u0935\u0948\u0932\u094d\u092f\u0942 \u0938\u0947 \u0920\u0947\u0915 \u0939\u0948 \u0924\u094b \u092f\u0939 \u0907\u0902\u091f\u0930\u0938\u0947\u091f \u0935\u0948\u0932\u094d\u092f\u0942 \u0906\u092a\u0915\u093e \u0939\u093e\u092f \u0921\u0948\u092e\u0947\u0902\u0936\u0928 \u092e\u0947\u0902 \u092d\u0940 \u0930\u0939\u0924\u093e \u0939\u0948"
+  },
+  {
+    "idx": 137,
+    "start_s": 715.619995,
+    "end_s": 725.619995,
+    "text": "\u090f\u0915 \u091c\u0940\u091c \u0906\u092a\u0915\u094b recommend \u0915\u0930\u0942\u0902\u0917\u093e \u0926\u0947\u0916\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092e\u0948\u0902 \u0907\u0938 video \u0915\u0947 description \u092e\u0947\u0902 \u0905\u092a\u0928\u093e \u0939\u0940 \u090f\u0915 video \u0915\u093e link \u0921\u093e\u0932\u0942\u0917\u093e"
+  },
+  {
+    "idx": 138,
+    "start_s": 725.619995,
+    "end_s": 733.62,
+    "text": "\u0915\u0940 how to find equation of a line or rather how to find equation of a hyperplane in n dimensions"
+  },
+  {
+    "idx": 139,
+    "start_s": 733.62,
+    "end_s": 740.22,
+    "text": "\u090f\u0915 \u0935\u094b \u0935\u0940\u0921\u093f\u092f\u094b \u0925\u094b\u0921\u093c\u093e \u0938\u093e \u0926\u0947\u0916\u0928\u093e \u0935\u094b \u0935\u0940\u0921\u093f\u092f\u094b \u0906\u092a\u0915\u094b \u092c\u0939\u0941\u0924 perspective \u0926\u0947\u0917\u093e \u0915\u0940 higher dimension \u092e\u0947\u0902 lines \u0915\u0948\u0938\u0947 behave \u0915\u0930\u0924\u0940 \u0939\u0948\u0902"
+  },
+  {
+    "idx": 140,
+    "start_s": 740.22,
+    "end_s": 742.22,
+    "text": "\u0925\u0947\u0916\u0947 \u092a\u094d\u0932\u0940\u091c \u0935\u093e\u091a \u0935\u0940\u0921\u093f\u092f\u094b \u0915\u0947"
+  },
+  {
+    "idx": 141,
+    "start_s": 742.22,
+    "end_s": 774.98,
+    "text": ""
+  },
+  {
+    "idx": 142,
+    "start_s": 774.98,
+    "end_s": 804.98,
+    "text": "\u0914\u0930 \u092e\u0948\u0902 \u0906\u092a\u0915\u094b \u090f\u0915 code \u0930\u0923 \u0915\u0930\u0915\u0947 \u0926\u093f\u0916\u093e\u090a\u0901\u0917\u093e \u091c\u094b \u0905\u0917\u0932\u093e \u0935\u0940\u0921\u093f\u092f\u094b \u0939\u094b\u0917\u093e \u0909\u0938\u092e\u0947\u0902 \u0906\u092a\u0915\u094b \u092a\u0942\u0930\u093e scratch \u0938\u0947 mathematical model \u092c\u0928\u093e \u0915\u0947 \u0926\u093f\u0916\u093e\u090a\u0901\u0917\u093e \u0915\u093f \u0915\u0948\u0938\u0947 \u0906\u092a \u092f\u0947 \u092c\u0940\u091f\u093e \u0928\u094c\u091f \u0938\u0947 \u0932\u0947\u0915\u0947 \u092c\u0940\u091f\u093e \u090f\u0902 \u0924\u0915 \u0915\u093e value calculate \u0915\u0930\u0924\u0947 \u0939\u094b scratch \u0938\u0947 \u092a\u0942\u0930\u093e \u0915\u093e \u092a\u0942\u0930\u093e \u0914\u0930 \u091c\u094b third \u0935\u0940\u0921\u093f\u092f\u094b \u0939\u094b\u0917\u093e \u0909\u0938\u092e\u0947\u0902 \u0939\u092e scratch \u0938\u0947 \u0916\u0941\u0926 \u0915\u093e \u090f\u0915 class \u092c\u0928\u093e\u090f\u0902"
+  },
+  {
+    "idx": 143,
+    "start_s": 804.98,
+    "end_s": 815.98,
+    "text": "\u092e\u0947\u0930\u0947 \u0915\u094b \u0932\u0917\u0924\u093e \u0906\u092a\u0915\u094b \u0938\u092e\u092f \u092e\u0947\u0902 \u0906 \u091c\u093e\u090f\u0917\u093e \u0924\u094b \u0906\u092a \u092c\u0938 \u0907\u0938 \u0935\u0940\u0921\u093f\u092f\u094b \u092e\u0947\u0902 \u090f\u0915 \u091a\u0940\u091c \u0914\u0930 \u0915\u0930 \u0930\u0939\u0947 \u0939\u0948\u0902 \u0939\u092e \u0932\u094b\u0917 \u0914\u0930 \u0935\u094b \u092f\u0939 \u0939\u0948 \u0915\u093f \u0939\u092e \u0932\u094b\u0917 \u090f\u0915 \u0915\u094b\u0921 \u0915\u0947 \u091f\u0942\u092a \u091c\u094b \u092d\u0940 \u0939\u092e \u092e\u0947\u0902 \u0926\u0947\u0916\u093e \u092d\u0940 \u0909\u0938\u0915\u094b \u091a\u0932\u093e \u0915\u0947 \u0926\u0947\u0916\u0924\u0947 \u0939\u0948\u0902"
+  },
+  {
+    "idx": 144,
+    "start_s": 815.98,
+    "end_s": 829.88,
+    "text": "So let go to the browser So guys this is the code And here you can see that I have made a data set myself I have made a data set myself"
+  },
+  {
+    "idx": 145,
+    "start_s": 830.38,
+    "end_s": 831.88,
+    "text": "I have made a data set myself"
+  },
+  {
+    "idx": 146,
+    "start_s": 831.88,
+    "end_s": 834.98,
+    "text": "using this function called make regression."
+  },
+  {
+    "idx": 147,
+    "start_s": 835.48,
+    "end_s": 836.24,
+    "text": "This function in Scikit-learn"
+  },
+  {
+    "idx": 148,
+    "start_s": 836.24,
+    "end_s": 837.02,
+    "text": "is called a function."
+  },
+  {
+    "idx": 149,
+    "start_s": 837.6800000000001,
+    "end_s": 838.78,
+    "text": "This can use it"
+  },
+  {
+    "idx": 150,
+    "start_s": 838.78,
+    "end_s": 842.16,
+    "text": "and you can generate linear regression data set."
+  },
+  {
+    "idx": 151,
+    "start_s": 843.26,
+    "end_s": 844.1800000000001,
+    "text": "I would recommend it"
+  },
+  {
+    "idx": 152,
+    "start_s": 844.1800000000001,
+    "end_s": 845.62,
+    "text": "to go and see the documentation"
+  },
+  {
+    "idx": 153,
+    "start_s": 845.62,
+    "end_s": 847.14,
+    "text": "and see the usage."
+  },
+  {
+    "idx": 154,
+    "start_s": 847.76,
+    "end_s": 848.9,
+    "text": "So what I have done?"
+  },
+  {
+    "idx": 155,
+    "start_s": 848.9,
+    "end_s": 852.9,
+    "text": "I have 100 rows of data set generate"
+  },
+  {
+    "idx": 156,
+    "start_s": 852.9,
+    "end_s": 856.9,
+    "text": "which has 2 input columns and 1 output column"
+  },
+  {
+    "idx": 157,
+    "start_s": 856.9,
+    "end_s": 860.9,
+    "text": "This data has a shape that will be 100 rows and 3 columns"
+  },
+  {
+    "idx": 158,
+    "start_s": 860.9,
+    "end_s": 864.9,
+    "text": "3 columns, 2 columns input and 1 column output"
+  },
+  {
+    "idx": 159,
+    "start_s": 864.9,
+    "end_s": 868.9,
+    "text": "This is my data set. I have to get the data frame"
+  },
+  {
+    "idx": 160,
+    "start_s": 868.9,
+    "end_s": 872.9,
+    "text": "so that I can show you what is going on"
+  },
+  {
+    "idx": 161,
+    "start_s": 872.9,
+    "end_s": 876.9,
+    "text": "I will work with my data set"
+  },
+  {
+    "idx": 162,
+    "start_s": 876.9,
+    "end_s": 884.4,
+    "text": "So, that's a big box. So, this is the data frame."
+  },
+  {
+    "idx": 163,
+    "start_s": 884.4,
+    "end_s": 894.4,
+    "text": "So, this is the shape would be 100,3."
+  },
+  {
+    "idx": 164,
+    "start_s": 894.4,
+    "end_s": 899.96,
+    "text": "So, this is the feature 1, this is the feature 2 and this is the target variable."
+  },
+  {
+    "idx": 165,
+    "start_s": 900.0,
+    "end_s": 904.88,
+    "text": "\u0924\u094b \u092f\u0939 3D \u092e\u0947\u0902 \u0906 \u0917\u0908 \u0939\u0948 \u092c\u093e\u0924 \u0914\u0930 \u092f\u0939 multiple linear regression \u0915\u093e example \u0939\u0948"
+  },
+  {
+    "idx": 166,
+    "start_s": 904.88,
+    "end_s": 908.32,
+    "text": "\u0924\u094b \u0905\u092c \u092e\u0948\u0902 \u0915\u094d\u092f\u093e \u0915\u0930 \u0930\u0939\u093e \u0939\u0942\u0901, \u092e\u0948\u0902 \u0906\u092a\u0915\u094b \u0938\u092c\u0938\u0947 \u092a\u0939\u0932\u0947 \u0926\u093f\u0916\u093e\u0924\u093e \u0939\u0942\u0901"
+  },
+  {
+    "idx": 167,
+    "start_s": 908.32,
+    "end_s": 911.219999,
+    "text": "\u0915\u093f \u092f\u0939 \u092a\u0942\u0930\u093e data 3D \u092e\u0947\u0902 \u0926\u0947\u0916 \u0915\u0948\u0938\u093e \u0930\u0939\u093e \u0939\u0948"
+  },
+  {
+    "idx": 168,
+    "start_s": 911.219999,
+    "end_s": 916.74,
+    "text": "\u0924\u094b \u0909\u0938\u0915\u0947 \u0932\u093f\u090f \u092e\u0948\u0902\u0928\u0947 \u092f\u0939 library use \u0915\u093f\u092f\u093e \u0939\u0948, plotly, \u092c\u0939\u0941\u0924 famous library \u0939\u0948"
+  },
+  {
+    "idx": 169,
+    "start_s": 916.74,
+    "end_s": 918.84,
+    "text": "\u0905\u0917\u0930 \u0906\u092a\u0915\u094b \u0907\u0938\u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902 \u0925\u094b\u0921\u093c\u093e \u092d\u0940 \u092a\u0922\u093c\u0928\u093e \u0939\u094b"
+  },
+  {
+    "idx": 170,
+    "start_s": 918.84,
+    "end_s": 920.1,
+    "text": "although \u092c\u0939\u0941\u0924 \u0938\u093f\u0902\u092a\u0932 \u0939\u0948"
+  },
+  {
+    "idx": 171,
+    "start_s": 920.1,
+    "end_s": 923.88,
+    "text": "\u0905\u0917\u0930 \u0906\u092a\u0915\u094b \u092a\u0922\u093c\u0928\u093e \u0939\u0948 \u0924\u094b \u092e\u0947\u0930\u0947 \u091a\u0948\u0928\u0932 \u092a\u0947 \u0906\u092a\u0915\u094b \u0907\u0938\u0915\u093e \u090f\u0915 \u0918\u0902\u091f\u0947 \u0915\u093e \u0935\u0940\u0921\u093f\u092f\u094b \u092e\u093f\u0932 \u091c\u093e\u090f\u0917\u093e"
+  },
+  {
+    "idx": 172,
+    "start_s": 923.88,
+    "end_s": 925.1,
+    "text": "\u090f\u0915 \u0918\u0902\u091f\u0947 \u092f\u093e \u0926\u094b \u0918\u0902\u091f\u0947 \u0915\u093e \u0935\u0940\u0921\u093f\u092f\u094b"
+  },
+  {
+    "idx": 173,
+    "start_s": 925.1,
+    "end_s": 941.96,
+    "text": "\u0935\u0939\u093e\u0901 \u092a\u0930 \u092e\u0948\u0902\u0928\u0947 scratch \u0938\u0947 plot \u0932\u0940 \u0917\u0941\u0930\u093e \u0938\u092e\u091d\u093e \u0930\u0916\u093e \u0939\u0948 I'll try to put a link \u092e\u0924\u0932\u092c \u092f\u0947 \u092a\u094b\u091c\u0928\u093e \u092a\u0921\u093c\u0947\u0917\u093e but I'll put a link over there okay so \u092e\u0948\u0902\u0928\u0947 \u091c\u092c \u0907\u0938\u0915\u094b plot \u0915\u093f\u092f\u093e 3D \u092e\u0947\u0902 \u0924\u094b \u092f\u0939 \u0921\u0947\u091f\u093e \u0917\u093e\u0908 \u0939\u092e\u093e\u0930\u0947 \u092a\u093e\u0938 see this is the data 3D \u092e\u0947\u0902 this is the data"
+  },
+  {
+    "idx": 174,
+    "start_s": 941.96,
+    "end_s": 986.0,
+    "text": "I will be able to get the target feature Now we will draw a sheet of points to the points"
+  },
+  {
+    "idx": 175,
+    "start_s": 986.0,
+    "end_s": 990.0,
+    "text": "We will practically not do anything."
+  },
+  {
+    "idx": 176,
+    "start_s": 990.0,
+    "end_s": 998.0,
+    "text": "We will use the flow to use the first thing that we will do is we will do train test split."
+  },
+  {
+    "idx": 177,
+    "start_s": 998.0,
+    "end_s": 1001.0,
+    "text": "because we have to take accuracy and not accuracy,"
+  },
+  {
+    "idx": 178,
+    "start_s": 1001.0,
+    "end_s": 1005.0,
+    "text": "R2 score, mean squared error, mean absolute error."
+  },
+  {
+    "idx": 179,
+    "start_s": 1005.0,
+    "end_s": 1008.0,
+    "text": "So I have to divide this in train test."
+  },
+  {
+    "idx": 180,
+    "start_s": 1008.0,
+    "end_s": 1012.0,
+    "text": "Then I have to import a linear regression class."
+  },
+  {
+    "idx": 181,
+    "start_s": 1012.0,
+    "end_s": 1015.0,
+    "text": "I have to create an object."
+  },
+  {
+    "idx": 182,
+    "start_s": 1015.0,
+    "end_s": 1017.0,
+    "text": "Then I have to train the model."
+  },
+  {
+    "idx": 183,
+    "start_s": 1017.0,
+    "end_s": 1021.0,
+    "text": "LR.fit, I have to explain the X-ray,"
+  },
+  {
+    "idx": 184,
+    "start_s": 1021.0,
+    "end_s": 1023.0,
+    "text": "I'm sorry, Y-train."
+  },
+  {
+    "idx": 185,
+    "start_s": 1023.0,
+    "end_s": 1025.0,
+    "text": "And my model is trained."
+  },
+  {
+    "idx": 186,
+    "start_s": 1025.0,
+    "end_s": 1028.5,
+    "text": "I was a fast because I was a very fast or"
+  },
+  {
+    "idx": 187,
+    "start_s": 1028.5,
+    "end_s": 1030.12,
+    "text": "for many of you a lot of credit"
+  },
+  {
+    "idx": 188,
+    "start_s": 1030.12,
+    "end_s": 1032.1,
+    "text": "may exist faster than a white"
+  },
+  {
+    "idx": 189,
+    "start_s": 1032.1,
+    "end_s": 1035.68,
+    "text": "red calculate your or vibrate for"
+  },
+  {
+    "idx": 190,
+    "start_s": 1035.68,
+    "end_s": 1038.0,
+    "text": "use that man at the mean absolute"
+  },
+  {
+    "idx": 191,
+    "start_s": 1038.0,
+    "end_s": 1043.04001,
+    "text": "error means quarter or you can see the"
+  },
+  {
+    "idx": 192,
+    "start_s": 1043.04001,
+    "end_s": 1044.51999,
+    "text": "output is coming out to be somewhere"
+  },
+  {
+    "idx": 193,
+    "start_s": 1044.51999,
+    "end_s": 1068.32,
+    "text": "around seventy take a month lab you don know input columns milker 71 person variants explain that target column 33 may have"
+  },
+  {
+    "idx": 194,
+    "start_s": 1068.32,
+    "end_s": 1077.28,
+    "text": "\u0907\u0938 \u092a\u0949\u0907\u0902\u091f \u092a\u0947 I would highly discourage you, trust me, highly discourage you, \u0905\u092d\u0940 \u092e\u0924 \u092a\u0922\u093c\u094b \u0907\u0928 \u091a\u0915\u094d\u0930\u094b\u0902 \u092e\u0947\u0902, \u092c\u0938 enjoy \u0915\u0930\u094b \u091c\u094b visualization \u092e\u0947\u0902 \u0906\u092a\u0915\u094b \u0926\u093f\u0916\u093e \u0930\u0939\u094b,"
+  },
+  {
+    "idx": 195,
+    "start_s": 1077.28,
+    "end_s": 1099.84,
+    "text": "\u0938\u092c\u094d\u0938\u0915\u094d\u0930\u093e\u0907\u092c \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092e\u0948\u0902\u0928\u0947 \u0938\u093e\u0930\u093e \u0915\u093e \u0938\u093e\u0930\u093e \u0915\u094b \u0932\u093f\u0916\u093e \u092f\u0939 \u091c\u093f\u0938 \u0928\u094c\u0930\u0947 \u0905\u092d\u0940 \u092e\u0927\u094d\u092f\u093e\u0928 \u0935\u093f\u0916\u0947\u0902\u092c \u092f\u0939 \u092c\u0938 \u0906 \u092a\u0930 \u092b\u094b\u0915\u0938 \u0915\u0930\u094b"
+  },
+  {
+    "idx": 196,
+    "start_s": 1099.84,
+    "end_s": 1101.24,
+    "text": "this is the output guys"
+  },
+  {
+    "idx": 197,
+    "start_s": 1101.24,
+    "end_s": 1107.16,
+    "text": "see this is the output"
+  },
+  {
+    "idx": 198,
+    "start_s": 1107.16,
+    "end_s": 1109.88,
+    "text": "so \u0909\u092a\u0930 \u0939\u092e\u0947\u0902 \u0926\u0947\u0916\u093e \u0925\u093e \u0935\u094b points"
+  },
+  {
+    "idx": 199,
+    "start_s": 1109.88,
+    "end_s": 1112.08,
+    "text": "\u092f\u0939 \u0926\u0947\u0916\u094b \u092f\u0939 \u0930\u093e\u0935 \u0935\u094b plane"
+  },
+  {
+    "idx": 200,
+    "start_s": 1112.08,
+    "end_s": 1116.44,
+    "text": "\u0926\u0947\u0916\u094b \u092f\u0939\u0940 \u0907\u0938\u0915\u094b \u090f\u0915\u0926\u092e \u0905\u092a\u0928\u0947 \u0905\u0902\u0926\u0930 \u092c\u0938\u093e \u0932\u094b"
+  },
+  {
+    "idx": 201,
+    "start_s": 1116.44,
+    "end_s": 1118.22,
+    "text": "\u0915\u093f 3D \u0910\u0938\u0947 \u0915\u093e\u092e \u0915\u0930\u0924\u093e \u0939\u0948"
+  },
+  {
+    "idx": 202,
+    "start_s": 1118.22,
+    "end_s": 1146.52,
+    "text": "see points points plane closest linear regression"
+  },
+  {
+    "idx": 203,
+    "start_s": 1146.52,
+    "end_s": 1150.9,
+    "text": "\u0924\u094b \u0935\u093f\u091c\u0941\u0932\u093e\u0907\u091c\u0947\u0936\u0928 \u0938\u0947 \u0906\u092a\u0915\u094b \u092c\u0939\u0941\u0924 \u0938\u092e\u091d \u092e\u0947\u0902 \u0906\u0924\u093e \u0939\u0948 \u091c\u093f\u0924\u0928\u093e \u0906\u092a\u0915\u094b"
+  },
+  {
+    "idx": 204,
+    "start_s": 1150.9,
+    "end_s": 1155.82,
+    "text": "stable like static image \u0938\u092e\u091d \u092e\u0947\u0902 \u0928\u0939\u0940\u0902 \u0906\u090f\u0917\u093e \u0907\u0938\u0938\u0947 \u092c\u0939\u0941\u0924 \u091c\u093c\u093e\u0926 \u0906\u092a\u0915\u094b \u0907\u0938 \u0924\u0930\u0939 \u0915\u0947"
+  },
+  {
+    "idx": 205,
+    "start_s": 1155.82,
+    "end_s": 1170.58,
+    "text": "visualization \u0938\u092e\u091d \u092e\u0947\u0902 \u0906\u090f\u0917\u093e \u0920\u0940\u0915 \u0939\u0948 \u0938\u0947 \u0915\u093f \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915 \u090f\u0915"
+  },
+  {
+    "idx": 206,
+    "start_s": 1170.58,
+    "end_s": 1174.04,
+    "text": "\u090f\u0902\u0915\u0930\u0947\u091c \u092f\u0942 \u0915\u093f \u0906\u092a \u0915\u093e\u0917\u0932 \u092f\u093e \u0915\u093f\u0938\u0940 \u0914\u0930 \u0935\u0947\u092c\u0938\u093e\u0907\u091f \u0938\u0947"
+  },
+  {
+    "idx": 207,
+    "start_s": 1174.04,
+    "end_s": 1182.34,
+    "text": "\u0939\u093e\u0908 \u0921\u093f\u092e\u0947\u0902\u091a\u093f\u0928 \u0915\u093e \u0921\u0947\u091f\u093e \u0909\u0920\u093e\u0913 \u092a\u093e\u091a \u0907\u0902\u092a\u0942\u091f \u0915\u0949\u0932\u092e\u094d\u0938 \u092f\u093e \u0926\u0938 \u0907\u0902\u092a\u0942\u091f \u0915\u0949\u0932\u092e\u094d\u0938 \u092f\u093e \u092a\u091a\u093e\u0938 \u0907\u0902\u092a\u0942\u091f \u0915\u0949\u0932\u092e\u094d\u0938 \u0914\u0930 \u0907\u0938\u0915\u0947 \u0909\u092a\u0930 \u0930\u093f\u0917\u094d\u0930\u0947\u0936\u0928 \u0905\u092a\u094d\u0932\u093e\u0907\u092c \u0915\u0947 \u0932\u093f\u090f \u0915\u094b \u090f\u0915 \u0939\u0948"
+  },
+  {
+    "idx": 208,
+    "start_s": 1182.34,
+    "end_s": 1193.22,
+    "text": "\u0924\u094b \u0926\u093f\u090f \u0935\u093f\u0935\u093e \u0928\u093f\u090f \u0935\u093f\u0936\u093e\u0932\u093f\u090f\u091c\u093f\u090f\u091c\u093f\u090f\u090f\u091c\u093f\u090f \u091c\u092c \u092e\u0948\u0902\u0928\u0947 \u0907\u0938\u0915\u094b \u0930\u0949\u091f \u092f\u093e \u0906\u0908 \u0935\u0940 \u092b\u094d\u0930\u0947\u091f \u092e\u093e\u0907\u0938 \u0915\u0940 \u0915\u093e\u092b\u0940 \u0938\u093e\u0907\u091c\u0940 \u092c\u0928 \u0917\u0908"
+  },
+  {
+    "idx": 209,
+    "start_s": 1193.22,
+    "end_s": 1199.98,
+    "text": "\u0905\u092c \u0932\u093e\u0938\u094d\u091f\u0940\u091c \u091c\u094b \u091c\u094b \u0906\u092a\u0915\u094b \u0926\u093f\u0916\u093e\u0928\u0940 \u0939\u0948 \u0935\u094b \u092f\u0939 \u0939\u0948 \u0915\u093f \u0905\u0917\u0930 \u0906\u092a \u0932\u093e\u0930 \u0921\u0949\u091f"
+  },
+  {
+    "idx": 210,
+    "start_s": 1200.0,
+    "end_s": 1202.0,
+    "text": "\u0932\u093f\u0916\u094b coefficient,"
+  },
+  {
+    "idx": 211,
+    "start_s": 1203.36,
+    "end_s": 1205.2599998,
+    "text": "LR. coefficient \u0932\u0917\u0930 \u0906\u092a \u0932\u093f\u0916\u094b,"
+  },
+  {
+    "idx": 212,
+    "start_s": 1206.44,
+    "end_s": 1209.059999,
+    "text": "\u0924\u094b \u0907\u0938 \u092c\u093e\u0930 \u0906\u092a\u0915\u094b \u0926\u094b \u0928\u092e\u092c\u0930\u094d\u0938 \u0926\u093f\u0916\u093e\u0908 \u0926\u0947\u0902\u0917\u0947,"
+  },
+  {
+    "idx": 213,
+    "start_s": 1209.66,
+    "end_s": 1211.24,
+    "text": "\u0932\u093e\u0938\u094d\u0924 \u0939\u0948 \u0939\u092e\u0928\u0947 \u091c\u092c coefficient \u0932\u0917\u093e\u0924\u0947 \u0939\u0948\u0902,"
+  },
+  {
+    "idx": 214,
+    "start_s": 1211.24,
+    "end_s": 1212.62,
+    "text": "\u0939\u092e\u0947\u0902 \u0938\u093f\u0930\u094d\u092b M \u0915\u093e value \u092e\u093f\u0932\u093e \u0925\u093e,"
+  },
+  {
+    "idx": 215,
+    "start_s": 1213.099999,
+    "end_s": 1215.4,
+    "text": "\u0907\u0938 \u092c\u093e\u0930 \u092f\u0947 beta 1 \u0939\u0948, \u092f\u0947 value,"
+  },
+  {
+    "idx": 216,
+    "start_s": 1215.839999,
+    "end_s": 1217.98,
+    "text": "\u0914\u0930 \u092f\u0947 value beta 2 \u0939\u0948, \u0920\u0947\u0915 \u0939\u0948,"
+  },
+  {
+    "idx": 217,
+    "start_s": 1218.3,
+    "end_s": 1220.84,
+    "text": "\u0914\u0930 \u0907\u0938 \u092c\u093e\u0930 \u092d\u0940 \u0905\u0917\u0930 \u0906\u092a LR. intercept \u0928\u093f\u0915\u093e\u0932\u094b,"
+  },
+  {
+    "idx": 218,
+    "start_s": 1220.84,
+    "end_s": 1223.54,
+    "text": "\u0924\u094b \u0906\u092a\u0915\u094b \u0938\u093f\u0930\u094d\u092b \u090f\u0915 \u0939\u0940 \u0935\u093e\u0932\u094d\u092f\u0942 \u0926\u093f\u0916\u093e\u0908 \u0926\u0947\u0917\u093e,"
+  },
+  {
+    "idx": 219,
+    "start_s": 1223.7,
+    "end_s": 1227.8,
+    "text": "\u0907\u0938 \u092f\u094b\u0930 \u092c\u0940\u091f\u093e \u0928\u0949\u091f, \u0907\u0938 \u092c\u0940\u091f\u093e \u0928\u0949\u091f, \u0907\u0938 \u092c\u0940\u091f\u093e \u0935\u0928, \u0907\u0938 \u092c\u0940\u091f\u093e \u091f\u0942,"
+  },
+  {
+    "idx": 220,
+    "start_s": 1228.34,
+    "end_s": 1233.78,
+    "text": "\u0905\u0917\u0930 \u0906\u092a \u0914\u0930 \u091c\u094d\u092f\u093e\u0926\u093e \u0907\u0902\u092a\u0941\u091f \u0915\u0949\u0932\u092e\u094d\u0938 \u0932\u0947\u0924\u0947, \u092e\u093e\u0932\u0928\u094b\u0902 \u0924\u0940\u0928 \u0907\u0902\u092a\u0941\u091f \u0915\u0949\u0932\u092e\u094d\u0938 \u0932\u0947\u0924\u0947, \u0906\u092a\u0915\u0947 \u092c\u093e\u0938 \u092c\u0940\u091f\u093e 3 \u092d\u0940 \u0939\u094b\u0924\u093e,"
+  },
+  {
+    "idx": 221,
+    "start_s": 1233.78,
+    "end_s": 1236.399998,
+    "text": "\u0916\u0947\u0915 \u0939\u0948, so that's it, behind the scenes"
+  },
+  {
+    "idx": 222,
+    "start_s": 1236.399998,
+    "end_s": 1238.52,
+    "text": "this is the geometric intuition, this is"
+  },
+  {
+    "idx": 223,
+    "start_s": 1238.52,
+    "end_s": 1240.859997,
+    "text": "the intuition of multiple linear regression"
+  },
+  {
+    "idx": 224,
+    "start_s": 1240.859997,
+    "end_s": 1242.44,
+    "text": "\u0905\u092c \u0905\u0917\u0932\u0947 \u0935\u0940\u0921\u093f\u092f\u094b \u092e\u0947\u0902"
+  },
+  {
+    "idx": 225,
+    "start_s": 1242.44,
+    "end_s": 1244.6,
+    "text": "\u0939\u092e \u0932\u094b\u0917 \u0907\u0938\u0915\u0947 \u092a\u0940\u091b\u0947 \u0915\u093e mathematical"
+  },
+  {
+    "idx": 226,
+    "start_s": 1244.6,
+    "end_s": 1246.98,
+    "text": "formulation scratch \u0938\u0947 \u092c\u093f\u0932\u094d\u0921 \u0915\u0930\u0947\u0902\u0917\u0947"
+  },
+  {
+    "idx": 227,
+    "start_s": 1246.98,
+    "end_s": 1248.539997,
+    "text": "\u0914\u0930 \u0926\u0947\u0916\u0947\u0902\u0917\u0947 \u0915\u093f \u092f\u0947 values"
+  },
+  {
+    "idx": 228,
+    "start_s": 1248.539997,
+    "end_s": 1250.42,
+    "text": "calculate \u0939\u094b\u0924\u0940 \u0915\u0948\u0938\u0947, \u0916\u0947\u0915 \u0939\u0948"
+  },
+  {
+    "idx": 229,
+    "start_s": 1250.42,
+    "end_s": 1252.5,
+    "text": "so that's it for the video"
+  },
+  {
+    "idx": 230,
+    "start_s": 1252.5,
+    "end_s": 1254.1,
+    "text": "I hope you liked it"
+  },
+  {
+    "idx": 231,
+    "start_s": 1254.1,
+    "end_s": 1255.859997,
+    "text": "thanks for watching, bye"
+  }
+]

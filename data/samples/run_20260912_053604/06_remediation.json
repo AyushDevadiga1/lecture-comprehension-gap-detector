@@ -1,0 +1,58 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 14,
+  "total": 22,
+  "remediation": [
+    {
+      "concept": "3D Data Visualization",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\3D Data Visualization__0-1068.mp4"
+    },
+    {
+      "concept": "Coefficients as feature weights",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Coefficients as feature weights__0-1068.mp4"
+    },
+    {
+      "concept": "Geometric Intuition of Regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Geometric Intuition of Regression__1068-1256.mp4"
+    },
+    {
+      "concept": "Intercept in Regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Intercept in Regression__1068-1256.mp4"
+    },
+    {
+      "concept": "Mean Squared Error",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Mean Squared Error__0-1068.mp4"
+    },
+    {
+      "concept": "Regression Metrics",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Regression Metrics__0-1068.mp4"
+    },
+    {
+      "concept": "Data Visualization for Regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data Visualization for Regression__1068-1256.mp4"
+    },
+    {
+      "concept": "Linear Regression",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linear Regression__1068-1256.mp4"
+    },
+    {
+      "concept": "Mean Absolute Error",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Mean Absolute Error__0-1068.mp4"
+    },
+    {
+      "concept": "Polynomial Regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Polynomial Regression__0-1068.mp4"
+    }
+  ]
+}

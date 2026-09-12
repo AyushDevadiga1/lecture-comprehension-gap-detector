@@ -1,0 +1,60 @@
+{
+  "run_id": "run_20260912_053604",
+  "course": "ml",
+  "student": "sample-student",
+  "clip": "data\\raw\\Multiple Linear Regression  Geometric Intuition & Code - CampusX (1080p, h264).mp4",
+  "started": "20260912_053604",
+  "steps": [
+    {
+      "stage": 0,
+      "name": "input",
+      "artifact": "00_input__Multiple Linear Regression  Geometric Intuition & Code - CampusX (1080p, h264).mp4"
+    }
+  ],
+  "finished": "05:41:42",
+  "transcript_segments": 232,
+  "concepts": 24,
+  "graph": {
+    "nodes": 22,
+    "edges": 10,
+    "is_dag": true,
+    "order": [
+      "3D Data Visualization",
+      "Bias (Intercept) term",
+      "Closest Linear Regression Fit (Least Squares)",
+      "Coefficients as feature weights",
+      "Data Acquisition from Kaggle",
+      "Feature Importance Interpretation",
+      "Geometric Intuition of Regression",
+      "High-Dimensional Data Analysis",
+      "Hyperplane in n-dimensional space",
+      "Intercept in Regression",
+      "Mean Squared Error",
+      "R-squared (Coefficient of Determination)",
+      "Regression Metrics",
+      "Scikit-learn's make_regression function",
+      "Training/Test Split",
+      "Data Visualization for Regression",
+      "Linear Regression",
+      "Regression Coefficients (Beta values)",
+      "Mean Absolute Error",
+      "Multiple Linear Regression",
+      "Plane Representation of Regression Model",
+      "Polynomial Regression"
+    ]
+  },
+  "clips_ok": 24,
+  "quiz_questions": 22,
+  "score": "14/22",
+  "artifacts": [
+    "00_input__Multiple Linear Regression  Geometric Intuition & Code - CampusX (1080p, h264).mp4",
+    "01_transcript.json",
+    "02_concepts.json",
+    "03_graph.json",
+    "04_clips.json",
+    "05_quiz.json",
+    "06_remediation.json",
+    "07_stats.json",
+    "lecgap.db"
+  ]
+}

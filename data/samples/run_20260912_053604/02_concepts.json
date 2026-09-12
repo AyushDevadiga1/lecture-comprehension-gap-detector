@@ -1,0 +1,194 @@
+[
+  {
+    "id": 1,
+    "name": "Multiple Linear Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 2,
+    "name": "Simple Linear Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 3,
+    "name": "Polynomial Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 4,
+    "name": "Regression Metrics",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 5,
+    "name": "Hyperplane in n-dimensional space",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 6,
+    "name": "Coefficients as feature weights",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 7,
+    "name": "Bias (Intercept) term",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 8,
+    "name": "Training/Test Split",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 9,
+    "name": "R-squared (Coefficient of Determination)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 10,
+    "name": "Mean Squared Error",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 11,
+    "name": "Mean Absolute Error",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 12,
+    "name": "Scikit-learn's make_regression function",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 13,
+    "name": "3D Data Visualization",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 14,
+    "name": "Feature Importance Interpretation",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 1068.32
+  },
+  {
+    "id": 15,
+    "name": "Linear Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 16,
+    "name": "Multiple Linear Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 17,
+    "name": "Geometric Intuition of Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 18,
+    "name": "Regression Coefficients (Beta values)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 19,
+    "name": "Intercept in Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 20,
+    "name": "High-Dimensional Data Analysis",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 21,
+    "name": "Data Visualization for Regression",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 22,
+    "name": "Plane Representation of Regression Model",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 23,
+    "name": "Closest Linear Regression Fit (Least Squares)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  },
+  {
+    "id": 24,
+    "name": "Data Acquisition from Kaggle",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1068.32,
+    "end_s": 1255.859997
+  }
+]

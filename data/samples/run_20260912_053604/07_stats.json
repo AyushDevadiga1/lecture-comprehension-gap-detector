@@ -1,0 +1,320 @@
+{
+  "course_id": "ml",
+  "heatmap": [
+    {
+      "concept": "3D Data Visualization",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Coefficients as feature weights",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Geometric Intuition of Regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Intercept in Regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Regression Metrics",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Data Visualization for Regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Mean Absolute Error",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Polynomial Regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Bias (Intercept) term",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Closest Linear Regression Fit (Least Squares)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Data Acquisition from Kaggle",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Feature Importance Interpretation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "High-Dimensional Data Analysis",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Hyperplane in n-dimensional space",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Mean Squared Error",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "R-squared (Coefficient of Determination)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Scikit-learn's make_regression function",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Training/Test Split",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Linear Regression",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Regression Coefficients (Beta values)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Multiple Linear Regression",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Plane Representation of Regression Model",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "Polynomial Regression",
+      "taught_idx": 2,
+      "learned_idx": 21,
+      "gap": 19
+    },
+    {
+      "concept": "Multiple Linear Regression",
+      "taught_idx": 0,
+      "learned_idx": 19,
+      "gap": 19
+    },
+    {
+      "concept": "Closest Linear Regression Fit (Least Squares)",
+      "taught_idx": 21,
+      "learned_idx": 2,
+      "gap": -19
+    },
+    {
+      "concept": "Data Acquisition from Kaggle",
+      "taught_idx": 22,
+      "learned_idx": 4,
+      "gap": -18
+    },
+    {
+      "concept": "3D Data Visualization",
+      "taught_idx": 12,
+      "learned_idx": 0,
+      "gap": -12
+    },
+    {
+      "concept": "High-Dimensional Data Analysis",
+      "taught_idx": 18,
+      "learned_idx": 7,
+      "gap": -11
+    },
+    {
+      "concept": "Geometric Intuition of Regression",
+      "taught_idx": 15,
+      "learned_idx": 6,
+      "gap": -9
+    },
+    {
+      "concept": "Regression Metrics",
+      "taught_idx": 3,
+      "learned_idx": 12,
+      "gap": 9
+    },
+    {
+      "concept": "Intercept in Regression",
+      "taught_idx": 17,
+      "learned_idx": 9,
+      "gap": -8
+    },
+    {
+      "concept": "Feature Importance Interpretation",
+      "taught_idx": 13,
+      "learned_idx": 5,
+      "gap": -8
+    },
+    {
+      "concept": "Mean Absolute Error",
+      "taught_idx": 10,
+      "learned_idx": 18,
+      "gap": 8
+    },
+    {
+      "concept": "Training/Test Split",
+      "taught_idx": 7,
+      "learned_idx": 14,
+      "gap": 7
+    },
+    {
+      "concept": "Bias (Intercept) term",
+      "taught_idx": 6,
+      "learned_idx": 1,
+      "gap": -5
+    },
+    {
+      "concept": "Hyperplane in n-dimensional space",
+      "taught_idx": 4,
+      "learned_idx": 8,
+      "gap": 4
+    },
+    {
+      "concept": "Data Visualization for Regression",
+      "taught_idx": 19,
+      "learned_idx": 15,
+      "gap": -4
+    },
+    {
+      "concept": "R-squared (Coefficient of Determination)",
+      "taught_idx": 8,
+      "learned_idx": 11,
+      "gap": 3
+    },
+    {
+      "concept": "Scikit-learn's make_regression function",
+      "taught_idx": 11,
+      "learned_idx": 13,
+      "gap": 2
+    },
+    {
+      "concept": "Coefficients as feature weights",
+      "taught_idx": 5,
+      "learned_idx": 3,
+      "gap": -2
+    },
+    {
+      "concept": "Linear Regression",
+      "taught_idx": 14,
+      "learned_idx": 16,
+      "gap": 2
+    },
+    {
+      "concept": "Regression Coefficients (Beta values)",
+      "taught_idx": 16,
+      "learned_idx": 17,
+      "gap": 1
+    },
+    {
+      "concept": "Mean Squared Error",
+      "taught_idx": 9,
+      "learned_idx": 10,
+      "gap": 1
+    },
+    {
+      "concept": "Plane Representation of Regression Model",
+      "taught_idx": 20,
+      "learned_idx": 20,
+      "gap": 0
+    }
+  ],
+  "taught_order": [
+    "Multiple Linear Regression",
+    "Simple Linear Regression",
+    "Polynomial Regression",
+    "Regression Metrics",
+    "Hyperplane in n-dimensional space",
+    "Coefficients as feature weights",
+    "Bias (Intercept) term",
+    "Training/Test Split",
+    "R-squared (Coefficient of Determination)",
+    "Mean Squared Error",
+    "Mean Absolute Error",
+    "Scikit-learn's make_regression function",
+    "3D Data Visualization",
+    "Feature Importance Interpretation",
+    "Linear Regression",
+    "Geometric Intuition of Regression",
+    "Regression Coefficients (Beta values)",
+    "Intercept in Regression",
+    "High-Dimensional Data Analysis",
+    "Data Visualization for Regression",
+    "Plane Representation of Regression Model",
+    "Closest Linear Regression Fit (Least Squares)",
+    "Data Acquisition from Kaggle"
+  ],
+  "learned_order": [
+    "3D Data Visualization",
+    "Bias (Intercept) term",
+    "Closest Linear Regression Fit (Least Squares)",
+    "Coefficients as feature weights",
+    "Data Acquisition from Kaggle",
+    "Feature Importance Interpretation",
+    "Geometric Intuition of Regression",
+    "High-Dimensional Data Analysis",
+    "Hyperplane in n-dimensional space",
+    "Intercept in Regression",
+    "Mean Squared Error",
+    "R-squared (Coefficient of Determination)",
+    "Regression Metrics",
+    "Scikit-learn's make_regression function",
+    "Training/Test Split",
+    "Data Visualization for Regression",
+    "Linear Regression",
+    "Regression Coefficients (Beta values)",
+    "Mean Absolute Error",
+    "Multiple Linear Regression",
+    "Plane Representation of Regression Model",
+    "Polynomial Regression"
+  ]
+}

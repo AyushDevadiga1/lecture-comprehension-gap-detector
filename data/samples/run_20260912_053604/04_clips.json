@@ -1,0 +1,218 @@
+[
+  {
+    "id": 1,
+    "concept_name": "Multiple Linear Regression",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Multiple Linear Regression__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 2,
+    "concept_name": "Simple Linear Regression",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Simple Linear Regression__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 3,
+    "concept_name": "Polynomial Regression",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Polynomial Regression__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 4,
+    "concept_name": "Regression Metrics",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Regression Metrics__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 5,
+    "concept_name": "Hyperplane in n-dimensional space",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hyperplane in n-dimensional space__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 6,
+    "concept_name": "Coefficients as feature weights",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Coefficients as feature weights__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 7,
+    "concept_name": "Bias (Intercept) term",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Bias _Intercept_ term__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 8,
+    "concept_name": "Training/Test Split",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Training_Test Split__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 9,
+    "concept_name": "R-squared (Coefficient of Determination)",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\R-squared _Coefficient of Determination___0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 10,
+    "concept_name": "Mean Squared Error",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Mean Squared Error__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 11,
+    "concept_name": "Mean Absolute Error",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Mean Absolute Error__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 12,
+    "concept_name": "Scikit-learn's make_regression function",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Scikit-learn_s make_regression function__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 13,
+    "concept_name": "3D Data Visualization",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\3D Data Visualization__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 14,
+    "concept_name": "Feature Importance Interpretation",
+    "start_s": 0.0,
+    "end_s": 1068.32,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Feature Importance Interpretation__0-1068.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 15,
+    "concept_name": "Linear Regression",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linear Regression__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 16,
+    "concept_name": "Multiple Linear Regression",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Multiple Linear Regression__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 17,
+    "concept_name": "Geometric Intuition of Regression",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Geometric Intuition of Regression__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 18,
+    "concept_name": "Regression Coefficients (Beta values)",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Regression Coefficients _Beta values___1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 19,
+    "concept_name": "Intercept in Regression",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Intercept in Regression__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 20,
+    "concept_name": "High-Dimensional Data Analysis",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\High-Dimensional Data Analysis__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 21,
+    "concept_name": "Data Visualization for Regression",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data Visualization for Regression__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 22,
+    "concept_name": "Plane Representation of Regression Model",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Plane Representation of Regression Model__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 23,
+    "concept_name": "Closest Linear Regression Fit (Least Squares)",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Closest Linear Regression Fit _Least Squares___1068-1256.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 24,
+    "concept_name": "Data Acquisition from Kaggle",
+    "start_s": 1068.32,
+    "end_s": 1255.859997,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data Acquisition from Kaggle__1068-1256.mp4",
+    "ok": true,
+    "error": null
+  }
+]

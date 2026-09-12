@@ -1,0 +1,106 @@
+{
+  "course_id": "ml",
+  "nodes": [
+    "3D Data Visualization",
+    "Bias (Intercept) term",
+    "Closest Linear Regression Fit (Least Squares)",
+    "Coefficients as feature weights",
+    "Data Acquisition from Kaggle",
+    "Data Visualization for Regression",
+    "Feature Importance Interpretation",
+    "Geometric Intuition of Regression",
+    "High-Dimensional Data Analysis",
+    "Hyperplane in n-dimensional space",
+    "Intercept in Regression",
+    "Linear Regression",
+    "Mean Absolute Error",
+    "Mean Squared Error",
+    "Multiple Linear Regression",
+    "Plane Representation of Regression Model",
+    "Polynomial Regression",
+    "R-squared (Coefficient of Determination)",
+    "Regression Coefficients (Beta values)",
+    "Regression Metrics",
+    "Scikit-learn's make_regression function",
+    "Training/Test Split"
+  ],
+  "edges": [
+    {
+      "source": "3D Data Visualization",
+      "target": "Data Visualization for Regression",
+      "confidence": 0.6060884741854993
+    },
+    {
+      "source": "Geometric Intuition of Regression",
+      "target": "Plane Representation of Regression Model",
+      "confidence": 0.6709422788750877
+    },
+    {
+      "source": "Intercept in Regression",
+      "target": "Linear Regression",
+      "confidence": 0.5372904884845174
+    },
+    {
+      "source": "Intercept in Regression",
+      "target": "Multiple Linear Regression",
+      "confidence": 0.5489842683130514
+    },
+    {
+      "source": "Intercept in Regression",
+      "target": "Regression Coefficients (Beta values)",
+      "confidence": 0.6318909563501962
+    },
+    {
+      "source": "Intercept in Regression",
+      "target": "Plane Representation of Regression Model",
+      "confidence": 0.6685149570026737
+    },
+    {
+      "source": "Linear Regression",
+      "target": "Multiple Linear Regression",
+      "confidence": 0.9167698161295942
+    },
+    {
+      "source": "Linear Regression",
+      "target": "Plane Representation of Regression Model",
+      "confidence": 0.5257046382472653
+    },
+    {
+      "source": "Linear Regression",
+      "target": "Polynomial Regression",
+      "confidence": 0.5925129042166518
+    },
+    {
+      "source": "Mean Squared Error",
+      "target": "Mean Absolute Error",
+      "confidence": 0.9861954170221745
+    }
+  ],
+  "node_count": 22,
+  "edge_count": 10,
+  "is_dag": true,
+  "topological_order": [
+    "3D Data Visualization",
+    "Bias (Intercept) term",
+    "Closest Linear Regression Fit (Least Squares)",
+    "Coefficients as feature weights",
+    "Data Acquisition from Kaggle",
+    "Feature Importance Interpretation",
+    "Geometric Intuition of Regression",
+    "High-Dimensional Data Analysis",
+    "Hyperplane in n-dimensional space",
+    "Intercept in Regression",
+    "Mean Squared Error",
+    "R-squared (Coefficient of Determination)",
+    "Regression Metrics",
+    "Scikit-learn's make_regression function",
+    "Training/Test Split",
+    "Data Visualization for Regression",
+    "Linear Regression",
+    "Regression Coefficients (Beta values)",
+    "Mean Absolute Error",
+    "Multiple Linear Regression",
+    "Plane Representation of Regression Model",
+    "Polynomial Regression"
+  ]
+}

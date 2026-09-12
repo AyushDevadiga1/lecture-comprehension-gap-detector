@@ -1,0 +1,183 @@
+{
+  "quiz_id": 1,
+  "course_id": "ml",
+  "student_id": "sample-student",
+  "questions": [
+    {
+      "id": 1,
+      "concept": "3D Data Visualization",
+      "question": "Which statement about '3D Data Visualization' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 2,
+      "concept": "Bias (Intercept) term",
+      "question": "Which statement about 'Bias (Intercept) term' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 3,
+      "concept": "Closest Linear Regression Fit (Least Squares)",
+      "question": "Which statement about 'Closest Linear Regression Fit (Least Squares)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 4,
+      "concept": "Coefficients as feature weights",
+      "question": "Which statement about 'Coefficients as feature weights' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 5,
+      "concept": "Data Acquisition from Kaggle",
+      "question": "Which statement about 'Data Acquisition from Kaggle' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 6,
+      "concept": "Feature Importance Interpretation",
+      "question": "Which statement about 'Feature Importance Interpretation' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 7,
+      "concept": "Geometric Intuition of Regression",
+      "question": "Which statement about 'Geometric Intuition of Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 8,
+      "concept": "High-Dimensional Data Analysis",
+      "question": "Which statement about 'High-Dimensional Data Analysis' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 9,
+      "concept": "Hyperplane in n-dimensional space",
+      "question": "Which statement about 'Hyperplane in n-dimensional space' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 10,
+      "concept": "Intercept in Regression",
+      "question": "Which statement about 'Intercept in Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 11,
+      "concept": "Mean Squared Error",
+      "question": "Which statement about 'Mean Squared Error' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 12,
+      "concept": "R-squared (Coefficient of Determination)",
+      "question": "Which statement about 'R-squared (Coefficient of Determination)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 13,
+      "concept": "Regression Metrics",
+      "question": "Which statement about 'Regression Metrics' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 14,
+      "concept": "Scikit-learn's make_regression function",
+      "question": "Which statement about 'Scikit-learn's make_regression function' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 15,
+      "concept": "Training/Test Split",
+      "question": "Which statement about 'Training/Test Split' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 16,
+      "concept": "Data Visualization for Regression",
+      "question": "Which statement about 'Data Visualization for Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 17,
+      "concept": "Linear Regression",
+      "question": "Which statement about 'Linear Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 18,
+      "concept": "Regression Coefficients (Beta values)",
+      "question": "Which statement about 'Regression Coefficients (Beta values)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 19,
+      "concept": "Mean Absolute Error",
+      "question": "Which statement about 'Mean Absolute Error' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 20,
+      "concept": "Multiple Linear Regression",
+      "question": "Which statement about 'Multiple Linear Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 21,
+      "concept": "Plane Representation of Regression Model",
+      "question": "Which statement about 'Plane Representation of Regression Model' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 22,
+      "concept": "Polynomial Regression",
+      "question": "Which statement about 'Polynomial Regression' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    }
+  ]
+}
