@@ -1,0 +1,675 @@
+{
+  "course_id": "ml",
+  "nodes": [
+    "Activation function (sigmoid, tanh)",
+    "Architectural differences between LSTM and GRU",
+    "Architecture of GRU (Two-Step Process)",
+    "Backpropagation for training gate weights",
+    "Balancing Past and Current Context",
+    "Balancing past and current memory via gating",
+    "Black Box Problem in Deep Learning",
+    "Candidate Hidden State",
+    "Candidate memory (candidate hidden state)",
+    "Cell State",
+    "Computational complexity of LSTM vs GRU",
+    "Concatenation of hidden state and input",
+    "Context Vector",
+    "Contextual memory update",
+    "Contextual representation in sequence models",
+    "Dimensionality of Hidden States",
+    "Dot product for weight multiplication",
+    "Dynamic weighting of story elements",
+    "Element-wise addition",
+    "Element-wise operations (point-wise multiplication/addition)",
+    "Empirical performance comparison",
+    "Exploding Gradient Problem",
+    "Feature Extraction from Text",
+    "Forget Gate",
+    "Fully connected (dense) neural network layer",
+    "Fully connected layer",
+    "GRU (Gated Recurrent Unit)",
+    "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+    "GRU computation steps",
+    "Gate as a vector of values between 0 and 1",
+    "Gate values between 0 and 1",
+    "Gates in RNNs",
+    "Gating Mechanisms in Recurrent Networks",
+    "Hidden State",
+    "Hidden state as memory of the network",
+    "Hidden state update equation",
+    "Hidden units",
+    "Input Gate",
+    "Interpretability of Neural Networks",
+    "Intuitive Example Using Storytelling",
+    "LSTM (Long Short-Term Memory)",
+    "Long-Term Context",
+    "Memory (Past Context)",
+    "Memory cell state",
+    "Model Complexity",
+    "Modulated (reset) memory",
+    "Neural network layer representation",
+    "Number of gates in GRU",
+    "Number of gates in LSTM",
+    "Output Gate",
+    "Parameter Count",
+    "Parameter count in recurrent units",
+    "Parameter sharing across layers",
+    "Pointwise (element-wise) multiplication",
+    "Recurrent Neural Network (RNN)",
+    "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+    "Reset Gate",
+    "Resetting dimensions of memory based on current input",
+    "Sentiment analysis application",
+    "Sequence Modeling",
+    "Sequential Data Processing",
+    "Story perspective weighting",
+    "Tanh activation function",
+    "Temporal Dynamics of Context",
+    "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+    "Training Time",
+    "Update Gate",
+    "Vanishing Gradient Problem",
+    "Vector Representation of States",
+    "Vector dimensionality",
+    "Vector representation of memory",
+    "Vectorized input representation",
+    "Weight and bias parameters in neural layers",
+    "Weighted sum"
+  ],
+  "edges": [
+    {
+      "source": "Architectural differences between LSTM and GRU",
+      "target": "LSTM (Long Short-Term Memory)",
+      "confidence": 0.7789718737122119
+    },
+    {
+      "source": "Architectural differences between LSTM and GRU",
+      "target": "Computational complexity of LSTM vs GRU",
+      "confidence": 0.922763120763309
+    },
+    {
+      "source": "Architecture of GRU (Two-Step Process)",
+      "target": "GRU (Gated Recurrent Unit)",
+      "confidence": 0.5905770869793373
+    },
+    {
+      "source": "Backpropagation for training gate weights",
+      "target": "Fully connected (dense) neural network layer",
+      "confidence": 0.5355964592796608
+    },
+    {
+      "source": "Balancing Past and Current Context",
+      "target": "Temporal Dynamics of Context",
+      "confidence": 0.5119721412881068
+    },
+    {
+      "source": "Balancing past and current memory via gating",
+      "target": "LSTM (Long Short-Term Memory)",
+      "confidence": 0.6364724487996167
+    },
+    {
+      "source": "Balancing past and current memory via gating",
+      "target": "Modulated (reset) memory",
+      "confidence": 0.7639103911795007
+    },
+    {
+      "source": "Candidate memory (candidate hidden state)",
+      "target": "Vector representation of memory",
+      "confidence": 0.8496390356220669
+    },
+    {
+      "source": "Candidate memory (candidate hidden state)",
+      "target": "Contextual memory update",
+      "confidence": 0.8354751387194235
+    },
+    {
+      "source": "Candidate memory (candidate hidden state)",
+      "target": "Resetting dimensions of memory based on current input",
+      "confidence": 0.5703937300517472
+    },
+    {
+      "source": "Candidate memory (candidate hidden state)",
+      "target": "Candidate Hidden State",
+      "confidence": 0.8551698842031026
+    },
+    {
+      "source": "Candidate memory (candidate hidden state)",
+      "target": "Hidden state as memory of the network",
+      "confidence": 0.8863715555630721
+    },
+    {
+      "source": "Context Vector",
+      "target": "Temporal Dynamics of Context",
+      "confidence": 0.743524746657991
+    },
+    {
+      "source": "Dimensionality of Hidden States",
+      "target": "Hidden State",
+      "confidence": 0.8347823339151369
+    },
+    {
+      "source": "Dimensionality of Hidden States",
+      "target": "Candidate Hidden State",
+      "confidence": 0.6850756111821525
+    },
+    {
+      "source": "Dimensionality of Hidden States",
+      "target": "Vector Representation of States",
+      "confidence": 0.8451400966354118
+    },
+    {
+      "source": "Dynamic weighting of story elements",
+      "target": "Story perspective weighting",
+      "confidence": 0.5793120968113368
+    },
+    {
+      "source": "Element-wise operations (point-wise multiplication/addition)",
+      "target": "Pointwise (element-wise) multiplication",
+      "confidence": 0.8907470946346957
+    },
+    {
+      "source": "Element-wise operations (point-wise multiplication/addition)",
+      "target": "Element-wise addition",
+      "confidence": 0.8728169166299027
+    },
+    {
+      "source": "Forget Gate",
+      "target": "Gates in RNNs",
+      "confidence": 0.7110229278247853
+    },
+    {
+      "source": "Forget Gate",
+      "target": "Reset Gate",
+      "confidence": 0.9571344008170725
+    },
+    {
+      "source": "Forget Gate",
+      "target": "Update Gate",
+      "confidence": 0.7999782394936407
+    },
+    {
+      "source": "Fully connected (dense) neural network layer",
+      "target": "Fully connected layer",
+      "confidence": 0.9623060740503596
+    },
+    {
+      "source": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+      "target": "GRU computation steps",
+      "confidence": 0.8052227707642583
+    },
+    {
+      "source": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+      "target": "Architecture of GRU (Two-Step Process)",
+      "confidence": 0.8371722795324131
+    },
+    {
+      "source": "GRU computation steps",
+      "target": "GRU (Gated Recurrent Unit)",
+      "confidence": 0.7425478778821221
+    },
+    {
+      "source": "GRU computation steps",
+      "target": "Architecture of GRU (Two-Step Process)",
+      "confidence": 0.9135110368853407
+    },
+    {
+      "source": "Gate as a vector of values between 0 and 1",
+      "target": "GRU (Gated Recurrent Unit)",
+      "confidence": 0.5531073681198678
+    },
+    {
+      "source": "Gate as a vector of values between 0 and 1",
+      "target": "Reset Gate",
+      "confidence": 0.8304506988521462
+    },
+    {
+      "source": "Gate as a vector of values between 0 and 1",
+      "target": "Update Gate",
+      "confidence": 0.7352911737347978
+    },
+    {
+      "source": "Gate as a vector of values between 0 and 1",
+      "target": "Vector representation of memory",
+      "confidence": 0.6600355645582363
+    },
+    {
+      "source": "Gate as a vector of values between 0 and 1",
+      "target": "Backpropagation for training gate weights",
+      "confidence": 0.7462189134868633
+    },
+    {
+      "source": "Gate as a vector of values between 0 and 1",
+      "target": "Gate values between 0 and 1",
+      "confidence": 0.9908136586781198
+    },
+    {
+      "source": "Gate values between 0 and 1",
+      "target": "Reset Gate",
+      "confidence": 0.8893279720710654
+    },
+    {
+      "source": "Gate values between 0 and 1",
+      "target": "Update Gate",
+      "confidence": 0.8324991706865325
+    },
+    {
+      "source": "Gate values between 0 and 1",
+      "target": "Backpropagation for training gate weights",
+      "confidence": 0.5407474015957959
+    },
+    {
+      "source": "Hidden State",
+      "target": "Cell State",
+      "confidence": 0.6808366580579674
+    },
+    {
+      "source": "Hidden State",
+      "target": "Gates in RNNs",
+      "confidence": 0.5107322879729591
+    },
+    {
+      "source": "Hidden State",
+      "target": "Forget Gate",
+      "confidence": 0.5673329485084532
+    },
+    {
+      "source": "Hidden State",
+      "target": "Reset Gate",
+      "confidence": 0.5217989463033013
+    },
+    {
+      "source": "Hidden State",
+      "target": "Candidate Hidden State",
+      "confidence": 0.9429005739312145
+    },
+    {
+      "source": "Hidden State",
+      "target": "Contextual memory update",
+      "confidence": 0.5314471522417674
+    },
+    {
+      "source": "Hidden State",
+      "target": "Hidden state as memory of the network",
+      "confidence": 0.9360089908439593
+    },
+    {
+      "source": "Hidden State",
+      "target": "Concatenation of hidden state and input",
+      "confidence": 0.7866302221184601
+    },
+    {
+      "source": "Hidden State",
+      "target": "Hidden state update equation",
+      "confidence": 0.8508052399935173
+    },
+    {
+      "source": "Hidden state as memory of the network",
+      "target": "Neural network layer representation",
+      "confidence": 0.7395083587470036
+    },
+    {
+      "source": "Hidden state update equation",
+      "target": "Fully connected (dense) neural network layer",
+      "confidence": 0.5125919069396744
+    },
+    {
+      "source": "Hidden state update equation",
+      "target": "Update Gate",
+      "confidence": 0.7861439365043386
+    },
+    {
+      "source": "Hidden state update equation",
+      "target": "Candidate Hidden State",
+      "confidence": 0.6706657737892794
+    },
+    {
+      "source": "Hidden state update equation",
+      "target": "Concatenation of hidden state and input",
+      "confidence": 0.71573770564751
+    },
+    {
+      "source": "Hidden state update equation",
+      "target": "Memory cell state",
+      "confidence": 0.5231955951176098
+    },
+    {
+      "source": "Input Gate",
+      "target": "Gates in RNNs",
+      "confidence": 0.6284763594833627
+    },
+    {
+      "source": "Input Gate",
+      "target": "Forget Gate",
+      "confidence": 0.849079254377511
+    },
+    {
+      "source": "Input Gate",
+      "target": "Reset Gate",
+      "confidence": 0.8887902023057465
+    },
+    {
+      "source": "Input Gate",
+      "target": "Update Gate",
+      "confidence": 0.8638258255134339
+    },
+    {
+      "source": "Memory (Past Context)",
+      "target": "LSTM (Long Short-Term Memory)",
+      "confidence": 0.8259635146814005
+    },
+    {
+      "source": "Memory (Past Context)",
+      "target": "Gating Mechanisms in Recurrent Networks",
+      "confidence": 0.6491095190095182
+    },
+    {
+      "source": "Memory (Past Context)",
+      "target": "Balancing Past and Current Context",
+      "confidence": 0.8738674346589534
+    },
+    {
+      "source": "Memory (Past Context)",
+      "target": "Temporal Dynamics of Context",
+      "confidence": 0.633524609445081
+    },
+    {
+      "source": "Memory (Past Context)",
+      "target": "Contextual memory update",
+      "confidence": 0.9800740348868291
+    },
+    {
+      "source": "Memory cell state",
+      "target": "LSTM (Long Short-Term Memory)",
+      "confidence": 0.8788469485013315
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Reset Gate",
+      "confidence": 0.77019890087526
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Modulated (reset) memory",
+      "confidence": 0.9514330009530034
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Fully connected (dense) neural network layer",
+      "confidence": 0.8087582108830254
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Update Gate",
+      "confidence": 0.5406037792322267
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Balancing past and current memory via gating",
+      "confidence": 0.9420090293760743
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Backpropagation for training gate weights",
+      "confidence": 0.7422428994832024
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Weight and bias parameters in neural layers",
+      "confidence": 0.781567835126923
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Cell State",
+      "confidence": 0.9902627498690598
+    },
+    {
+      "source": "Memory cell state",
+      "target": "Candidate memory (candidate hidden state)",
+      "confidence": 0.9337033150265895
+    },
+    {
+      "source": "Neural network layer representation",
+      "target": "Fully connected (dense) neural network layer",
+      "confidence": 0.9368885887605712
+    },
+    {
+      "source": "Number of gates in GRU",
+      "target": "GRU (Gated Recurrent Unit)",
+      "confidence": 0.8604423013984168
+    },
+    {
+      "source": "Number of gates in GRU",
+      "target": "Reset Gate",
+      "confidence": 0.7188753157505721
+    },
+    {
+      "source": "Number of gates in GRU",
+      "target": "Update Gate",
+      "confidence": 0.7292685437950682
+    },
+    {
+      "source": "Number of gates in GRU",
+      "target": "Number of gates in LSTM",
+      "confidence": 0.943829051070531
+    },
+    {
+      "source": "Number of gates in GRU",
+      "target": "Architectural differences between LSTM and GRU",
+      "confidence": 0.5109592214833502
+    },
+    {
+      "source": "Number of gates in LSTM",
+      "target": "LSTM (Long Short-Term Memory)",
+      "confidence": 0.574717403212757
+    },
+    {
+      "source": "Number of gates in LSTM",
+      "target": "Computational complexity of LSTM vs GRU",
+      "confidence": 0.5642523822212043
+    },
+    {
+      "source": "Output Gate",
+      "target": "GRU (Gated Recurrent Unit)",
+      "confidence": 0.623537552758763
+    },
+    {
+      "source": "Output Gate",
+      "target": "Gates in RNNs",
+      "confidence": 0.7020924036585251
+    },
+    {
+      "source": "Output Gate",
+      "target": "Forget Gate",
+      "confidence": 0.9051691699491204
+    },
+    {
+      "source": "Output Gate",
+      "target": "Input Gate",
+      "confidence": 0.9591508810748437
+    },
+    {
+      "source": "Output Gate",
+      "target": "Reset Gate",
+      "confidence": 0.9295223428469568
+    },
+    {
+      "source": "Output Gate",
+      "target": "Update Gate",
+      "confidence": 0.9365418346029193
+    },
+    {
+      "source": "Output Gate",
+      "target": "Gate values between 0 and 1",
+      "confidence": 0.8865427735169796
+    },
+    {
+      "source": "Parameter Count",
+      "target": "Parameter count in recurrent units",
+      "confidence": 0.7965804647988131
+    },
+    {
+      "source": "Recurrent Neural Network (RNN)",
+      "target": "LSTM (Long Short-Term Memory)",
+      "confidence": 0.806412862191377
+    },
+    {
+      "source": "Recurrent Neural Network (RNN)",
+      "target": "Gates in RNNs",
+      "confidence": 0.5574801385750839
+    },
+    {
+      "source": "Resetting dimensions of memory based on current input",
+      "target": "Contextual memory update",
+      "confidence": 0.7514522414448064
+    },
+    {
+      "source": "Tanh activation function",
+      "target": "Activation function (sigmoid, tanh)",
+      "confidence": 0.9237341712342277
+    },
+    {
+      "source": "Update Gate",
+      "target": "Gates in RNNs",
+      "confidence": 0.6503912212854582
+    },
+    {
+      "source": "Update Gate",
+      "target": "Reset Gate",
+      "confidence": 0.9024294972734812
+    },
+    {
+      "source": "Update Gate",
+      "target": "Backpropagation for training gate weights",
+      "confidence": 0.5894905689031226
+    },
+    {
+      "source": "Vanishing Gradient Problem",
+      "target": "Exploding Gradient Problem",
+      "confidence": 0.7791604435962901
+    },
+    {
+      "source": "Vector Representation of States",
+      "target": "Vectorized input representation",
+      "confidence": 0.9357704483387316
+    },
+    {
+      "source": "Vector Representation of States",
+      "target": "Vector representation of memory",
+      "confidence": 0.9654772787606094
+    },
+    {
+      "source": "Vector dimensionality",
+      "target": "Neural network layer representation",
+      "confidence": 0.8114902986862854
+    },
+    {
+      "source": "Vector dimensionality",
+      "target": "Vectorized input representation",
+      "confidence": 0.8749473460810204
+    },
+    {
+      "source": "Vector dimensionality",
+      "target": "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+      "confidence": 0.7318071647700243
+    },
+    {
+      "source": "Vector representation of memory",
+      "target": "Contextual memory update",
+      "confidence": 0.7097191609884912
+    },
+    {
+      "source": "Vector representation of memory",
+      "target": "Resetting dimensions of memory based on current input",
+      "confidence": 0.8705908917575518
+    },
+    {
+      "source": "Vector representation of memory",
+      "target": "Vectorized input representation",
+      "confidence": 0.9019547832545997
+    },
+    {
+      "source": "Weight and bias parameters in neural layers",
+      "target": "Fully connected (dense) neural network layer",
+      "confidence": 0.719164530159165
+    }
+  ],
+  "node_count": 74,
+  "edge_count": 103,
+  "is_dag": true,
+  "topological_order": [
+    "Black Box Problem in Deep Learning",
+    "Context Vector",
+    "Contextual representation in sequence models",
+    "Dimensionality of Hidden States",
+    "Dot product for weight multiplication",
+    "Dynamic weighting of story elements",
+    "Element-wise operations (point-wise multiplication/addition)",
+    "Empirical performance comparison",
+    "Feature Extraction from Text",
+    "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+    "Gate as a vector of values between 0 and 1",
+    "Hidden units",
+    "Interpretability of Neural Networks",
+    "Intuitive Example Using Storytelling",
+    "Long-Term Context",
+    "Memory (Past Context)",
+    "Model Complexity",
+    "Number of gates in GRU",
+    "Output Gate",
+    "Parameter Count",
+    "Parameter sharing across layers",
+    "Recurrent Neural Network (RNN)",
+    "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+    "Sentiment analysis application",
+    "Sequence Modeling",
+    "Sequential Data Processing",
+    "Tanh activation function",
+    "Training Time",
+    "Vanishing Gradient Problem",
+    "Vector dimensionality",
+    "Weighted sum",
+    "Hidden State",
+    "Vector Representation of States",
+    "Story perspective weighting",
+    "Pointwise (element-wise) multiplication",
+    "Element-wise addition",
+    "GRU computation steps",
+    "Gating Mechanisms in Recurrent Networks",
+    "Balancing Past and Current Context",
+    "Number of gates in LSTM",
+    "Architectural differences between LSTM and GRU",
+    "Input Gate",
+    "Gate values between 0 and 1",
+    "Parameter count in recurrent units",
+    "Activation function (sigmoid, tanh)",
+    "Exploding Gradient Problem",
+    "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+    "Hidden state update equation",
+    "Architecture of GRU (Two-Step Process)",
+    "Temporal Dynamics of Context",
+    "Computational complexity of LSTM vs GRU",
+    "Forget Gate",
+    "Concatenation of hidden state and input",
+    "Memory cell state",
+    "GRU (Gated Recurrent Unit)",
+    "Update Gate",
+    "Balancing past and current memory via gating",
+    "Weight and bias parameters in neural layers",
+    "Cell State",
+    "Candidate memory (candidate hidden state)",
+    "Gates in RNNs",
+    "Reset Gate",
+    "Backpropagation for training gate weights",
+    "LSTM (Long Short-Term Memory)",
+    "Modulated (reset) memory",
+    "Vector representation of memory",
+    "Candidate Hidden State",
+    "Hidden state as memory of the network",
+    "Resetting dimensions of memory based on current input",
+    "Vectorized input representation",
+    "Neural network layer representation",
+    "Contextual memory update",
+    "Fully connected (dense) neural network layer",
+    "Fully connected layer"
+  ]
+}

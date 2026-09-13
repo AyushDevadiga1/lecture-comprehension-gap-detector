@@ -1,0 +1,1060 @@
+{
+  "course_id": "ml",
+  "heatmap": [
+    {
+      "concept": "Black Box Problem in Deep Learning",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Dimensionality of Hidden States",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Element-wise operations (point-wise multiplication/addition)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Interpretability of Neural Networks",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Memory (Past Context)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Output Gate",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Recurrent Neural Network (RNN)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Sequence Modeling",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Training Time",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Weighted sum",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Story perspective weighting",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "GRU computation steps",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Number of gates in LSTM",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Gate values between 0 and 1",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Exploding Gradient Problem",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Architecture of GRU (Two-Step Process)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Forget Gate",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "GRU (Gated Recurrent Unit)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Weight and bias parameters in neural layers",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Gates in RNNs",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "LSTM (Long Short-Term Memory)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Candidate Hidden State",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Vectorized input representation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Fully connected (dense) neural network layer",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Context Vector",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Contextual representation in sequence models",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Dot product for weight multiplication",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Dynamic weighting of story elements",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Empirical performance comparison",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Feature Extraction from Text",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Gate as a vector of values between 0 and 1",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Hidden units",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Intuitive Example Using Storytelling",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Long-Term Context",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Model Complexity",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Number of gates in GRU",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Parameter Count",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Parameter sharing across layers",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Sentiment analysis application",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Sequential Data Processing",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Tanh activation function",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Vanishing Gradient Problem",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Vector dimensionality",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Hidden State",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Vector Representation of States",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Pointwise (element-wise) multiplication",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Element-wise addition",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Gating Mechanisms in Recurrent Networks",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Balancing Past and Current Context",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Architectural differences between LSTM and GRU",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Input Gate",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Parameter count in recurrent units",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Activation function (sigmoid, tanh)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Hidden state update equation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Temporal Dynamics of Context",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Computational complexity of LSTM vs GRU",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Concatenation of hidden state and input",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Memory cell state",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Update Gate",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Balancing past and current memory via gating",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Cell State",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Candidate memory (candidate hidden state)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Reset Gate",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Backpropagation for training gate weights",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Modulated (reset) memory",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Vector representation of memory",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Hidden state as memory of the network",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Resetting dimensions of memory based on current input",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Neural network layer representation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Contextual memory update",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Fully connected layer",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "Empirical performance comparison",
+      "taught_idx": 85,
+      "learned_idx": 7,
+      "gap": -78
+    },
+    {
+      "concept": "Dot product for weight multiplication",
+      "taught_idx": 74,
+      "learned_idx": 4,
+      "gap": -70
+    },
+    {
+      "concept": "Number of gates in GRU",
+      "taught_idx": 82,
+      "learned_idx": 17,
+      "gap": -65
+    },
+    {
+      "concept": "Dynamic weighting of story elements",
+      "taught_idx": 58,
+      "learned_idx": 5,
+      "gap": -53
+    },
+    {
+      "concept": "Gate as a vector of values between 0 and 1",
+      "taught_idx": 61,
+      "learned_idx": 10,
+      "gap": -51
+    },
+    {
+      "concept": "Candidate Hidden State",
+      "taught_idx": 16,
+      "learned_idx": 66,
+      "gap": 50
+    },
+    {
+      "concept": "Gates in RNNs",
+      "taught_idx": 10,
+      "learned_idx": 60,
+      "gap": 50
+    },
+    {
+      "concept": "Cell State",
+      "taught_idx": 9,
+      "learned_idx": 58,
+      "gap": 49
+    },
+    {
+      "concept": "Fully connected layer",
+      "taught_idx": 24,
+      "learned_idx": 73,
+      "gap": 49
+    },
+    {
+      "concept": "Reset Gate",
+      "taught_idx": 14,
+      "learned_idx": 61,
+      "gap": 47
+    },
+    {
+      "concept": "Neural network layer representation",
+      "taught_idx": 23,
+      "learned_idx": 70,
+      "gap": 47
+    },
+    {
+      "concept": "Architectural differences between LSTM and GRU",
+      "taught_idx": 86,
+      "learned_idx": 40,
+      "gap": -46
+    },
+    {
+      "concept": "Number of gates in LSTM",
+      "taught_idx": 81,
+      "learned_idx": 39,
+      "gap": -42
+    },
+    {
+      "concept": "Tanh activation function",
+      "taught_idx": 68,
+      "learned_idx": 26,
+      "gap": -42
+    },
+    {
+      "concept": "Element-wise addition",
+      "taught_idx": 76,
+      "learned_idx": 35,
+      "gap": -41
+    },
+    {
+      "concept": "Exploding Gradient Problem",
+      "taught_idx": 4,
+      "learned_idx": 45,
+      "gap": 41
+    },
+    {
+      "concept": "Black Box Problem in Deep Learning",
+      "taught_idx": 40,
+      "learned_idx": 0,
+      "gap": -40
+    },
+    {
+      "concept": "Update Gate",
+      "taught_idx": 15,
+      "learned_idx": 55,
+      "gap": 40
+    },
+    {
+      "concept": "Parameter count in recurrent units",
+      "taught_idx": 83,
+      "learned_idx": 43,
+      "gap": -40
+    },
+    {
+      "concept": "Forget Gate",
+      "taught_idx": 11,
+      "learned_idx": 51,
+      "gap": 40
+    },
+    {
+      "concept": "Vectorized input representation",
+      "taught_idx": 29,
+      "learned_idx": 69,
+      "gap": 40
+    },
+    {
+      "concept": "Feature Extraction from Text",
+      "taught_idx": 47,
+      "learned_idx": 8,
+      "gap": -39
+    },
+    {
+      "concept": "Interpretability of Neural Networks",
+      "taught_idx": 49,
+      "learned_idx": 12,
+      "gap": -37
+    },
+    {
+      "concept": "Context Vector",
+      "taught_idx": 36,
+      "learned_idx": 1,
+      "gap": -35
+    },
+    {
+      "concept": "Computational complexity of LSTM vs GRU",
+      "taught_idx": 84,
+      "learned_idx": 50,
+      "gap": -34
+    },
+    {
+      "concept": "Hidden state as memory of the network",
+      "taught_idx": 33,
+      "learned_idx": 67,
+      "gap": 34
+    },
+    {
+      "concept": "Pointwise (element-wise) multiplication",
+      "taught_idx": 67,
+      "learned_idx": 34,
+      "gap": -33
+    },
+    {
+      "concept": "Hidden state update equation",
+      "taught_idx": 79,
+      "learned_idx": 47,
+      "gap": -32
+    },
+    {
+      "concept": "Contextual representation in sequence models",
+      "taught_idx": 34,
+      "learned_idx": 2,
+      "gap": -32
+    },
+    {
+      "concept": "Intuitive Example Using Storytelling",
+      "taught_idx": 44,
+      "learned_idx": 13,
+      "gap": -31
+    },
+    {
+      "concept": "Gate values between 0 and 1",
+      "taught_idx": 73,
+      "learned_idx": 42,
+      "gap": -31
+    },
+    {
+      "concept": "Input Gate",
+      "taught_idx": 12,
+      "learned_idx": 41,
+      "gap": 29
+    },
+    {
+      "concept": "Story perspective weighting",
+      "taught_idx": 60,
+      "learned_idx": 33,
+      "gap": -27
+    },
+    {
+      "concept": "Vanishing Gradient Problem",
+      "taught_idx": 3,
+      "learned_idx": 28,
+      "gap": 25
+    },
+    {
+      "concept": "LSTM (Long Short-Term Memory)",
+      "taught_idx": 38,
+      "learned_idx": 63,
+      "gap": 25
+    },
+    {
+      "concept": "Memory cell state",
+      "taught_idx": 78,
+      "learned_idx": 53,
+      "gap": -25
+    },
+    {
+      "concept": "Weighted sum",
+      "taught_idx": 54,
+      "learned_idx": 30,
+      "gap": -24
+    },
+    {
+      "concept": "Memory (Past Context)",
+      "taught_idx": 39,
+      "learned_idx": 15,
+      "gap": -24
+    },
+    {
+      "concept": "Hidden State",
+      "taught_idx": 8,
+      "learned_idx": 31,
+      "gap": 23
+    },
+    {
+      "concept": "Concatenation of hidden state and input",
+      "taught_idx": 75,
+      "learned_idx": 52,
+      "gap": -23
+    },
+    {
+      "concept": "Element-wise operations (point-wise multiplication/addition)",
+      "taught_idx": 28,
+      "learned_idx": 6,
+      "gap": -22
+    },
+    {
+      "concept": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+      "taught_idx": 31,
+      "learned_idx": 9,
+      "gap": -22
+    },
+    {
+      "concept": "Recurrent Neural Network (RNN)",
+      "taught_idx": 0,
+      "learned_idx": 21,
+      "gap": 21
+    },
+    {
+      "concept": "Weight and bias parameters in neural layers",
+      "taught_idx": 77,
+      "learned_idx": 57,
+      "gap": -20
+    },
+    {
+      "concept": "Sequential Data Processing",
+      "taught_idx": 5,
+      "learned_idx": 25,
+      "gap": 20
+    },
+    {
+      "concept": "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+      "taught_idx": 41,
+      "learned_idx": 22,
+      "gap": -19
+    },
+    {
+      "concept": "Dimensionality of Hidden States",
+      "taught_idx": 21,
+      "learned_idx": 3,
+      "gap": -18
+    },
+    {
+      "concept": "Sequence Modeling",
+      "taught_idx": 42,
+      "learned_idx": 24,
+      "gap": -18
+    },
+    {
+      "concept": "Activation function (sigmoid, tanh)",
+      "taught_idx": 26,
+      "learned_idx": 44,
+      "gap": 18
+    },
+    {
+      "concept": "GRU (Gated Recurrent Unit)",
+      "taught_idx": 37,
+      "learned_idx": 54,
+      "gap": 17
+    },
+    {
+      "concept": "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+      "taught_idx": 30,
+      "learned_idx": 46,
+      "gap": 16
+    },
+    {
+      "concept": "Balancing past and current memory via gating",
+      "taught_idx": 71,
+      "learned_idx": 56,
+      "gap": -15
+    },
+    {
+      "concept": "Hidden units",
+      "taught_idx": 25,
+      "learned_idx": 11,
+      "gap": -14
+    },
+    {
+      "concept": "Sentiment analysis application",
+      "taught_idx": 35,
+      "learned_idx": 23,
+      "gap": -12
+    },
+    {
+      "concept": "Vector Representation of States",
+      "taught_idx": 20,
+      "learned_idx": 32,
+      "gap": 12
+    },
+    {
+      "concept": "Contextual memory update",
+      "taught_idx": 59,
+      "learned_idx": 71,
+      "gap": 12
+    },
+    {
+      "concept": "Training Time",
+      "taught_idx": 18,
+      "learned_idx": 27,
+      "gap": 9
+    },
+    {
+      "concept": "Vector representation of memory",
+      "taught_idx": 57,
+      "learned_idx": 65,
+      "gap": 8
+    },
+    {
+      "concept": "Balancing Past and Current Context",
+      "taught_idx": 46,
+      "learned_idx": 38,
+      "gap": -8
+    },
+    {
+      "concept": "Long-Term Context",
+      "taught_idx": 6,
+      "learned_idx": 14,
+      "gap": 8
+    },
+    {
+      "concept": "Parameter sharing across layers",
+      "taught_idx": 27,
+      "learned_idx": 20,
+      "gap": -7
+    },
+    {
+      "concept": "Vector dimensionality",
+      "taught_idx": 22,
+      "learned_idx": 29,
+      "gap": 7
+    },
+    {
+      "concept": "Resetting dimensions of memory based on current input",
+      "taught_idx": 62,
+      "learned_idx": 68,
+      "gap": 6
+    },
+    {
+      "concept": "Candidate memory (candidate hidden state)",
+      "taught_idx": 53,
+      "learned_idx": 59,
+      "gap": 6
+    },
+    {
+      "concept": "Gating Mechanisms in Recurrent Networks",
+      "taught_idx": 43,
+      "learned_idx": 37,
+      "gap": -6
+    },
+    {
+      "concept": "Output Gate",
+      "taught_idx": 13,
+      "learned_idx": 18,
+      "gap": 5
+    },
+    {
+      "concept": "GRU computation steps",
+      "taught_idx": 32,
+      "learned_idx": 36,
+      "gap": 4
+    },
+    {
+      "concept": "Architecture of GRU (Two-Step Process)",
+      "taught_idx": 45,
+      "learned_idx": 48,
+      "gap": 3
+    },
+    {
+      "concept": "Fully connected (dense) neural network layer",
+      "taught_idx": 69,
+      "learned_idx": 72,
+      "gap": 3
+    },
+    {
+      "concept": "Model Complexity",
+      "taught_idx": 19,
+      "learned_idx": 16,
+      "gap": -3
+    },
+    {
+      "concept": "Backpropagation for training gate weights",
+      "taught_idx": 64,
+      "learned_idx": 62,
+      "gap": -2
+    },
+    {
+      "concept": "Modulated (reset) memory",
+      "taught_idx": 66,
+      "learned_idx": 64,
+      "gap": -2
+    },
+    {
+      "concept": "Parameter Count",
+      "taught_idx": 17,
+      "learned_idx": 19,
+      "gap": 2
+    },
+    {
+      "concept": "Temporal Dynamics of Context",
+      "taught_idx": 48,
+      "learned_idx": 49,
+      "gap": 1
+    }
+  ],
+  "taught_order": [
+    "Recurrent Neural Network (RNN)",
+    "Long Short-Term Memory (LSTM)",
+    "Gated Recurrent Unit (GRU)",
+    "Vanishing Gradient Problem",
+    "Exploding Gradient Problem",
+    "Sequential Data Processing",
+    "Long-Term Context",
+    "Short-Term Context",
+    "Hidden State",
+    "Cell State",
+    "Gates in RNNs",
+    "Forget Gate",
+    "Input Gate",
+    "Output Gate",
+    "Reset Gate",
+    "Update Gate",
+    "Candidate Hidden State",
+    "Parameter Count",
+    "Training Time",
+    "Model Complexity",
+    "Vector Representation of States",
+    "Dimensionality of Hidden States",
+    "Vector dimensionality",
+    "Neural network layer representation",
+    "Fully connected layer",
+    "Hidden units",
+    "Activation function (sigmoid, tanh)",
+    "Parameter sharing across layers",
+    "Element-wise operations (point-wise multiplication/addition)",
+    "Vectorized input representation",
+    "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+    "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+    "GRU computation steps",
+    "Hidden state as memory of the network",
+    "Contextual representation in sequence models",
+    "Sentiment analysis application",
+    "Context Vector",
+    "GRU (Gated Recurrent Unit)",
+    "LSTM (Long Short-Term Memory)",
+    "Memory (Past Context)",
+    "Black Box Problem in Deep Learning",
+    "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+    "Sequence Modeling",
+    "Gating Mechanisms in Recurrent Networks",
+    "Intuitive Example Using Storytelling",
+    "Architecture of GRU (Two-Step Process)",
+    "Balancing Past and Current Context",
+    "Feature Extraction from Text",
+    "Temporal Dynamics of Context",
+    "Interpretability of Neural Networks",
+    "Reset gate",
+    "Update gate",
+    "Hidden state",
+    "Candidate memory (candidate hidden state)",
+    "Weighted sum",
+    "Sigmoid activation function",
+    "Neural network layer (fully connected layer)",
+    "Vector representation of memory",
+    "Dynamic weighting of story elements",
+    "Contextual memory update",
+    "Story perspective weighting",
+    "Gate as a vector of values between 0 and 1",
+    "Resetting dimensions of memory based on current input",
+    "Updating dimensions of memory based on current input",
+    "Backpropagation for training gate weights",
+    "Long Short-Term Memory (LSTM) architecture",
+    "Modulated (reset) memory",
+    "Pointwise (element-wise) multiplication",
+    "Tanh activation function",
+    "Fully connected (dense) neural network layer",
+    "Candidate hidden state",
+    "Balancing past and current memory via gating",
+    "Backpropagation for training gates",
+    "Gate values between 0 and 1",
+    "Dot product for weight multiplication",
+    "Concatenation of hidden state and input",
+    "Element-wise addition",
+    "Weight and bias parameters in neural layers",
+    "Memory cell state",
+    "Hidden state update equation",
+    "Cell state",
+    "Number of gates in LSTM",
+    "Number of gates in GRU",
+    "Parameter count in recurrent units",
+    "Computational complexity of LSTM vs GRU",
+    "Empirical performance comparison",
+    "Architectural differences between LSTM and GRU"
+  ],
+  "learned_order": [
+    "Black Box Problem in Deep Learning",
+    "Context Vector",
+    "Contextual representation in sequence models",
+    "Dimensionality of Hidden States",
+    "Dot product for weight multiplication",
+    "Dynamic weighting of story elements",
+    "Element-wise operations (point-wise multiplication/addition)",
+    "Empirical performance comparison",
+    "Feature Extraction from Text",
+    "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+    "Gate as a vector of values between 0 and 1",
+    "Hidden units",
+    "Interpretability of Neural Networks",
+    "Intuitive Example Using Storytelling",
+    "Long-Term Context",
+    "Memory (Past Context)",
+    "Model Complexity",
+    "Number of gates in GRU",
+    "Output Gate",
+    "Parameter Count",
+    "Parameter sharing across layers",
+    "Recurrent Neural Network (RNN)",
+    "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+    "Sentiment analysis application",
+    "Sequence Modeling",
+    "Sequential Data Processing",
+    "Tanh activation function",
+    "Training Time",
+    "Vanishing Gradient Problem",
+    "Vector dimensionality",
+    "Weighted sum",
+    "Hidden State",
+    "Vector Representation of States",
+    "Story perspective weighting",
+    "Pointwise (element-wise) multiplication",
+    "Element-wise addition",
+    "GRU computation steps",
+    "Gating Mechanisms in Recurrent Networks",
+    "Balancing Past and Current Context",
+    "Number of gates in LSTM",
+    "Architectural differences between LSTM and GRU",
+    "Input Gate",
+    "Gate values between 0 and 1",
+    "Parameter count in recurrent units",
+    "Activation function (sigmoid, tanh)",
+    "Exploding Gradient Problem",
+    "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+    "Hidden state update equation",
+    "Architecture of GRU (Two-Step Process)",
+    "Temporal Dynamics of Context",
+    "Computational complexity of LSTM vs GRU",
+    "Forget Gate",
+    "Concatenation of hidden state and input",
+    "Memory cell state",
+    "GRU (Gated Recurrent Unit)",
+    "Update Gate",
+    "Balancing past and current memory via gating",
+    "Weight and bias parameters in neural layers",
+    "Cell State",
+    "Candidate memory (candidate hidden state)",
+    "Gates in RNNs",
+    "Reset Gate",
+    "Backpropagation for training gate weights",
+    "LSTM (Long Short-Term Memory)",
+    "Modulated (reset) memory",
+    "Vector representation of memory",
+    "Candidate Hidden State",
+    "Hidden state as memory of the network",
+    "Resetting dimensions of memory based on current input",
+    "Vectorized input representation",
+    "Neural network layer representation",
+    "Contextual memory update",
+    "Fully connected (dense) neural network layer",
+    "Fully connected layer"
+  ]
+}

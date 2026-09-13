@@ -1,0 +1,599 @@
+{
+  "quiz_id": 1,
+  "course_id": "ml",
+  "student_id": "sample-student",
+  "questions": [
+    {
+      "id": 1,
+      "concept": "Black Box Problem in Deep Learning",
+      "question": "Which statement about 'Black Box Problem in Deep Learning' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 2,
+      "concept": "Context Vector",
+      "question": "Which statement about 'Context Vector' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 3,
+      "concept": "Contextual representation in sequence models",
+      "question": "Which statement about 'Contextual representation in sequence models' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 4,
+      "concept": "Dimensionality of Hidden States",
+      "question": "Which statement about 'Dimensionality of Hidden States' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 5,
+      "concept": "Dot product for weight multiplication",
+      "question": "Which statement about 'Dot product for weight multiplication' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 6,
+      "concept": "Dynamic weighting of story elements",
+      "question": "Which statement about 'Dynamic weighting of story elements' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 7,
+      "concept": "Element-wise operations (point-wise multiplication/addition)",
+      "question": "Which statement about 'Element-wise operations (point-wise multiplication/addition)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 8,
+      "concept": "Empirical performance comparison",
+      "question": "Which statement about 'Empirical performance comparison' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 9,
+      "concept": "Feature Extraction from Text",
+      "question": "Which statement about 'Feature Extraction from Text' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 10,
+      "concept": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+      "question": "Which statement about 'GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 11,
+      "concept": "Gate as a vector of values between 0 and 1",
+      "question": "Which statement about 'Gate as a vector of values between 0 and 1' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 12,
+      "concept": "Hidden units",
+      "question": "Which statement about 'Hidden units' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 13,
+      "concept": "Interpretability of Neural Networks",
+      "question": "Which statement about 'Interpretability of Neural Networks' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 14,
+      "concept": "Intuitive Example Using Storytelling",
+      "question": "Which statement about 'Intuitive Example Using Storytelling' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 15,
+      "concept": "Long-Term Context",
+      "question": "Which statement about 'Long-Term Context' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 16,
+      "concept": "Memory (Past Context)",
+      "question": "Which statement about 'Memory (Past Context)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 17,
+      "concept": "Model Complexity",
+      "question": "Which statement about 'Model Complexity' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 18,
+      "concept": "Number of gates in GRU",
+      "question": "Which statement about 'Number of gates in GRU' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 19,
+      "concept": "Output Gate",
+      "question": "Which statement about 'Output Gate' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 20,
+      "concept": "Parameter Count",
+      "question": "Which statement about 'Parameter Count' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 21,
+      "concept": "Parameter sharing across layers",
+      "question": "Which statement about 'Parameter sharing across layers' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 22,
+      "concept": "Recurrent Neural Network (RNN)",
+      "question": "Which statement about 'Recurrent Neural Network (RNN)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 23,
+      "concept": "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+      "question": "Which statement about 'Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 24,
+      "concept": "Sentiment analysis application",
+      "question": "Which statement about 'Sentiment analysis application' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 25,
+      "concept": "Sequence Modeling",
+      "question": "Which statement about 'Sequence Modeling' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 26,
+      "concept": "Sequential Data Processing",
+      "question": "Which statement about 'Sequential Data Processing' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 27,
+      "concept": "Tanh activation function",
+      "question": "Which statement about 'Tanh activation function' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 28,
+      "concept": "Training Time",
+      "question": "Which statement about 'Training Time' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 29,
+      "concept": "Vanishing Gradient Problem",
+      "question": "Which statement about 'Vanishing Gradient Problem' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 30,
+      "concept": "Vector dimensionality",
+      "question": "Which statement about 'Vector dimensionality' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 31,
+      "concept": "Weighted sum",
+      "question": "Which statement about 'Weighted sum' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 32,
+      "concept": "Hidden State",
+      "question": "Which statement about 'Hidden State' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 33,
+      "concept": "Vector Representation of States",
+      "question": "Which statement about 'Vector Representation of States' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 34,
+      "concept": "Story perspective weighting",
+      "question": "Which statement about 'Story perspective weighting' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 35,
+      "concept": "Pointwise (element-wise) multiplication",
+      "question": "Which statement about 'Pointwise (element-wise) multiplication' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 36,
+      "concept": "Element-wise addition",
+      "question": "Which statement about 'Element-wise addition' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 37,
+      "concept": "GRU computation steps",
+      "question": "Which statement about 'GRU computation steps' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 38,
+      "concept": "Gating Mechanisms in Recurrent Networks",
+      "question": "Which statement about 'Gating Mechanisms in Recurrent Networks' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 39,
+      "concept": "Balancing Past and Current Context",
+      "question": "Which statement about 'Balancing Past and Current Context' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 40,
+      "concept": "Number of gates in LSTM",
+      "question": "Which statement about 'Number of gates in LSTM' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 41,
+      "concept": "Architectural differences between LSTM and GRU",
+      "question": "Which statement about 'Architectural differences between LSTM and GRU' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 42,
+      "concept": "Input Gate",
+      "question": "Which statement about 'Input Gate' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 43,
+      "concept": "Gate values between 0 and 1",
+      "question": "Which statement about 'Gate values between 0 and 1' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 44,
+      "concept": "Parameter count in recurrent units",
+      "question": "Which statement about 'Parameter count in recurrent units' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 45,
+      "concept": "Activation function (sigmoid, tanh)",
+      "question": "Which statement about 'Activation function (sigmoid, tanh)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 46,
+      "concept": "Exploding Gradient Problem",
+      "question": "Which statement about 'Exploding Gradient Problem' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 47,
+      "concept": "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+      "question": "Which statement about 'Text vectorization techniques (OHE, bag-of-words, embeddings)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 48,
+      "concept": "Hidden state update equation",
+      "question": "Which statement about 'Hidden state update equation' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 49,
+      "concept": "Architecture of GRU (Two-Step Process)",
+      "question": "Which statement about 'Architecture of GRU (Two-Step Process)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 50,
+      "concept": "Temporal Dynamics of Context",
+      "question": "Which statement about 'Temporal Dynamics of Context' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 51,
+      "concept": "Computational complexity of LSTM vs GRU",
+      "question": "Which statement about 'Computational complexity of LSTM vs GRU' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 52,
+      "concept": "Forget Gate",
+      "question": "Which statement about 'Forget Gate' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 53,
+      "concept": "Concatenation of hidden state and input",
+      "question": "Which statement about 'Concatenation of hidden state and input' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 54,
+      "concept": "Memory cell state",
+      "question": "Which statement about 'Memory cell state' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 55,
+      "concept": "GRU (Gated Recurrent Unit)",
+      "question": "Which statement about 'GRU (Gated Recurrent Unit)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 56,
+      "concept": "Update Gate",
+      "question": "Which statement about 'Update Gate' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 57,
+      "concept": "Balancing past and current memory via gating",
+      "question": "Which statement about 'Balancing past and current memory via gating' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 58,
+      "concept": "Weight and bias parameters in neural layers",
+      "question": "Which statement about 'Weight and bias parameters in neural layers' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 59,
+      "concept": "Cell State",
+      "question": "Which statement about 'Cell State' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 60,
+      "concept": "Candidate memory (candidate hidden state)",
+      "question": "Which statement about 'Candidate memory (candidate hidden state)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 61,
+      "concept": "Gates in RNNs",
+      "question": "Which statement about 'Gates in RNNs' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 62,
+      "concept": "Reset Gate",
+      "question": "Which statement about 'Reset Gate' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 63,
+      "concept": "Backpropagation for training gate weights",
+      "question": "Which statement about 'Backpropagation for training gate weights' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 64,
+      "concept": "LSTM (Long Short-Term Memory)",
+      "question": "Which statement about 'LSTM (Long Short-Term Memory)' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 65,
+      "concept": "Modulated (reset) memory",
+      "question": "Which statement about 'Modulated (reset) memory' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 66,
+      "concept": "Vector representation of memory",
+      "question": "Which statement about 'Vector representation of memory' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 67,
+      "concept": "Candidate Hidden State",
+      "question": "Which statement about 'Candidate Hidden State' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 68,
+      "concept": "Hidden state as memory of the network",
+      "question": "Which statement about 'Hidden state as memory of the network' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 69,
+      "concept": "Resetting dimensions of memory based on current input",
+      "question": "Which statement about 'Resetting dimensions of memory based on current input' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 70,
+      "concept": "Vectorized input representation",
+      "question": "Which statement about 'Vectorized input representation' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 71,
+      "concept": "Neural network layer representation",
+      "question": "Which statement about 'Neural network layer representation' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 72,
+      "concept": "Contextual memory update",
+      "question": "Which statement about 'Contextual memory update' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 73,
+      "concept": "Fully connected (dense) neural network layer",
+      "question": "Which statement about 'Fully connected (dense) neural network layer' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    },
+    {
+      "id": 74,
+      "concept": "Fully connected layer",
+      "question": "Which statement about 'Fully connected layer' is correct?",
+      "distractor_a": null,
+      "distractor_b": null,
+      "distractor_c": null
+    }
+  ]
+}

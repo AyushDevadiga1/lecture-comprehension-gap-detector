@@ -1,0 +1,911 @@
+[
+  {
+    "id": 1,
+    "concept_name": "Recurrent Neural Network (RNN)",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Recurrent Neural Network _RNN___0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 2,
+    "concept_name": "Long Short-Term Memory (LSTM)",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Long Short-Term Memory _LSTM___0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 3,
+    "concept_name": "Gated Recurrent Unit (GRU)",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gated Recurrent Unit _GRU___0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 4,
+    "concept_name": "Vanishing Gradient Problem",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vanishing Gradient Problem__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 5,
+    "concept_name": "Exploding Gradient Problem",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Exploding Gradient Problem__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 6,
+    "concept_name": "Sequential Data Processing",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Sequential Data Processing__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 7,
+    "concept_name": "Long-Term Context",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Long-Term Context__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 8,
+    "concept_name": "Short-Term Context",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Short-Term Context__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 9,
+    "concept_name": "Hidden State",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden State__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 10,
+    "concept_name": "Cell State",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Cell State__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 11,
+    "concept_name": "Gates in RNNs",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gates in RNNs__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 12,
+    "concept_name": "Forget Gate",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Forget Gate__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 13,
+    "concept_name": "Input Gate",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Input Gate__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 14,
+    "concept_name": "Output Gate",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Output Gate__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 15,
+    "concept_name": "Reset Gate",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Reset Gate__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 16,
+    "concept_name": "Update Gate",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update Gate__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 17,
+    "concept_name": "Candidate Hidden State",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate Hidden State__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 18,
+    "concept_name": "Parameter Count",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Parameter Count__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 19,
+    "concept_name": "Training Time",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Training Time__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 20,
+    "concept_name": "Model Complexity",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Model Complexity__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 21,
+    "concept_name": "Vector Representation of States",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vector Representation of States__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 22,
+    "concept_name": "Dimensionality of Hidden States",
+    "start_s": 0.0,
+    "end_s": 945.239998,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dimensionality of Hidden States__0-945.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 23,
+    "concept_name": "Vector dimensionality",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vector dimensionality__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 24,
+    "concept_name": "Neural network layer representation",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Neural network layer representation__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 25,
+    "concept_name": "Fully connected layer",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Fully connected layer__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 26,
+    "concept_name": "Hidden units",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden units__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 27,
+    "concept_name": "Activation function (sigmoid, tanh)",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Activation function _sigmoid_ tanh___945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 28,
+    "concept_name": "Parameter sharing across layers",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Parameter sharing across layers__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 29,
+    "concept_name": "Element-wise operations (point-wise multiplication/addition)",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Element-wise operations _point-wise multiplication_addition___945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 30,
+    "concept_name": "Vectorized input representation",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vectorized input representation__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 31,
+    "concept_name": "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Text vectorization techniques _OHE_ bag-of-words_ embeddings___945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 32,
+    "concept_name": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GRU architecture _reset gate_ update gate_ candidate hidden state_ current hidden state___945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 33,
+    "concept_name": "GRU computation steps",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GRU computation steps__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 34,
+    "concept_name": "Hidden state as memory of the network",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden state as memory of the network__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 35,
+    "concept_name": "Contextual representation in sequence models",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Contextual representation in sequence models__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 36,
+    "concept_name": "Sentiment analysis application",
+    "start_s": 945.239998,
+    "end_s": 1996.78,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Sentiment analysis application__945-1997.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 37,
+    "concept_name": "Hidden State",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden State__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 38,
+    "concept_name": "Context Vector",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Context Vector__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 39,
+    "concept_name": "GRU (Gated Recurrent Unit)",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GRU _Gated Recurrent Unit___1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 40,
+    "concept_name": "LSTM (Long Short-Term Memory)",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\LSTM _Long Short-Term Memory___1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 41,
+    "concept_name": "Reset Gate",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Reset Gate__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 42,
+    "concept_name": "Update Gate",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update Gate__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 43,
+    "concept_name": "Candidate Hidden State",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate Hidden State__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 44,
+    "concept_name": "Memory (Past Context)",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Memory _Past Context___1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 45,
+    "concept_name": "Black Box Problem in Deep Learning",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Black Box Problem in Deep Learning__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 46,
+    "concept_name": "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Representation of Narrative Aspects _e.g._ Power_ Conflict_ Tragedy_ Revenge___1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 47,
+    "concept_name": "Sequence Modeling",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Sequence Modeling__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 48,
+    "concept_name": "Gating Mechanisms in Recurrent Networks",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gating Mechanisms in Recurrent Networks__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 49,
+    "concept_name": "Intuitive Example Using Storytelling",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Intuitive Example Using Storytelling__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 50,
+    "concept_name": "Architecture of GRU (Two-Step Process)",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Architecture of GRU _Two-Step Process___1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 51,
+    "concept_name": "Balancing Past and Current Context",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Balancing Past and Current Context__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 52,
+    "concept_name": "Feature Extraction from Text",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Feature Extraction from Text__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 53,
+    "concept_name": "Temporal Dynamics of Context",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Temporal Dynamics of Context__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 54,
+    "concept_name": "Interpretability of Neural Networks",
+    "start_s": 1996.78,
+    "end_s": 2887.42,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Interpretability of Neural Networks__1997-2887.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 55,
+    "concept_name": "Gated Recurrent Unit (GRU)",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gated Recurrent Unit _GRU___2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 56,
+    "concept_name": "Reset gate",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Reset gate__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 57,
+    "concept_name": "Update gate",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update gate__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 58,
+    "concept_name": "Hidden state",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden state__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 59,
+    "concept_name": "Candidate memory (candidate hidden state)",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate memory _candidate hidden state___2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 60,
+    "concept_name": "Weighted sum",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Weighted sum__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 61,
+    "concept_name": "Sigmoid activation function",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Sigmoid activation function__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 62,
+    "concept_name": "Neural network layer (fully connected layer)",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Neural network layer _fully connected layer___2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 63,
+    "concept_name": "Vector representation of memory",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vector representation of memory__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 64,
+    "concept_name": "Dynamic weighting of story elements",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dynamic weighting of story elements__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 65,
+    "concept_name": "Contextual memory update",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Contextual memory update__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 66,
+    "concept_name": "Story perspective weighting",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Story perspective weighting__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 67,
+    "concept_name": "Gate as a vector of values between 0 and 1",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gate as a vector of values between 0 and 1__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 68,
+    "concept_name": "Resetting dimensions of memory based on current input",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Resetting dimensions of memory based on current input__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 69,
+    "concept_name": "Updating dimensions of memory based on current input",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Updating dimensions of memory based on current input__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 70,
+    "concept_name": "Backpropagation for training gate weights",
+    "start_s": 2887.42,
+    "end_s": 3910.58,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Backpropagation for training gate weights__2887-3911.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 71,
+    "concept_name": "Long Short-Term Memory (LSTM) architecture",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Long Short-Term Memory _LSTM_ architecture__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 72,
+    "concept_name": "Reset gate",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Reset gate__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 73,
+    "concept_name": "Modulated (reset) memory",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Modulated _reset_ memory__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 74,
+    "concept_name": "Pointwise (element-wise) multiplication",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pointwise _element-wise_ multiplication__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 75,
+    "concept_name": "Tanh activation function",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Tanh activation function__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 76,
+    "concept_name": "Fully connected (dense) neural network layer",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Fully connected _dense_ neural network layer__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 77,
+    "concept_name": "Sigmoid activation function",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Sigmoid activation function__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 78,
+    "concept_name": "Update gate",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update gate__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 79,
+    "concept_name": "Candidate hidden state",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate hidden state__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 80,
+    "concept_name": "Balancing past and current memory via gating",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Balancing past and current memory via gating__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 81,
+    "concept_name": "Backpropagation for training gates",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Backpropagation for training gates__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 82,
+    "concept_name": "Gate values between 0 and 1",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gate values between 0 and 1__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 83,
+    "concept_name": "Dot product for weight multiplication",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dot product for weight multiplication__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 84,
+    "concept_name": "Concatenation of hidden state and input",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Concatenation of hidden state and input__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 85,
+    "concept_name": "Element-wise addition",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Element-wise addition__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 86,
+    "concept_name": "Weight and bias parameters in neural layers",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Weight and bias parameters in neural layers__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 87,
+    "concept_name": "Memory cell state",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Memory cell state__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 88,
+    "concept_name": "Hidden state update equation",
+    "start_s": 3910.58,
+    "end_s": 4923.259995,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden state update equation__3911-4923.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 89,
+    "concept_name": "Long Short-Term Memory (LSTM)",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Long Short-Term Memory _LSTM___4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 90,
+    "concept_name": "Gated Recurrent Unit (GRU)",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gated Recurrent Unit _GRU___4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 91,
+    "concept_name": "Reset gate",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Reset gate__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 92,
+    "concept_name": "Update gate",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update gate__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 93,
+    "concept_name": "Candidate hidden state",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate hidden state__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 94,
+    "concept_name": "Hidden state",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden state__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 95,
+    "concept_name": "Cell state",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Cell state__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 96,
+    "concept_name": "Number of gates in LSTM",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Number of gates in LSTM__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 97,
+    "concept_name": "Number of gates in GRU",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Number of gates in GRU__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 98,
+    "concept_name": "Parameter count in recurrent units",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Parameter count in recurrent units__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 99,
+    "concept_name": "Computational complexity of LSTM vs GRU",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Computational complexity of LSTM vs GRU__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 100,
+    "concept_name": "Empirical performance comparison",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Empirical performance comparison__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 101,
+    "concept_name": "Architectural differences between LSTM and GRU",
+    "start_s": 4923.259995,
+    "end_s": 5181.04,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Architectural differences between LSTM and GRU__4923-5181.mp4",
+    "ok": true,
+    "error": null
+  }
+]

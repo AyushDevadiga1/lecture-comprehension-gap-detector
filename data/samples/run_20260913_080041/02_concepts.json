@@ -1,0 +1,810 @@
+[
+  {
+    "id": 1,
+    "name": "Recurrent Neural Network (RNN)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 2,
+    "name": "Long Short-Term Memory (LSTM)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 3,
+    "name": "Gated Recurrent Unit (GRU)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 4,
+    "name": "Vanishing Gradient Problem",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 5,
+    "name": "Exploding Gradient Problem",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 6,
+    "name": "Sequential Data Processing",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 7,
+    "name": "Long-Term Context",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 8,
+    "name": "Short-Term Context",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 9,
+    "name": "Hidden State",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 10,
+    "name": "Cell State",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 11,
+    "name": "Gates in RNNs",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 12,
+    "name": "Forget Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 13,
+    "name": "Input Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 14,
+    "name": "Output Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 15,
+    "name": "Reset Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 16,
+    "name": "Update Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 17,
+    "name": "Candidate Hidden State",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 18,
+    "name": "Parameter Count",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 19,
+    "name": "Training Time",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 20,
+    "name": "Model Complexity",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 21,
+    "name": "Vector Representation of States",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 22,
+    "name": "Dimensionality of Hidden States",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 0.0,
+    "end_s": 945.239998
+  },
+  {
+    "id": 23,
+    "name": "Vector dimensionality",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 24,
+    "name": "Neural network layer representation",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 25,
+    "name": "Fully connected layer",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 26,
+    "name": "Hidden units",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 27,
+    "name": "Activation function (sigmoid, tanh)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 28,
+    "name": "Parameter sharing across layers",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 29,
+    "name": "Element-wise operations (point-wise multiplication/addition)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 30,
+    "name": "Vectorized input representation",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 31,
+    "name": "Text vectorization techniques (OHE, bag-of-words, embeddings)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 32,
+    "name": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 33,
+    "name": "GRU computation steps",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 34,
+    "name": "Hidden state as memory of the network",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 35,
+    "name": "Contextual representation in sequence models",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 36,
+    "name": "Sentiment analysis application",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 945.239998,
+    "end_s": 1996.78
+  },
+  {
+    "id": 37,
+    "name": "Hidden State",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 38,
+    "name": "Context Vector",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 39,
+    "name": "GRU (Gated Recurrent Unit)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 40,
+    "name": "LSTM (Long Short-Term Memory)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 41,
+    "name": "Reset Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 42,
+    "name": "Update Gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 43,
+    "name": "Candidate Hidden State",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 44,
+    "name": "Memory (Past Context)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 45,
+    "name": "Black Box Problem in Deep Learning",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 46,
+    "name": "Representation of Narrative Aspects (e.g., Power, Conflict, Tragedy, Revenge)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 47,
+    "name": "Sequence Modeling",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 48,
+    "name": "Gating Mechanisms in Recurrent Networks",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 49,
+    "name": "Intuitive Example Using Storytelling",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 50,
+    "name": "Architecture of GRU (Two-Step Process)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 51,
+    "name": "Balancing Past and Current Context",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 52,
+    "name": "Feature Extraction from Text",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 53,
+    "name": "Temporal Dynamics of Context",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 54,
+    "name": "Interpretability of Neural Networks",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 1996.78,
+    "end_s": 2887.42
+  },
+  {
+    "id": 55,
+    "name": "Gated Recurrent Unit (GRU)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 56,
+    "name": "Reset gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 57,
+    "name": "Update gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 58,
+    "name": "Hidden state",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 59,
+    "name": "Candidate memory (candidate hidden state)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 60,
+    "name": "Weighted sum",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 61,
+    "name": "Sigmoid activation function",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 62,
+    "name": "Neural network layer (fully connected layer)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 63,
+    "name": "Vector representation of memory",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 64,
+    "name": "Dynamic weighting of story elements",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 65,
+    "name": "Contextual memory update",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 66,
+    "name": "Story perspective weighting",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 67,
+    "name": "Gate as a vector of values between 0 and 1",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 68,
+    "name": "Resetting dimensions of memory based on current input",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 69,
+    "name": "Updating dimensions of memory based on current input",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 70,
+    "name": "Backpropagation for training gate weights",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 2887.42,
+    "end_s": 3910.58
+  },
+  {
+    "id": 71,
+    "name": "Long Short-Term Memory (LSTM) architecture",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 72,
+    "name": "Reset gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 73,
+    "name": "Modulated (reset) memory",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 74,
+    "name": "Pointwise (element-wise) multiplication",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 75,
+    "name": "Tanh activation function",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 76,
+    "name": "Fully connected (dense) neural network layer",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 77,
+    "name": "Sigmoid activation function",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 78,
+    "name": "Update gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 79,
+    "name": "Candidate hidden state",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 80,
+    "name": "Balancing past and current memory via gating",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 81,
+    "name": "Backpropagation for training gates",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 82,
+    "name": "Gate values between 0 and 1",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 83,
+    "name": "Dot product for weight multiplication",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 84,
+    "name": "Concatenation of hidden state and input",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 85,
+    "name": "Element-wise addition",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 86,
+    "name": "Weight and bias parameters in neural layers",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 87,
+    "name": "Memory cell state",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 88,
+    "name": "Hidden state update equation",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 3910.58,
+    "end_s": 4923.259995
+  },
+  {
+    "id": 89,
+    "name": "Long Short-Term Memory (LSTM)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 90,
+    "name": "Gated Recurrent Unit (GRU)",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 91,
+    "name": "Reset gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 92,
+    "name": "Update gate",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 93,
+    "name": "Candidate hidden state",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 94,
+    "name": "Hidden state",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 95,
+    "name": "Cell state",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 96,
+    "name": "Number of gates in LSTM",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 97,
+    "name": "Number of gates in GRU",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 98,
+    "name": "Parameter count in recurrent units",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 99,
+    "name": "Computational complexity of LSTM vs GRU",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 100,
+    "name": "Empirical performance comparison",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  },
+  {
+    "id": 101,
+    "name": "Architectural differences between LSTM and GRU",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 4923.259995,
+    "end_s": 5181.04
+  }
+]

@@ -1,0 +1,223 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 49,
+  "total": 74,
+  "remediation": [
+    {
+      "concept": "Black Box Problem in Deep Learning",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Black Box Problem in Deep Learning__1997-2887.mp4"
+    },
+    {
+      "concept": "Dimensionality of Hidden States",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dimensionality of Hidden States__0-945.mp4"
+    },
+    {
+      "concept": "Dynamic weighting of story elements",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dynamic weighting of story elements__2887-3911.mp4"
+    },
+    {
+      "concept": "Element-wise operations (point-wise multiplication/addition)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Element-wise operations _point-wise multiplication_addition___945-1997.mp4"
+    },
+    {
+      "concept": "GRU architecture (reset gate, update gate, candidate hidden state, current hidden state)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GRU architecture _reset gate_ update gate_ candidate hidden state_ current hidden state___945-1997.mp4"
+    },
+    {
+      "concept": "Gate as a vector of values between 0 and 1",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gate as a vector of values between 0 and 1__2887-3911.mp4"
+    },
+    {
+      "concept": "Interpretability of Neural Networks",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Interpretability of Neural Networks__1997-2887.mp4"
+    },
+    {
+      "concept": "Memory (Past Context)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Memory _Past Context___1997-2887.mp4"
+    },
+    {
+      "concept": "Number of gates in GRU",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Number of gates in GRU__4923-5181.mp4"
+    },
+    {
+      "concept": "Output Gate",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Output Gate__0-945.mp4"
+    },
+    {
+      "concept": "Recurrent Neural Network (RNN)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Recurrent Neural Network _RNN___0-945.mp4"
+    },
+    {
+      "concept": "Sequence Modeling",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Sequence Modeling__1997-2887.mp4"
+    },
+    {
+      "concept": "Training Time",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Training Time__0-945.mp4"
+    },
+    {
+      "concept": "Vanishing Gradient Problem",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vanishing Gradient Problem__0-945.mp4"
+    },
+    {
+      "concept": "Vector dimensionality",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vector dimensionality__945-1997.mp4"
+    },
+    {
+      "concept": "Weighted sum",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Weighted sum__2887-3911.mp4"
+    },
+    {
+      "concept": "Hidden State",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden State__0-945.mp4"
+    },
+    {
+      "concept": "Vector Representation of States",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vector Representation of States__0-945.mp4"
+    },
+    {
+      "concept": "Story perspective weighting",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Story perspective weighting__2887-3911.mp4"
+    },
+    {
+      "concept": "GRU computation steps",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GRU computation steps__945-1997.mp4"
+    },
+    {
+      "concept": "Number of gates in LSTM",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Number of gates in LSTM__4923-5181.mp4"
+    },
+    {
+      "concept": "Architectural differences between LSTM and GRU",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Architectural differences between LSTM and GRU__4923-5181.mp4"
+    },
+    {
+      "concept": "Input Gate",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Input Gate__0-945.mp4"
+    },
+    {
+      "concept": "Gate values between 0 and 1",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gate values between 0 and 1__3911-4923.mp4"
+    },
+    {
+      "concept": "Exploding Gradient Problem",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Exploding Gradient Problem__0-945.mp4"
+    },
+    {
+      "concept": "Hidden state update equation",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden state update equation__3911-4923.mp4"
+    },
+    {
+      "concept": "Architecture of GRU (Two-Step Process)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Architecture of GRU _Two-Step Process___1997-2887.mp4"
+    },
+    {
+      "concept": "Forget Gate",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Forget Gate__0-945.mp4"
+    },
+    {
+      "concept": "Memory cell state",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Memory cell state__3911-4923.mp4"
+    },
+    {
+      "concept": "GRU (Gated Recurrent Unit)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GRU _Gated Recurrent Unit___1997-2887.mp4"
+    },
+    {
+      "concept": "Update Gate",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update Gate__0-945.mp4"
+    },
+    {
+      "concept": "Balancing past and current memory via gating",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Balancing past and current memory via gating__3911-4923.mp4"
+    },
+    {
+      "concept": "Weight and bias parameters in neural layers",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Weight and bias parameters in neural layers__3911-4923.mp4"
+    },
+    {
+      "concept": "Candidate memory (candidate hidden state)",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate memory _candidate hidden state___2887-3911.mp4"
+    },
+    {
+      "concept": "Gates in RNNs",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gates in RNNs__0-945.mp4"
+    },
+    {
+      "concept": "Backpropagation for training gate weights",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Backpropagation for training gate weights__2887-3911.mp4"
+    },
+    {
+      "concept": "LSTM (Long Short-Term Memory)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\LSTM _Long Short-Term Memory___1997-2887.mp4"
+    },
+    {
+      "concept": "Vector representation of memory",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vector representation of memory__2887-3911.mp4"
+    },
+    {
+      "concept": "Candidate Hidden State",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Candidate Hidden State__0-945.mp4"
+    },
+    {
+      "concept": "Hidden state as memory of the network",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Hidden state as memory of the network__945-1997.mp4"
+    },
+    {
+      "concept": "Vectorized input representation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Vectorized input representation__945-1997.mp4"
+    },
+    {
+      "concept": "Neural network layer representation",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Neural network layer representation__945-1997.mp4"
+    },
+    {
+      "concept": "Fully connected (dense) neural network layer",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Fully connected _dense_ neural network layer__3911-4923.mp4"
+    }
+  ]
+}
