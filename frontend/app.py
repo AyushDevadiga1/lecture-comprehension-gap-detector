@@ -12,6 +12,7 @@ import os
 
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 API = os.getenv("LECGAP_API_URL", "http://127.0.0.1:8000")
 
@@ -160,3 +161,28 @@ with tab_faculty:
                 arrow = "→ later" if delta > 0 else ("← earlier" if delta < 0 else "=")
                 st.write(f"- {d['concept']}: taught #{d['taught_idx']} vs "
                          f"learned #{d['learned_idx']} ({arrow})")
+
+    st.divider()
+    st.subheader("Concept prerequisite DAG")
+    st.caption("Topological (learner) order runs top→bottom; hover a node for its "
+               "rank in the sequence, hover an edge for the prerequisite-classifier "
+               "confidence. Early concepts are teal, late ones coral.")
+    with st.form("dag_form"):
+        dag_course = _pick_course(default="ml1")
+        show_dag = st.form_submit_button("Render DAG")
+    if show_dag and dag_course:
+        try:
+            graph = _get("/courses/" + dag_course.strip() + "/graph")
+        except Exception as exc:
+            st.error(str(exc))
+            graph = None
+        if graph and graph.get("nodes"):
+            st.write(f"**{graph['node_count']} nodes · {graph['edge_count']} edges · "
+                     f"{'acyclic (DAG)' if graph['is_dag'] else 'has cycles'}**")
+            from frontend.render import dag_html
+            components.html(dag_html(graph), height=760, scrolling=True)
+            with st.expander("Learner order (topological)"):
+                for i, name in enumerate(graph.get("topological_order", []), 1):
+                    st.write(f"{i}. {name}")
+        elif graph:
+            st.info("No nodes yet — run 'Extract concepts + build graph' from the Student tab.")

@@ -44,6 +44,17 @@ check("GET /courses/ml/graph 200", r.status_code == 200)
 graph = r.json()
 print("   learner order:", graph.get("topological_order"))
 
+print("\n== 2b. faculty DAG view renders (frontend.render.dag_html) ==")
+if graph.get("topological_order"):
+    from frontend.render import dag_html
+    html = dag_html(graph)
+    names = graph["topological_order"][:3]
+    check("dag html contains learner-order concepts", all(n in html for n in names))
+    check("dag html self-contained (vis inlined)", "vis-network" in html
+          and "<script src=" not in html)
+else:
+    check("dag html renders for seeded course", False, "smoke course has no graph")
+
 print("\n== 3. create quiz (UI: POST /quizzes {course_id, student_id}) ==")
 r = client.post("/quizzes", json={"course_id": "ml", "student_id": "demo-student"})
 check("POST /quizzes 201", r.status_code == 201)
