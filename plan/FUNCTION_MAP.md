@@ -82,16 +82,16 @@ Consumes from `backend.*`:
 ## backend.pipeline.transcribe.py
 
 Defines:
-- `_get_model` — line 49
-- `_ffmpeg_available` — line 58
-- `_probe_duration` — line 62
-- `_chunk_seconds` — line 78
-- `_downmix_to_flac` — line 92
-- `_split_flac` — line 108
-- `_seg_bounds` — line 130
-- `_transcribe_chunk` — line 138
-- `_transcribe_groq` — line 194
-- `transcribe` — line 227
+- `_get_model` — line 55
+- `_ffmpeg_available` — line 64
+- `_probe_duration` — line 68
+- `_chunk_seconds` — line 84
+- `_downmix_to_flac` — line 98
+- `_split_flac` — line 114
+- `_seg_bounds` — line 152
+- `_transcribe_chunk` — line 160
+- `_transcribe_groq` — line 226
+- `transcribe` — line 260
 
 Consumes from `backend.*`:
 - `backend.pipeline.llm.SLEEP_CAP_S`
@@ -191,8 +191,8 @@ Consumes from `backend.*`:
 ## frontend.app.py
 
 Defines:
-- `_get` — line 24
-- `_post` — line 30
-- `_pick_course` — line 45
+- `_get` — line 25
+- `_post` — line 31
+- `_pick_course` — line 46
 
 Consumes from `backend.*`: *(none)*
