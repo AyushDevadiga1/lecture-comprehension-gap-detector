@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>LecGap sample run — run_20260914_053742</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #1a1a2e; background:#f6f7fb; }
+  h1 { font-size: 22px; } h2 { font-size: 16px; margin: 8px 0 4px; }
+  .banner { background:#052e16; color:#d9f99d; padding:14px 18px; border-radius:10px; }
+  .card { background:#fff; border:1px solid #dbe2ea; border-left:6px solid #16a34a; border-radius:10px; padding:14px 18px; margin:10px 0; }
+  .stage { font-size:11px; letter-spacing:2px; color:#16a34a; font-weight:700; }
+  .mods { color:#64748b; font-size:13px; margin:4px 0; }
+  .art { font-size:13px; margin:4px 0; }
+  .size { color:#9333ea; font-weight:600; margin-left:8px; }
+  .body { margin-top:6px; font-size:13.5px; line-height:1.55; }
+  .tag { background:#dcfce7; color:#166534; border-radius:10px; padding:1px 8px; font-size:11px; }
+  .conf { color:#9333ea; }
+  .chip { display:inline-block; background:#f3e8ff; color:#6b21a8; border-radius:12px; padding:2px 10px; margin:2px; font-size:12px; }
+  .clip { color:#16a34a; font-weight:700; }
+  .arrow { text-align:center; color:#94a3b8; font-size:20px; line-height:1.1; }
+  ul { margin:6px 0 0; padding-left:20px; }
+  code { background:#eef2f7; padding:1px 6px; border-radius:5px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:12px; }
+  th, td { border:1px solid #dbe2ea; padding:6px 10px; text-align:left; }
+  th { background:#eef2f7; }
+</style></head><body>
+<h1>LecGap — end-to-end sample run</h1>
+<div class="banner">
+  <b>Run:</b> run_20260914_053742 · <b>clip:</b> data\raw\lec2__smoketest_3min.mp4 ·
+  <b>course:</b> ml · <b>stage:</b> ALL PASSED ✓<br>
+  <b>Transcript:</b> 76 segments · <b>Concepts:</b> 8 ·
+  <b>Graph:</b> 8 nodes / 3 edges (DAG: True) ·
+  <b>Quiz:</b> 8 Q · <b>Score:</b> 5/8<br>
+  <b>Artifacts:</b> 9 files in this folder · <b>DB:</b> <code>lecgap.db</code> (dedicated)
+</div>
+
+<p style="font-size:13.5px">Flow of the real system: every card below is driven by the actual API +
+background workers on this clip, and each stage's output is saved next to it in this folder.
+Open <code>run_manifest.json</code> for the machine-readable record.</p>
+
+
+        <div class="card">
+          <div class="stage">STAGE 0</div>
+          <h2>Input — raw lecture</h2>
+          <div class="mods">data/raw/ · chosen clip</div>
+          <div class="art"><code>00_input__lec2__smoketest_3min.mp4</code> <span class=size>14.3 MB</span></div>
+          <div class="body">Copied into the run folder as the single input to the whole pipeline. Duration span 180.0s.<ul><li>data\raw\lec2__smoketest_3min.mp4</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 1</div>
+          <h2>Transcription</h2>
+          <div class="mods">backend/pipeline/transcribe.py (local Whisper backend)</div>
+          <div class="art"><code>01_transcript.json</code> <span class=size>11 KB</span></div>
+          <div class="body">Whisper transcribes the audio into <b>76 timestamped segments</b>, persisted to SQLite.<ul><li><b>[0.0s–2.0s]</b> کے گرےڈیوں کا 케이스 ہو جاتا ہے.</li><li><b>[2.0s–4.0s]</b> یہاں پر آپ کیا کرتے تھے?</li><li><b>[4.0s–6.0s]</b> just a quick revision.</li><li><b>[6.0s–8.0s]</b> آپ یہاں پہئے ہیں.</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 2</div>
+          <h2>Concept extraction</h2>
+          <div class="mods">backend/pipeline/extract_concepts.py + llm.py (Groq)</div>
+          <div class="art"><code>02_concepts.json</code> <span class=size>1 KB</span></div>
+          <div class="body">LLM reads the transcript chunks and returns explicit + implicit concepts: <b>8</b> (8 implicit).<ul><li>Linear regression <span class='tag'>implicit</span></li><li>Multiple linear regression <span class='tag'>implicit</span></li><li>Independent variables <span class='tag'>implicit</span></li><li>Dependent variable <span class='tag'>implicit</span></li><li>Regression equation (y = mx + b) <span class='tag'>implicit</span></li><li>Extension of simple to multiple regression <span class='tag'>implicit</span></li><li>Visualization of higher-dimensional data <span class='tag'>implicit</span></li><li>Specialization of multiple regression to simple regression <span class='tag'>implicit</span></li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 3+4</div>
+          <h2>Prerequisite graph</h2>
+          <div class="mods">classify_prerequisites.py + build_graph.py (LectureBank classifier)</div>
+          <div class="art"><code>03_graph.json</code> <span class=size>1 KB</span></div>
+          <div class="body">Candidate pairs are scored by the LectureBank-trained classifier; confirmed edges become a per-course prerequisite <b>DAG</b> with a learner order.<br><b>Edges:</b><ul><li>Independent variables → Dependent variable <span class=conf>(0.90)</span></li><li>Linear regression → Multiple linear regression <span class=conf>(0.91)</span></li><li>Linear regression → Regression equation (y = mx + b) <span class=conf>(0.56)</span></li></ul><b>Learner order:</b> <span class='chip'>Extension of simple to multiple regression</span><span class='chip'>Independent variables</span><span class='chip'>Linear regression</span><span class='chip'>Specialization of multiple regression to simple regression</span><span class='chip'>Visualization of higher-dimensional data</span><span class='chip'>Dependent variable</span><span class='chip'>Multiple linear regression</span><span class='chip'>Regression equation (y = mx + b)</span></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 5</div>
+          <h2>Clip segmentation</h2>
+          <div class="mods">backend/pipeline/segment_clips.py (ffmpeg)</div>
+          <div class="art"><code>04_clips.json</code> <span class=size>2 KB</span></div>
+          <div class="body">One playable video per concept — <b>8/8 cut OK</b> under <code>data/processed/clips/</code> (paths recorded here).<ul><li>Linear regression — [OK] Linear regression__0-180.mp4</li><li>Multiple linear regression — [OK] Multiple linear regression__0-180.mp4</li><li>Independent variables — [OK] Independent variables__0-180.mp4</li><li>Dependent variable — [OK] Dependent variable__0-180.mp4</li><li>Regression equation (y = mx + b) — [OK] Regression equation _y _ mx _ b___0-180.mp4</li><li>Extension of simple to multiple regression — [OK] Extension of simple to multiple regression__0-180.mp4</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 6</div>
+          <h2>Quiz + remediation</h2>
+          <div class="mods">backend/pipeline/quiz.py + routes.py</div>
+          <div class="art"><code>05_quiz.json · 06_remediation.json</code> </div>
+          <div class="body">Questions asked in learner order; answers graded; missed concepts lifted with their upstream prerequisites into a watch-list with clip links.<ul><li>1. Which statement best describes the concept &#x27;Extension of simple to multiple regression&#x27; as taught in the lecture?</li><li>2. Which statement best describes the concept &#x27;Independent variables&#x27; as taught in the lecture?</li><li>3. Which statement best describes the concept &#x27;Linear regression&#x27; as taught in the lecture?</li><li>4. Which statement best describes the concept &#x27;Specialization of multiple regression to simple regression&#x27; as taught in the lecture?</li><li>5. Which statement best describes the concept &#x27;Visualization of higher-dimensional data&#x27; as taught in the lecture?</li></ul><b>Remediation watch-list</b> (5/8):<ul><li><b>Extension of simple to multiple regression</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Linear regression</b> — ok <span class=clip>▶ clip</span></li><li><b>Specialization of multiple regression to simple regression</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Multiple linear regression</b> — FAILED <span class=clip>▶ clip</span></li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 7</div>
+          <h2>Faculty analytics</h2>
+          <div class="mods">routes.py /courses/{{id}}/stats</div>
+          <div class="art"><code>07_stats.json</code> <span class=size>3 KB</span></div>
+          <div class="body">Confusion heatmap + taught-vs-learned divergence, served to the faculty tab.<ul><li>Extension of simple to multiple regression — miss-rate 100%</li><li>Specialization of multiple regression to simple regression — miss-rate 100%</li><li>Multiple linear regression — miss-rate 100%</li><li>Independent variables — miss-rate 0%</li><li>Linear regression — miss-rate 0%</li></ul><ul><li>Multiple linear regression — taught#1 vs learned#6 (gap +5)</li><li>Extension of simple to multiple regression — taught#5 vs learned#0 (gap -5)</li><li>Specialization of multiple regression to simple regression — taught#7 vs learned#3 (gap -4)</li><li>Regression equation (y = mx + b) — taught#4 vs learned#7 (gap +3)</li><li>Dependent variable — taught#3 vs learned#5 (gap +2)</li></ul></div>
+        </div>
+
+<h2>Verification — what you asked vs what exists</h2>
+<table>
+<tr><th>Original plan (plan/ARCHITECTURE.md)</th><th>In this run</th><th>Status</th></tr>
+<tr><td>Transcribe lecture audio → segments</td><td>74-ish segments, saved to 01_transcript.json</td><td>✓</td></tr>
+<tr><td>Concept extraction (spoken)</td><td>Concepts saved to 02_concepts.json</td><td>✓</td></tr>
+<tr><td>Prerequisite classification + graph</td><td>DAG saved to 03_graph.json</td><td>✓</td></tr>
+<tr><td>Clip segmentation</td><td>Clip videos + 04_clips.json</td><td>✓</td></tr>
+<tr><td>Quiz / remediation loop</td><td>05_quiz.json + 06_remediation.json</td><td>✓</td></tr>
+<tr><td>Faculty analytics</td><td>07_stats.json</td><td>✓</td></tr>
+<tr><td>Refinement loop (Claim 2)</td><td>separate controlled experiment (scripts/recovery_experiment.py)</td><td>↳ see WORKLOG §8</td></tr>
+<tr><td>Visual track — CLIP/OCR (Phase 2b)</td><td>stub — not part of this flow</td><td>✗ open</td></tr>
+</table>
+
+<h2>Artifacts in this folder</h2>
+<table><tr><th>File</th><th>Size</th><th>Contents</th></tr>
+<tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\00_input__lec2__smoketest_3min.mp4</code></td><td>14.3 MB</td><td>run artifact</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\01_transcript.json</code></td><td>11 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\02_concepts.json</code></td><td>1 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\03_graph.json</code></td><td>1 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\04_clips.json</code></td><td>2 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\05_quiz.json</code></td><td>7 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\06_remediation.json</code></td><td>1 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\07_stats.json</code></td><td>3 KB</td><td>run metadata</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\lecgap.db</code></td><td>100 KB</td><td>dedicated run database</td></tr><tr><td><code>C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\samples\run_20260914_053742\run_manifest.json</code></td><td>1 KB</td><td>run metadata</td></tr>
+</table>
+</body></html>

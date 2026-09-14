@@ -1,0 +1,458 @@
+[
+  {
+    "idx": 0,
+    "start_s": 0.0,
+    "end_s": 2.0,
+    "text": "\u06a9\u06d2 \u06af\u0631\u06d2\u0688\u06cc\u0648\u06ba \u06a9\u0627 \ucf00\uc774\uc2a4 \u06c1\u0648 \u062c\u0627\u062a\u0627 \u06c1\u06d2."
+  },
+  {
+    "idx": 1,
+    "start_s": 2.0,
+    "end_s": 4.0,
+    "text": "\u06cc\u06c1\u0627\u06ba \u067e\u0631 \u0622\u067e \u06a9\u06cc\u0627 \u06a9\u0631\u062a\u06d2 \u062a\u06be\u06d2?"
+  },
+  {
+    "idx": 2,
+    "start_s": 4.0,
+    "end_s": 6.0,
+    "text": "just a quick revision."
+  },
+  {
+    "idx": 3,
+    "start_s": 6.0,
+    "end_s": 8.0,
+    "text": "\u0622\u067e \u06cc\u06c1\u0627\u06ba \u067e\u06c1\u0626\u06d2 \u06c1\u06cc\u06ba."
+  },
+  {
+    "idx": 4,
+    "start_s": 8.0,
+    "end_s": 10.0,
+    "text": "\u0627\u06cc\u06a9 \u0633\u067e\u0648\u0646\u0679\u0679\u06cc \u06a9\u0648 \u067e\u0644\u0679 \u06a9\u0631\u062a\u06d2 \u062a\u06be\u06d2"
+  },
+  {
+    "idx": 5,
+    "start_s": 10.0,
+    "end_s": 12.0,
+    "text": "\u06cc\u06c1\u0627\u06ba \u067e\u06c1\u0626\u06d2 \u06af\u0631\u06d2\u0688\u06cc\u0648\u06ba \u06a9\u0627 \u067e\u0644\u0679 \u06a9\u0631\u062a\u06d2 \u062a\u06be\u06d2"
+  },
+  {
+    "idx": 6,
+    "start_s": 12.0,
+    "end_s": 14.0,
+    "text": "\u0627\u0648\u0631 \u0622\u067e \u062f\u06cc\u06a9\u06be\u062a\u06d2 \u062a\u06be\u06d2 \u06a9\u06c1 \u06cc\u06c1\u0627\u06ba \u067e\u06c1\u0626\u06d2 \u06af\u0631\u06d2\u0688\u06cc\u0648\u06ba \u06a9\u0627"
+  },
+  {
+    "idx": 7,
+    "start_s": 14.0,
+    "end_s": 16.0,
+    "text": "\u0631\u06cc\u0644\u06cc\u0631\u06cc\u0631 \u062c\u06cc\u0633\u0627 \u06c1\u06d2 \u06a9\u06c1 \u0646\u06c1\u06cc\u06ba."
+  },
+  {
+    "idx": 8,
+    "start_s": 16.0,
+    "end_s": 18.0,
+    "text": "\u0627\u06af\u0631 \u0644\u06cc\u0631\u06cc\u0631\u06cc\u0631 \u062c\u06cc\u0633\u0627 \u06c1\u0648\u062a\u0627 \u062a\u06be\u0627"
+  },
+  {
+    "idx": 9,
+    "start_s": 18.0,
+    "end_s": 22.0,
+    "text": "\u062a\u0648 \u0622\u067e \u0627\u06cc\u06a9 \u0644\u0627\u0626\u0645 \u062f\u0631\u0627\u063a\u0631 \u062f\u06d2"
+  },
+  {
+    "idx": 10,
+    "start_s": 22.0,
+    "end_s": 24.0,
+    "text": "\u062c\u0633 \u067e\u06c1 \u0628\u06cc\u0633\u0679 \u0644\u0627\u0626\u0645 \u06af\u06be\u0648\u0644 \u062f\u06d2"
+  },
+  {
+    "idx": 11,
+    "start_s": 24.0,
+    "end_s": 26.0,
+    "text": "\u0627\u0648\u0631 \u0628\u06cc\u0633\u0679 \u0644\u0627\u0626\u0645 \u06c1\u06cc \u0622\u067e \u06a9\u0627 \u0631\u06cc\u06af\u0631\u06cc\u0634\u0646 \u0644\u0627\u0626\u0645 \u06c1\u0648\u062a\u0627 \u062a\u06be\u0627"
+  },
+  {
+    "idx": 12,
+    "start_s": 26.0,
+    "end_s": 30.0,
+    "text": "\u0627\u0648\u0631 \u0627\u0633 \u0644\u0627\u0626\u0645 \u06a9\u0648 \u062f\u0631\u0627\u063a\u0631\u0646\u06d2 \u06a9\u06d2 \u0644\u0626\u06d2 \u0622\u067e \u06a9\u0648 \u0627\u0633 \u0644\u0627\u0626\u0645 \u06a9\u0627 \u0627\u06cc\u06a9\u0648\u06cc\u0634\u0646 \u0686\u0627\u06c1\u0626\u06d2"
+  },
+  {
+    "idx": 13,
+    "start_s": 30.0,
+    "end_s": 32.0,
+    "text": "which is mx plus b"
+  },
+  {
+    "idx": 14,
+    "start_s": 32.0,
+    "end_s": 34.0,
+    "text": "so basically you have to n or b fine"
+  },
+  {
+    "idx": 15,
+    "start_s": 34.0,
+    "end_s": 36.0,
+    "text": "\u06a9\u0631\u0646\u0627 \u06c1\u0648\u062a\u0627 \u062a\u06be\u0627"
+  },
+  {
+    "idx": 16,
+    "start_s": 36.0,
+    "end_s": 38.0,
+    "text": "\u0627\u0648\u0631 \u0648\u06c1 \u06a9\u06cc\u0627 \u0633\u06d2 fine \u0688\u0648\u0679\u0627 \u06c1\u06d2"
+  },
+  {
+    "idx": 17,
+    "start_s": 38.0,
+    "end_s": 40.0,
+    "text": "\u06cc\u0627 \u0646\u0648\u0691\u06d2 last video \u0645\u06cc\u06ba \u0628\u06c1\u062a \u062f\u06cc\u06af\u0688\u06d2\u0644 \u0645\u06cc\u06ba \u062f\u06cc\u06a9\u06be\u0627"
+  },
+  {
+    "idx": 18,
+    "start_s": 40.0,
+    "end_s": 42.0,
+    "text": "\u0646\u0627 \u06c1\u0648\u06ba \u06a9\u06c1\u0645\u0633 \u062f\u0627 Question"
+  },
+  {
+    "idx": 19,
+    "start_s": 42.0,
+    "end_s": 44.0,
+    "text": "\u06a9\u06cc what is multiple linear regression"
+  },
+  {
+    "idx": 20,
+    "start_s": 44.0,
+    "end_s": 46.0,
+    "text": "so multiple regression"
+  },
+  {
+    "idx": 21,
+    "start_s": 46.0,
+    "end_s": 48.0,
+    "text": "linear regression \u06a9\u0627 \ucf00\uc774\uc2a4 \u0637\u0628 \u0622\u062a\u0627 \u06c1\u06d2"
+  },
+  {
+    "idx": 22,
+    "start_s": 48.0,
+    "end_s": 50.0,
+    "text": "\u062c\u0648 \u0622\u067e \u06a9\u06cc\u0627 \u0648\u0627\u0642\u0639\u06cc\u0648 \u0627\u0635\u06cc\u0642 \u0627\u06cc\u0633\u0627 \u062f\u06cc\u062a\u0627 \u0633\u0627\u0679\u06be \u06c1\u0648"
+  },
+  {
+    "idx": 23,
+    "start_s": 50.0,
+    "end_s": 52.0,
+    "text": "\u062c\u0628 \u0622\u067e \u06a9\u06d2 \u0628\u0633 input \u0645\u06cc\u06ba \u0627\u06cc\u06a9 \u0633\u06d2 \u0632\u0627\u062f\u0627 call-ins \u06c1\u0648\u062a\u06d2"
+  },
+  {
+    "idx": 24,
+    "start_s": 52.0,
+    "end_s": 54.0,
+    "text": "\u062c\u0633\u06d2 \u06a9\u06cc I'll give you one example"
+  },
+  {
+    "idx": 25,
+    "start_s": 54.0,
+    "end_s": 56.0,
+    "text": "let's say you have x1"
+  },
+  {
+    "idx": 26,
+    "start_s": 56.0,
+    "end_s": 57.0,
+    "text": "x2"
+  },
+  {
+    "idx": 27,
+    "start_s": 57.0,
+    "end_s": 58.0,
+    "text": "x3"
+  },
+  {
+    "idx": 28,
+    "start_s": 58.0,
+    "end_s": 60.0,
+    "text": "and then y"
+  },
+  {
+    "idx": 29,
+    "start_s": 60.0,
+    "end_s": 62.0,
+    "text": "so x1 x2 x3"
+  },
+  {
+    "idx": 30,
+    "start_s": 62.0,
+    "end_s": 63.120000000000005,
+    "text": "\u06cc\u06c1 three call-ins"
+  },
+  {
+    "idx": 31,
+    "start_s": 63.120000000000005,
+    "end_s": 64.0,
+    "text": "\u0622\u067e \u06a9\u06d2 input call-ins"
+  },
+  {
+    "idx": 32,
+    "start_s": 64.0,
+    "end_s": 66.0,
+    "text": "\u06cc\u06c1 \u0627\u067e\u06be\u06d2 independent call-ins"
+  },
+  {
+    "idx": 33,
+    "start_s": 66.0,
+    "end_s": 67.0,
+    "text": "\u0627\u0648\u0631 \u062c\u0648 y"
+  },
+  {
+    "idx": 34,
+    "start_s": 67.0,
+    "end_s": 68.0,
+    "text": "\u06cc\u06c1 \u0627\u067e\u06be\u06d2 dependent call-ins"
+  },
+  {
+    "idx": 35,
+    "start_s": 68.0,
+    "end_s": 70.0,
+    "text": "output call-ins"
+  },
+  {
+    "idx": 36,
+    "start_s": 70.0,
+    "end_s": 72.0,
+    "text": "\u0627\u0628 \u06cc\u06c1\u0627\u06ba \u067e\u06c1\u06cc\u06ba"
+  },
+  {
+    "idx": 37,
+    "start_s": 72.0,
+    "end_s": 73.0,
+    "text": "\u06cc\u06c1 \u0627\u06cc\u06a9 case"
+  },
+  {
+    "idx": 38,
+    "start_s": 73.0,
+    "end_s": 75.0,
+    "text": "\u062c\u0628 multiple linear regression"
+  },
+  {
+    "idx": 39,
+    "start_s": 75.0,
+    "end_s": 76.0,
+    "text": "applied"
+  },
+  {
+    "idx": 40,
+    "start_s": 76.0,
+    "end_s": 77.0,
+    "text": "so iq"
+  },
+  {
+    "idx": 41,
+    "start_s": 77.0,
+    "end_s": 78.0,
+    "text": "\u062c\u0644\u0633\u06cc \u0627\u06cc\u06a9 \u0627\u067e\u06be\u0644 \u0644\u06cc\u06a9\u06be\u06d2"
+  },
+  {
+    "idx": 42,
+    "start_s": 78.0,
+    "end_s": 80.0,
+    "text": "\u062c\u0633\u06d2 \u06a9\u06cc \u06c1\u0645\u06cc\u06ba simple linear regression"
+  },
+  {
+    "idx": 43,
+    "start_s": 80.0,
+    "end_s": 81.0,
+    "text": "\u0645\u06cc\u06ba \u0627\u06cc\u06a9 \u0632\u0627\u062f \u067e\u06c1\u0644 \u0644\u06cc\u0627 \u062a\u06be\u0627"
+  },
+  {
+    "idx": 44,
+    "start_s": 81.0,
+    "end_s": 82.0,
+    "text": "ki cgp"
+  },
+  {
+    "idx": 45,
+    "start_s": 82.0,
+    "end_s": 86.0,
+    "text": "CPA, input, and lacks on NM, our output."
+  },
+  {
+    "idx": 46,
+    "start_s": 86.0,
+    "end_s": 91.0,
+    "text": "Here, its transform version could be that you have CGPA information,"
+  },
+  {
+    "idx": 47,
+    "start_s": 91.0,
+    "end_s": 99.0,
+    "text": "you have gender information, you have IQ information and then you have to predict LPA."
+  },
+  {
+    "idx": 48,
+    "start_s": 99.0,
+    "end_s": 104.0,
+    "text": "So, this simple satisfaction is not to be explained here."
+  },
+  {
+    "idx": 49,
+    "start_s": 104.0,
+    "end_s": 107.0,
+    "text": "So, if you have only one more variable in input,"
+  },
+  {
+    "idx": 50,
+    "start_s": 107.0,
+    "end_s": 109.0,
+    "text": "not as multiple linear regression."
+  },
+  {
+    "idx": 51,
+    "start_s": 109.0,
+    "end_s": 114.0,
+    "text": "And honestly, more times when you will work on real world data,"
+  },
+  {
+    "idx": 52,
+    "start_s": 114.0,
+    "end_s": 117.0,
+    "text": "you will have to apply multiple linear regression."
+  },
+  {
+    "idx": 53,
+    "start_s": 117.0,
+    "end_s": 121.0,
+    "text": "Because mostly, you will have the data that will come in the input,"
+  },
+  {
+    "idx": 54,
+    "start_s": 121.0,
+    "end_s": 123.0,
+    "text": "there will be more columns in one of the inputs."
+  },
+  {
+    "idx": 55,
+    "start_s": 123.0,
+    "end_s": 125.0,
+    "text": "So, then you have asked me a question,"
+  },
+  {
+    "idx": 56,
+    "start_s": 125.0,
+    "end_s": 127.0,
+    "text": "why did you read simple linear regression?"
+  },
+  {
+    "idx": 57,
+    "start_s": 127.0,
+    "end_s": 130.0,
+    "text": "When it is not so useful, why should I read?"
+  },
+  {
+    "idx": 58,
+    "start_s": 130.0,
+    "end_s": 132.0,
+    "text": "That is why I read, because in simple linear regression,"
+  },
+  {
+    "idx": 59,
+    "start_s": 132.0,
+    "end_s": 135.0,
+    "text": "the answer you have learnt, as it is applicable,"
+  },
+  {
+    "idx": 60,
+    "start_s": 135.0,
+    "end_s": 137.0,
+    "text": "is in multiple linear regression."
+  },
+  {
+    "idx": 61,
+    "start_s": 137.0,
+    "end_s": 140.0,
+    "text": "So, what happens is that if you think about the lower dimension,"
+  },
+  {
+    "idx": 62,
+    "start_s": 140.0,
+    "end_s": 143.0,
+    "text": "then you can visualize it in higher dimension."
+  },
+  {
+    "idx": 63,
+    "start_s": 143.0,
+    "end_s": 147.0,
+    "text": "That is why I read the concept of simple linear regression first,"
+  },
+  {
+    "idx": 64,
+    "start_s": 147.0,
+    "end_s": 149.0,
+    "text": "and now I will read multiple linear regression."
+  },
+  {
+    "idx": 65,
+    "start_s": 149.0,
+    "end_s": 154.0,
+    "text": "So, multiple linear regression is just an extension of simple linear regression,"
+  },
+  {
+    "idx": 66,
+    "start_s": 154.0,
+    "end_s": 156.0,
+    "text": "or you can call it the old one,"
+  },
+  {
+    "idx": 67,
+    "start_s": 156.0,
+    "end_s": 161.0,
+    "text": "that simple linear regression is just a specialization of multiple linear regression."
+  },
+  {
+    "idx": 68,
+    "start_s": 161.0,
+    "end_s": 164.0,
+    "text": "That is, if multiple linear regression is one variable,"
+  },
+  {
+    "idx": 69,
+    "start_s": 164.0,
+    "end_s": 167.0,
+    "text": "then simple linear regression becomes a function."
+  },
+  {
+    "idx": 70,
+    "start_s": 167.0,
+    "end_s": 169.0,
+    "text": "So, now the question comes,"
+  },
+  {
+    "idx": 71,
+    "start_s": 169.0,
+    "end_s": 172.0,
+    "text": "that if I have multiple linear regression,"
+  },
+  {
+    "idx": 72,
+    "start_s": 172.0,
+    "end_s": 173.0,
+    "text": "then what to do?"
+  },
+  {
+    "idx": 73,
+    "start_s": 173.0,
+    "end_s": 175.0,
+    "text": "To solve the problem."
+  },
+  {
+    "idx": 74,
+    "start_s": 175.0,
+    "end_s": 177.0,
+    "text": "It is very simple, you do exactly the same,"
+  },
+  {
+    "idx": 75,
+    "start_s": 177.0,
+    "end_s": 180.0,
+    "text": "which you do in simple linear regression."
+  }
+]

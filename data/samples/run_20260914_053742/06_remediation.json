@@ -1,0 +1,28 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 5,
+  "total": 8,
+  "remediation": [
+    {
+      "concept": "Extension of simple to multiple regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Extension of simple to multiple regression__0-180.mp4"
+    },
+    {
+      "concept": "Linear regression",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linear regression__0-180.mp4"
+    },
+    {
+      "concept": "Specialization of multiple regression to simple regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Specialization of multiple regression to simple regression__0-180.mp4"
+    },
+    {
+      "concept": "Multiple linear regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Multiple linear regression__0-180.mp4"
+    }
+  ]
+}

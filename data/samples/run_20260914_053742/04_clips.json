@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "concept_name": "Linear regression",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linear regression__0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 2,
+    "concept_name": "Multiple linear regression",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Multiple linear regression__0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 3,
+    "concept_name": "Independent variables",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Independent variables__0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 4,
+    "concept_name": "Dependent variable",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Dependent variable__0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 5,
+    "concept_name": "Regression equation (y = mx + b)",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Regression equation _y _ mx _ b___0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 6,
+    "concept_name": "Extension of simple to multiple regression",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Extension of simple to multiple regression__0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 7,
+    "concept_name": "Visualization of higher-dimensional data",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Visualization of higher-dimensional data__0-180.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 8,
+    "concept_name": "Specialization of multiple regression to simple regression",
+    "start_s": 0.0,
+    "end_s": 180.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Specialization of multiple regression to simple regression__0-180.mp4",
+    "ok": true,
+    "error": null
+  }
+]

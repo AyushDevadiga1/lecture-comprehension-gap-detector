@@ -1,0 +1,46 @@
+{
+  "run_id": "run_20260914_053742",
+  "course": "ml",
+  "student": "sample-student",
+  "clip": "data\\raw\\lec2__smoketest_3min.mp4",
+  "started": "20260914_053742",
+  "steps": [
+    {
+      "stage": 0,
+      "name": "input",
+      "artifact": "00_input__lec2__smoketest_3min.mp4"
+    }
+  ],
+  "finished": "05:51:14",
+  "transcript_segments": 76,
+  "concepts": 8,
+  "graph": {
+    "nodes": 8,
+    "edges": 3,
+    "is_dag": true,
+    "order": [
+      "Extension of simple to multiple regression",
+      "Independent variables",
+      "Linear regression",
+      "Specialization of multiple regression to simple regression",
+      "Visualization of higher-dimensional data",
+      "Dependent variable",
+      "Multiple linear regression",
+      "Regression equation (y = mx + b)"
+    ]
+  },
+  "clips_ok": 8,
+  "quiz_questions": 8,
+  "score": "5/8",
+  "artifacts": [
+    "00_input__lec2__smoketest_3min.mp4",
+    "01_transcript.json",
+    "02_concepts.json",
+    "03_graph.json",
+    "04_clips.json",
+    "05_quiz.json",
+    "06_remediation.json",
+    "07_stats.json",
+    "lecgap.db"
+  ]
+}

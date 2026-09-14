@@ -1,0 +1,43 @@
+{
+  "course_id": "ml",
+  "nodes": [
+    "Dependent variable",
+    "Extension of simple to multiple regression",
+    "Independent variables",
+    "Linear regression",
+    "Multiple linear regression",
+    "Regression equation (y = mx + b)",
+    "Specialization of multiple regression to simple regression",
+    "Visualization of higher-dimensional data"
+  ],
+  "edges": [
+    {
+      "source": "Independent variables",
+      "target": "Dependent variable",
+      "confidence": 0.8961943295912965
+    },
+    {
+      "source": "Linear regression",
+      "target": "Multiple linear regression",
+      "confidence": 0.905695183337469
+    },
+    {
+      "source": "Linear regression",
+      "target": "Regression equation (y = mx + b)",
+      "confidence": 0.5611604375424513
+    }
+  ],
+  "node_count": 8,
+  "edge_count": 3,
+  "is_dag": true,
+  "topological_order": [
+    "Extension of simple to multiple regression",
+    "Independent variables",
+    "Linear regression",
+    "Specialization of multiple regression to simple regression",
+    "Visualization of higher-dimensional data",
+    "Dependent variable",
+    "Multiple linear regression",
+    "Regression equation (y = mx + b)"
+  ]
+}

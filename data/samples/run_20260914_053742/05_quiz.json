@@ -1,0 +1,119 @@
+{
+  "quiz_id": 1,
+  "course_id": "ml",
+  "student_id": "sample-student",
+  "questions": [
+    {
+      "id": 1,
+      "concept": "Extension of simple to multiple regression",
+      "question": "Which statement best describes the concept 'Extension of simple to multiple regression' as taught in the lecture?",
+      "options": [
+        "\u062c\u0628 multiple linear regression",
+        "So, multiple linear regression is just an extension of simple linear regression,",
+        "Because mostly, you will have the data that will come in the input,",
+        "that simple linear regression is just a specialization of multiple linear regression."
+      ],
+      "distractor_a": "\u062c\u0628 multiple linear regression",
+      "distractor_b": "Because mostly, you will have the data that will come in the input,",
+      "distractor_c": "So, multiple linear regression is just an extension of simple linear regression,"
+    },
+    {
+      "id": 2,
+      "concept": "Independent variables",
+      "question": "Which statement best describes the concept 'Independent variables' as taught in the lecture?",
+      "options": [
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "\u062c\u0628 multiple linear regression",
+        "Because mostly, you will have the data that will come in the input,",
+        "So, multiple linear regression is just an extension of simple linear regression,"
+      ],
+      "distractor_a": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_b": "Because mostly, you will have the data that will come in the input,",
+      "distractor_c": "\u062c\u0628 multiple linear regression"
+    },
+    {
+      "id": 3,
+      "concept": "Linear regression",
+      "question": "Which statement best describes the concept 'Linear regression' as taught in the lecture?",
+      "options": [
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "So, multiple linear regression is just an extension of simple linear regression,",
+        "\u062c\u0628 multiple linear regression",
+        "Because mostly, you will have the data that will come in the input,"
+      ],
+      "distractor_a": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_b": "Because mostly, you will have the data that will come in the input,",
+      "distractor_c": "So, multiple linear regression is just an extension of simple linear regression,"
+    },
+    {
+      "id": 4,
+      "concept": "Specialization of multiple regression to simple regression",
+      "question": "Which statement best describes the concept 'Specialization of multiple regression to simple regression' as taught in the lecture?",
+      "options": [
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "\u062c\u0628 multiple linear regression",
+        "Because mostly, you will have the data that will come in the input,",
+        "So, multiple linear regression is just an extension of simple linear regression,"
+      ],
+      "distractor_a": "So, multiple linear regression is just an extension of simple linear regression,",
+      "distractor_b": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_c": "\u062c\u0628 multiple linear regression"
+    },
+    {
+      "id": 5,
+      "concept": "Visualization of higher-dimensional data",
+      "question": "Which statement best describes the concept 'Visualization of higher-dimensional data' as taught in the lecture?",
+      "options": [
+        "\u062c\u0628 multiple linear regression",
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "That is why I read the concept of simple linear regression first,",
+        "So, multiple linear regression is just an extension of simple linear regression,"
+      ],
+      "distractor_a": "\u062c\u0628 multiple linear regression",
+      "distractor_b": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_c": "So, multiple linear regression is just an extension of simple linear regression,"
+    },
+    {
+      "id": 6,
+      "concept": "Dependent variable",
+      "question": "Which statement best describes the concept 'Dependent variable' as taught in the lecture?",
+      "options": [
+        "you have gender information, you have IQ information and then you have to predict LPA.",
+        "So, multiple linear regression is just an extension of simple linear regression,",
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "\u062c\u0628 multiple linear regression"
+      ],
+      "distractor_a": "\u062c\u0628 multiple linear regression",
+      "distractor_b": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_c": "So, multiple linear regression is just an extension of simple linear regression,"
+    },
+    {
+      "id": 7,
+      "concept": "Multiple linear regression",
+      "question": "Which statement best describes the concept 'Multiple linear regression' as taught in the lecture?",
+      "options": [
+        "\u062c\u0628 multiple linear regression",
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "So, multiple linear regression is just an extension of simple linear regression,",
+        "is in multiple linear regression."
+      ],
+      "distractor_a": "\u062c\u0628 multiple linear regression",
+      "distractor_b": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_c": "So, multiple linear regression is just an extension of simple linear regression,"
+    },
+    {
+      "id": 8,
+      "concept": "Regression equation (y = mx + b)",
+      "question": "Which statement best describes the concept 'Regression equation (y = mx + b)' as taught in the lecture?",
+      "options": [
+        "So, multiple linear regression is just an extension of simple linear regression,",
+        "that simple linear regression is just a specialization of multiple linear regression.",
+        "\u062c\u0628 multiple linear regression",
+        "Here, its transform version could be that you have CGPA information,"
+      ],
+      "distractor_a": "So, multiple linear regression is just an extension of simple linear regression,",
+      "distractor_b": "that simple linear regression is just a specialization of multiple linear regression.",
+      "distractor_c": "\u062c\u0628 multiple linear regression"
+    }
+  ]
+}

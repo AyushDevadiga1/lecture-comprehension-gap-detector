@@ -297,6 +297,7 @@ for instantaneous transcription (`--backend groq`), every stage artifact +
 |---|---|---|---|
 | Multiple Linear Regression (mp4) | 21 min | `data/samples/run_20260912_053604/` | 232 segs · 24 concepts · **22-node/10-edge DAG** · 24/24 clips · quiz **14/22** |
 | Gated Recurrent Unit / GRU (webm, AV1/Opus) | 86 min | `data/samples/run_20260913_080041/` | 1557 segs · 101 concepts · **74-node/103-edge DAG** · 101/101 clips · quiz **49/74** |
+| Multiple Linear Regression (3-min smoke clip, Hinglish) | 3 min | `data/samples/run_20260914_053742/` | 76 segs · 8 concepts · 8-node/3-edge DAG · 8/8 clips · quiz **5/8** (server-graded MCQs) |
 
 Reproduce with `python scripts/sample_run.py --clip "<file>" --backend groq
 --no-copy-clips`; open the run folder's `report.html` for the chart-style map
@@ -309,11 +310,18 @@ streamlit run frontend/app.py
 ```
 
 Student tab: upload a lecture → process → take the ordered quiz → get the
-personalized remediation sequence with per-concept clip playback. Faculty
-tab: heatmap of concept miss rates + taught-vs-learned divergence, plus the
-interactive concept prerequisite DAG (learner order top→bottom, edge-tooltip
-confidence) — all served by the API (`GET /courses/{id}/stats`,
-`GET /courses/{id}/graph`).
+personalized remediation sequence with per-concept clip playback. The quiz is
+a graded MCQ per concept — the stem quotes the lecture's own spoken sentence,
+and grading is server-side (the client just picks an option); when the
+transcript can't support a concept the fallback is a name-recognition question,
+so every question stays answerable. Faculty tab: heatmap of concept miss rates
++ taught-vs-learned divergence, the interactive concept prerequisite DAG
+(learner order top→bottom, edge-tooltip confidence; vis-network loads from a
+CDN so the page itself is only a few KB), and a per-lecture **timeline +
+coverage** view showing how much of the spoken lecture the extracted concepts
+pin down, with each concept's quiz-answer evidence sentence — all served by
+the API (`GET /courses/{id}/stats`, `GET /courses/{id}/graph`,
+`GET /lectures/{id}`).
 
 ### Recovery experiment (Phase 7 validator)
 
@@ -357,10 +365,10 @@ Tests and benchmarks:
 
 ```bash
 # Unit tests (stubbed/monkeypatched LLM + whisper + encoder — zero API usage,
-# zero model/weight download, isolated test DB). 103 tests across:
+# zero model/weight download, isolated test DB). 113 tests across:
 #   transcription, LLM layer, concept extraction, prerequisite classifier,
-#   graph construction, clip segmentation, quiz + refinement, fine-tune helpers,
-#   and API integration.
+#   graph construction, clip segmentation, quiz generation + grading + refinement,
+#   frontend DAG + timeline renderers, fine-tune helpers, and API integration.
 python -m pytest tests
 
 # Regenerate the committed function inventory + dev-time module graph

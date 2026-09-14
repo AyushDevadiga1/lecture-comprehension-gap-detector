@@ -1,0 +1,123 @@
+{
+  "course_id": "ml",
+  "heatmap": [
+    {
+      "concept": "Extension of simple to multiple regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Specialization of multiple regression to simple regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Multiple linear regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Independent variables",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Linear regression",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Visualization of higher-dimensional data",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Dependent variable",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Regression equation (y = mx + b)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "Multiple linear regression",
+      "taught_idx": 1,
+      "learned_idx": 6,
+      "gap": 5
+    },
+    {
+      "concept": "Extension of simple to multiple regression",
+      "taught_idx": 5,
+      "learned_idx": 0,
+      "gap": -5
+    },
+    {
+      "concept": "Specialization of multiple regression to simple regression",
+      "taught_idx": 7,
+      "learned_idx": 3,
+      "gap": -4
+    },
+    {
+      "concept": "Regression equation (y = mx + b)",
+      "taught_idx": 4,
+      "learned_idx": 7,
+      "gap": 3
+    },
+    {
+      "concept": "Dependent variable",
+      "taught_idx": 3,
+      "learned_idx": 5,
+      "gap": 2
+    },
+    {
+      "concept": "Visualization of higher-dimensional data",
+      "taught_idx": 6,
+      "learned_idx": 4,
+      "gap": -2
+    },
+    {
+      "concept": "Linear regression",
+      "taught_idx": 0,
+      "learned_idx": 2,
+      "gap": 2
+    },
+    {
+      "concept": "Independent variables",
+      "taught_idx": 2,
+      "learned_idx": 1,
+      "gap": -1
+    }
+  ],
+  "taught_order": [
+    "Linear regression",
+    "Multiple linear regression",
+    "Independent variables",
+    "Dependent variable",
+    "Regression equation (y = mx + b)",
+    "Extension of simple to multiple regression",
+    "Visualization of higher-dimensional data",
+    "Specialization of multiple regression to simple regression"
+  ],
+  "learned_order": [
+    "Extension of simple to multiple regression",
+    "Independent variables",
+    "Linear regression",
+    "Specialization of multiple regression to simple regression",
+    "Visualization of higher-dimensional data",
+    "Dependent variable",
+    "Multiple linear regression",
+    "Regression equation (y = mx + b)"
+  ]
+}
