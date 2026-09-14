@@ -1,0 +1,283 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 52,
+  "total": 79,
+  "remediation": [
+    {
+      "concept": "CRUD operations (Create, Read, Update, Delete)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\CRUD operations _Create_ Read_ Update_ Delete___2958-3660.mp4"
+    },
+    {
+      "concept": "Data Persistence",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data Persistence__0-667.mp4"
+    },
+    {
+      "concept": "Data types (Integer, String)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data types _Integer_ String___667-1403.mp4"
+    },
+    {
+      "concept": "Database abstraction",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database abstraction__667-1403.mp4"
+    },
+    {
+      "concept": "Database connection via engine",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database connection via engine__2958-3660.mp4"
+    },
+    {
+      "concept": "Database schema design principles",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database schema design principles__1403-2214.mp4"
+    },
+    {
+      "concept": "Engine Creation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Engine Creation__0-667.mp4"
+    },
+    {
+      "concept": "Joins between tables",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Joins between tables__2958-3660.mp4"
+    },
+    {
+      "concept": "MySQL",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\MySQL__0-667.mp4"
+    },
+    {
+      "concept": "Relationship mapping between tables",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Relationship mapping between tables__2214-2958.mp4"
+    },
+    {
+      "concept": "Security in AI-Generated Code",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Security in AI-Generated Code__0-667.mp4"
+    },
+    {
+      "concept": "Select statement",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Select statement__667-1403.mp4"
+    },
+    {
+      "concept": "Session flush operation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session flush operation__2214-2958.mp4"
+    },
+    {
+      "concept": "Declarative base",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Declarative base__667-1403.mp4"
+    },
+    {
+      "concept": "Updating records with .update()",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Updating records with .update____2958-3660.mp4"
+    },
+    {
+      "concept": "Engine and connection string",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Engine and connection string__667-1403.mp4"
+    },
+    {
+      "concept": "Table definition",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Table definition__667-1403.mp4"
+    },
+    {
+      "concept": "Primary key",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Primary key__1403-2214.mp4"
+    },
+    {
+      "concept": "Data integrity constraints",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data integrity constraints__1403-2214.mp4"
+    },
+    {
+      "concept": "Pandas integration (read_sql, to_sql)",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pandas integration _read_sql_ to_sql___2958-3660.mp4"
+    },
+    {
+      "concept": "PostgreSQL",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\PostgreSQL__0-667.mp4"
+    },
+    {
+      "concept": "Attribute access for related objects",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Attribute access for related objects__2214-2958.mp4"
+    },
+    {
+      "concept": "LLM Code Generation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\LLM Code Generation__0-667.mp4"
+    },
+    {
+      "concept": "Prepared statements",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Prepared statements__667-1403.mp4"
+    },
+    {
+      "concept": "Group by clause",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Group by clause__1403-2214.mp4"
+    },
+    {
+      "concept": "Session management (commit, close)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session management _commit_ close___2958-3660.mp4"
+    },
+    {
+      "concept": "Deleting records with .delete()",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Deleting records with .delete____2958-3660.mp4"
+    },
+    {
+      "concept": "Column definition",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Column definition__667-1403.mp4"
+    },
+    {
+      "concept": "Many-to-many relationship via association table",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Many-to-many relationship via association table__1403-2214.mp4"
+    },
+    {
+      "concept": "Primary key constraint",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Primary key constraint__667-1403.mp4"
+    },
+    {
+      "concept": "Automatic primary key generation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Automatic primary key generation__2214-2958.mp4"
+    },
+    {
+      "concept": "Raw SQL vs ORM",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Raw SQL vs ORM__0-667.mp4"
+    },
+    {
+      "concept": "GitHub Copilot",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GitHub Copilot__0-667.mp4"
+    },
+    {
+      "concept": "Insert statement",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Insert statement__667-1403.mp4"
+    },
+    {
+      "concept": "Result fetching (fetchall, fetchone)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Result fetching _fetchall_ fetchone___667-1403.mp4"
+    },
+    {
+      "concept": "Join operations (inner join, outer join, left join)",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Join operations _inner join_ outer join_ left join___1403-2214.mp4"
+    },
+    {
+      "concept": "Retrieving all records with .all()",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Retrieving all records with .all____2958-3660.mp4"
+    },
+    {
+      "concept": "Foreign key constraint",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Foreign key constraint__1403-2214.mp4"
+    },
+    {
+      "concept": "Object Relational Mapper (ORM)",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object Relational Mapper _ORM___667-1403.mp4"
+    },
+    {
+      "concept": "SQLite",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLite__0-667.mp4"
+    },
+    {
+      "concept": "Update statement",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update statement__667-1403.mp4"
+    },
+    {
+      "concept": "Aggregation functions (SUM, AVG)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Aggregation functions _SUM_ AVG___1403-2214.mp4"
+    },
+    {
+      "concept": "CRUD operations via ORM",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\CRUD operations via ORM__2214-2958.mp4"
+    },
+    {
+      "concept": "Database Toolkit",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database Toolkit__0-667.mp4"
+    },
+    {
+      "concept": "Delete statement",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Delete statement__667-1403.mp4"
+    },
+    {
+      "concept": "Python Database Interaction",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Python Database Interaction__0-667.mp4"
+    },
+    {
+      "concept": "Session Management",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session Management__0-667.mp4"
+    },
+    {
+      "concept": "Commit and Transaction Handling",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Commit and Transaction Handling__0-667.mp4"
+    },
+    {
+      "concept": "SQL generation from Python",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL generation from Python__667-1403.mp4"
+    },
+    {
+      "concept": "SQL Execution via Python",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL Execution via Python__0-667.mp4"
+    },
+    {
+      "concept": "SQLAlchemy",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy__0-667.mp4"
+    },
+    {
+      "concept": "Django ORM Replacement",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Django ORM Replacement__0-667.mp4"
+    },
+    {
+      "concept": "Declarative base in SQLAlchemy",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Declarative base in SQLAlchemy__2214-2958.mp4"
+    },
+    {
+      "concept": "Flask-SQLAlchemy wrapper",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Flask-SQLAlchemy wrapper__2958-3660.mp4"
+    },
+    {
+      "concept": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Using SQLAlchemy with other frameworks _FastAPI_ Django___2958-3660.mp4"
+    }
+  ]
+}

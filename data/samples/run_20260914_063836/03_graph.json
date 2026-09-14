@@ -1,0 +1,1050 @@
+{
+  "course_id": "ml",
+  "nodes": [
+    "Aggregation functions (SUM, AVG)",
+    "Attribute access for related objects",
+    "Auto-increment primary key",
+    "Automatic primary key generation",
+    "Blueprints and routing in Flask",
+    "CRUD operations (Create, Read, Update, Delete)",
+    "CRUD operations via ORM",
+    "Column definition",
+    "Column selection",
+    "Commit and Transaction Handling",
+    "Connection Strings",
+    "Data Persistence",
+    "Data integrity constraints",
+    "Data modeling with classes and columns",
+    "Data types (Integer, String)",
+    "Database Toolkit",
+    "Database abstraction",
+    "Database connection via engine",
+    "Database schema design principles",
+    "Debugging with Echo",
+    "Declarative base",
+    "Declarative base in SQLAlchemy",
+    "Delete statement",
+    "Deleting records with .delete()",
+    "Dialect",
+    "Dialect (e.g., psycopg2)",
+    "Django ORM Replacement",
+    "Engine Creation",
+    "Engine and connection string",
+    "FastAPI",
+    "Flask",
+    "Flask-SQLAlchemy wrapper",
+    "Foreign key constraint",
+    "GitHub Copilot",
+    "Group by clause",
+    "Grouping and aggregation with func",
+    "HAVING clause",
+    "Having clause for aggregated filters",
+    "Insert statement",
+    "Join operations (inner join, outer join, left join)",
+    "Joins between tables",
+    "LLM Code Generation",
+    "Many-to-many relationship via association table",
+    "Metadata object",
+    "MySQL",
+    "Nullable constraint",
+    "Object Relational Mapper (ORM)",
+    "One-to-many relationship",
+    "Pagination of query results",
+    "Pandas Integration",
+    "Pandas integration (read_sql, to_sql)",
+    "PostgreSQL",
+    "Prepared statements",
+    "Primary key",
+    "Primary key constraint",
+    "Python Database Interaction",
+    "Querying with filter and where clauses",
+    "Querying with session.query",
+    "Raw SQL vs ORM",
+    "Relationship mapping between tables",
+    "Representation (__repr__) of ORM objects",
+    "Result fetching (fetchall, fetchone)",
+    "Result fetching and iteration",
+    "Retrieving all records with .all()",
+    "SQL Execution via Python",
+    "SQL generation from Python",
+    "SQLAlchemy",
+    "SQLite",
+    "Security in AI-Generated Code",
+    "Select statement",
+    "Session Management",
+    "Session flush operation",
+    "Session management (commit, close)",
+    "Session management in SQLAlchemy",
+    "Table definition",
+    "Update statement",
+    "Updating records with .update()",
+    "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+    "Vulnerability Mitigation"
+  ],
+  "edges": [
+    {
+      "source": "Aggregation functions (SUM, AVG)",
+      "target": "Grouping and aggregation with func",
+      "confidence": 0.6052633466713231
+    },
+    {
+      "source": "Attribute access for related objects",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.6823263963780524
+    },
+    {
+      "source": "Automatic primary key generation",
+      "target": "Auto-increment primary key",
+      "confidence": 0.8945323097817764
+    },
+    {
+      "source": "CRUD operations (Create, Read, Update, Delete)",
+      "target": "CRUD operations via ORM",
+      "confidence": 0.8142164032465394
+    },
+    {
+      "source": "Column definition",
+      "target": "Column selection",
+      "confidence": 0.9054598295837875
+    },
+    {
+      "source": "Commit and Transaction Handling",
+      "target": "SQLAlchemy",
+      "confidence": 0.5204796095205521
+    },
+    {
+      "source": "Data Persistence",
+      "target": "Database Toolkit",
+      "confidence": 0.7489865495645017
+    },
+    {
+      "source": "Data Persistence",
+      "target": "Python Database Interaction",
+      "confidence": 0.5469802082189031
+    },
+    {
+      "source": "Data Persistence",
+      "target": "Commit and Transaction Handling",
+      "confidence": 0.5389545193713691
+    },
+    {
+      "source": "Database Toolkit",
+      "target": "SQLAlchemy",
+      "confidence": 0.7950304580855804
+    },
+    {
+      "source": "Database Toolkit",
+      "target": "Python Database Interaction",
+      "confidence": 0.9264503961999501
+    },
+    {
+      "source": "Database Toolkit",
+      "target": "SQL Execution via Python",
+      "confidence": 0.6893569353225892
+    },
+    {
+      "source": "Database Toolkit",
+      "target": "Session Management",
+      "confidence": 0.5304477427124772
+    },
+    {
+      "source": "Database Toolkit",
+      "target": "Commit and Transaction Handling",
+      "confidence": 0.5676774173741221
+    },
+    {
+      "source": "Database Toolkit",
+      "target": "Django ORM Replacement",
+      "confidence": 0.8064847536545339
+    },
+    {
+      "source": "Database abstraction",
+      "target": "SQLAlchemy",
+      "confidence": 0.8998057076738911
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.8560098926178956
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Metadata object",
+      "confidence": 0.6852849577974963
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Declarative base",
+      "confidence": 0.5527442204392659
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Table definition",
+      "confidence": 0.5978134758600281
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Column definition",
+      "confidence": 0.7302156982808555
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Nullable constraint",
+      "confidence": 0.6300012812522059
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Dialect (e.g., psycopg2)",
+      "confidence": 0.6437612955453752
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Insert statement",
+      "confidence": 0.5903989346228058
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Delete statement",
+      "confidence": 0.6748744785561174
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Prepared statements",
+      "confidence": 0.714591474975699
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Commit and Transaction Handling",
+      "confidence": 0.816220675868948
+    },
+    {
+      "source": "Database abstraction",
+      "target": "Result fetching (fetchall, fetchone)",
+      "confidence": 0.670782582570278
+    },
+    {
+      "source": "Database abstraction",
+      "target": "SQL generation from Python",
+      "confidence": 0.6723720712291971
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.5333373922204175
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "SQLAlchemy",
+      "confidence": 0.836443131333161
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Updating records with .update()",
+      "confidence": 0.5036338115974364
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Session management (commit, close)",
+      "confidence": 0.5991647767089695
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Pandas integration (read_sql, to_sql)",
+      "confidence": 0.6904901349167031
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Flask-SQLAlchemy wrapper",
+      "confidence": 0.7950185350142664
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Pagination of query results",
+      "confidence": 0.7550698014187727
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.9259245979376604
+    },
+    {
+      "source": "Database connection via engine",
+      "target": "Engine and connection string",
+      "confidence": 0.9729115638797636
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "SQLAlchemy",
+      "confidence": 0.8042134309791196
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Table definition",
+      "confidence": 0.5865214644530632
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Primary key",
+      "confidence": 0.5914895962736902
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Foreign key constraint",
+      "confidence": 0.7573925444985296
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "One-to-many relationship",
+      "confidence": 0.681144042947771
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Many-to-many relationship via association table",
+      "confidence": 0.7379058682260253
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Commit and Transaction Handling",
+      "confidence": 0.7459565265984426
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Auto-increment primary key",
+      "confidence": 0.5689779963541797
+    },
+    {
+      "source": "Database schema design principles",
+      "target": "Data integrity constraints",
+      "confidence": 0.7021945589407689
+    },
+    {
+      "source": "Declarative base in SQLAlchemy",
+      "target": "Flask-SQLAlchemy wrapper",
+      "confidence": 0.8917190148987656
+    },
+    {
+      "source": "Deleting records with .delete()",
+      "target": "Retrieving all records with .all()",
+      "confidence": 0.6333662390659972
+    },
+    {
+      "source": "Deleting records with .delete()",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.6008026976053762
+    },
+    {
+      "source": "Dialect",
+      "target": "Dialect (e.g., psycopg2)",
+      "confidence": 0.8497623126519931
+    },
+    {
+      "source": "Engine and connection string",
+      "target": "Connection Strings",
+      "confidence": 0.9507916944794081
+    },
+    {
+      "source": "Flask-SQLAlchemy wrapper",
+      "target": "Blueprints and routing in Flask",
+      "confidence": 0.6684863885274307
+    },
+    {
+      "source": "Flask-SQLAlchemy wrapper",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.9791239371947369
+    },
+    {
+      "source": "Group by clause",
+      "target": "Join operations (inner join, outer join, left join)",
+      "confidence": 0.6229045653008817
+    },
+    {
+      "source": "Group by clause",
+      "target": "HAVING clause",
+      "confidence": 0.8060092368790494
+    },
+    {
+      "source": "Group by clause",
+      "target": "Querying with session.query",
+      "confidence": 0.6705047318861802
+    },
+    {
+      "source": "HAVING clause",
+      "target": "Having clause for aggregated filters",
+      "confidence": 0.8962273001892344
+    },
+    {
+      "source": "Insert statement",
+      "target": "Update statement",
+      "confidence": 0.755138870029223
+    },
+    {
+      "source": "Insert statement",
+      "target": "Delete statement",
+      "confidence": 0.7056067178575314
+    },
+    {
+      "source": "Join operations (inner join, outer join, left join)",
+      "target": "Aggregation functions (SUM, AVG)",
+      "confidence": 0.715637065592773
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.6034635040246729
+    },
+    {
+      "source": "Joins between tables",
+      "target": "SQLAlchemy",
+      "confidence": 0.5171366612120586
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Querying with filter and where clauses",
+      "confidence": 0.8593500004189872
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Grouping and aggregation with func",
+      "confidence": 0.5540355757229594
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Having clause for aggregated filters",
+      "confidence": 0.7454104570428269
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Pandas integration (read_sql, to_sql)",
+      "confidence": 0.5175645544591364
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Pagination of query results",
+      "confidence": 0.6636459303716882
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.5930225880362504
+    },
+    {
+      "source": "Joins between tables",
+      "target": "Join operations (inner join, outer join, left join)",
+      "confidence": 0.9578247989653159
+    },
+    {
+      "source": "Many-to-many relationship via association table",
+      "target": "Foreign key constraint",
+      "confidence": 0.563804367819234
+    },
+    {
+      "source": "Many-to-many relationship via association table",
+      "target": "One-to-many relationship",
+      "confidence": 0.9132355887244444
+    },
+    {
+      "source": "MySQL",
+      "target": "SQLAlchemy",
+      "confidence": 0.7127150651257864
+    },
+    {
+      "source": "MySQL",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.5846001328859801
+    },
+    {
+      "source": "MySQL",
+      "target": "Database Toolkit",
+      "confidence": 0.8230185651538183
+    },
+    {
+      "source": "MySQL",
+      "target": "Python Database Interaction",
+      "confidence": 0.752449889810792
+    },
+    {
+      "source": "MySQL",
+      "target": "SQL Execution via Python",
+      "confidence": 0.6150890402045169
+    },
+    {
+      "source": "MySQL",
+      "target": "Connection Strings",
+      "confidence": 0.5053989659643502
+    },
+    {
+      "source": "MySQL",
+      "target": "SQLite",
+      "confidence": 0.7761017921496289
+    },
+    {
+      "source": "MySQL",
+      "target": "PostgreSQL",
+      "confidence": 0.9471377368839281
+    },
+    {
+      "source": "MySQL",
+      "target": "Raw SQL vs ORM",
+      "confidence": 0.7491850453360424
+    },
+    {
+      "source": "MySQL",
+      "target": "GitHub Copilot",
+      "confidence": 0.5926964721338622
+    },
+    {
+      "source": "MySQL",
+      "target": "Flask",
+      "confidence": 0.6204051570310883
+    },
+    {
+      "source": "MySQL",
+      "target": "FastAPI",
+      "confidence": 0.7076901118110347
+    },
+    {
+      "source": "MySQL",
+      "target": "Django ORM Replacement",
+      "confidence": 0.6727160510677858
+    },
+    {
+      "source": "Object Relational Mapper (ORM)",
+      "target": "Django ORM Replacement",
+      "confidence": 0.8719336634629761
+    },
+    {
+      "source": "Object Relational Mapper (ORM)",
+      "target": "CRUD operations via ORM",
+      "confidence": 0.7916004303068286
+    },
+    {
+      "source": "Object Relational Mapper (ORM)",
+      "target": "Representation (__repr__) of ORM objects",
+      "confidence": 0.9077020898381513
+    },
+    {
+      "source": "Pandas integration (read_sql, to_sql)",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.8861128227368451
+    },
+    {
+      "source": "Pandas integration (read_sql, to_sql)",
+      "target": "Pandas Integration",
+      "confidence": 0.9727824023235394
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "SQLAlchemy",
+      "confidence": 0.6770471092861601
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "Database Toolkit",
+      "confidence": 0.731607840215027
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "Python Database Interaction",
+      "confidence": 0.7865462991575282
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "SQL Execution via Python",
+      "confidence": 0.6145471547845529
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "SQLite",
+      "confidence": 0.7100517237390764
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "Raw SQL vs ORM",
+      "confidence": 0.6553201923322758
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "GitHub Copilot",
+      "confidence": 0.6093036273524811
+    },
+    {
+      "source": "PostgreSQL",
+      "target": "Django ORM Replacement",
+      "confidence": 0.578922311961983
+    },
+    {
+      "source": "Prepared statements",
+      "target": "Dialect (e.g., psycopg2)",
+      "confidence": 0.6801919698520434
+    },
+    {
+      "source": "Prepared statements",
+      "target": "Insert statement",
+      "confidence": 0.9186498760194738
+    },
+    {
+      "source": "Prepared statements",
+      "target": "Update statement",
+      "confidence": 0.8274006506356907
+    },
+    {
+      "source": "Prepared statements",
+      "target": "Delete statement",
+      "confidence": 0.5701394180624868
+    },
+    {
+      "source": "Prepared statements",
+      "target": "Result fetching (fetchall, fetchone)",
+      "confidence": 0.7953548213551181
+    },
+    {
+      "source": "Primary key",
+      "target": "Auto-increment primary key",
+      "confidence": 0.9264182340076236
+    },
+    {
+      "source": "Primary key",
+      "target": "Primary key constraint",
+      "confidence": 0.9548375306665202
+    },
+    {
+      "source": "Primary key",
+      "target": "Automatic primary key generation",
+      "confidence": 0.8651689822723685
+    },
+    {
+      "source": "Primary key constraint",
+      "target": "Foreign key constraint",
+      "confidence": 0.8088459287029911
+    },
+    {
+      "source": "Primary key constraint",
+      "target": "Auto-increment primary key",
+      "confidence": 0.647908511167654
+    },
+    {
+      "source": "Python Database Interaction",
+      "target": "SQLAlchemy",
+      "confidence": 0.8349048122331285
+    },
+    {
+      "source": "Python Database Interaction",
+      "target": "SQL Execution via Python",
+      "confidence": 0.9476147077519345
+    },
+    {
+      "source": "Python Database Interaction",
+      "target": "Django ORM Replacement",
+      "confidence": 0.8853479156375781
+    },
+    {
+      "source": "Python Database Interaction",
+      "target": "SQL generation from Python",
+      "confidence": 0.8547150379990667
+    },
+    {
+      "source": "Querying with filter and where clauses",
+      "target": "Having clause for aggregated filters",
+      "confidence": 0.798812755248659
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "SQLAlchemy",
+      "confidence": 0.5658763413573448
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.6745132112202975
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "Database Toolkit",
+      "confidence": 0.7835282971883455
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "Python Database Interaction",
+      "confidence": 0.6016709196396336
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "SQL Execution via Python",
+      "confidence": 0.8701258903202986
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "SQLite",
+      "confidence": 0.5754476283422513
+    },
+    {
+      "source": "Raw SQL vs ORM",
+      "target": "Django ORM Replacement",
+      "confidence": 0.9416390198972937
+    },
+    {
+      "source": "Relationship mapping between tables",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.9315847913881636
+    },
+    {
+      "source": "Relationship mapping between tables",
+      "target": "Session management in SQLAlchemy",
+      "confidence": 0.5332561035713651
+    },
+    {
+      "source": "Relationship mapping between tables",
+      "target": "Foreign key constraint",
+      "confidence": 0.7757562805431281
+    },
+    {
+      "source": "Relationship mapping between tables",
+      "target": "Attribute access for related objects",
+      "confidence": 0.7906756497117416
+    },
+    {
+      "source": "Relationship mapping between tables",
+      "target": "CRUD operations via ORM",
+      "confidence": 0.6256333376445654
+    },
+    {
+      "source": "Relationship mapping between tables",
+      "target": "Many-to-many relationship via association table",
+      "confidence": 0.9670152427946782
+    },
+    {
+      "source": "Result fetching (fetchall, fetchone)",
+      "target": "Result fetching and iteration",
+      "confidence": 0.8950517120744221
+    },
+    {
+      "source": "Retrieving all records with .all()",
+      "target": "Pagination of query results",
+      "confidence": 0.5312301277081994
+    },
+    {
+      "source": "SQL Execution via Python",
+      "target": "SQLAlchemy",
+      "confidence": 0.7846569826835271
+    },
+    {
+      "source": "SQL Execution via Python",
+      "target": "Django ORM Replacement",
+      "confidence": 0.7094218821782312
+    },
+    {
+      "source": "SQL generation from Python",
+      "target": "SQLAlchemy",
+      "confidence": 0.7908170737194893
+    },
+    {
+      "source": "SQL generation from Python",
+      "target": "SQL Execution via Python",
+      "confidence": 0.9879380456071455
+    },
+    {
+      "source": "SQLAlchemy",
+      "target": "Flask",
+      "confidence": 0.586116495536697
+    },
+    {
+      "source": "SQLAlchemy",
+      "target": "Django ORM Replacement",
+      "confidence": 0.7482835689133267
+    },
+    {
+      "source": "SQLAlchemy",
+      "target": "Flask-SQLAlchemy wrapper",
+      "confidence": 0.9905973780874591
+    },
+    {
+      "source": "SQLAlchemy",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.9928194652164886
+    },
+    {
+      "source": "SQLAlchemy",
+      "target": "Declarative base in SQLAlchemy",
+      "confidence": 0.9568918317724984
+    },
+    {
+      "source": "SQLAlchemy",
+      "target": "Session management in SQLAlchemy",
+      "confidence": 0.9629930168906264
+    },
+    {
+      "source": "SQLite",
+      "target": "SQLAlchemy",
+      "confidence": 0.5878930913826543
+    },
+    {
+      "source": "SQLite",
+      "target": "Database Toolkit",
+      "confidence": 0.8606955927137132
+    },
+    {
+      "source": "SQLite",
+      "target": "Python Database Interaction",
+      "confidence": 0.6970011703183567
+    },
+    {
+      "source": "SQLite",
+      "target": "SQL Execution via Python",
+      "confidence": 0.6632970160079174
+    },
+    {
+      "source": "SQLite",
+      "target": "Django ORM Replacement",
+      "confidence": 0.5952822451924992
+    },
+    {
+      "source": "Security in AI-Generated Code",
+      "target": "LLM Code Generation",
+      "confidence": 0.6518705121131905
+    },
+    {
+      "source": "Select statement",
+      "target": "SQLAlchemy",
+      "confidence": 0.623410069736892
+    },
+    {
+      "source": "Select statement",
+      "target": "Dialect (e.g., psycopg2)",
+      "confidence": 0.5229291761403916
+    },
+    {
+      "source": "Select statement",
+      "target": "Insert statement",
+      "confidence": 0.895152213024909
+    },
+    {
+      "source": "Select statement",
+      "target": "Update statement",
+      "confidence": 0.8330617615480973
+    },
+    {
+      "source": "Select statement",
+      "target": "Delete statement",
+      "confidence": 0.8776665759256639
+    },
+    {
+      "source": "Select statement",
+      "target": "Prepared statements",
+      "confidence": 0.8920332540519458
+    },
+    {
+      "source": "Select statement",
+      "target": "Commit and Transaction Handling",
+      "confidence": 0.5872290878216984
+    },
+    {
+      "source": "Select statement",
+      "target": "Result fetching (fetchall, fetchone)",
+      "confidence": 0.8331591135366034
+    },
+    {
+      "source": "Select statement",
+      "target": "SQL generation from Python",
+      "confidence": 0.6191643705313759
+    },
+    {
+      "source": "Select statement",
+      "target": "Column selection",
+      "confidence": 0.5760317635345027
+    },
+    {
+      "source": "Select statement",
+      "target": "Group by clause",
+      "confidence": 0.5872865738655915
+    },
+    {
+      "source": "Session Management",
+      "target": "Session management in SQLAlchemy",
+      "confidence": 0.860477120471505
+    },
+    {
+      "source": "Session flush operation",
+      "target": "Session management in SQLAlchemy",
+      "confidence": 0.8611805333577774
+    },
+    {
+      "source": "Session flush operation",
+      "target": "Querying with session.query",
+      "confidence": 0.8006817968105427
+    },
+    {
+      "source": "Session flush operation",
+      "target": "Session Management",
+      "confidence": 0.9399518435788378
+    },
+    {
+      "source": "Session flush operation",
+      "target": "Session management (commit, close)",
+      "confidence": 0.9395177962331941
+    },
+    {
+      "source": "Session management (commit, close)",
+      "target": "Session Management",
+      "confidence": 0.9421450744974009
+    },
+    {
+      "source": "Session management in SQLAlchemy",
+      "target": "Querying with session.query",
+      "confidence": 0.7572215317256555
+    },
+    {
+      "source": "Table definition",
+      "target": "SQLAlchemy",
+      "confidence": 0.7110531049582177
+    },
+    {
+      "source": "Table definition",
+      "target": "Object Relational Mapper (ORM)",
+      "confidence": 0.5861795902912867
+    },
+    {
+      "source": "Table definition",
+      "target": "Column definition",
+      "confidence": 0.9367651735432623
+    },
+    {
+      "source": "Table definition",
+      "target": "SQL generation from Python",
+      "confidence": 0.5082543852494739
+    },
+    {
+      "source": "Table definition",
+      "target": "Foreign key constraint",
+      "confidence": 0.5487363394219523
+    },
+    {
+      "source": "Table definition",
+      "target": "Many-to-many relationship via association table",
+      "confidence": 0.7420640616909195
+    },
+    {
+      "source": "Table definition",
+      "target": "Column selection",
+      "confidence": 0.58360603052894
+    },
+    {
+      "source": "Update statement",
+      "target": "Delete statement",
+      "confidence": 0.7039660330406678
+    },
+    {
+      "source": "Updating records with .update()",
+      "target": "SQLAlchemy",
+      "confidence": 0.5692752143743371
+    },
+    {
+      "source": "Updating records with .update()",
+      "target": "Retrieving all records with .all()",
+      "confidence": 0.7655556324002027
+    },
+    {
+      "source": "Updating records with .update()",
+      "target": "Deleting records with .delete()",
+      "confidence": 0.8188235292261989
+    },
+    {
+      "source": "Updating records with .update()",
+      "target": "Flask-SQLAlchemy wrapper",
+      "confidence": 0.5491378611516935
+    },
+    {
+      "source": "Updating records with .update()",
+      "target": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "confidence": 0.6531344198699202
+    },
+    {
+      "source": "Updating records with .update()",
+      "target": "Update statement",
+      "confidence": 0.9675834706676495
+    }
+  ],
+  "node_count": 79,
+  "edge_count": 176,
+  "is_dag": true,
+  "topological_order": [
+    "CRUD operations (Create, Read, Update, Delete)",
+    "Data Persistence",
+    "Data modeling with classes and columns",
+    "Data types (Integer, String)",
+    "Database abstraction",
+    "Database connection via engine",
+    "Database schema design principles",
+    "Debugging with Echo",
+    "Dialect",
+    "Engine Creation",
+    "Joins between tables",
+    "MySQL",
+    "Relationship mapping between tables",
+    "Security in AI-Generated Code",
+    "Select statement",
+    "Session flush operation",
+    "Vulnerability Mitigation",
+    "Metadata object",
+    "Declarative base",
+    "Nullable constraint",
+    "Updating records with .update()",
+    "Engine and connection string",
+    "Table definition",
+    "Primary key",
+    "Data integrity constraints",
+    "Querying with filter and where clauses",
+    "Pandas integration (read_sql, to_sql)",
+    "PostgreSQL",
+    "FastAPI",
+    "Attribute access for related objects",
+    "LLM Code Generation",
+    "Prepared statements",
+    "Group by clause",
+    "Session management (commit, close)",
+    "Deleting records with .delete()",
+    "Connection Strings",
+    "Column definition",
+    "Many-to-many relationship via association table",
+    "Primary key constraint",
+    "Automatic primary key generation",
+    "Pandas Integration",
+    "Raw SQL vs ORM",
+    "GitHub Copilot",
+    "Dialect (e.g., psycopg2)",
+    "Insert statement",
+    "Result fetching (fetchall, fetchone)",
+    "Join operations (inner join, outer join, left join)",
+    "HAVING clause",
+    "Retrieving all records with .all()",
+    "Column selection",
+    "One-to-many relationship",
+    "Foreign key constraint",
+    "Auto-increment primary key",
+    "Object Relational Mapper (ORM)",
+    "SQLite",
+    "Update statement",
+    "Result fetching and iteration",
+    "Aggregation functions (SUM, AVG)",
+    "Having clause for aggregated filters",
+    "Pagination of query results",
+    "CRUD operations via ORM",
+    "Representation (__repr__) of ORM objects",
+    "Database Toolkit",
+    "Delete statement",
+    "Grouping and aggregation with func",
+    "Python Database Interaction",
+    "Session Management",
+    "Commit and Transaction Handling",
+    "SQL generation from Python",
+    "SQL Execution via Python",
+    "SQLAlchemy",
+    "Flask",
+    "Django ORM Replacement",
+    "Declarative base in SQLAlchemy",
+    "Session management in SQLAlchemy",
+    "Flask-SQLAlchemy wrapper",
+    "Querying with session.query",
+    "Blueprints and routing in Flask",
+    "Using SQLAlchemy with other frameworks (FastAPI, Django)"
+  ]
+}

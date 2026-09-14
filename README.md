@@ -298,6 +298,7 @@ for instantaneous transcription (`--backend groq`), every stage artifact +
 | Multiple Linear Regression (mp4) | 21 min | `data/samples/run_20260912_053604/` | 232 segs · 24 concepts · **22-node/10-edge DAG** · 24/24 clips · quiz **14/22** |
 | Gated Recurrent Unit / GRU (webm, AV1/Opus) | 86 min | `data/samples/run_20260913_080041/` | 1557 segs · 101 concepts · **74-node/103-edge DAG** · 101/101 clips · quiz **49/74** |
 | Multiple Linear Regression (3-min smoke clip, Hinglish) | 3 min | `data/samples/run_20260914_053742/` | 76 segs · 8 concepts · 8-node/3-edge DAG · 8/8 clips · quiz **5/8** (server-graded MCQs) |
+| SQLAlchemy Crash Course (mp4, Python ORM — new domain) | 60 min | `data/samples/run_20260914_063836/` | 570 segs · 93 concepts · **79-node/176-edge DAG** · 93/93 clips · quiz **52/79** |
 
 Reproduce with `python scripts/sample_run.py --clip "<file>" --backend groq
 --no-copy-clips`; open the run folder's `report.html` for the chart-style map

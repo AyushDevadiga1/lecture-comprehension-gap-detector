@@ -1,0 +1,1127 @@
+{
+  "course_id": "ml",
+  "heatmap": [
+    {
+      "concept": "CRUD operations (Create, Read, Update, Delete)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Data types (Integer, String)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Database schema design principles",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Engine Creation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Relationship mapping between tables",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Session flush operation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Declarative base",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Engine and connection string",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Data integrity constraints",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "PostgreSQL",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "LLM Code Generation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Session management (commit, close)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Column definition",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Automatic primary key generation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "GitHub Copilot",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Result fetching (fetchall, fetchone)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Retrieving all records with .all()",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Foreign key constraint",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "SQLite",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Aggregation functions (SUM, AVG)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "CRUD operations via ORM",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Delete statement",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Session Management",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "SQL Execution via Python",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Django ORM Replacement",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Flask-SQLAlchemy wrapper",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Data Persistence",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Data modeling with classes and columns",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Database abstraction",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Database connection via engine",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Debugging with Echo",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Dialect",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Joins between tables",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "MySQL",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Security in AI-Generated Code",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Select statement",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Vulnerability Mitigation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Metadata object",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Nullable constraint",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Updating records with .update()",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Table definition",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Primary key",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Querying with filter and where clauses",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Pandas integration (read_sql, to_sql)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "FastAPI",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Attribute access for related objects",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Prepared statements",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Group by clause",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Deleting records with .delete()",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Connection Strings",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Many-to-many relationship via association table",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Primary key constraint",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Pandas Integration",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Raw SQL vs ORM",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Dialect (e.g., psycopg2)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Insert statement",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Join operations (inner join, outer join, left join)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "HAVING clause",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Column selection",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "One-to-many relationship",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Auto-increment primary key",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Object Relational Mapper (ORM)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Update statement",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Result fetching and iteration",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Having clause for aggregated filters",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Pagination of query results",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Representation (__repr__) of ORM objects",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Database Toolkit",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Grouping and aggregation with func",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Python Database Interaction",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Commit and Transaction Handling",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "SQL generation from Python",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "SQLAlchemy",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Flask",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Declarative base in SQLAlchemy",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Session management in SQLAlchemy",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Querying with session.query",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Blueprints and routing in Flask",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "CRUD operations (Create, Read, Update, Delete)",
+      "taught_idx": 85,
+      "learned_idx": 0,
+      "gap": -85
+    },
+    {
+      "concept": "Data modeling with classes and columns",
+      "taught_idx": 86,
+      "learned_idx": 2,
+      "gap": -84
+    },
+    {
+      "concept": "Database connection via engine",
+      "taught_idx": 84,
+      "learned_idx": 5,
+      "gap": -79
+    },
+    {
+      "concept": "SQLAlchemy",
+      "taught_idx": 0,
+      "learned_idx": 70,
+      "gap": 70
+    },
+    {
+      "concept": "Joins between tables",
+      "taught_idx": 77,
+      "learned_idx": 10,
+      "gap": -67
+    },
+    {
+      "concept": "SQL Execution via Python",
+      "taught_idx": 4,
+      "learned_idx": 69,
+      "gap": 65
+    },
+    {
+      "concept": "Python Database Interaction",
+      "taught_idx": 3,
+      "learned_idx": 65,
+      "gap": 62
+    },
+    {
+      "concept": "Database Toolkit",
+      "taught_idx": 2,
+      "learned_idx": 62,
+      "gap": 60
+    },
+    {
+      "concept": "Updating records with .update()",
+      "taught_idx": 75,
+      "learned_idx": 20,
+      "gap": -55
+    },
+    {
+      "concept": "Commit and Transaction Handling",
+      "taught_idx": 12,
+      "learned_idx": 67,
+      "gap": 55
+    },
+    {
+      "concept": "Session Management",
+      "taught_idx": 11,
+      "learned_idx": 66,
+      "gap": 55
+    },
+    {
+      "concept": "Pandas integration (read_sql, to_sql)",
+      "taught_idx": 80,
+      "learned_idx": 26,
+      "gap": -54
+    },
+    {
+      "concept": "Relationship mapping between tables",
+      "taught_idx": 64,
+      "learned_idx": 12,
+      "gap": -52
+    },
+    {
+      "concept": "Session flush operation",
+      "taught_idx": 67,
+      "learned_idx": 15,
+      "gap": -52
+    },
+    {
+      "concept": "Database schema design principles",
+      "taught_idx": 58,
+      "learned_idx": 6,
+      "gap": -52
+    },
+    {
+      "concept": "Flask",
+      "taught_idx": 21,
+      "learned_idx": 71,
+      "gap": 50
+    },
+    {
+      "concept": "Django ORM Replacement",
+      "taught_idx": 23,
+      "learned_idx": 72,
+      "gap": 49
+    },
+    {
+      "concept": "SQLite",
+      "taught_idx": 7,
+      "learned_idx": 54,
+      "gap": 47
+    },
+    {
+      "concept": "Querying with filter and where clauses",
+      "taught_idx": 72,
+      "learned_idx": 25,
+      "gap": -47
+    },
+    {
+      "concept": "Session management (commit, close)",
+      "taught_idx": 76,
+      "learned_idx": 33,
+      "gap": -43
+    },
+    {
+      "concept": "Deleting records with .delete()",
+      "taught_idx": 74,
+      "learned_idx": 34,
+      "gap": -40
+    },
+    {
+      "concept": "Attribute access for related objects",
+      "taught_idx": 69,
+      "learned_idx": 29,
+      "gap": -40
+    },
+    {
+      "concept": "Data integrity constraints",
+      "taught_idx": 59,
+      "learned_idx": 24,
+      "gap": -35
+    },
+    {
+      "concept": "Database abstraction",
+      "taught_idx": 35,
+      "learned_idx": 4,
+      "gap": -31
+    },
+    {
+      "concept": "Connection Strings",
+      "taught_idx": 6,
+      "learned_idx": 35,
+      "gap": 29
+    },
+    {
+      "concept": "Raw SQL vs ORM",
+      "taught_idx": 13,
+      "learned_idx": 41,
+      "gap": 28
+    },
+    {
+      "concept": "Object Relational Mapper (ORM)",
+      "taught_idx": 25,
+      "learned_idx": 53,
+      "gap": 28
+    },
+    {
+      "concept": "Automatic primary key generation",
+      "taught_idx": 66,
+      "learned_idx": 39,
+      "gap": -27
+    },
+    {
+      "concept": "Data types (Integer, String)",
+      "taught_idx": 30,
+      "learned_idx": 3,
+      "gap": -27
+    },
+    {
+      "concept": "Representation (__repr__) of ORM objects",
+      "taught_idx": 87,
+      "learned_idx": 61,
+      "gap": -26
+    },
+    {
+      "concept": "SQL generation from Python",
+      "taught_idx": 43,
+      "learned_idx": 68,
+      "gap": 25
+    },
+    {
+      "concept": "Retrieving all records with .all()",
+      "taught_idx": 73,
+      "learned_idx": 48,
+      "gap": -25
+    },
+    {
+      "concept": "Pandas Integration",
+      "taught_idx": 16,
+      "learned_idx": 40,
+      "gap": 24
+    },
+    {
+      "concept": "Delete statement",
+      "taught_idx": 39,
+      "learned_idx": 63,
+      "gap": 24
+    },
+    {
+      "concept": "Pagination of query results",
+      "taught_idx": 83,
+      "learned_idx": 59,
+      "gap": -24
+    },
+    {
+      "concept": "Group by clause",
+      "taught_idx": 55,
+      "learned_idx": 32,
+      "gap": -23
+    },
+    {
+      "concept": "GitHub Copilot",
+      "taught_idx": 19,
+      "learned_idx": 42,
+      "gap": 23
+    },
+    {
+      "concept": "Select statement",
+      "taught_idx": 37,
+      "learned_idx": 14,
+      "gap": -23
+    },
+    {
+      "concept": "Primary key",
+      "taught_idx": 44,
+      "learned_idx": 23,
+      "gap": -21
+    },
+    {
+      "concept": "Having clause for aggregated filters",
+      "taught_idx": 79,
+      "learned_idx": 58,
+      "gap": -21
+    },
+    {
+      "concept": "PostgreSQL",
+      "taught_idx": 8,
+      "learned_idx": 27,
+      "gap": 19
+    },
+    {
+      "concept": "Update statement",
+      "taught_idx": 38,
+      "learned_idx": 55,
+      "gap": 17
+    },
+    {
+      "concept": "Grouping and aggregation with func",
+      "taught_idx": 78,
+      "learned_idx": 64,
+      "gap": -14
+    },
+    {
+      "concept": "HAVING clause",
+      "taught_idx": 61,
+      "learned_idx": 47,
+      "gap": -14
+    },
+    {
+      "concept": "Nullable constraint",
+      "taught_idx": 32,
+      "learned_idx": 19,
+      "gap": -13
+    },
+    {
+      "concept": "Data Persistence",
+      "taught_idx": 14,
+      "learned_idx": 1,
+      "gap": -13
+    },
+    {
+      "concept": "Engine and connection string",
+      "taught_idx": 33,
+      "learned_idx": 21,
+      "gap": -12
+    },
+    {
+      "concept": "Session management in SQLAlchemy",
+      "taught_idx": 63,
+      "learned_idx": 74,
+      "gap": 11
+    },
+    {
+      "concept": "Declarative base in SQLAlchemy",
+      "taught_idx": 62,
+      "learned_idx": 73,
+      "gap": 11
+    },
+    {
+      "concept": "CRUD operations via ORM",
+      "taught_idx": 70,
+      "learned_idx": 60,
+      "gap": -10
+    },
+    {
+      "concept": "LLM Code Generation",
+      "taught_idx": 20,
+      "learned_idx": 30,
+      "gap": 10
+    },
+    {
+      "concept": "Using SQLAlchemy with other frameworks (FastAPI, Django)",
+      "taught_idx": 88,
+      "learned_idx": 78,
+      "gap": -10
+    },
+    {
+      "concept": "Many-to-many relationship via association table",
+      "taught_idx": 47,
+      "learned_idx": 37,
+      "gap": -10
+    },
+    {
+      "concept": "Prepared statements",
+      "taught_idx": 40,
+      "learned_idx": 31,
+      "gap": -9
+    },
+    {
+      "concept": "Dialect (e.g., psycopg2)",
+      "taught_idx": 34,
+      "learned_idx": 43,
+      "gap": 9
+    },
+    {
+      "concept": "Metadata object",
+      "taught_idx": 26,
+      "learned_idx": 17,
+      "gap": -9
+    },
+    {
+      "concept": "Declarative base",
+      "taught_idx": 27,
+      "learned_idx": 18,
+      "gap": -9
+    },
+    {
+      "concept": "Debugging with Echo",
+      "taught_idx": 15,
+      "learned_idx": 7,
+      "gap": -8
+    },
+    {
+      "concept": "Insert statement",
+      "taught_idx": 36,
+      "learned_idx": 44,
+      "gap": 8
+    },
+    {
+      "concept": "Querying with session.query",
+      "taught_idx": 68,
+      "learned_idx": 76,
+      "gap": 8
+    },
+    {
+      "concept": "Primary key constraint",
+      "taught_idx": 31,
+      "learned_idx": 38,
+      "gap": 7
+    },
+    {
+      "concept": "Column definition",
+      "taught_idx": 29,
+      "learned_idx": 36,
+      "gap": 7
+    },
+    {
+      "concept": "Table definition",
+      "taught_idx": 28,
+      "learned_idx": 22,
+      "gap": -6
+    },
+    {
+      "concept": "Join operations (inner join, outer join, left join)",
+      "taught_idx": 52,
+      "learned_idx": 46,
+      "gap": -6
+    },
+    {
+      "concept": "FastAPI",
+      "taught_idx": 22,
+      "learned_idx": 28,
+      "gap": 6
+    },
+    {
+      "concept": "Flask-SQLAlchemy wrapper",
+      "taught_idx": 81,
+      "learned_idx": 75,
+      "gap": -6
+    },
+    {
+      "concept": "Foreign key constraint",
+      "taught_idx": 45,
+      "learned_idx": 51,
+      "gap": 6
+    },
+    {
+      "concept": "Blueprints and routing in Flask",
+      "taught_idx": 82,
+      "learned_idx": 77,
+      "gap": -5
+    },
+    {
+      "concept": "Column selection",
+      "taught_idx": 54,
+      "learned_idx": 49,
+      "gap": -5
+    },
+    {
+      "concept": "Engine Creation",
+      "taught_idx": 5,
+      "learned_idx": 9,
+      "gap": 4
+    },
+    {
+      "concept": "One-to-many relationship",
+      "taught_idx": 46,
+      "learned_idx": 50,
+      "gap": 4
+    },
+    {
+      "concept": "Security in AI-Generated Code",
+      "taught_idx": 17,
+      "learned_idx": 13,
+      "gap": -4
+    },
+    {
+      "concept": "Result fetching (fetchall, fetchone)",
+      "taught_idx": 42,
+      "learned_idx": 45,
+      "gap": 3
+    },
+    {
+      "concept": "Vulnerability Mitigation",
+      "taught_idx": 18,
+      "learned_idx": 16,
+      "gap": -2
+    },
+    {
+      "concept": "Dialect",
+      "taught_idx": 10,
+      "learned_idx": 8,
+      "gap": -2
+    },
+    {
+      "concept": "MySQL",
+      "taught_idx": 9,
+      "learned_idx": 11,
+      "gap": 2
+    },
+    {
+      "concept": "Auto-increment primary key",
+      "taught_idx": 51,
+      "learned_idx": 52,
+      "gap": 1
+    },
+    {
+      "concept": "Result fetching and iteration",
+      "taught_idx": 57,
+      "learned_idx": 56,
+      "gap": -1
+    },
+    {
+      "concept": "Aggregation functions (SUM, AVG)",
+      "taught_idx": 56,
+      "learned_idx": 57,
+      "gap": 1
+    }
+  ],
+  "taught_order": [
+    "SQLAlchemy",
+    "Object-Relational Mapping (ORM)",
+    "Database Toolkit",
+    "Python Database Interaction",
+    "SQL Execution via Python",
+    "Engine Creation",
+    "Connection Strings",
+    "SQLite",
+    "PostgreSQL",
+    "MySQL",
+    "Dialect",
+    "Session Management",
+    "Commit and Transaction Handling",
+    "Raw SQL vs ORM",
+    "Data Persistence",
+    "Debugging with Echo",
+    "Pandas Integration",
+    "Security in AI-Generated Code",
+    "Vulnerability Mitigation",
+    "GitHub Copilot",
+    "LLM Code Generation",
+    "Flask",
+    "FastAPI",
+    "Django ORM Replacement",
+    "SQLAlchemy Core",
+    "Object Relational Mapper (ORM)",
+    "Metadata object",
+    "Declarative base",
+    "Table definition",
+    "Column definition",
+    "Data types (Integer, String)",
+    "Primary key constraint",
+    "Nullable constraint",
+    "Engine and connection string",
+    "Dialect (e.g., psycopg2)",
+    "Database abstraction",
+    "Insert statement",
+    "Select statement",
+    "Update statement",
+    "Delete statement",
+    "Prepared statements",
+    "Transaction commit",
+    "Result fetching (fetchall, fetchone)",
+    "SQL generation from Python",
+    "Primary key",
+    "Foreign key constraint",
+    "One-to-many relationship",
+    "Many-to-many relationship via association table",
+    "One-to-one relationship",
+    "Insert statements",
+    "Commit transaction",
+    "Auto-increment primary key",
+    "Join operations (inner join, outer join, left join)",
+    "Select statement construction",
+    "Column selection",
+    "Group by clause",
+    "Aggregation functions (SUM, AVG)",
+    "Result fetching and iteration",
+    "Database schema design principles",
+    "Data integrity constraints",
+    "SQL GROUP BY clause",
+    "HAVING clause",
+    "Declarative base in SQLAlchemy",
+    "Session management in SQLAlchemy",
+    "Relationship mapping between tables",
+    "Foreign key constraints",
+    "Automatic primary key generation",
+    "Session flush operation",
+    "Querying with session.query",
+    "Attribute access for related objects",
+    "CRUD operations via ORM",
+    "SQLAlchemy library",
+    "Querying with filter and where clauses",
+    "Retrieving all records with .all()",
+    "Deleting records with .delete()",
+    "Updating records with .update()",
+    "Session management (commit, close)",
+    "Joins between tables",
+    "Grouping and aggregation with func",
+    "Having clause for aggregated filters",
+    "Pandas integration (read_sql, to_sql)",
+    "Flask-SQLAlchemy wrapper",
+    "Blueprints and routing in Flask",
+    "Pagination of query results",
+    "Database connection via engine",
+    "CRUD operations (Create, Read, Update, Delete)",
+    "Data modeling with classes and columns",
+    "Representation (__repr__) of ORM objects",
+    "Using SQLAlchemy with other frameworks (FastAPI, Django)"
+  ],
+  "learned_order": [
+    "CRUD operations (Create, Read, Update, Delete)",
+    "Data Persistence",
+    "Data modeling with classes and columns",
+    "Data types (Integer, String)",
+    "Database abstraction",
+    "Database connection via engine",
+    "Database schema design principles",
+    "Debugging with Echo",
+    "Dialect",
+    "Engine Creation",
+    "Joins between tables",
+    "MySQL",
+    "Relationship mapping between tables",
+    "Security in AI-Generated Code",
+    "Select statement",
+    "Session flush operation",
+    "Vulnerability Mitigation",
+    "Metadata object",
+    "Declarative base",
+    "Nullable constraint",
+    "Updating records with .update()",
+    "Engine and connection string",
+    "Table definition",
+    "Primary key",
+    "Data integrity constraints",
+    "Querying with filter and where clauses",
+    "Pandas integration (read_sql, to_sql)",
+    "PostgreSQL",
+    "FastAPI",
+    "Attribute access for related objects",
+    "LLM Code Generation",
+    "Prepared statements",
+    "Group by clause",
+    "Session management (commit, close)",
+    "Deleting records with .delete()",
+    "Connection Strings",
+    "Column definition",
+    "Many-to-many relationship via association table",
+    "Primary key constraint",
+    "Automatic primary key generation",
+    "Pandas Integration",
+    "Raw SQL vs ORM",
+    "GitHub Copilot",
+    "Dialect (e.g., psycopg2)",
+    "Insert statement",
+    "Result fetching (fetchall, fetchone)",
+    "Join operations (inner join, outer join, left join)",
+    "HAVING clause",
+    "Retrieving all records with .all()",
+    "Column selection",
+    "One-to-many relationship",
+    "Foreign key constraint",
+    "Auto-increment primary key",
+    "Object Relational Mapper (ORM)",
+    "SQLite",
+    "Update statement",
+    "Result fetching and iteration",
+    "Aggregation functions (SUM, AVG)",
+    "Having clause for aggregated filters",
+    "Pagination of query results",
+    "CRUD operations via ORM",
+    "Representation (__repr__) of ORM objects",
+    "Database Toolkit",
+    "Delete statement",
+    "Grouping and aggregation with func",
+    "Python Database Interaction",
+    "Session Management",
+    "Commit and Transaction Handling",
+    "SQL generation from Python",
+    "SQL Execution via Python",
+    "SQLAlchemy",
+    "Flask",
+    "Django ORM Replacement",
+    "Declarative base in SQLAlchemy",
+    "Session management in SQLAlchemy",
+    "Flask-SQLAlchemy wrapper",
+    "Querying with session.query",
+    "Blueprints and routing in Flask",
+    "Using SQLAlchemy with other frameworks (FastAPI, Django)"
+  ]
+}
