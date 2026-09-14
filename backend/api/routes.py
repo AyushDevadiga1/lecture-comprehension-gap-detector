@@ -48,6 +48,7 @@ from backend.models.db import (
 )
 from backend.pipeline.build_graph import ConceptGraph
 from backend.pipeline.extract_concepts import extract_spoken_concepts
+from backend.pipeline.mcq_gen import generate_mcq, local_context
 from backend.pipeline.quiz import (
     make_mcq,
     select_remediation_sequence,
@@ -542,12 +543,13 @@ def _build_course_graph_worker(course_id: str) -> None:
 def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> QuizOut:
     """Build a graded MCQ quiz from a course's extracted concepts.
 
-    Each question (Stage 6b) quotes the lecture sentence that describes the
-    concept as its stem and uses other concepts' descriptions as distractors
-    — an option only sounds right if the student actually knows the taught
-    content. The ground-truth option is stored beside the question, and Grading
-    happens server-side on submit (the probe/self-grade mode of Phase 6 is
-    kept for courses that have no transcript evidence yet).
+    Each question (Stage 6b/6c) is written by the cached LLM from the
+    transcript passage where the concept is taught — a real definition plus
+    three plausible-but-wrong distractors — falling back to the evidence
+    sentence (another concept's spoken description) on any LLM miss. The
+    ground-truth option is stored beside the question, and grading happens
+    server-side on submit (the probe/self-grade mode of Phase 6 is kept for
+    courses that have no transcript evidence yet).
     """
     with SessionLocal() as db:
         concepts = (
@@ -587,15 +589,29 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
     except HTTPException:
         pass
 
-    with SessionLocal() as db:
-        db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
-        new_ids = []
-        for i, name in enumerate(names):
+    # Stage 6c: prefer a cached LLM-written MCQ (real definitions + plausible
+    # distractors) over the evidence sentence. Network calls happen outside any
+    # DB session; any miss falls back to the pure evidence path, so LLM
+    # generation can only upgrade a quiz, never break it.
+    plan: dict = {}
+    for name in names:
+        q = None
+        ctx = local_context(segments, by_name.get(name))
+        if ctx:
+            q = generate_mcq(name, ctx)
+        if not q:
             q = make_mcq(
                 name,
                 evidence[name],
                 [(o, evidence[o]) for o in names if o != name],
             )
+        plan[name] = q
+
+    with SessionLocal() as db:
+        db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
+        new_ids = []
+        for i, name in enumerate(names):
+            q = plan[name]
             item = ConceptItem(
                 course_id=course_id,
                 concept=name,

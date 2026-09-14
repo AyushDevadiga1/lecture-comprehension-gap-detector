@@ -46,6 +46,9 @@ def api(monkeypatch):
     models.Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine, expire_on_commit=False)
     monkeypatch.setattr(R, "SessionLocal", Session)
+    # quiz creation must not hit the real cached LLM in this suite — the
+    # Stage 6c LLM path is exercised by its own targeted test (which re-patches).
+    monkeypatch.setattr(R, "generate_mcq", lambda *a, **k: None)
     return TestClient(app), Session
 
 
@@ -342,6 +345,35 @@ def test_create_quiz_dedupes_shared_evidence(api, monkeypatch):
     second = by_name["Second"]
     assert "Second" in second["options"]
     assert shared not in second["options"]
+
+
+def test_create_quiz_uses_llm_mcq_when_available(api, monkeypatch):
+    client, Session = api
+    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(
+        R, "generate_mcq",
+        lambda name, ctx: {
+            "question": f"Which best describes '{name}' as taught?",
+            "options": [f"{name} definition", "wrong one", "wrong two", "wrong three"],
+            "answer": f"{name} definition",
+        },
+    )
+    lid = _add_lecture(Session, course_id="ml3", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml3", lecture_id=lid, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.2,
+                                       end_s=0.8, text="the A concept is alpha"))
+        s.add(models.GraphNode(course_id="ml3", name="A"))
+        s.commit()
+
+    q = client.post("/quizzes",
+                    json={"course_id": "ml3", "student_id": "s"}).json()
+    first = q["questions"][0]
+    # the server never leaks the answer key; verify only the question + options
+    assert first["question"] == "Which best describes 'A' as taught?"
+    assert "A definition" in first["options"]
+    assert len(first["options"]) == 4
 
 
 def test_quiz_submit_unknown_question_404(api):
