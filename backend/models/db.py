@@ -178,7 +178,9 @@ class Clip(Base):
 class ConceptItem(Base):
     """A quiz question targeting one concept of one course (Phase 6).
 
-    Free-text question + optional distractors. `order` is the suggested
+    The question is a graded MCQ (Stage 6b): `question` is the stem, the
+    distractor columns are the wrong options, and `answer` is the ground-truth
+    option text so the server grades the submission. `order` is the suggested
     concept order within the quiz (from the course's learner order).
     """
 
@@ -191,6 +193,7 @@ class ConceptItem(Base):
     distractor_a = Column(String, nullable=True)
     distractor_b = Column(String, nullable=True)
     distractor_c = Column(String, nullable=True)
+    answer = Column(Text, nullable=True)
     order = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
@@ -219,6 +222,27 @@ class QuizResponse(Base):
     question = relationship("ConceptItem")
 
 
+def _migrate_schema() -> None:
+    """Lightweight additive migrations for DBs created by older code.
+
+    create_all() does not alter existing tables, so columns added to the
+    models need an explicit ALTER TABLE on live databases. Idempotent.
+    """
+    from sqlalchemy import inspect, text
+
+    try:
+        insp = inspect(engine)
+        existing = {c["name"] for c in insp.get_columns("quiz_questions")}
+    except Exception:
+        existing = set()
+    if "answer" not in {c.name for c in ConceptItem.__table__.columns}:
+        ConceptItem.__table__.append_column(Column("answer", Text, nullable=True))
+    if existing and "answer" not in existing:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE quiz_questions ADD COLUMN answer TEXT"))
+
+
 def init_db() -> None:
     DEFAULT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _migrate_schema()
     Base.metadata.create_all(bind=engine)

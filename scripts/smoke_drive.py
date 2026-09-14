@@ -7,6 +7,7 @@ st.video(remediation clip) path resolving to a real, movable file.
 """
 
 import os
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -50,8 +51,9 @@ if graph.get("topological_order"):
     html = dag_html(graph)
     names = graph["topological_order"][:3]
     check("dag html contains learner-order concepts", all(n in html for n in names))
-    check("dag html self-contained (vis inlined)", "vis-network" in html
-          and "<script src=" not in html)
+    check("dag html loads vis-network from CDN (small page)", "vis-network" in html
+          and "https://cdnjs.cloudflare.com/ajax/libs/vis-network" in html
+          and len(html) < 60_000)
 else:
     check("dag html renders for seeded course", False, "smoke course has no graph")
 
@@ -66,12 +68,24 @@ print("\n== 4. submit quiz (UI: POST /quizzes/submit with mixed answers) ==")
 answers = []
 # fail 'Prediction', 'Multiple Linear Regression', 'Model Coefficients' on purpose
 fail_these = {"Prediction", "Multiple Linear Regression", "Model Coefficients"}
+# answers are graded server-side; the driver reads the answer key from the
+# smoke DB to emulate a student who knows the material (and deliberately
+# misses `fail_these`), exactly like scripts/sample_run.py.
+with sqlite3.connect("data/smoke_lecgap.db") as con:
+    answer_key = dict(con.execute("SELECT id, answer FROM quiz_questions"))
 for q in qs:
-    correct = q["concept"] not in fail_these
+    wrong = q["concept"] in fail_these
+    key = answer_key.get(q["id"])
+    opts = q.get("options") or []
+    if key and wrong:
+        pick = next((o for o in opts if o != key), (opts[-1] if opts else "x"))
+    elif key:
+        pick = key
+    else:
+        pick = opts[0] if opts else "x"
     answers.append({
         "question_id": q["id"],
-        "selected": "correct" if correct else "incorrect",
-        "correct": correct,
+        "selected": pick,
         "latency_s": 2.0,
     })
 r = client.post("/quizzes/submit",

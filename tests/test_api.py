@@ -277,6 +277,11 @@ def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
                              source="spoken", start_s=0.0, end_s=1.0))
         s.add(models.Concept(course_id="ml1", lecture_id=lid, name="B",
                              source="spoken", start_s=1.0, end_s=2.0))
+        # spoken evidence the MCQ machinery turns into graded options
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.2,
+                                       end_s=0.8, text="the A concept is alpha"))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=1, start_s=1.2,
+                                       end_s=1.8, text="the B concept is beta"))
         s.add(models.GraphNode(course_id="ml1", name="A"))
         s.add(models.GraphNode(course_id="ml1", name="B"))
         s.add(models.GraphEdge(course_id="ml1", source="A", target="B",
@@ -288,15 +293,21 @@ def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
     qs = quiz.json()["questions"]
     ids = {q["concept"]: q["id"] for q in qs}
     assert set(ids) == {"A", "B"}
+    # Stage 6b: questions are graded MCQs with real option sets
+    by_name = {q["concept"]: q for q in qs}
+    assert "the A concept is alpha" in by_name["A"]["options"]
+    assert "the B concept is beta" in by_name["B"]["options"]
 
     # student fails B -> remediation should list A (upstream) then B
+    fail_opt = next(o for o in by_name["B"]["options"]
+                    if o != "the B concept is beta")
     submit = client.post(
         "/quizzes/submit",
         json={
             "course_id": "ml1", "student_id": "s1",
             "answers": [
-                {"question_id": ids["A"], "selected": "correct", "correct": True},
-                {"question_id": ids["B"], "selected": "incorrect", "correct": False},
+                {"question_id": ids["A"], "selected": "the A concept is alpha"},
+                {"question_id": ids["B"], "selected": fail_opt},
             ],
         },
     )
@@ -305,6 +316,32 @@ def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
     assert body["score"] == 1 and body["total"] == 2
     rem = [(x["concept"], x["failed"]) for x in body["remediation"]]
     assert rem == [("A", False), ("B", True)]
+
+
+def test_create_quiz_dedupes_shared_evidence(api, monkeypatch):
+    client, Session = api
+    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    lid = _add_lecture(Session, course_id="ml2", status="ready")
+    with Session() as s:
+        for (name, st, en) in (("First", 0.0, 2.0), ("Second", 2.0, 4.0)):
+            s.add(models.Concept(course_id="ml2", lecture_id=lid, name=name,
+                                 source="spoken", start_s=st, end_s=en))
+        # only one transcript sentence exists for BOTH concepts
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.0,
+                                       end_s=4.0,
+                                       text="the single shared concept sentence"))
+        s.commit()
+
+    qs = client.post("/quizzes",
+                     json={"course_id": "ml2", "student_id": "s"}).json()["questions"]
+    by_name = {q["concept"]: q for q in qs}
+    shared = "the single shared concept sentence"
+    # the shared sentence is used as an answer exactly once; the other concept
+    # falls back to a distinct recognition question instead of duplicating it
+    assert sum(shared in q["options"] for q in qs) == 1
+    second = by_name["Second"]
+    assert "Second" in second["options"]
+    assert shared not in second["options"]
 
 
 def test_quiz_submit_unknown_question_404(api):

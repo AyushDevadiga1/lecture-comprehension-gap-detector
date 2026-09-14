@@ -31,6 +31,7 @@ import html
 import json
 import os
 import shutil
+import sqlite3
 import sys
 import time
 from datetime import datetime
@@ -217,13 +218,26 @@ def main() -> None:
     print(f"STAGE 6 quiz: {len(quiz['questions'])} questions")
 
     # ---- Stage 6b: submit answers (fail every 3rd question) + remediation ----
+    # The driver simulates a student who actually knows the taught content: it
+    # reads the ground-truth answer key from the run's own DB, answers those
+    # correctly, and deliberately picks a wrong option on every 3rd question.
+    # (The API never exposes the answer to real clients — grading is server-side.)
+    with sqlite3.connect(str(out / "lecgap.db")) as con:
+        answer_key = dict(con.execute("SELECT id, answer FROM quiz_questions"))
     answers = []
     for i, q in enumerate(quiz["questions"]):
         wrong = i % 3 == 0
+        key = answer_key.get(q["id"])
+        opts = q.get("options") or []
+        if key and wrong:
+            pick = next((o for o in opts if o != key), opts[-1] if opts else "x")
+        elif key:
+            pick = key
+        else:
+            pick = opts[0] if opts else "x"
         answers.append({
             "question_id": q["id"],
-            "selected": "incorrect" if wrong else "correct",
-            "correct": not wrong,
+            "selected": pick,
             "latency_s": 2.0,
         })
     r = client.post("/quizzes/submit",

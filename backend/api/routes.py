@@ -17,6 +17,7 @@ Current endpoints:
     GET  /courses/{id}/stats  — confusion heatmap + divergence (Stage 8)
 """
 
+import random
 import re
 import shutil
 from datetime import datetime
@@ -47,7 +48,11 @@ from backend.models.db import (
 )
 from backend.pipeline.build_graph import ConceptGraph
 from backend.pipeline.extract_concepts import extract_spoken_concepts
-from backend.pipeline.quiz import select_remediation_sequence
+from backend.pipeline.quiz import (
+    make_mcq,
+    select_remediation_sequence,
+    supporting_sentence,
+)
 from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
 
@@ -135,11 +140,10 @@ class ClipBatchOut(BaseModel):
 
 
 class QuizQuestionOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
     concept: str
     question: str
+    options: List[str] = []
     distractor_a: Optional[str] = None
     distractor_b: Optional[str] = None
     distractor_c: Optional[str] = None
@@ -155,7 +159,7 @@ class QuizOut(BaseModel):
 class QuizAnswerIn(BaseModel):
     question_id: int
     selected: Optional[str] = None
-    correct: bool
+    correct: Optional[bool] = None
     latency_s: Optional[float] = None
 
 
@@ -536,11 +540,14 @@ def _build_course_graph_worker(course_id: str) -> None:
 
 @router.post("/quizzes", response_model=QuizOut, status_code=201)
 def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> QuizOut:
-    """Build a quiz from a course's extracted concepts.
+    """Build a graded MCQ quiz from a course's extracted concepts.
 
-    Questions are generated from the concepts (a simple probe per concept);
-    future work replaces the probe template with an LLM-generated question
-    per concept (no extra tables needed — ConceptItem already holds them).
+    Each question (Stage 6b) quotes the lecture sentence that describes the
+    concept as its stem and uses other concepts' descriptions as distractors
+    — an option only sounds right if the student actually knows the taught
+    content. The ground-truth option is stored beside the question, and Grading
+    happens server-side on submit (the probe/self-grade mode of Phase 6 is
+    kept for courses that have no transcript evidence yet).
     """
     with SessionLocal() as db:
         concepts = (
@@ -552,8 +559,27 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
         if not concepts:
             raise HTTPException(status_code=404, detail="No concepts for course")
         names = sorted({c.name for c in concepts})
+        by_name = {c.name: c for c in concepts}
 
-    # learners order from the graph if present, else alphabetic
+        segments = _lecture_segments(db, course_id)
+        # one distinct evidence sentence per concept: once a sentence is used
+        # as one concept's answer it is skipped for the rest, so concepts whose
+        # names never appear verbatim don't all collapse onto one "longest"
+        # segment (that made answers identical across questions).
+        used: set = set()
+        evidence: dict = {}
+        for name in names:
+            ev = supporting_sentence(
+                name, _in_range(segments, by_name[name], margin_s=0.5),
+                skip=used,
+            )
+            if ev is None:
+                ev = supporting_sentence(name, segments, skip=used)
+            if ev is not None:
+                used.add(ev)
+            evidence[name] = ev
+
+    # learner order from the graph if present, else alphabetic
     try:
         graph = get_course_graph(course_id)
         order = graph.topological_order
@@ -565,23 +591,86 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
         db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
         new_ids = []
         for i, name in enumerate(names):
+            q = make_mcq(
+                name,
+                evidence[name],
+                [(o, evidence[o]) for o in names if o != name],
+            )
             item = ConceptItem(
                 course_id=course_id,
                 concept=name,
-                question=(f"Which statement about '{name}' is correct?"),
+                question=q["question"],
+                answer=q["answer"],
                 order=i,
             )
+            distractors = [o for o in q["options"] if o != q["answer"]]
+            distractors += [None] * (3 - len(distractors))
+            item.distractor_a, item.distractor_b, item.distractor_c = distractors[:3]
             db.add(item)
             db.flush()
             new_ids.append(item.id)
         db.commit()
         rows = db.query(ConceptItem).filter(ConceptItem.id.in_(new_ids)).all()
 
+    rows.sort(key=lambda r: r.order)
     return QuizOut(
         quiz_id=rows[0].id if rows else 0,
         course_id=course_id,
         student_id=student_id,
-        questions=[QuizQuestionOut.model_validate(r) for r in sorted(rows, key=lambda r: r.order)],
+        questions=[_question_out(r) for r in rows],
+    )
+
+
+def _lecture_segments(db, course_id: str) -> List[TranscriptSegment]:
+    """All transcript segments of a course's lectures, time-ordered."""
+    lect_ids = [
+        row[0]
+        for row in db.query(Lecture.id).filter(Lecture.course_id == course_id).all()
+    ]
+    if not lect_ids:
+        return []
+    return (
+        db.query(TranscriptSegment)
+        .filter(TranscriptSegment.lecture_id.in_(lect_ids))
+        .order_by(TranscriptSegment.start_s)
+        .all()
+    )
+
+
+def _in_range(
+    segments: List[TranscriptSegment],
+    concept: Concept,
+    margin_s: float = 0.5,
+) -> List[TranscriptSegment]:
+    """Segments that fall inside a concept's spoken window (+ margin)."""
+    if concept.start_s is None:
+        return segments
+    return [
+        s
+        for s in segments
+        if s.start_s >= concept.start_s - margin_s
+        and s.end_s <= concept.end_s + margin_s
+    ]
+
+
+def _question_out(item: ConceptItem) -> QuizQuestionOut:
+    """Present a stored question with its options in shuffled order."""
+    options = [item.answer] if item.answer else []
+    options += [
+        d
+        for d in (item.distractor_a, item.distractor_b, item.distractor_c)
+        if d and d != item.answer
+    ]
+    rnd = random.Random(f"{item.id}:{item.concept}")
+    rnd.shuffle(options)
+    return QuizQuestionOut(
+        id=item.id,
+        concept=item.concept,
+        question=item.question,
+        options=options,
+        distractor_a=item.distractor_a,
+        distractor_b=item.distractor_b,
+        distractor_c=item.distractor_c,
     )
 
 
@@ -599,6 +688,15 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
             if quest is None:
                 raise HTTPException(status_code=404,
                                     detail=f"Question {a.question_id} not found")
+            # server-side grading: the ground-truth option is stored with the
+            # question. Legacy probe answers (self-reported `correct`, no
+            # answer key) still grade via their `correct` flag.
+            if quest.answer is not None:
+                correct = a.selected == quest.answer
+            elif a.correct is not None:
+                correct = bool(a.correct)
+            else:
+                correct = False
             prev = (
                 db.query(QuizResponse)
                 .filter(
@@ -615,7 +713,7 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
                     question_id=a.question_id,
                     concept=quest.concept,
                     selected=a.selected,
-                    correct=int(a.correct),
+                    correct=int(correct),
                     latency_s=a.latency_s,
                     attempt=prev + 1,
                 )

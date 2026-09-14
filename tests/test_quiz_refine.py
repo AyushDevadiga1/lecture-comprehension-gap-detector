@@ -62,6 +62,87 @@ def test_order_quiz_passthrough():
     assert order_quiz(["A", "B", "C"]) == ["A", "B", "C"]
 
 
+# ---------------------------------------------------- MCQ generation (Stage 6b)
+
+def test_make_mcq_uses_lecture_evidence_as_answer():
+    from backend.pipeline.quiz import make_mcq
+
+    evidence = "the gradient shows the slope of the loss surface"
+    q = make_mcq(
+        "gradient",
+        evidence,
+        pool=[("overfit", "the model memorizes the training set"),
+              ("dropout", "randomly silences some neurons"),
+              ("epoch", "one full pass over the data")],
+        rng=__import__("random").Random(1),
+    )
+    assert "gradient" in q["question"]
+    assert q["answer"] == evidence
+    assert len(q["options"]) == 4
+    assert q["answer"] in q["options"]
+    # distractors come from other concepts' spoken evidence, not the answer
+    assert "gradient" not in " ".join(o for o in q["options"] if o != evidence)
+
+
+def test_make_mcq_deterministic_given_seed():
+    from random import Random
+
+    from backend.pipeline.quiz import make_mcq
+
+    kwargs = dict(
+        concept="c", evidence="the definition of c",
+        pool=[("d", "the definition of d"), ("e", "the definition of e")],
+    )
+    a = make_mcq(**kwargs, rng=Random(42))
+    b = make_mcq(**kwargs, rng=Random(42))
+    assert a["options"] == b["options"]
+
+
+def test_make_mcq_fallback_keeps_question_gradable():
+    from backend.pipeline.quiz import make_mcq
+
+    q = make_mcq("attention", None, pool=[("memory", None), ("rnn", None)])
+    assert q["answer"] == "attention"
+    assert q["answer"] in q["options"]
+    assert len(q["options"]) >= 2
+
+
+def test_supporting_sentence_prefers_mentions_then_longest():
+    from backend.pipeline.quiz import supporting_sentence
+
+    segs = [
+        {"start_s": 0, "end_s": 10, "text": "a very long passage that only discusses "
+          "the training loop and never once mentions the word drop out okay"},
+        {"start_s": 10, "end_s": 12, "text": "dropout randomly silences neurons"},
+    ]
+    assert supporting_sentence("dropout", segs) == "dropout randomly silences neurons"
+    # no mention anywhere -> the longest segment is used as fallback evidence
+    assert supporting_sentence("lstm", segs) == segs[0]["text"]
+
+
+def test_supporting_sentence_skip_avoids_reusing_evidence():
+    from backend.pipeline.quiz import supporting_sentence
+
+    segs = [
+        {"start_s": 0, "end_s": 10, "text": "the shared concept definition"},
+        {"start_s": 10, "end_s": 20, "text": "a different segment entirely"},
+    ]
+    first = supporting_sentence("alpha", segs)
+    assert first == "the shared concept definition"
+    # the "longest" fallback must not hand the same sentence to the next concept
+    second = supporting_sentence("beta", segs, skip={first})
+    assert second != first
+
+
+def test_make_mcq_fallback_uses_concept_names_as_options():
+    from backend.pipeline.quiz import make_mcq
+
+    q = make_mcq("attention", None, pool=[("memory", None), ("rnn", None)])
+    assert q["answer"] == "attention"
+    assert set(q["options"]) == {"attention", "memory", "rnn",
+                                 "It has no effect on the outcome"}
+
+
 # --------------------------------------------------------- refinement (Stage 7)
 
 def test_run_refinement_round_reinforces_co_failures():
