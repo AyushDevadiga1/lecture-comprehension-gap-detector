@@ -108,15 +108,15 @@ with tab_student:
         with st.form("answers_form"):
             answers = []
             for q in quiz["questions"]:
+                options = q.get("options") or ["correct", "incorrect"]
                 ans = st.radio(
                     f"{q['question']}",
-                    options=["correct", "incorrect"],
+                    options=options,
                     key=f"q{q['id']}",
-                    horizontal=True,
                 )
                 answers.append(
                     {"question_id": q["id"], "selected": ans,
-                     "correct": ans == "correct", "latency_s": 2.0}
+                     "latency_s": 2.0}
                 )
             done = st.form_submit_button("Submit answers")
         if done:
@@ -186,3 +186,28 @@ with tab_faculty:
                     st.write(f"{i}. {name}")
         elif graph:
             st.info("No nodes yet — run 'Extract concepts + build graph' from the Student tab.")
+
+    st.divider()
+    st.subheader("Lecture timeline & coverage")
+    st.caption("How much of the spoken lecture the extracted concepts actually pin "
+               "down (green = covered window), with each concept's quiz-answer "
+               "evidence sentence.")
+    with st.form("timeline_form"):
+        t_course = _pick_course(default="ml1")
+        show_tl = st.form_submit_button("Load timeline")
+    if show_tl and t_course:
+        lectures = _get("/lectures")
+        ready = [l for l in lectures if l.get("course_id") == t_course.strip()
+                 and l.get("status") == "ready"]
+        if not ready:
+            st.info(f"No ready lecture for course '{t_course.strip()}' yet.")
+        else:
+            detail = _get(f"/lectures/{ready[0]['id']}")
+            from frontend.render import lecture_html
+            components.html(
+                lecture_html(detail.get("segments", []),
+                             detail.get("concepts", []),
+                             lecture_title=f"{t_course.strip()} — {detail.get('title', '')}"),
+                height=520 + 24 * len(detail.get("concepts", [])),
+                scrolling=True,
+            )
