@@ -14,7 +14,11 @@ from backend.pipeline import mcq_gen
 from backend.pipeline.llm import LLMResult
 
 _GOOD = '{"question": "What is attention?", "answer": "a learned weight over inputs", ' \
-        '"distractors": ["random noise", "a loss function", "an optimizer"]}'
+        '"distractors": ["random noise", "a loss function", "an optimizer"], ' \
+        '"explanation": "attention weights the inputs by relevance, so it is a learned ratio", ' \
+        '"rationales": ["noise is not a learned structure", ' \
+                       '"a loss is what you optimize, not what attention computes", ' \
+                       '"an optimizer updates the weights, it is not the attention mechanism"]}'
 
 
 def _result(text):
@@ -74,6 +78,27 @@ def test_parse_rejects_non_json():
     assert mcq_gen._parse_mcq(None) is None
 
 
+def test_parse_skips_thinking_prefix():
+    text = (
+        " thinking\nLet me reason about distractors first. {A noisy brace here.\n"
+        '{\n'
+        '  "question": "Which best describes normalization?",\n'
+        '  "answer": "It removes redundant columns.",\n'
+        '  "distractors": ["It duplicates rows.", "It drops all keys.", '
+        '"It indexes everything."],\n'
+        '  "explanation": "Normalization eliminates redundancy.",\n'
+        '  "rationales": ["Duplication is the opposite.", "Keys stay intact.", '
+        '"Indexing is separate."]\n'
+        "}"
+    )
+    q = mcq_gen._parse_mcq(text)
+    assert q is not None
+    assert q["answer"] == "It removes redundant columns."
+    assert len(q["options"]) == 4
+    assert q["explanation"]
+    assert len(q["rationale"]) == 3
+
+
 def test_parse_rejects_missing_fields_or_few_distractors():
     assert mcq_gen._parse_mcq('{"answer": "x", "distractors": ["a", "b", "c"]}') is None
     assert mcq_gen._parse_mcq('{"question": "q", "answer": "x", "distractors": ["a", "b"]}') is None
@@ -84,6 +109,25 @@ def test_parse_dedupes_and_drops_answer_lookalikes():
     raw = '{"question": "q", "answer": "the truth", ' \
           '"distractors": ["a", "the truth", "a", "b"]}'
     assert mcq_gen._parse_mcq(raw) is None  # only 2 distinct usable distractors
+
+
+def test_parse_keeps_explanation_and_rationales_aligned():
+    q = mcq_gen._parse_mcq(_GOOD)
+    assert q["explanation"] == "attention weights the inputs by relevance, " \
+                              "so it is a learned ratio"
+    rat = q["rationale"]
+    assert rat["random noise"] == "noise is not a learned structure"
+    assert rat["a loss function"] == "a loss is what you optimize, not what attention computes"
+    # rationales are keyed by distractor text -> dedup/short lists can't misalign
+    raw = ('{"question": "q", "answer": "truth", "distractors": ["a", "b", "c"], '
+           '"rationales": ["ra"]}')
+    assert mcq_gen._parse_mcq(raw)["rationale"] == {"a": "ra"}
+
+
+def test_parse_ignores_explanation_when_absent():
+    raw = ('{"question": "q", "answer": "truth", "distractors": ["a", "b", "c"]}')
+    q = mcq_gen._parse_mcq(raw)
+    assert q["explanation"] is None and q["rationale"] == {}
 
 
 # --------------------------------------------------------------- generate_mcq

@@ -319,6 +319,11 @@ def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
     assert body["score"] == 1 and body["total"] == 2
     rem = [(x["concept"], x["failed"]) for x in body["remediation"]]
     assert rem == [("A", False), ("B", True)]
+    # per-question feedback is returned (evidence-based fallbacks carry no
+    # explanation/rationale, but the correct/answer fields always populate)
+    by_fb = {f["concept"]: f for f in body["feedback"]}
+    assert by_fb["A"]["correct"] is True and by_fb["A"]["answer"] == "the A concept is alpha"
+    assert by_fb["B"]["correct"] is False
 
 
 def test_create_quiz_dedupes_shared_evidence(api, monkeypatch):
@@ -356,6 +361,10 @@ def test_create_quiz_uses_llm_mcq_when_available(api, monkeypatch):
             "question": f"Which best describes '{name}' as taught?",
             "options": [f"{name} definition", "wrong one", "wrong two", "wrong three"],
             "answer": f"{name} definition",
+            "explanation": f"the lecture defines {name} as its data model",
+            "rationale": {"wrong one": "that is not definitional of it",
+                          "wrong two": "that contradicts the lecture",
+                          "wrong three": "that is a different concept"},
         },
     )
     lid = _add_lecture(Session, course_id="ml3", status="ready")
@@ -370,10 +379,26 @@ def test_create_quiz_uses_llm_mcq_when_available(api, monkeypatch):
     q = client.post("/quizzes",
                     json={"course_id": "ml3", "student_id": "s"}).json()
     first = q["questions"][0]
-    # the server never leaks the answer key; verify only the question + options
+    # the server never leaks the answer key or the explanation via GET /quizzes
     assert first["question"] == "Which best describes 'A' as taught?"
     assert "A definition" in first["options"]
     assert len(first["options"]) == 4
+    assert all(k not in first for k in ("answer", "explanation"))
+
+    wrong_pick = next(o for o in first["options"] if o != "A definition")
+    rationales = {"wrong one": "that is not definitional of it",
+                  "wrong two": "that contradicts the lecture",
+                  "wrong three": "that is a different concept"}
+    sub = client.post(
+        "/quizzes/submit",
+        json={"course_id": "ml3", "student_id": "s",
+              "answers": [{"question_id": first["id"], "selected": wrong_pick}]},
+    ).json()
+    fb = sub["feedback"][0]
+    assert fb["correct"] is False
+    assert fb["answer"] == "A definition"
+    assert fb["explanation"] == "the lecture defines A as its data model"
+    assert fb["rationale"] == rationales[wrong_pick]
 
 
 def test_quiz_submit_unknown_question_404(api):

@@ -178,9 +178,11 @@ class Clip(Base):
 class ConceptItem(Base):
     """A quiz question targeting one concept of one course (Phase 6).
 
-    The question is a graded MCQ (Stage 6b): `question` is the stem, the
+    The question is a graded MCQ (Stage 6b/6c): `question` is the stem, the
     distractor columns are the wrong options, and `answer` is the ground-truth
-    option text so the server grades the submission. `order` is the suggested
+    option text so the server grades the submission. `explanation` (+ matching
+    rationale_* columns) is the post-submit feedback shown to students: why the
+    answer is correct and why each distractor is wrong. `order` is the suggested
     concept order within the quiz (from the course's learner order).
     """
 
@@ -194,6 +196,10 @@ class ConceptItem(Base):
     distractor_b = Column(String, nullable=True)
     distractor_c = Column(String, nullable=True)
     answer = Column(Text, nullable=True)
+    explanation = Column(Text, nullable=True)
+    rationale_a = Column(String, nullable=True)
+    rationale_b = Column(String, nullable=True)
+    rationale_c = Column(String, nullable=True)
     order = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
@@ -235,11 +241,23 @@ def _migrate_schema() -> None:
         existing = {c["name"] for c in insp.get_columns("quiz_questions")}
     except Exception:
         existing = set()
-    if "answer" not in {c.name for c in ConceptItem.__table__.columns}:
-        ConceptItem.__table__.append_column(Column("answer", Text, nullable=True))
-    if existing and "answer" not in existing:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE quiz_questions ADD COLUMN answer TEXT"))
+
+    model_cols = {c.name for c in ConceptItem.__table__.columns}
+    new_columns = [
+        ("answer", Text, dict(nullable=True)),
+        ("explanation", Text, dict(nullable=True)),
+        ("rationale_a", String, dict(nullable=True)),
+        ("rationale_b", String, dict(nullable=True)),
+        ("rationale_c", String, dict(nullable=True)),
+    ]
+    added = False
+    with engine.begin() as conn:
+        for name, coltype, kwargs in new_columns:
+            if name not in model_cols:
+                ConceptItem.__table__.append_column(Column(name, coltype, **kwargs))
+            if existing and name not in existing:
+                conn.execute(text(f"ALTER TABLE quiz_questions ADD COLUMN {name} TEXT"))
+                added = True
 
 
 def init_db() -> None:

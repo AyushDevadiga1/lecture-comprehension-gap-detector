@@ -54,6 +54,7 @@ from backend.pipeline.quiz import (
     select_remediation_sequence,
     supporting_sentence,
 )
+from backend.pipeline.refine_timeline import refine_concept_times
 from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
 
@@ -176,12 +177,25 @@ class WatchItemOut(BaseModel):
     clip: Optional[str] = None
 
 
+class QuestionFeedbackOut(BaseModel):
+    """Per-question post-submit feedback — never disclosed by GET /quizzes."""
+
+    question_id: int
+    concept: str
+    correct: bool
+    selected: Optional[str] = None
+    answer: Optional[str] = None
+    explanation: Optional[str] = None
+    rationale: Optional[str] = None
+
+
 class QuizSubmitOut(BaseModel):
     quiz_id: int
     student_id: str
     score: int
     total: int
     remediation: List[WatchItemOut] = []
+    feedback: List[QuestionFeedbackOut] = []
 
 
 def _safe_filename(name: str) -> str:
@@ -323,6 +337,10 @@ def _extract_concepts_worker(lecture_id: int) -> None:
 
     try:
         concepts = extract_spoken_concepts(docs)
+        # Stage 2b: the extractor stamps each concept with its whole chunk's
+        # span (often minutes). Pin it down to where the concept is actually
+        # taught so Stage 5 clips stay watchable and the coverage band is honest.
+        concepts = refine_concept_times(concepts, docs)
     except Exception as exc:  # noqa: BLE001 — any failure is fine to surface
         with SessionLocal() as db:
             lecture = db.get(Lecture, lecture_id)
@@ -335,6 +353,7 @@ def _extract_concepts_worker(lecture_id: int) -> None:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
             return
+        lecture.error = None  # a success supersedes any earlier failed run
         db.query(Concept).filter(Concept.lecture_id == lecture_id).delete()
         for c in concepts:
             db.add(
@@ -618,10 +637,15 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
                 question=q["question"],
                 answer=q["answer"],
                 order=i,
+                explanation=q.get("explanation"),
             )
             distractors = [o for o in q["options"] if o != q["answer"]]
             distractors += [None] * (3 - len(distractors))
+            rationale_by_option = q.get("rationale") or {}
             item.distractor_a, item.distractor_b, item.distractor_c = distractors[:3]
+            item.rationale_a = rationale_by_option.get(distractors[0])
+            item.rationale_b = rationale_by_option.get(distractors[1])
+            item.rationale_c = rationale_by_option.get(distractors[2])
             db.add(item)
             db.flush()
             new_ids.append(item.id)
@@ -699,6 +723,7 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
     appends with `attempt` incremented per distinct question.
     """
     with SessionLocal() as db:
+        feedback = []
         for a in payload.answers:
             quest = db.get(ConceptItem, a.question_id)
             if quest is None:
@@ -713,6 +738,27 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
                 correct = bool(a.correct)
             else:
                 correct = False
+            # post-submit feedback: why the right answer is right, and if the
+            # student picked a distractor, why that specific option is wrong.
+            rationale = None
+            if not correct and quest.answer is not None:
+                for col, rat in ((quest.distractor_a, quest.rationale_a),
+                                 (quest.distractor_b, quest.rationale_b),
+                                 (quest.distractor_c, quest.rationale_c)):
+                    if a.selected == col:
+                        rationale = rat
+                        break
+            feedback.append(
+                QuestionFeedbackOut(
+                    question_id=a.question_id,
+                    concept=quest.concept,
+                    correct=correct,
+                    selected=a.selected,
+                    answer=quest.answer,
+                    explanation=quest.explanation,
+                    rationale=rationale,
+                )
+            )
             prev = (
                 db.query(QuizResponse)
                 .filter(
@@ -773,6 +819,7 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
         score=score,
         total=total,
         remediation=watch,
+        feedback=feedback,
     )
 
 

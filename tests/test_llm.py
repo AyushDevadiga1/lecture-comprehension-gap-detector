@@ -39,6 +39,29 @@ def test_cache_key_is_stable_and_input_sensitive():
     assert k1 != _cache_key("m2", "sys", "usr", 500, 0.0)
 
 
+def test_empty_completion_is_not_cached_and_is_retried(monkeypatch):
+    from backend.pipeline import llm
+
+    monkeypatch.setenv("GROQ_API_KEY", "fake-key-for-test")
+    calls = []
+
+    def fake_groq(system, user, max_tokens, temperature):
+        calls.append(user)
+        if len(calls) == 1:
+            return llm.LLMResult("", "groq", "model-x", False, 10, 0)
+        return llm.LLMResult("real-answer", "groq", "model-x", False, 10, 5)
+
+    monkeypatch.setattr(llm, "_call_groq", fake_groq)
+
+    r1 = llm.complete("sys", "hi")
+    r2 = llm.complete("sys", "hi")
+
+    assert r1.text == "real-answer"       # empty attempt transparently retried
+    assert not r1.cached
+    assert r2.cached is True              # second call served from cache -> no poison
+    assert len(calls) == 2
+
+
 def test_cache_serves_repeat_call_from_cache(monkeypatch):
     from backend.models import db as dbmod
     from backend.pipeline import llm

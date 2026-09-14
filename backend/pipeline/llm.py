@@ -31,7 +31,7 @@ GROQ_MODEL = os.getenv("LECGAP_GROQ_MODEL", "openai/gpt-oss-20b")
 OLLAMA_MODEL = os.getenv("LECGAP_OLLAMA_MODEL", "llama3.2")
 OLLAMA_BASE_URL = os.getenv("LECGAP_OLLAMA_URL", "http://127.0.0.1:11434")
 MAX_RETRIES = int(os.getenv("LECGAP_LLM_RETRIES", "2"))
-SLEEP_CAP_S = 120.0
+SLEEP_CAP_S = float(os.getenv("LECGAP_LLM_SLEEP_CAP_S", "120"))
 
 
 @dataclass
@@ -66,6 +66,10 @@ def _cache_get(key: str) -> Optional[LLMCache]:
 
 
 def _cache_put(key: str, result: LLMResult) -> None:
+    if not result.text or not result.text.strip():
+        # never persist an empty completion: it would poison the cache and
+        # every later run would replay the dead answer instead of retrying.
+        return
     with SessionLocal() as db:
         db.merge(
             LLMCache(
@@ -78,6 +82,15 @@ def _cache_put(key: str, result: LLMResult) -> None:
             )
         )
         db.commit()
+
+
+def _cache_del(key: str) -> None:
+    """Drop a cached row (used to purge poisoned empty completions)."""
+    with SessionLocal() as db:
+        row = db.get(LLMCache, key)
+        if row is not None:
+            db.delete(row)
+            db.commit()
 
 
 def _call_groq(system: str, user: str, max_tokens: int, temperature: float) -> LLMResult:
@@ -176,29 +189,36 @@ def complete(
 
     hit = _cache_get(key)
     if hit is not None:
-        return LLMResult(
-            text=hit.response_text,
-            backend=hit.backend,
-            model=hit.model,
-            cached=True,
-            prompt_tokens=hit.prompt_tokens,
-            completion_tokens=hit.completion_tokens,
-        )
+        if hit.response_text and hit.response_text.strip():
+            return LLMResult(
+                text=hit.response_text,
+                backend=hit.backend,
+                model=hit.model,
+                cached=True,
+                prompt_tokens=hit.prompt_tokens,
+                completion_tokens=hit.completion_tokens,
+            )
+        # poisoned cache row (empty completion) — drop and regenerate live
+        _cache_del(key)
 
     errors = []
-    for name, caller in (("groq", lambda: _call_groq(system, user, max_tokens, temperature)),
-                         ("ollama", lambda: _call_ollama(system, user, max_tokens, temperature))):
-        if name == "groq" and not os.getenv("GROQ_API_KEY"):
-            continue
-        if name == "ollama" and not _ollama_reachable():
-            errors.append("ollama: not reachable")
-            continue
-        try:
-            result = caller()
-            _cache_put(key, result)
-            return result
-        except Exception as exc:
-            errors.append(f"{name}: {exc}")
+    for attempt in range(3):  # a backend can return an empty completion; retry
+        for name, caller in (("groq", lambda: _call_groq(system, user, max_tokens, temperature)),
+                             ("ollama", lambda: _call_ollama(system, user, max_tokens, temperature))):
+            if name == "groq" and not os.getenv("GROQ_API_KEY"):
+                continue
+            if name == "ollama" and not _ollama_reachable():
+                errors.append("ollama: not reachable")
+                continue
+            try:
+                result = caller()
+                if not result.text or not result.text.strip():
+                    errors.append(f"{name}: empty completion")
+                    continue
+                _cache_put(key, result)
+                return result
+            except Exception as exc:
+                errors.append(f"{name}: {exc}")
 
     raise RuntimeError(
         "No LLM backend succeeded. " + ("; ".join(errors) if errors else "none configured")

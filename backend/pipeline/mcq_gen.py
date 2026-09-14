@@ -8,10 +8,14 @@ distinct segment, so on a real lecture the same filler/ads sentence becomes
 every question's distractor. Instead, an LLM reads the transcript window where
 the concept is taught (see `local_context`) and writes:
 
-    {"question": "...", "answer": "...", "distractors": ["...", "...", "..."]}
+    {"question": "...", "answer": "...", "distractors": ["...", "...", "..."],
+     "explanation": "...why the answer is right per the lecture",
+     "rationales": ["...why each distractor is wrong", "...", "..."]}
 
 * the answer is a definition that is true of the concept per the excerpt,
 * the distractors are plausible-but-wrong statements about the same concept,
+* `explanation` + per-distractor `rationales` power the submit feedback shown
+  to students (stored beside the answer; never leaked by GET /quizzes),
 * every call goes through llm.complete, so a regenerated quiz is served from
   the cache at zero cost.
 
@@ -47,6 +51,10 @@ Requirements:
 - distractors: exactly 3 statements that are PLAUSIBLE but WRONG about the
   concept. They must look like realistic quiz answers, not obviously absurd
   filler, and must not be paraphrases of the true answer.
+- explanation: 1-2 sentences grounding the correct answer in the excerpt, so
+  a student who got it wrong can learn from it.
+- rationales: exactly 3 short sentences, one per distractor (same order),
+  explaining why that distractor is wrong.
 - Keep all four options distinct and each under about 60 words.
 
 Transcript excerpt:
@@ -57,7 +65,11 @@ Respond with JSON only:
   "answer": "the correct statement about {concept}",
   "distractors": ["plausible wrong statement 1",
                   "plausible wrong statement 2",
-                  "plausible wrong statement 3"]}}
+                  "plausible wrong statement 3"],
+  "explanation": "why the answer is correct, per the excerpt",
+  "rationales": ["why distractor 1 is wrong",
+                 "why distractor 2 is wrong",
+                 "why distractor 3 is wrong"]}}
 """
 
 _SPACE_RE = re.compile(r"\s+")
@@ -145,6 +157,36 @@ def local_context(
     return " ... ".join(parts) if parts else None
 
 
+def _json_payload(text: str) -> Optional[str]:
+    """Extract the JSON object from an LLM reply.
+
+    Some models (e.g. Qwen on Groq) prefix their JSON with a `` thinking``
+    reasoning block that contains its own braces, so we prefer the *last*
+    top-level object: the model is asked for JSON only, the JSON comes last.
+    Falls back to the first braced span when the last one won't parse.
+    """
+    m = _FENCE_RE.search(text)
+    candidate = m.group(1) if m else _TRAILING_FILE_MARKERS.sub("", text)
+    if not candidate:
+        return None
+    spans = []
+    last = candidate.rfind("{")
+    if last != -1 and candidate.rfind("}") > last:
+        spans.append((last, candidate.rfind("}")))
+    first = candidate.find("{")
+    if first != -1 and first not in {s for s, _ in spans}:
+        last_close = candidate.rfind("}")
+        if last_close > first:
+            spans.append((first, last_close))
+    for start, end in spans:
+        try:
+            json.loads(candidate[start : end + 1])
+        except (ValueError, TypeError):
+            continue
+        return candidate[start : end + 1]
+    return None
+
+
 def _parse_mcq(text: Optional[str]) -> Optional[Dict]:
     """Parse the LLM's JSON answer into a make_mcq-shaped dict.
 
@@ -153,13 +195,11 @@ def _parse_mcq(text: Optional[str]) -> Optional[Dict]:
     """
     if not text or not isinstance(text, str):
         return None
-    m = _FENCE_RE.search(text)
-    payload = m.group(1) if m else _TRAILING_FILE_MARKERS.sub("", text)
-    start, end = payload.find("{"), payload.rfind("}")
-    if start == -1 or end <= start:
+    payload = _json_payload(text)
+    if not payload:
         return None
     try:
-        data = json.loads(payload[start : end + 1])
+        data = json.loads(payload)
     except (ValueError, TypeError):
         return None
     if not isinstance(data, dict):
@@ -168,21 +208,32 @@ def _parse_mcq(text: Optional[str]) -> Optional[Dict]:
     question = _clean(data.get("question"))
     answer = _clean(data.get("answer"))
     distractors = data.get("distractors")
+    rat_list = data.get("rationales")
     if not isinstance(distractors, list):
         return None
-    seen: set = set()
-    uniq = []
-    for d in distractors:
+    rat_list = rat_list if isinstance(rat_list, list) else []
+    kept, seen = [], set()
+    for i, d in enumerate(distractors):
         d = _clean(d)
-        if d and d != answer and d not in seen:
-            seen.add(d)
-            uniq.append(d)
-    if not question or not answer or len(uniq) < 3:
+        if not d or d == answer or d in seen:
+            continue
+        seen.add(d)
+        rat = _clean(rat_list[i] if i < len(rat_list) else None, max_chars=220)
+        kept.append((d, rat))
+    if not question or not answer or len(kept) < 3:
         return None
 
-    options = [answer] + uniq[:3]
+    explanation = _clean(data.get("explanation"), max_chars=320)
+    rationale = {d: r for d, r in kept if r}
+    options = [answer] + [d for d, _ in kept][:3]
     random.Random(question).shuffle(options)
-    return {"question": question, "options": options, "answer": answer}
+    return {
+        "question": question,
+        "options": options,
+        "answer": answer,
+        "explanation": explanation,
+        "rationale": rationale,
+    }
 
 
 def generate_mcq(
@@ -197,6 +248,11 @@ def generate_mcq(
     ``completer`` has llm.complete's signature (system, user, *, ...) and
     returns an object with a ``.text`` attribute (LLMResult). Any failure —
     network, quota, malformed JSON — returns None, never raises.
+
+    The returned dict carries make_mcq's shape (question/options/answer) plus
+    two teaching extras used by the submit feedback:
+        explanation: Optional[str]  why the correct answer is true (per lecture)
+        rationale:   {distractor_text: why_it_is_wrong}
     """
     if not context or not context.strip():
         return None

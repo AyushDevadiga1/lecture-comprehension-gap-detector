@@ -127,6 +127,17 @@ with tab_student:
             )
             if result:
                 st.write(f"Score: {result['score']}/{result['total']}")
+                st.markdown("### Feedback (per question)")
+                for f in result.get("feedback", []):
+                    tag = "correct" if f["correct"] else "wrong"
+                    st.write(f"**{f['concept']}** — _{tag}_")
+                    if f.get("explanation"):
+                        st.write(f"- ✓ {f['explanation']}")
+                    if not f["correct"]:
+                        if f.get("answer"):
+                            st.write(f"- ✓ correct answer: {f['answer']}")
+                        if f.get("rationale"):
+                            st.write(f"- ✗ why your pick was wrong: {f['rationale']}")
                 st.markdown("### Remediation (study in this order)")
                 if not result["remediation"]:
                     st.success("Nothing to remediate — all upstream concepts mastered.")
