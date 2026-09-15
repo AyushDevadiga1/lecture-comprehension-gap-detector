@@ -10,6 +10,7 @@ something — not speculatively:
     Phase 4:  graph_nodes, graph_edges (per-course prerequisite graph)
     Phase 5:  clips (one ffmpeg cut per concept, per lecture)
     Phase 6:  quiz_questions, quiz_responses (student quiz loop)
+    Phase 9:  passages, lecture_links (Lecture-Structure pass, plan/LECTURE_STRUCTURE.md)
     Phase 8:  quiz_responses aggregates power the faculty dashboard
     Later:    students, refinement_log
 
@@ -78,6 +79,20 @@ class Lecture(Base):
         order_by="Clip.id",
     )
 
+    passages = relationship(
+        "Passage",
+        back_populates="lecture",
+        cascade="all, delete-orphan",
+        order_by="Passage.idx",
+    )
+
+    lecture_links = relationship(
+        "LectureLink",
+        back_populates="lecture",
+        cascade="all, delete-orphan",
+        order_by="LectureLink.id",
+    )
+
 
 class TranscriptSegment(Base):
     __tablename__ = "transcript_segments"
@@ -110,6 +125,7 @@ class Concept(Base):
     id = Column(Integer, primary_key=True)
     course_id = Column(String, nullable=False, index=True)
     lecture_id = Column(Integer, ForeignKey("lectures.id"), nullable=False, index=True)
+    passage_id = Column(Integer, ForeignKey("passages.id"), nullable=True)
     name = Column(String, nullable=False)
     source = Column(String, nullable=False, default="spoken")
     implicit = Column(Integer, nullable=False, default=0)
@@ -118,6 +134,49 @@ class Concept(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
     lecture = relationship("Lecture", back_populates="concepts")
+
+
+class Passage(Base):
+    """A coherent teaching unit recovered by the Lecture-Structure pass (§3,
+    plan/LECTURE_STRUCTURE.md). `text` is the joined transcript excerpt for the
+    passage's span — quiz writing and clip grounding read it directly instead
+    of re-scanning tiny segment windows. Re-running extraction replaces a
+    lecture's rows as a set.
+    """
+
+    __tablename__ = "passages"
+
+    id = Column(Integer, primary_key=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), nullable=False, index=True)
+    idx = Column(Integer, nullable=False)
+    title = Column(String, nullable=False)
+    kind = Column(String, nullable=False, default="explain")
+    start_s = Column(Float, nullable=False)
+    end_s = Column(Float, nullable=False)
+    summary = Column(Text, nullable=True)
+    text = Column(Text, nullable=True)
+
+    lecture = relationship("Lecture", back_populates="passages")
+
+
+class LectureLink(Base):
+    """A prerequisite relation SPOKEN in a lecture, with verbatim evidence.
+
+    Source of truth for transcript-first graph edges (confidence 0.9 in the
+    merged graph). `confidence` stays on the row so the classifier-fallback
+    merge in _rebuild_course_graph can weigh re-adding variants.
+    """
+
+    __tablename__ = "lecture_links"
+
+    id = Column(Integer, primary_key=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), nullable=False, index=True)
+    source_name = Column(String, nullable=False)
+    target_name = Column(String, nullable=False)
+    confidence = Column(Float, nullable=False, default=0.9)
+    evidence = Column(Text, nullable=True)
+
+    lecture = relationship("Lecture", back_populates="lecture_links")
 
 
 class GraphNode(Base):
@@ -138,7 +197,13 @@ class GraphNode(Base):
 
 
 class GraphEdge(Base):
-    """Prerequisite edge A -> B (A must precede B) with classifier confidence."""
+    """Prerequisite edge A -> B (A must precede B) with classifier confidence.
+
+    `source_method` records where the edge came from: "transcript" (voiced in
+    a lecture, LectureLink, confidence 0.9 — the primary signal) or
+    "classifier" (the LectureBank-trained fallback). `evidence` is the
+    verbatim quote for transcript edges — the "why" the dashboard renders.
+    """
 
     __tablename__ = "graph_edges"
 
@@ -147,6 +212,13 @@ class GraphEdge(Base):
     source = Column(String, nullable=False)
     target = Column(String, nullable=False)
     confidence = Column(Float, nullable=False)
+    source_method = Column(
+        String,
+        nullable=False,
+        default="classifier",
+        server_default="classifier",
+    )
+    evidence = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
 
 
@@ -233,31 +305,51 @@ def _migrate_schema() -> None:
 
     create_all() does not alter existing tables, so columns added to the
     models need an explicit ALTER TABLE on live databases. Idempotent.
+    `passages` / `lecture_links` are NEW tables, so create_all() covers them;
+    only the extra COLUMNS on existing tables are touched here.
     """
     from sqlalchemy import inspect, text
 
+    # (column, SQLAlchemy type, kwargs, SQLite DDL type, SQL DEFAULT literal)
+    additions = {
+        "quiz_questions": [
+            ("answer", Text, dict(nullable=True), "TEXT", None),
+            ("explanation", Text, dict(nullable=True), "TEXT", None),
+            ("rationale_a", String, dict(nullable=True), "VARCHAR", None),
+            ("rationale_b", String, dict(nullable=True), "VARCHAR", None),
+            ("rationale_c", String, dict(nullable=True), "VARCHAR", None),
+        ],
+        "concepts": [
+            ("passage_id", Integer, dict(nullable=True), "INTEGER", None),
+        ],
+        "graph_edges": [
+            ("source_method", String,
+             dict(nullable=False, default="classifier", server_default="classifier"),
+             "VARCHAR", "'classifier'"),
+            ("evidence", Text, dict(nullable=True), "TEXT", None),
+        ],
+    }
+
     try:
         insp = inspect(engine)
-        existing = {c["name"] for c in insp.get_columns("quiz_questions")}
+        table_cols = {
+            table: {c["name"] for c in insp.get_columns(table)}
+            for table in additions
+            if insp.has_table(table)
+        }
     except Exception:
-        existing = set()
+        table_cols = {}
 
-    model_cols = {c.name for c in ConceptItem.__table__.columns}
-    new_columns = [
-        ("answer", Text, dict(nullable=True)),
-        ("explanation", Text, dict(nullable=True)),
-        ("rationale_a", String, dict(nullable=True)),
-        ("rationale_b", String, dict(nullable=True)),
-        ("rationale_c", String, dict(nullable=True)),
-    ]
-    added = False
     with engine.begin() as conn:
-        for name, coltype, kwargs in new_columns:
-            if name not in model_cols:
-                ConceptItem.__table__.append_column(Column(name, coltype, **kwargs))
-            if existing and name not in existing:
-                conn.execute(text(f"ALTER TABLE quiz_questions ADD COLUMN {name} TEXT"))
-                added = True
+        for table, cols in additions.items():
+            existing = table_cols.get(table) or set()
+            for name, coltype, kwargs, ddl_type, ddl_default in cols:
+                if existing and name in existing:
+                    continue
+                ddl = f"ALTER TABLE {table} ADD COLUMN {name} {ddl_type}"
+                if ddl_default is not None:
+                    ddl += f" DEFAULT {ddl_default}"
+                conn.execute(text(ddl))
 
 
 def init_db() -> None:
