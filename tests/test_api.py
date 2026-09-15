@@ -76,10 +76,19 @@ class DummyGraph:
 
     def add_edge(self, a, b, confidence):
         a, b = str(a).strip(), str(b).strip()
-        if a and b and a != b and not any(
-            e["source"] == a and e["target"] == b for e in self._edges
-        ):
+        if a and b and a != b and not self.has_edge(a, b):
             self._edges.append({"source": a, "target": b, "confidence": float(confidence)})
+
+    def _resolve(self, name):
+        return str(name).strip()
+
+    def to_networkx(self):
+        return self
+
+    def has_edge(self, a, b):
+        return any(
+            e["source"] == a and e["target"] == b for e in self._edges
+        )
 
     def resolve_cycles(self):
         return []
@@ -167,9 +176,19 @@ def test_concept_extraction_flow(api, monkeypatch):
     monkeypatch.setattr(workers, "transcribe", lambda path: [])
     monkeypatch.setattr(
         workers,
-        "extract_spoken_concepts",
-        lambda docs: [{"name": "Neural Network", "source": "spoken",
-                       "implicit": False, "start_s": 0.0, "end_s": 5.0}],
+        "extract_lecture_structure",
+        lambda docs: {
+            "passages": [
+                {"title": "Intro to NNs", "kind": "explain", "start_s": 0.0,
+                 "end_s": 5.0, "summary": "s", "text": "welcome passage",
+                 "concepts": []},
+            ],
+            "concepts": [
+                {"name": "Neural Network", "implicit": False, "start_s": 0.0,
+                 "end_s": 3.0, "passage_index": 0},
+            ],
+            "links": [],
+        },
     )
     # keep this suite hermetic: the chained graph rebuild is exercised by
     # test_concept_extraction_chains_graph_build with the classifier patched
@@ -182,6 +201,43 @@ def test_concept_extraction_flow(api, monkeypatch):
     detail = client.get(f"/lectures/{lid}").json()
     assert [c["name"] for c in detail["concepts"]] == ["Neural Network"]
     assert [c["source"] for c in detail["concepts"]] == ["spoken"]
+    # the structure pass persists the teaching passage and links the concept
+    # to it via passage_id (quiz/clip grounding reads that passage text later)
+    with Session() as s:
+        passage = s.query(models.Passage).one()
+        concept = s.query(models.Concept).one()
+        assert passage.title == "Intro to NNs"
+        assert passage.text == "welcome passage"
+        assert concept.passage_id == passage.id
+
+
+def test_concept_extraction_falls_back_on_pass_failure(api, monkeypatch):
+    """Whole-pass LLM failure (backend down) degrades to the old chunk-atomic
+    path so a user is never stranded (plan/LECTURE_STRUCTURE.md §8)."""
+    client, Session = api
+    monkeypatch.setattr(workers, "transcribe", lambda path: [])
+
+    def boom(docs):
+        raise RuntimeError("LLM backend down")
+
+    monkeypatch.setattr(workers, "extract_lecture_structure", boom)
+    monkeypatch.setattr(
+        workers,
+        "extract_spoken_concepts",
+        lambda docs: [{"name": "Neural Network", "source": "spoken",
+                       "implicit": False, "start_s": 0.0, "end_s": 5.0}],
+    )
+    monkeypatch.setattr(workers, "refine_concept_times", lambda c, docs: c)
+    monkeypatch.setattr(workers, "_rebuild_course_graph", lambda course_id: None)
+    lid = _add_lecture(Session, status="ready")
+
+    workers._extract_concepts_worker(lid)
+
+    detail = client.get(f"/lectures/{lid}").json()
+    assert [c["name"] for c in detail["concepts"]] == ["Neural Network"]
+    with Session() as s:
+        assert s.query(models.Passage).count() == 0
+        assert s.query(models.LectureLink).count() == 0
 
 
 def test_concept_extraction_chains_graph_build(api, monkeypatch):
@@ -191,6 +247,9 @@ def test_concept_extraction_chains_graph_build(api, monkeypatch):
     POST /graph back-to-back, and a concurrent graph worker can query an empty
     Concept table and silently exit. Chaining the rebuild into the extraction
     worker guarantees the graph reflects the fresh concepts either way.
+    Chained rebuild is also transcript-first: the spoken link is persisted as
+    a lecture_links row and becomes a 0.9-confidence edge with evidence, and
+    the classifier's (weaker) take on the SAME pair is skipped.
     """
     client, Session = api
     from backend.pipeline import classify_prerequisites as CP
@@ -198,18 +257,27 @@ def test_concept_extraction_chains_graph_build(api, monkeypatch):
     monkeypatch.setattr(workers, "transcribe", lambda path: [])
     monkeypatch.setattr(
         workers,
-        "extract_spoken_concepts",
-        lambda docs: [{"name": "Gradient Descent", "source": "spoken",
-                       "implicit": False, "start_s": 0.0, "end_s": 10.0},
-                      {"name": "Loss Function", "source": "spoken",
-                       "implicit": False, "start_s": 5.0, "end_s": 15.0}],
+        "extract_lecture_structure",
+        lambda docs: {
+            "passages": [],
+            "concepts": [
+                {"name": "Gradient Descent", "implicit": False,
+                 "start_s": 0.0, "end_s": 10.0, "passage_index": 0},
+                {"name": "Loss Function", "implicit": False,
+                 "start_s": 5.0, "end_s": 15.0, "passage_index": 0},
+            ],
+            "links": [
+                {"from": "Loss Function", "to": "Gradient Descent",
+                 "evidence": "to minimize the loss we take steps down its gradient"},
+            ],
+        },
     )
     monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
     monkeypatch.setattr(
         CP,
         "classify_course_pairs",
-        lambda concepts: [{"a": "Gradient Descent", "b": "Loss Function",
-                           "confidence": 0.8}],
+        lambda concepts: [{"a": "Loss Function", "b": "Gradient Descent",
+                           "confidence": 0.8}],  # already grounded -> skipped
     )
     lid = _add_lecture(Session, status="ready", course_id="ml1")
 
@@ -217,8 +285,11 @@ def test_concept_extraction_chains_graph_build(api, monkeypatch):
 
     g = client.get("/courses/ml1/graph").json()
     assert set(g["nodes"]) == {"Gradient Descent", "Loss Function"}
-    assert g["edges"] == [{"source": "Gradient Descent", "target": "Loss Function",
-                           "confidence": 0.8}]
+    assert g["edges"] == [
+        {"source": "Loss Function", "target": "Gradient Descent",
+         "confidence": 0.9, "source_method": "transcript",
+         "evidence": "to minimize the loss we take steps down its gradient"}
+    ]
     assert g["is_dag"] is True
 
 
@@ -250,8 +321,10 @@ def test_course_graph_build_and_fetch(api, monkeypatch):
 
     g = client.get("/courses/ml1/graph").json()
     assert set(g["nodes"]) == {"Gradient Descent", "Loss Function"}
-    assert g["edges"] == [{"source": "Gradient Descent", "target": "Loss Function",
-                           "confidence": 0.8}]
+    assert g["edges"] == [
+        {"source": "Gradient Descent", "target": "Loss Function",
+         "confidence": 0.8, "source_method": "classifier", "evidence": None}
+    ]
     assert g["is_dag"] is True
 
 
@@ -444,6 +517,40 @@ def test_create_quiz_uses_llm_mcq_when_available(api, monkeypatch):
     assert fb["answer"] == "A definition"
     assert fb["explanation"] == "the lecture defines A as its data model"
     assert fb["rationale"] == rationales[wrong_pick]
+
+
+def test_create_quiz_uses_passage_context(api, monkeypatch):
+    """Stage 6 grounding: the MCQ writer reads the persisted teaching passage
+    (extracted by the structure pass), not a re-scanned segment window."""
+    client, Session = api
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    seen = {}
+    monkeypatch.setattr(
+        quizzes, "generate_mcq",
+        lambda name, ctx: (seen.update(name=name, ctx=ctx), None)[1],
+    )
+    lid = _add_lecture(Session, course_id="ml4", status="ready")
+    with Session() as s:
+        p = models.Passage(lecture_id=lid, idx=0, title="Pivot Tables",
+                           kind="explain", start_s=0.0, end_s=4.0,
+                           summary="s",
+                           text="the full teaching passage for pivot tables")
+        s.add(p)
+        s.flush()
+        s.add(models.Concept(course_id="ml4", lecture_id=lid, passage_id=p.id,
+                             name="Pivot Table", source="spoken",
+                             start_s=1.0, end_s=3.0))
+        # a transcript window that would be local_context's choice — the
+        # passage text must win over it
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=1.0,
+                                       end_s=2.0, text="VERBATIM SEGMENT"))
+        s.commit()
+
+    r = client.post("/quizzes", json={"course_id": "ml4", "student_id": "s"})
+    assert r.status_code == 201
+    assert seen.get("name") == "Pivot Table"
+    assert seen.get("ctx") == "the full teaching passage for pivot tables"
+    assert "VERBATIM" not in (seen.get("ctx") or "")
 
 
 def test_quiz_submit_unknown_question_404(api):
