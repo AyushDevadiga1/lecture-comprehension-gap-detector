@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 from typing import Dict, List, Optional
 
@@ -37,8 +38,10 @@ from backend.pipeline.llm import complete
 # A window keeps the excerpt inside the token budget (~2K tokens input) while
 # being large enough for whole multi-minute topics. 25% overlap means a topic
 # straddling a boundary is visible in both windows (merge collapses the copy).
-WINDOW_CHARS = int(8000)
-OVERLAP_FRAC = 0.25
+# Both are overridable from the environment so a deployment can trade context
+# for call count without code changes.
+WINDOW_CHARS = int(os.getenv("LECGAP_STRUCTURE_WINDOW_CHARS", "8000"))
+OVERLAP_FRAC = float(os.getenv("LECGAP_STRUCTURE_OVERLAP_FRAC", "0.25"))
 # Output bounds keep each completion small and deterministic.
 MAX_PASSAGES = 4
 MAX_CONCEPTS_PER_PASSAGE = 6

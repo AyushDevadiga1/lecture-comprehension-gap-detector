@@ -17,11 +17,14 @@ from backend.models.db import (
     GraphEdge,
     GraphNode,
     Lecture,
+    LectureLink,
+    Passage,
     SessionLocal,
     TranscriptSegment,
 )
 from backend.pipeline.build_graph import ConceptGraph
 from backend.pipeline.extract_concepts import extract_spoken_concepts
+from backend.pipeline.passages import extract_lecture_structure
 from backend.pipeline.refine_timeline import refine_concept_times
 from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
@@ -72,7 +75,16 @@ def _process_lecture(lecture_id: int) -> None:
 
 
 def _extract_concepts_worker(lecture_id: int) -> None:
-    """Background worker: run spoken concept extraction and persist rows."""
+    """Background worker: run the Lecture-Structure pass and persist rows.
+
+    Happy path: `extract_lecture_structure` reads the whole lecture in sliding
+    windows and returns passages + flattened concept teach-spans + spoken
+    prerequisite links. The worker persists all three (concepts gain their
+    `passage_id`; links land in `lecture_links`), then rebuilds the course
+    graph. If the WHOLE pass fails (LLM backend down), it falls back to the
+    chunk-atomic path (extract_spoken_concepts + refine_concept_times) so a
+    user is never stranded — the old path is the rescue rope, not the default.
+    """
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
@@ -83,19 +95,25 @@ def _extract_concepts_worker(lecture_id: int) -> None:
         ]
         course_id = lecture.course_id
 
+    passages: List[dict] = []
+    links: List[dict] = []
     try:
-        concepts = extract_spoken_concepts(docs)
-        # Stage 2b: the extractor stamps each concept with its whole chunk's
-        # span (often minutes). Pin it down to where the concept is actually
-        # taught so Stage 5 clips stay watchable and the coverage band is honest.
-        concepts = refine_concept_times(concepts, docs)
-    except Exception as exc:  # noqa: BLE001 — any failure is fine to surface
-        with SessionLocal() as db:
-            lecture = db.get(Lecture, lecture_id)
-            if lecture is not None:
-                lecture.error = f"{type(exc).__name__}: {exc}"[:2000]
-                db.commit()
-        return
+        structure = extract_lecture_structure(docs)
+        concepts = structure["concepts"]
+        passages = structure["passages"]
+        links = structure["links"]
+    except Exception:  # noqa: BLE001 — whole-pass failure -> old path
+        try:
+            concepts = extract_spoken_concepts(docs)
+            # Stage 2b fallback: pin chunk-stamped spans down to teach-spans.
+            concepts = refine_concept_times(concepts, docs)
+        except Exception as exc:  # noqa: BLE001 — any failure is fine to surface
+            with SessionLocal() as db:
+                lecture = db.get(Lecture, lecture_id)
+                if lecture is not None:
+                    lecture.error = f"{type(exc).__name__}: {exc}"[:2000]
+                    db.commit()
+            return
 
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
@@ -103,16 +121,44 @@ def _extract_concepts_worker(lecture_id: int) -> None:
             return
         lecture.error = None  # a success supersedes any earlier failed run
         db.query(Concept).filter(Concept.lecture_id == lecture_id).delete()
+        db.query(LectureLink).filter(LectureLink.lecture_id == lecture_id).delete()
+        db.query(Passage).filter(Passage.lecture_id == lecture_id).delete()
+        passage_id_of: dict = {}
+        for i, p in enumerate(passages):
+            row = Passage(
+                lecture_id=lecture_id,
+                idx=i,
+                title=p["title"],
+                kind=p.get("kind", "explain"),
+                start_s=p["start_s"],
+                end_s=p["end_s"],
+                summary=p.get("summary") or None,
+                text=p.get("text") or None,
+            )
+            db.add(row)
+            db.flush()
+            passage_id_of[i] = row.id
         for c in concepts:
             db.add(
                 Concept(
                     course_id=course_id,
                     lecture_id=lecture_id,
+                    passage_id=passage_id_of.get(c.get("passage_index")),
                     name=c["name"],
-                    source=c["source"],
+                    source=c.get("source", "spoken"),
                     implicit=int(c["implicit"]),
                     start_s=c.get("start_s"),
                     end_s=c.get("end_s"),
+                )
+            )
+        for l in links:
+            db.add(
+                LectureLink(
+                    lecture_id=lecture_id,
+                    source_name=l["from"],
+                    target_name=l["to"],
+                    confidence=0.9,
+                    evidence=l.get("evidence") or None,
                 )
             )
         db.commit()
@@ -175,6 +221,13 @@ def _build_course_graph_worker(course_id: str) -> None:
 def _rebuild_course_graph(course_id: str) -> None:
     """Regenerate a course's prerequisite graph from its current concept rows.
 
+    Transcript-first (plan/LECTURE_STRUCTURE.md §4): lecture_links persisted by
+    the extraction pass become edges at confidence 0.9 with their verbatim
+    evidence (`source_method="transcript"`); the LectureBank classifier then
+    fills ONLY pairs the transcript never grounded (`source_method="classifier"`),
+    which is where cross-lecture relations and silent jumps live. Cycle
+    resolution is unchanged — it drops the lowest-confidence edge on a cycle, so
+    transcript edges (0.9) dominate by design.
     Shared by POST /courses/{id}/graph and the concept-extraction worker so
     the graph always reflects the latest extracted concept set regardless of
     call order (the UI fires both requests back-to-back; without this chaining
@@ -195,16 +248,45 @@ def _rebuild_course_graph(course_id: str) -> None:
         concepts = [
             {"name": c.name, "start_s": c.start_s, "end_s": c.end_s} for c in rows
         ]
+        lect_ids = [
+            row[0]
+            for row in db.query(Lecture.id).filter(Lecture.course_id == course_id).all()
+        ]
+        link_rows = []
+        if lect_ids:
+            link_rows = (
+                db.query(LectureLink)
+                .filter(LectureLink.lecture_id.in_(lect_ids))
+                .all()
+            )
+        # one edge per (source, target), keeping the first verbatim evidence
+        pair_by: dict = {}
+        for r in link_rows:
+            key = (r.source_name, r.target_name)
+            if key not in pair_by:
+                pair_by[key] = r.evidence or None
+        link_pairs = [(a, b, ev) for (a, b), ev in pair_by.items()]
+
     names = sorted({c["name"] for c in concepts})
 
     graph = ConceptGraph()
     graph.add_concepts(names)
+    g = graph.to_networkx()
+    edge_meta: dict = {}
+    for a, b, ev in link_pairs:
+        a_res, b_res = graph._resolve(a), graph._resolve(b)
+        edge_meta[(a_res, b_res)] = ("transcript", ev)
+        graph.add_edge(a, b, 0.9)
     try:
         confirmed = classify_prerequisites.classify_course_pairs(concepts)
     except ValueError:
         confirmed = []  # LectureBank absent on this deployment -> nodes-only
     for e in confirmed:
+        a_res, b_res = graph._resolve(e["a"]), graph._resolve(e["b"])
+        if g.has_edge(a_res, b_res):
+            continue  # already grounded by the transcript — keep the spoken edge
         graph.add_edge(e["a"], e["b"], e["confidence"])
+        edge_meta[(a_res, b_res)] = ("classifier", None)
     graph.resolve_cycles()
 
     with SessionLocal() as db:
@@ -213,12 +295,17 @@ def _rebuild_course_graph(course_id: str) -> None:
         for name in graph.nodes():
             db.add(GraphNode(course_id=course_id, name=name))
         for e in graph.edges():
+            method, evidence = edge_meta.get(
+                (e["source"], e["target"]), ("classifier", None)
+            )
             db.add(
                 GraphEdge(
                     course_id=course_id,
                     source=e["source"],
                     target=e["target"],
                     confidence=e["confidence"],
+                    source_method=method,
+                    evidence=evidence,
                 )
             )
         db.commit()
