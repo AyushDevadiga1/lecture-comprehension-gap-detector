@@ -90,8 +90,8 @@ def _clean(text: Optional[str], max_chars: int = 520) -> Optional[str]:
 def local_context(
     segments: Iterable,
     concept,
-    n: int = 3,
-    max_chars: int = 1400,
+    n: int = 6,
+    max_chars: int = 2200,
 ) -> Optional[str]:
     """A compact excerpt of where `concept` is taught.
 
@@ -100,6 +100,9 @@ def local_context(
     ``n`` segments. If the concept has no time window, falls back to the first
     segment that literally mentions the concept name. Returns None when no
     anchor exists (caller then skips the LLM and keeps the evidence path).
+
+    `n`/`max_chars` are generous enough that the writer sees the full
+    teach-in passage plus a few following segments, not just the anchor.
 
     Items may be dicts ({text, start_s, end_s}) or ORM objects exposing the
     same attributes.
