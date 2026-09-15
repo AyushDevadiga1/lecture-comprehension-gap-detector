@@ -23,7 +23,8 @@ import pytest
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from backend.api import routes as R  # noqa: E402 — same module object the fixture patches
+from backend.api import workers  # noqa: E402 — background worker symbols moved here
+from backend.api.routes import courses, lectures, quizzes  # noqa: E402
 from backend.models import db as models  # noqa: E402
 
 
@@ -45,10 +46,13 @@ def api(monkeypatch):
     )
     models.Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine, expire_on_commit=False)
-    monkeypatch.setattr(R, "SessionLocal", Session)
+    # each domain router + the workers share one SessionLocal source — patch
+    # them all so endpoints and background jobs hit the in-memory store.
+    for mod in (lectures, courses, quizzes, workers):
+        monkeypatch.setattr(mod, "SessionLocal", Session)
     # quiz creation must not hit the real cached LLM in this suite — the
     # Stage 6c LLM path is exercised by its own targeted test (which re-patches).
-    monkeypatch.setattr(R, "generate_mcq", lambda *a, **k: None)
+    monkeypatch.setattr(quizzes, "generate_mcq", lambda *a, **k: None)
     return TestClient(app), Session
 
 
@@ -115,7 +119,7 @@ def _add_lecture(Session, *, course_id="ml1", status="ready", title="t",
 
 def test_upload_lecture_rejects_bad_extension(api, monkeypatch):
     client, _ = api
-    monkeypatch.setattr(R, "transcribe", lambda path: [])
+    monkeypatch.setattr(workers, "transcribe", lambda path: [])
     r = client.post(
         "/lectures",
         files={"file": ("notes.txt", b"abc", "text/plain")},
@@ -126,7 +130,7 @@ def test_upload_lecture_rejects_bad_extension(api, monkeypatch):
 
 def test_upload_lecture_and_list(api, monkeypatch):
     client, Session = api
-    monkeypatch.setattr(R, "transcribe", lambda path: [])
+    monkeypatch.setattr(workers, "transcribe", lambda path: [])
 
     r = client.post(
         "/lectures",
@@ -160,21 +164,62 @@ def test_concept_extraction_requires_ready(api):
 
 def test_concept_extraction_flow(api, monkeypatch):
     client, Session = api
-    monkeypatch.setattr(R, "transcribe", lambda path: [])
+    monkeypatch.setattr(workers, "transcribe", lambda path: [])
     monkeypatch.setattr(
-        R,
+        workers,
         "extract_spoken_concepts",
         lambda docs: [{"name": "Neural Network", "source": "spoken",
                        "implicit": False, "start_s": 0.0, "end_s": 5.0}],
     )
+    # keep this suite hermetic: the chained graph rebuild is exercised by
+    # test_concept_extraction_chains_graph_build with the classifier patched
+    monkeypatch.setattr(workers, "_rebuild_course_graph", lambda course_id: None)
     lid = _add_lecture(Session, status="ready")
 
     assert client.post(f"/lectures/{lid}/concepts").status_code == 200
-    R._extract_concepts_worker(lid)
+    workers._extract_concepts_worker(lid)
 
     detail = client.get(f"/lectures/{lid}").json()
     assert [c["name"] for c in detail["concepts"]] == ["Neural Network"]
     assert [c["source"] for c in detail["concepts"]] == ["spoken"]
+
+
+def test_concept_extraction_chains_graph_build(api, monkeypatch):
+    """Extraction worker rebuilds the course graph once concepts are persisted.
+
+    Regression test for the UI race: the frontend fires POST /concepts and
+    POST /graph back-to-back, and a concurrent graph worker can query an empty
+    Concept table and silently exit. Chaining the rebuild into the extraction
+    worker guarantees the graph reflects the fresh concepts either way.
+    """
+    client, Session = api
+    from backend.pipeline import classify_prerequisites as CP
+
+    monkeypatch.setattr(workers, "transcribe", lambda path: [])
+    monkeypatch.setattr(
+        workers,
+        "extract_spoken_concepts",
+        lambda docs: [{"name": "Gradient Descent", "source": "spoken",
+                       "implicit": False, "start_s": 0.0, "end_s": 10.0},
+                      {"name": "Loss Function", "source": "spoken",
+                       "implicit": False, "start_s": 5.0, "end_s": 15.0}],
+    )
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(
+        CP,
+        "classify_course_pairs",
+        lambda concepts: [{"a": "Gradient Descent", "b": "Loss Function",
+                           "confidence": 0.8}],
+    )
+    lid = _add_lecture(Session, status="ready", course_id="ml1")
+
+    workers._extract_concepts_worker(lid)
+
+    g = client.get("/courses/ml1/graph").json()
+    assert set(g["nodes"]) == {"Gradient Descent", "Loss Function"}
+    assert g["edges"] == [{"source": "Gradient Descent", "target": "Loss Function",
+                           "confidence": 0.8}]
+    assert g["is_dag"] is True
 
 
 # --------------------------------------------------------------- course graph
@@ -183,7 +228,7 @@ def test_course_graph_build_and_fetch(api, monkeypatch):
     client, Session = api
     from backend.pipeline import classify_prerequisites as CP
 
-    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
     monkeypatch.setattr(
         CP,
         "classify_course_pairs",
@@ -201,7 +246,7 @@ def test_course_graph_build_and_fetch(api, monkeypatch):
         s.commit()
 
     assert client.post("/courses/ml1/graph").status_code == 202
-    R._build_course_graph_worker("ml1")
+    workers._build_course_graph_worker("ml1")
 
     g = client.get("/courses/ml1/graph").json()
     assert set(g["nodes"]) == {"Gradient Descent", "Loss Function"}
@@ -212,7 +257,7 @@ def test_course_graph_build_and_fetch(api, monkeypatch):
 
 def test_course_graph_404_without_rows(api, monkeypatch):
     client, _ = api
-    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
     assert client.get("/courses/ml1/graph").status_code == 404
 
 
@@ -233,7 +278,7 @@ def test_clips_guards(api):
 def test_clips_cut_and_list(api, monkeypatch):
     client, Session = api
     monkeypatch.setattr(
-        R,
+        workers,
         "cut_concept_clips",
         lambda media, concepts, out_dir: [
             {
@@ -259,7 +304,7 @@ def test_clips_cut_and_list(api, monkeypatch):
         s.commit()
 
     assert client.post(f"/lectures/{lid}/clips").status_code == 202
-    R._cut_clips_worker(lid)
+    workers._cut_clips_worker(lid)
 
     batch = client.get(f"/lectures/{lid}/clips").json()
     assert batch["status"] == "ready"
@@ -273,7 +318,7 @@ def test_clips_cut_and_list(api, monkeypatch):
 
 def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
     client, Session = api
-    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
     lid = _add_lecture(Session, course_id="ml1", status="ready")
     with Session() as s:
         s.add(models.Concept(course_id="ml1", lecture_id=lid, name="A",
@@ -328,7 +373,7 @@ def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
 
 def test_create_quiz_dedupes_shared_evidence(api, monkeypatch):
     client, Session = api
-    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
     lid = _add_lecture(Session, course_id="ml2", status="ready")
     with Session() as s:
         for (name, st, en) in (("First", 0.0, 2.0), ("Second", 2.0, 4.0)):
@@ -354,9 +399,9 @@ def test_create_quiz_dedupes_shared_evidence(api, monkeypatch):
 
 def test_create_quiz_uses_llm_mcq_when_available(api, monkeypatch):
     client, Session = api
-    monkeypatch.setattr(R, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
     monkeypatch.setattr(
-        R, "generate_mcq",
+        quizzes, "generate_mcq",
         lambda name, ctx: {
             "question": f"Which best describes '{name}' as taught?",
             "options": [f"{name} definition", "wrong one", "wrong two", "wrong three"],

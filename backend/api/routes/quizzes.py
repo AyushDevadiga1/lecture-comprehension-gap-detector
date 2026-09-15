@@ -1,0 +1,298 @@
+"""Quiz endpoints — graded MCQ creation, submit/grade, and the remediation
+sequence (Stage 6/7). Note: /students paths live here too because remediation
+is computed from quiz responses."""
+
+from fastapi import APIRouter, Body, HTTPException
+
+from backend.api import workers
+from backend.api.routes.courses import _course_graph_dict, get_course_graph
+from backend.api.schemas import (
+    QuestionFeedbackOut,
+    QuizOut,
+    QuizSubmitIn,
+    QuizSubmitOut,
+)
+from backend.models.db import Concept, ConceptItem, QuizResponse, SessionLocal
+from backend.pipeline.mcq_gen import generate_mcq, local_context
+from backend.pipeline.quiz import (
+    make_mcq,
+    select_remediation_sequence,
+    supporting_sentence,
+)
+
+router = APIRouter(tags=["quizzes"])
+
+
+@router.post("/quizzes", response_model=QuizOut, status_code=201)
+def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> QuizOut:
+    """Build a graded MCQ quiz from a course's extracted concepts.
+
+    Each question (Stage 6b/6c) is written by the cached LLM from the
+    transcript passage where the concept is taught — a real definition plus
+    three plausible-but-wrong distractors — falling back to the evidence
+    sentence (another concept's spoken description) on any LLM miss. The
+    ground-truth option is stored beside the question, and grading happens
+    server-side on submit (the probe/self-grade mode of Phase 6 is kept for
+    courses that have no transcript evidence yet).
+    """
+    with SessionLocal() as db:
+        concepts = (
+            db.query(Concept)
+            .filter(Concept.course_id == course_id)
+            .order_by(Concept.id)
+            .all()
+        )
+        if not concepts:
+            raise HTTPException(status_code=404, detail="No concepts for course")
+        names = sorted({c.name for c in concepts})
+        by_name = {c.name: c for c in concepts}
+
+        segments = workers._lecture_segments(db, course_id)
+        # one distinct evidence sentence per concept: once a sentence is used
+        # as one concept's answer it is skipped for the rest, so concepts whose
+        # names never appear verbatim don't all collapse onto one "longest"
+        # segment (that made answers identical across questions).
+        used: set = set()
+        evidence: dict = {}
+        for name in names:
+            ev = supporting_sentence(
+                name, workers._in_range(segments, by_name[name], margin_s=0.5),
+                skip=used,
+            )
+            if ev is None:
+                ev = supporting_sentence(name, segments, skip=used)
+            if ev is not None:
+                used.add(ev)
+            evidence[name] = ev
+
+    # learner order from the graph if present, else alphabetic
+    try:
+        graph = get_course_graph(course_id)
+        order = graph.topological_order
+        names = [n for n in order if n in set(names)] or names
+    except HTTPException:
+        pass
+
+    # Stage 6c: prefer a cached LLM-written MCQ (real definitions + plausible
+    # distractors) over the evidence sentence. Network calls happen outside any
+    # DB session; any miss falls back to the pure evidence path, so LLM
+    # generation can only upgrade a quiz, never break it.
+    plan: dict = {}
+    for name in names:
+        q = None
+        ctx = local_context(segments, by_name.get(name))
+        if ctx:
+            q = generate_mcq(name, ctx)
+        if not q:
+            q = make_mcq(
+                name,
+                evidence[name],
+                [(o, evidence[o]) for o in names if o != name],
+            )
+        plan[name] = q
+
+    with SessionLocal() as db:
+        db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
+        new_ids = []
+        for i, name in enumerate(names):
+            q = plan[name]
+            item = ConceptItem(
+                course_id=course_id,
+                concept=name,
+                question=q["question"],
+                answer=q["answer"],
+                order=i,
+                explanation=q.get("explanation"),
+            )
+            distractors = [o for o in q["options"] if o != q["answer"]]
+            distractors += [None] * (3 - len(distractors))
+            rationale_by_option = q.get("rationale") or {}
+            item.distractor_a, item.distractor_b, item.distractor_c = distractors[:3]
+            item.rationale_a = rationale_by_option.get(distractors[0])
+            item.rationale_b = rationale_by_option.get(distractors[1])
+            item.rationale_c = rationale_by_option.get(distractors[2])
+            db.add(item)
+            db.flush()
+            new_ids.append(item.id)
+        db.commit()
+        rows = db.query(ConceptItem).filter(ConceptItem.id.in_(new_ids)).all()
+
+    rows.sort(key=lambda r: r.order)
+    return QuizOut(
+        quiz_id=rows[0].id if rows else 0,
+        course_id=course_id,
+        student_id=student_id,
+        questions=[workers._question_out(r) for r in rows],
+    )
+
+
+@router.post("/quizzes/submit", response_model=QuizSubmitOut)
+def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
+    """Record a student's answers and return their remediation sequence.
+
+    Failed concepts feed the prerequisite graph (Stage 4) to produce the
+    dependency-ordered watch list. Re-submitting for the same student+course
+    appends with `attempt` incremented per distinct question.
+    """
+    with SessionLocal() as db:
+        feedback = []
+        for a in payload.answers:
+            quest = db.get(ConceptItem, a.question_id)
+            if quest is None:
+                raise HTTPException(status_code=404,
+                                    detail=f"Question {a.question_id} not found")
+            # server-side grading: the ground-truth option is stored with the
+            # question. Legacy probe answers (self-reported `correct`, no
+            # answer key) still grade via their `correct` flag.
+            if quest.answer is not None:
+                correct = a.selected == quest.answer
+            elif a.correct is not None:
+                correct = bool(a.correct)
+            else:
+                correct = False
+            # post-submit feedback: why the right answer is right, and if the
+            # student picked a distractor, why that specific option is wrong.
+            rationale = None
+            if not correct and quest.answer is not None:
+                for col, rat in ((quest.distractor_a, quest.rationale_a),
+                                 (quest.distractor_b, quest.rationale_b),
+                                 (quest.distractor_c, quest.rationale_c)):
+                    if a.selected == col:
+                        rationale = rat
+                        break
+            feedback.append(
+                QuestionFeedbackOut(
+                    question_id=a.question_id,
+                    concept=quest.concept,
+                    correct=correct,
+                    selected=a.selected,
+                    answer=quest.answer,
+                    explanation=quest.explanation,
+                    rationale=rationale,
+                )
+            )
+            prev = (
+                db.query(QuizResponse)
+                .filter(
+                    QuizResponse.course_id == payload.course_id,
+                    QuizResponse.student_id == payload.student_id,
+                    QuizResponse.question_id == a.question_id,
+                )
+                .count()
+            )
+            db.add(
+                QuizResponse(
+                    course_id=payload.course_id,
+                    student_id=payload.student_id,
+                    question_id=a.question_id,
+                    concept=quest.concept,
+                    selected=a.selected,
+                    correct=int(correct),
+                    latency_s=a.latency_s,
+                    attempt=prev + 1,
+                )
+            )
+        db.commit()
+
+    # return the remediation computed from this (now-persisted) submission
+    with SessionLocal() as db:
+        responses = (
+            db.query(QuizResponse)
+            .filter(
+                QuizResponse.course_id == payload.course_id,
+                QuizResponse.student_id == payload.student_id,
+            )
+            .order_by(QuizResponse.id)
+            .all()
+        )
+        score = sum(r.correct for r in responses)
+        total = len(responses)
+        failed = sorted({r.concept for r in responses if not r.correct})
+
+    try:
+        graph_dict = _course_graph_dict(payload.course_id)
+    except HTTPException:
+        graph_dict = {"edges": [], "topological_order": sorted(
+            {c.concept for c in responses})}
+
+    clips = workers._clips_by_concept(payload.course_id)
+    seq = select_remediation_sequence(graph_dict, failed)
+    watch = [
+        {
+            "concept": item["concept"],
+            "failed": item["failed"],
+            "clip": clips.get(item["concept"]),
+        }
+        for item in seq
+    ]
+
+    return QuizSubmitOut(
+        quiz_id=payload.answers[0].question_id if payload.answers else 0,
+        student_id=payload.student_id,
+        score=score,
+        total=total,
+        remediation=watch,
+        feedback=feedback,
+    )
+
+
+@router.get("/students/{student_id}/remediation", response_model=QuizSubmitOut)
+def get_remediation(student_id: str, course_id: str) -> QuizSubmitOut:
+    """Dependency-ordered remediation for a student's latest quiz on a course.
+
+    Failed concepts (= wrong answers) are lifted with everything upstream of
+    them from the course's prerequisite graph, ordered so prerequisites are
+    watched/studied first. Clips (when cut) are attached for playback.
+    """
+    with SessionLocal() as db:
+        qid = (
+            db.query(QuizResponse.question_id)
+            .filter(
+                QuizResponse.course_id == course_id,
+                QuizResponse.student_id == student_id,
+            )
+            .order_by(QuizResponse.id.desc())
+            .first()
+        )
+        if qid is None:
+            raise HTTPException(status_code=404, detail="No quiz responses for student/course")
+        question_id = qid[0]
+
+        question = db.get(ConceptItem, question_id)
+        responses = (
+            db.query(QuizResponse)
+            .filter(
+                QuizResponse.course_id == course_id,
+                QuizResponse.student_id == student_id,
+            )
+            .order_by(QuizResponse.id)
+            .all()
+        )
+        score = sum(r.correct for r in responses)
+        total = len(responses)
+        failed = sorted({r.concept for r in responses if not r.correct})
+
+    try:
+        graph_dict = _course_graph_dict(course_id)
+    except HTTPException:
+        graph_dict = {"edges": [], "topological_order": sorted(
+            {r.concept for r in responses})}
+
+    clips = workers._clips_by_concept(course_id)
+    seq = select_remediation_sequence(graph_dict, failed)
+    watch = []
+    for item in seq:
+        if item["failed"] or item["concept"] in clips:
+            watch.append({
+                "concept": item["concept"],
+                "failed": item["failed"],
+                "clip": clips.get(item["concept"]),
+            })
+
+    return QuizSubmitOut(
+        quiz_id=question_id,
+        student_id=student_id,
+        score=score,
+        total=total,
+        remediation=watch,
+    )

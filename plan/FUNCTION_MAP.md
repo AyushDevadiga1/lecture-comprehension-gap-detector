@@ -14,51 +14,122 @@ Consumes from `backend.*`:
 - `backend.models.db.init_db`
 - `backend.pipeline.llm.backend_status`
 
-## backend.api.routes.py
+## backend.api.schemas.py
+
+Defines: *(none — script/module)*
+
+Consumes from `backend.*`: *(none)*
+
+## backend.api.workers.py
 
 Defines:
-- `_safe_filename` — line 182
-- `_process_lecture` — line 186
-- `upload_lecture` — line 228
-- `list_lectures` — line 265
-- `get_lecture` — line 271
-- `run_concept_extraction` — line 282
-- `_extract_concepts_worker` — line 307
-- `cut_lecture_clips` — line 351
-- `list_lecture_clips` — line 387
-- `_cut_clips_worker` — line 402
-- `get_course_graph` — line 441
-- `_course_graph_dict` — line 467
-- `build_course_graph` — line 478
-- `_build_course_graph_worker` — line 492
-- `create_quiz` — line 538
-- `submit_quiz` — line 589
-- `get_remediation` — line 666
-- `course_stats` — line 728
-- `_clips_by_concept` — line 798
+- `_process_lecture` — line 33
+- `_extract_concepts_worker` — line 74
+- `_cut_clips_worker` — line 127
+- `_build_course_graph_worker` — line 165
+- `_rebuild_course_graph` — line 175
+- `_lecture_segments` — line 227
+- `_in_range` — line 243
+- `_question_out` — line 259
+- `_clips_by_concept` — line 282
 
 Consumes from `backend.*`:
+- `backend.api.schemas.QuizQuestionOut`
 - `backend.models.db.Clip`
 - `backend.models.db.Concept`
-- `backend.models.db.ConceptItem`
 - `backend.models.db.GraphEdge`
 - `backend.models.db.GraphNode`
 - `backend.models.db.Lecture`
-- `backend.models.db.QuizResponse`
 - `backend.models.db.SessionLocal`
 - `backend.models.db.TranscriptSegment`
 - `backend.pipeline.build_graph.ConceptGraph`
 - `backend.pipeline.classify_prerequisites`
 - `backend.pipeline.extract_concepts.extract_spoken_concepts`
-- `backend.pipeline.quiz.select_remediation_sequence`
+- `backend.pipeline.refine_timeline.refine_concept_times`
 - `backend.pipeline.segment_clips.cut_concept_clips`
 - `backend.pipeline.transcribe.transcribe`
+
+## backend.api.routes.__init__.py
+
+Defines: *(none — script/module)*
+
+Consumes from `backend.*`:
+- `backend.api.routes.courses.router`
+- `backend.api.routes.lectures.router`
+- `backend.api.routes.quizzes.router`
+
+## backend.api.routes.lectures.py
+
+Defines:
+- `_safe_filename` — line 34
+- `upload_lecture` — line 39
+- `list_lectures` — line 76
+- `get_lecture` — line 82
+- `run_concept_extraction` — line 93
+- `cut_lecture_clips` — line 119
+- `list_lecture_clips` — line 155
+
+Consumes from `backend.*`:
+- `backend.api.schemas.ClipBatchOut`
+- `backend.api.schemas.ClipOut`
+- `backend.api.schemas.LectureDetailOut`
+- `backend.api.schemas.LectureOut`
+- `backend.api.workers`
+- `backend.models.db.Clip`
+- `backend.models.db.Concept`
+- `backend.models.db.Lecture`
+- `backend.models.db.SessionLocal`
+
+## backend.api.routes.courses.py
+
+Defines:
+- `get_course_graph` — line 21
+- `_course_graph_dict` — line 47
+- `build_course_graph` — line 58
+- `course_stats` — line 73
+
+Consumes from `backend.*`:
+- `backend.api.schemas.CourseBuildOut`
+- `backend.api.schemas.CourseGraphOut`
+- `backend.api.workers`
+- `backend.models.db.Concept`
+- `backend.models.db.GraphEdge`
+- `backend.models.db.GraphNode`
+- `backend.models.db.QuizResponse`
+- `backend.models.db.SessionLocal`
+- `backend.pipeline.build_graph.ConceptGraph`
+
+## backend.api.routes.quizzes.py
+
+Defines:
+- `create_quiz` — line 27
+- `submit_quiz` — line 130
+- `get_remediation` — line 240
+
+Consumes from `backend.*`:
+- `backend.api.routes.courses._course_graph_dict`
+- `backend.api.routes.courses.get_course_graph`
+- `backend.api.schemas.QuestionFeedbackOut`
+- `backend.api.schemas.QuizOut`
+- `backend.api.schemas.QuizSubmitIn`
+- `backend.api.schemas.QuizSubmitOut`
+- `backend.api.workers`
+- `backend.models.db.Concept`
+- `backend.models.db.ConceptItem`
+- `backend.models.db.QuizResponse`
+- `backend.models.db.SessionLocal`
+- `backend.pipeline.mcq_gen.generate_mcq`
+- `backend.pipeline.mcq_gen.local_context`
+- `backend.pipeline.quiz.make_mcq`
+- `backend.pipeline.quiz.select_remediation_sequence`
+- `backend.pipeline.quiz.supporting_sentence`
 
 ## backend.models.db.py
 
 Defines:
 - `utcnow` — line 44
-- `init_db` — line 222
+- `_migrate_schema` — line 231
+- `init_db` — line 263
 
 Consumes from `backend.*`: *(none)*
 
@@ -69,11 +140,12 @@ Defines:
 - `_cache_key` — line 55
 - `_cache_get` — line 60
 - `_cache_put` — line 68
-- `_call_groq` — line 83
-- `_ollama_reachable` — line 130
-- `_call_ollama` — line 139
-- `complete` — line 165
-- `backend_status` — line 208
+- `_cache_del` — line 87
+- `_call_groq` — line 96
+- `_ollama_reachable` — line 143
+- `_call_ollama` — line 152
+- `complete` — line 178
+- `backend_status` — line 228
 
 Consumes from `backend.*`:
 - `backend.models.db.LLMCache`
@@ -106,6 +178,24 @@ Defines:
 - `extract_spoken_concepts` — line 100
 - `extract_visual_concepts` — line 137
 - `merge_concepts` — line 141
+
+Consumes from `backend.*`:
+- `backend.pipeline.llm.complete`
+
+## backend.pipeline.passages.py
+
+Defines:
+- `_seg_fmt` — line 82
+- `_window_excerpts` — line 88
+- `_prompt` — line 129
+- `_parse_json` — line 141
+- `_clamp` — line 155
+- `_parse_passages` — line 159
+- `_span_overlap` — line 218
+- `_title_sim` — line 227
+- `_join_text` — line 237
+- `_assemble` — line 245
+- `extract_lecture_structure` — line 304
 
 Consumes from `backend.*`:
 - `backend.pipeline.llm.complete`
@@ -169,10 +259,11 @@ Consumes from `backend.*`: *(none)*
 ## backend.pipeline.segment_clips.py
 
 Defines:
-- `_safe_name` — line 35
-- `_validate_times` — line 41
-- `cut_clip` — line 51
-- `cut_concept_clips` — line 101
+- `_codec_args` — line 39
+- `_safe_name` — line 47
+- `_validate_times` — line 53
+- `cut_clip` — line 63
+- `cut_concept_clips` — line 113
 
 Consumes from `backend.*`: *(none)*
 
