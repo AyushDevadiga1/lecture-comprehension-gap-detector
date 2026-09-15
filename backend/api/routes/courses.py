@@ -41,7 +41,19 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
     for e in edge_rows:
         graph.add_edge(e.source, e.target, e.confidence)
     graph.resolve_cycles()
-    return CourseGraphOut(course_id=course_id, **graph.to_dict())
+    result = graph.to_dict()
+    # re-attach the persisted provenance the graph object itself doesn't carry
+    # (transcript|classifier source + verbatim evidence) so the DAG view can
+    # render WHY an edge exists (Stage 8).
+    edge_info = {
+        (e.source, e.target): (e.source_method or "classifier", e.evidence or None)
+        for e in edge_rows
+    }
+    for ed in result["edges"]:
+        ed["source_method"], ed["evidence"] = edge_info.get(
+            (ed["source"], ed["target"]), ("classifier", None)
+        )
+    return CourseGraphOut(course_id=course_id, **result)
 
 
 def _course_graph_dict(course_id: str) -> dict:
@@ -49,7 +61,9 @@ def _course_graph_dict(course_id: str) -> dict:
     out = get_course_graph(course_id)
     return {
         "edges": [{"source": e.source, "target": e.target,
-                   "confidence": e.confidence} for e in out.edges],
+                   "confidence": e.confidence,
+                   "source_method": e.source_method,
+                   "evidence": e.evidence} for e in out.edges],
         "topological_order": out.topological_order,
     }
 

@@ -12,7 +12,13 @@ from backend.api.schemas import (
     QuizSubmitIn,
     QuizSubmitOut,
 )
-from backend.models.db import Concept, ConceptItem, QuizResponse, SessionLocal
+from backend.models.db import (
+    Concept,
+    ConceptItem,
+    Passage,
+    QuizResponse,
+    SessionLocal,
+)
 from backend.pipeline.mcq_gen import generate_mcq, local_context
 from backend.pipeline.quiz import (
     make_mcq,
@@ -47,6 +53,18 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
         names = sorted({c.name for c in concepts})
         by_name = {c.name: c for c in concepts}
 
+        # Stage 6 grounding (plan/LECTURE_STRUCTURE.md §4): when the concept was
+        # extracted by the Lecture-Structure pass its full teaching passage is
+        # persisted — the MCQ writer reads that text, not a re-scanned window.
+        # Concepts without a passage keep the old local_context fallback.
+        passage_ctx: dict = {}
+        for name, c in by_name.items():
+            if c.passage_id is None:
+                continue
+            p = db.get(Passage, c.passage_id)
+            if p is not None and p.text:
+                passage_ctx[name] = p.text
+
         segments = workers._lecture_segments(db, course_id)
         # one distinct evidence sentence per concept: once a sentence is used
         # as one concept's answer it is skipped for the rest, so concepts whose
@@ -80,7 +98,7 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
     plan: dict = {}
     for name in names:
         q = None
-        ctx = local_context(segments, by_name.get(name))
+        ctx = passage_ctx.get(name) or local_context(segments, by_name.get(name))
         if ctx:
             q = generate_mcq(name, ctx)
         if not q:

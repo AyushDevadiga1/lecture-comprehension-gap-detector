@@ -49,6 +49,8 @@ class GraphEdgeOut(BaseModel):
     source: str
     target: str
     confidence: float
+    source_method: str = "classifier"
+    evidence: Optional[str] = None
 
 
 class CourseGraphOut(BaseModel):
