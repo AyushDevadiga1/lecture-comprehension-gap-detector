@@ -19,15 +19,27 @@ Clips land under data/processed/clips/<lecture_id>/ so the remediation loop
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# Re-encoding to H.264/AAC is slow on CPU; using stream copy ("-c copy")
-# keeps Stage 5 instant and lossless for our clip-cuts. Overriding tool
-# flags is possible via the `ffmpeg` binary path.
-_COPY_ARGS = ["-c", "copy"]
+# Clip cuts re-encode to H.264/AAC so the video starts exactly on the requested
+# frame; stream copy ("-c copy") is instant/lossless but snaps to the prior
+# keyframe, which freezes/desyncs the first visually decoded frame. Re-encoding
+# is slower on CPU, so LECGAP_CLIP_STREAMCOPY=1 opts back into the fast copy.
+_RENDER_ARGS = [
+    "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+    "-c:a", "aac", "-b:a", "96k",
+    "-movflags", "+faststart",
+]
+
+
+def _codec_args() -> List[str]:
+    if os.getenv("LECGAP_CLIP_STREAMCOPY", "").strip().lower() in {"1", "true", "yes"}:
+        return ["-c", "copy"]
+    return _RENDER_ARGS
 
 _INVALID_CHARS = re.compile(r"[^\w\- .]")
 
@@ -69,7 +81,7 @@ def cut_clip(
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
 
     cmd = [ffmpeg, "-y", "-ss", f"{start:.3f}", "-to", f"{end:.3f}", "-i", media_path]
-    cmd += _COPY_ARGS + [out_path]
+    cmd += _codec_args() + [out_path]
     cmd_str = " ".join(cmd)
 
     try:

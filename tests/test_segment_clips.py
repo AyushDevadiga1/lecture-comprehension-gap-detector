@@ -40,7 +40,8 @@ def test_cut_clip_ok(tmp_path, monkeypatch):
     assert res["start_s"] == 1.5 and res["end_s"] == 4.0
     assert calls[0][0] == "ffmpeg"
     assert calls[0][1:-1][0:4] == ["-y", "-ss", "1.500", "-to"]
-    assert "-i" in calls[0] and "-c" in calls[0]
+    assert "-i" in calls[0] and "-c:v" in calls[0]
+    assert "libx264" in calls[0]  # re-encode = keyframe-accurate cut
     assert Path(res["out_path"]).parent == tmp_path
     assert out.parent.exists()  # out dir created
 
