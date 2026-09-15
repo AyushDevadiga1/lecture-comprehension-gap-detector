@@ -7,6 +7,19 @@ line in this file. When in doubt, this file wins.
 
 ## Confirmed
 
+- **Lecture Structure pass replaces chunk-atomic extraction (2026-09-15).** One
+  consolidated LLM read of the transcript (sliding windows + rolling context)
+  emits passages (span/title/concepts taught/evidence text), per-concept
+  teach-spans, and transcript-grounded prerequisite links with verbatim evidence.
+  Supersedes Stage 2b `refine_timeline.py` (retained only as a fallback path) and
+  re-grounds Stages 2/5/6 in the structure. Full design: `plan/LECTURE_STRUCTURE.md`.
+- **Prerequisite signal becomes transcript-first, classifier demoted to
+  fallback (2026-09-15).** Edges from the structure pass's `links` are primary
+  (confidence 0.9); the LectureBank frozen-baseline classifier (F1 0.569) fills
+  only pairs the transcript never grounds (notably cross-lecture) and backs the
+  name-embedding dedup. Complements the earlier "frozen baseline locked" Phase 3
+  decision rather than replacing the work.
+
 - **Topic is finalized:** Lecture Comprehension Gap Detector (LecGap). No
   further topic exploration or rebuilds.
 - **Team size:** 4 people, including Ayush. Reliability of full
@@ -58,6 +71,11 @@ line in this file. When in doubt, this file wins.
   working plan rather than challenged line by line.
 
 ## Proposed — not yet confirmed
+
+*(None pending. The 2026-09-15 lecture-structure decisions were confirmed
+ and moved to the Confirmed list above.)*
+
+## How to use this file
 
 ## How to use this file
 
