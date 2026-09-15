@@ -48,10 +48,17 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
 - **Phase 1 — Transcription pipeline: done.** Lecture upload → background Whisper
   transcription → timestamped segments persisted to SQLite, served over the API.
   Verified end-to-end against a real CampusX lecture recording.
-- **Phase 2 — LLM-based concept extraction: done.** Spoken concepts extracted
-  from transcript segments (chunked, cache-first LLM calls) and de-duplicated
-  into a `concepts` table; served over the API.
-- **Phase 3 — Prerequisite classification (core): done — frozen-encoder baseline adopted.**
+- **Phase 2 — Concept extraction: done, rebuilt as the Lecture-Structure pass.**
+  Spoken concepts are extracted by **one consolidated LLM read** of the
+  transcript (`backend/pipeline/passages.py`) — sliding windows + rolling
+  context — that emits **passages** (span/title/kind/summary/text), each
+  concept's precise **teach-span**, and **spoken prerequisite links** with
+  verbatim evidence. This replaces the old chunk-atomic extractor + Stage 2b
+  time-anchor refinement (now retained only as the whole-pass fallback).
+  Design: `plan/LECTURE_STRUCTURE.md`.
+- **Phase 3 — Prerequisite classification: done — transcript-first, frozen-encoder classifier as fallback.**
+  - Edges the professor *voices* in the lecture are primary (`source_method="transcript"`,
+    confidence 0.9, verbatim evidence stored).
   - `backend/pipeline/classify_prerequisites.py` — candidate-pair pre-filter
     (temporal + embedding similarity) and the **adopted classifier**: frozen
     MiniLM encoder + logistic head over the LectureBank pairs.
@@ -64,10 +71,14 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
     e5→0.53, e8→0.554) but every configuration plateaued ~F1 0.55 and **never
     beat the frozen baseline** (MiniLM e8: 0.554, MPNet e4: 0.550 vs 0.569).
     **Decision: the frozen-encoder baseline (F1 0.569) is locked in as the
-    Phase 3 classifier.** Fine-tuning infra remains usable/reproducible for
-    future iterations.
+    Phase 3 classifier** and fills only the pairs the transcript never
+    grounds (notably cross-lecture relations). Fine-tuning infra remains
+    usable/reproducible for future iterations.
 - **Phase 4 — Graph construction: done.** Confirmed prerequisite pairs become a
   per-course prerequisite DAG (`backend/pipeline/build_graph.py`):
+  - *Transcript-first merge:* lecture links are added at 0.9 with evidence;
+    the classifier covers only uncovered pairs; every `graph_edges` row
+    carries `source_method` + `evidence` so the DAG view can show *why*.
   - *Deduplication:* new concept names are checked against existing graph nodes
     via embedding similarity before being added, so "Gradient Descent" and
     "GD optimization" from different lectures collapse into one node.
@@ -77,14 +88,15 @@ Implementation underway, phased by complexity (see `plan/ROADMAP.md`):
   - *Persistence:* nodes/edges live in `graph_nodes`/`graph_edges` SQLite tables
     per course (not a pickled file), so the Stage 7 refinement loop can swap
     edges safely.
-  - Exposed via `POST /courses/{id}/graph` (background build: dedup +
-    LectureBank-trained classifier scores candidate pairs) and
-    `GET /courses/{id}/graph` (persisted nodes/edges + learner order).
-- **Phase 5 — Clip segmentation: done.** One ffmpeg clip per concept per
-  timestamp range (`backend/pipeline/segment_clips.py`, pure):
-  - `cut_clip` — stream-copy `ffmpeg -ss/-to` cut for a single concept range;
-    surfaces timeout/missing-binary/ffmpeg errors per clip instead of
-    aborting the batch.
+  - Exposed via `POST /courses/{id}/graph` (background build) and
+    `GET /courses/{id}/graph` (persisted nodes/edges + learner order +
+    edge provenance).
+- **Phase 5 — Clip segmentation: done.** One ffmpeg clip per concept cut on
+  its teach-span (`backend/pipeline/segment_clips.py`, pure):
+  - `cut_clip` — ffmpeg cut for a single concept range, **re-encoded by
+    default** (`LECGAP_CLIP_STREAMCOPY=1` opts back to `-c copy`) so the cut
+    is frame-accurate; surfaces timeout/missing-binary/ffmpeg errors per clip
+    instead of aborting the batch.
   - `cut_concept_clips` — batch worker writing
     `data/processed/clips/<lecture_id>/<concept>__<start>-<end>.mp4`,
     skipping concepts without timestamps.
@@ -102,6 +114,9 @@ this infrastructure is stable.
   - `backend/pipeline/quiz.py` — `select_remediation_sequence` (transitive
     upstream closure, ordered by learner order) + `order_quiz`.
   - DB: `quiz_questions` + `quiz_responses` tables.
+  - MCQ writers are grounded on the concept's **teaching passage** (the
+    structure pass's joined excerpt) with the old `local_context` window as
+    fallback for unanchored concepts.
   - Routes: `POST /quizzes`, `POST /quizzes/submit` (returns the remediation
     sequence for the missed concepts), `GET /students/{sid}/remediation`,
     `GET /courses/{id}/stats`.
@@ -130,7 +145,9 @@ this infrastructure is stable.
   faculty tab in `frontend/app.py`: a confusion heatmap (miss rate per
   concept per prerequisite) plus the *taught-vs-learned* divergence (where
   the order concepts were covered differs from the learner order the graph
-  suggests). The frontend is a **thin HTTP client** — it never imports
+  suggests). Graph edges surface `source_method` + `evidence`, so the DAG
+  view can show why an edge exists (the spoken quote or the classifier
+  pair). The frontend is a **thin HTTP client** — it never imports
   `backend/`, and the same endpoints power both the student remediation tab
   and the faculty tab.
 
@@ -157,10 +174,10 @@ flowchart LR
 
     %% -------------------- API surface --------------------
     API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health"]
-    R["backend/api/routes.py · HTTP endpoints<br/>upload · concepts · clips · graph · quiz · stats"]
+    R["backend/api/routes/ · HTTP endpoints<br/>upload · concepts · clips · graph · quiz · stats<br/>background workers in api/workers.py"]
 
     %% -------------------- Storage --------------------
-    DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache<br/>concepts · graph · clips · quiz · responses")]
+    DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache · concepts<br/>passages · lecture_links · graph · clips · quiz · responses")]
     RAW["data/raw/ · uploaded lecture media"]
     CLIPS["data/processed/clips/ per lecture<br/>one exportable video per concept"]
 
@@ -173,11 +190,12 @@ flowchart LR
     %% -------------------- Pipeline · Stages 1-7 --------------------
     LLM["llm.py · LLM access layer<br/>SQLite cache → Groq chat → Ollama<br/>429 backoff · quota metering"]
     TR["transcribe.py · Stage 1<br/>WHISPER_BACKEND: local / groq<br/>outputs timestamped segments"]
-    EX["extract_concepts.py · Stage 2<br/>transcript chunks → LLM concepts<br/>→ MiniLM dedup"]
-    CLS["classify_prerequisites.py · Stage 3<br/>candidate pairs → score → LLM check"]
+    SP["passages.py · Stage 2 structure pass<br/>one consolidated LLM read → passages,<br/>concepts + teach-spans, spoken links"]
+    EX["extract_concepts.py · Stage 2b fallback<br/>chunk-atomic extractor + time refinement<br/>(only when the structure pass fails)"]
+    CLS["classify_prerequisites.py · Stage 3<br/>transcript-first · classifier covers<br/>the pairs the lecture never grounds"]
     BG["build_graph.py · Stage 4<br/>prerequisite DAG · cycle fix · learning order"]
-    SC["segment_clips.py · Stage 5<br/>one video clip per concept"]
-    QZ["quiz.py · Stage 6<br/>ordered quiz · remediation watch-list"]
+    SC["segment_clips.py · Stage 5<br/>one video clip per concept teach-span"]
+    QZ["quiz.py · Stage 6<br/>passage-grounded words · remediation watch-list"]
     RF["refine.py · Stage 7<br/>LLM personas · recovery-metric validation"]
 
     %% -------------------- Flow --------------------
@@ -193,18 +211,21 @@ flowchart LR
     TR -->|"groq: mono 16 kHz FLAC"| GROQAUD
     TR -->|"subprocess"| FFMPEG
     TR -->|"segments stored"| DB
-    R -->|"segments → concept extraction"| EX
+    R -->|"segments → structure pass"| SP
+    SP -->|"one consolidated read"| LLM
+    SP -->|"cosine dedup ≥ 0.85"| MINILM
+    SP -->|"concepts + passages + links stored"| DB
+    SP -->|"whole-pass failure → fallback"| EX
     EX -->|"one chunk at a time"| LLM
-    EX -->|"cosine dedup ≥ 0.85"| MINILM
     EX -->|"concepts stored"| DB
     R -->|"course concepts"| CLS
+    R -->|"spoken links (0.9, evidence)"| BG
     CLS -->|"pair scoring"| MINILM
-    CLS -->|"LLM reasoning check"| LLM
+    CLS -->|"uncovered pairs → confirmed edges"| BG
     CLS -->|"evaluation"| LB
     CLS -->|"encoder backend"| FT
-    CLS -->|"confirmed edges"| BG
     BG -->|"nodes + edges stored"| DB
-    R -->|"concepts + timestamps"| SC
+    R -->|"concepts + teach-spans"| SC
     SC -->|"ffmpeg"| FFMPEG
     SC -->|"clip videos"| CLIPS
     SC -->|"clip rows stored"| DB
@@ -231,7 +252,7 @@ flowchart LR
 
     class GK key;
     class GROQCHAT,GROQAUD,OLLAMA,FFMPEG ext;
-    class LLM,TR,EX,CLS,BG,SC,QZ,RF mod;
+    class LLM,TR,SP,EX,CLS,BG,SC,QZ,RF mod;
     class DB,RAW,CLIPS store;
     class MINILM,LB,FT ml;
     class FE ui;
@@ -256,13 +277,13 @@ flowchart LR
     IN(["INPUT<br/>lec2__smoketest_3min.mp4<br/>180 s · Hinglish (CampusX)"])
     T["Stage 1 · transcribe.py<br/>real Whisper · local CPU"]
     SEG[("73 timestamped segments<br/>→ 01_transcript.json")]
-    EX["Stage 2 · extract_concepts.py<br/>+ llm.py · Groq chat"]
+    EX["Stage 2 · passages.py structure pass<br/>+ llm.py · Groq chat"]
     CONC[("11 concepts · 7 implicit / 4 explicit<br/>→ 02_concepts.json")]
-    GT["Stages 3+4 · classify_prerequisites.py<br/>+ build_graph.py · LectureBank"]
-    GR[("11-node DAG · 6 edges<br/>→ 03_graph.json")]
+    GT["Stages 3+4 · transcript-first merge<br/>+ build_graph.py · LectureBank fallback"]
+    GR[("11-node DAG · 6 edges<br/>→ 03_graph.json + passed edges carry evidence")]
     SC["Stage 5 · segment_clips.py · ffmpeg"]
-    CPS[("11/11 clip videos<br/>→ 04_clips.json + clips/*.mp4")]
-    QZ["Stage 6 · quiz.py<br/>+ /quizzes · /quizzes/submit"]
+    CPS[("11/11 clip videos · teach-span cuts<br/>→ 04_clips.json + clips/*.mp4")]
+    QZ["Stage 6 · quiz.py<br/>passage-grounded + /quizzes · /quizzes/submit"]
     QZR[("11 questions in learner order<br/>score 7/11 → remediation watch-list<br/>→ 05_quiz.json + 06_remediation.json")]
     ST["Stage 8 · /courses/ml/stats"]
     STT[("confusion heatmap + taught-vs-learned<br/>divergence → 07_stats.json")]
@@ -276,9 +297,9 @@ flowchart LR
     class SEG,CONC,GR,CPS,QZR,STT out;
 ```
 
-The run folder `data/samples/run_20260911_084230/` holds every artifact above
-plus `report.html` (a browser-openable chart mapping each stage → module →
-output) and `run_manifest.json` (machine-readable record). Reproduce it any
+Every run folder above holds every artifact (numbered `0X_*.json`),
+`report.html` (a browser-openable chart mapping each stage → module →
+output) and `run_manifest.json` (machine-readable record). Reproduce any
 time:
 
 ```bash
@@ -298,7 +319,11 @@ for instantaneous transcription (`--backend groq`), every stage artifact +
 | Multiple Linear Regression (mp4) | 21 min | `data/samples/run_20260912_053604/` | 232 segs · 24 concepts · **22-node/10-edge DAG** · 24/24 clips · quiz **14/22** |
 | Gated Recurrent Unit / GRU (webm, AV1/Opus) | 86 min | `data/samples/run_20260913_080041/` | 1557 segs · 101 concepts · **74-node/103-edge DAG** · 101/101 clips · quiz **49/74** |
 | Multiple Linear Regression (3-min smoke clip, Hinglish) | 3 min | `data/samples/run_20260914_053742/` | 76 segs · 8 concepts · 8-node/3-edge DAG · 8/8 clips · quiz **5/8** (server-graded MCQs) |
-| SQLAlchemy Crash Course (mp4, Python ORM — new domain) | 60 min | `data/samples/run_20260914_063836/` | 570 segs · 93 concepts · **79-node/176-edge DAG** · 93/93 clips · quiz **52/79** (Stage 6c LLM-written MCQs) |
+| SQLAlchemy Crash Course (mp4, Python ORM — new domain) | 60 min | `data/samples/run_20260914_063836/` | 570 segs · **28 concepts · 28-node/28-edge DAG** (21 classifier + **7 transcript**) · 28/28 clips · quiz **18/28** — structure pass: 12 passages, **27/28 concepts tight ≤120 s**, median teach-span 25.3 s |
+
+The latest row was re-run under the Lecture-Structure pipeline (09-15), so its
+artifacts reflect the transcript-first graph and per-concept teach-span cuts;
+the older rows predate the redesign.
 
 Reproduce with `python scripts/sample_run.py --clip "<file>" --backend groq
 --no-copy-clips`; open the run folder's `report.html` for the chart-style map
@@ -366,10 +391,12 @@ Tests and benchmarks:
 
 ```bash
 # Unit tests (stubbed/monkeypatched LLM + whisper + encoder — zero API usage,
-# zero model/weight download, isolated test DB). 127 tests across:
-#   transcription, LLM layer, concept extraction, prerequisite classifier,
-#   graph construction, clip segmentation, quiz generation (incl. Stage 6c
-#   LLM-written MCQs) + grading + refinement,
+# zero model/weight download, isolated test DB). 162 tests across:
+#   transcription, LLM layer, the Lecture-Structure pass (16 tests),
+#   concept extraction + fallback, prerequisite classifier,
+#   graph construction (incl. the transcript-first merge), clip segmentation,
+#   quiz generation (passage-grounded + Stage 6c LLM-written MCQs) + grading +
+#   refinement,
 #   frontend DAG + timeline renderers, fine-tune helpers, and API integration.
 python -m pytest tests
 
@@ -407,6 +434,9 @@ Configuration:
 | `LECGAP_DATABASE_URL` | `sqlite:///data/lecgap.db` | database location override |
 | `LECGAP_GROQ_MODEL` | `openai/gpt-oss-20b` | chat model used by the pipeline |
 | `LECGAP_OLLAMA_MODEL` / `LECGAP_OLLAMA_URL` | `llama3.2` / `http://127.0.0.1:11434` | final-fallback local backend |
+| `LECGAP_STRUCTURE_WINDOW_CHARS` | `8000` | sliding-window size for the Lecture-Structure pass |
+| `LECGAP_STRUCTURE_OVERLAP_FRAC` | `0.25` | window overlap for the structure pass |
+| `LECGAP_CLIP_STREAMCOPY` | `0` | `1` = stream-copy ffmpeg cuts (fast, frame-drift risk); default re-encodes for frame-accurate clip starts |
 
 Groq rate limits — **Developer plan, live-verified on this key**:
 
@@ -417,7 +447,7 @@ Groq rate limits — **Developer plan, live-verified on this key**:
 
 Budget guardrails already in place: the test suite makes **zero** API calls
 (stubbed LLM/Whisper/encoder — unlimited re-runs); identical LLM prompts are
-SQLite-cached so re-runs are free; concept-extraction chunks (~3K tokens) sit
+SQLite-cached so re-runs are free; the structure pass's 8K-char windows sit
 well inside the per-minute window; and both LLM and Whisper paths back off on
 HTTP 429 instead of failing. A 1-hour lecture ≈ 3.6K audio-sec → ~13% of the
 daily Whisper budget.
@@ -429,6 +459,7 @@ Raw media and the database are git-ignored — never commit them.
 | File | Contents |
 |---|---|
 | `plan/ARCHITECTURE.md` | Full 8-stage pipeline, stage by stage, tech stack |
+| `plan/LECTURE_STRUCTURE.md` | Approved Lecture-Structure redesign spec (passages, teach-spans, transcript-first graph) |
 | `plan/EVALUATION.md` | How the prerequisite classifier and refinement loop are tested |
 | `plan/ROADMAP.md` | Phased build plan (complexity-based, not semester-bound) |
 | `plan/DECISIONS.md` | Confirmed vs. open decisions, and why |

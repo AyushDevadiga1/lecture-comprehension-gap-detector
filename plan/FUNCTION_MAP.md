@@ -23,15 +23,15 @@ Consumes from `backend.*`: *(none)*
 ## backend.api.workers.py
 
 Defines:
-- `_process_lecture` — line 33
-- `_extract_concepts_worker` — line 74
-- `_cut_clips_worker` — line 127
-- `_build_course_graph_worker` — line 165
-- `_rebuild_course_graph` — line 175
-- `_lecture_segments` — line 227
-- `_in_range` — line 243
-- `_question_out` — line 259
-- `_clips_by_concept` — line 282
+- `_process_lecture` — line 36
+- `_extract_concepts_worker` — line 77
+- `_cut_clips_worker` — line 173
+- `_build_course_graph_worker` — line 211
+- `_rebuild_course_graph` — line 221
+- `_lecture_segments` — line 314
+- `_in_range` — line 330
+- `_question_out` — line 346
+- `_clips_by_concept` — line 369
 
 Consumes from `backend.*`:
 - `backend.api.schemas.QuizQuestionOut`
@@ -40,11 +40,14 @@ Consumes from `backend.*`:
 - `backend.models.db.GraphEdge`
 - `backend.models.db.GraphNode`
 - `backend.models.db.Lecture`
+- `backend.models.db.LectureLink`
+- `backend.models.db.Passage`
 - `backend.models.db.SessionLocal`
 - `backend.models.db.TranscriptSegment`
 - `backend.pipeline.build_graph.ConceptGraph`
 - `backend.pipeline.classify_prerequisites`
 - `backend.pipeline.extract_concepts.extract_spoken_concepts`
+- `backend.pipeline.passages.extract_lecture_structure`
 - `backend.pipeline.refine_timeline.refine_concept_times`
 - `backend.pipeline.segment_clips.cut_concept_clips`
 - `backend.pipeline.transcribe.transcribe`
@@ -84,9 +87,9 @@ Consumes from `backend.*`:
 
 Defines:
 - `get_course_graph` — line 21
-- `_course_graph_dict` — line 47
-- `build_course_graph` — line 58
-- `course_stats` — line 73
+- `_course_graph_dict` — line 59
+- `build_course_graph` — line 72
+- `course_stats` — line 87
 
 Consumes from `backend.*`:
 - `backend.api.schemas.CourseBuildOut`
@@ -102,9 +105,9 @@ Consumes from `backend.*`:
 ## backend.api.routes.quizzes.py
 
 Defines:
-- `create_quiz` — line 27
-- `submit_quiz` — line 130
-- `get_remediation` — line 240
+- `create_quiz` — line 33
+- `submit_quiz` — line 148
+- `get_remediation` — line 258
 
 Consumes from `backend.*`:
 - `backend.api.routes.courses._course_graph_dict`
@@ -116,6 +119,7 @@ Consumes from `backend.*`:
 - `backend.api.workers`
 - `backend.models.db.Concept`
 - `backend.models.db.ConceptItem`
+- `backend.models.db.Passage`
 - `backend.models.db.QuizResponse`
 - `backend.models.db.SessionLocal`
 - `backend.pipeline.mcq_gen.generate_mcq`
@@ -127,9 +131,9 @@ Consumes from `backend.*`:
 ## backend.models.db.py
 
 Defines:
-- `utcnow` — line 44
-- `_migrate_schema` — line 231
-- `init_db` — line 263
+- `utcnow` — line 45
+- `_migrate_schema` — line 303
+- `init_db` — line 355
 
 Consumes from `backend.*`: *(none)*
 
@@ -185,17 +189,17 @@ Consumes from `backend.*`:
 ## backend.pipeline.passages.py
 
 Defines:
-- `_seg_fmt` — line 82
-- `_window_excerpts` — line 88
-- `_prompt` — line 129
-- `_parse_json` — line 141
-- `_clamp` — line 155
-- `_parse_passages` — line 159
-- `_span_overlap` — line 218
-- `_title_sim` — line 227
-- `_join_text` — line 237
-- `_assemble` — line 245
-- `extract_lecture_structure` — line 304
+- `_seg_fmt` — line 85
+- `_window_excerpts` — line 91
+- `_prompt` — line 132
+- `_parse_json` — line 144
+- `_clamp` — line 158
+- `_parse_passages` — line 162
+- `_span_overlap` — line 221
+- `_title_sim` — line 230
+- `_join_text` — line 240
+- `_assemble` — line 248
+- `extract_lecture_structure` — line 307
 
 Consumes from `backend.*`:
 - `backend.pipeline.llm.complete`
