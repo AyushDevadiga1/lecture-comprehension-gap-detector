@@ -1,8 +1,10 @@
 """Refresh an existing sample run so its committed folder reflects the current
-pipeline: Stage 2b time-anchor refinement -> re-cut clips on tight spans ->
-LLM-written MCQs (now with per-option explanations). Everything runs through
-the real API against the run's dedicated DB (same TestClient path as
-sample_run.py); stale files in the run folder are replaced in place.
+pipeline: Lecture-Structure pass (passages + teach-spans + spoken links) ->
+transcript-first course graph -> re-cut clips on tight spans -> LLM-written
+MCQs grounded on passage text. Everything runs through the real API against
+the run's dedicated DB (same TestClient path as sample_run.py); stale files in
+the run folder are replaced in place and structure/eval metrics land in
+08_structure.json.
 
 Usage:
     python scripts/refresh_run.py
@@ -69,20 +71,7 @@ def main() -> None:
     lid = lid_row[0]
     print(f"refreshing lecture id={lid}, course={course} in {run_dir}")
 
-    # ---- Stage 3/4: rebuild the course graph over the fresh concept set ----
-    # create_quiz orders questions by the course graph; without a rebuild it
-    # falls back to the OLD graph, shrinking the quiz to the stale intersection.
-    if client.post(f"/courses/{course}/graph").status_code != 202:
-        fail("graph build trigger failed")
-    graph = poll_until(
-        client, f"/courses/{course}/graph",
-        lambda sc, j: sc == 200, POLL_TIMEOUT_S, "graph build",
-    ).json()
-    save(run_dir, "03_graph.json", graph)
-    print(f"STAGE 3/4 course graph: {graph['node_count']} nodes, "
-          f"{graph['edge_count']} edges, order starts {graph['topological_order'][:3]}")
-
-    # ---- Stage 2 + 2b: concept extraction with time-anchor refinement ----
+    # ---- Stage 2: Lecture-Structure pass (concept extraction) ----
     # a stale error from an earlier failed run would trip the post-extraction
     # check below even after a clean re-run, so drop it first
     with sqlite3.connect(str(run_dir / "lecgap.db")) as con:
@@ -98,8 +87,60 @@ def main() -> None:
         fail(f"concept extraction error: {lecture['error']}")
     concepts = lecture["concepts"]
     save(run_dir, "02_concepts.json", concepts)
-    refined = sum(1 for c in concepts if c["start_s"] is not None)
-    print(f"STAGE 2+2b concepts: {len(concepts)} (windows refined via LLM)")
+    print(f"STAGE 2 structure pass: {len(concepts)} concepts "
+          f"(teach-spans come from the pass itself)")
+
+    # ---- Stage 3/4: rebuild the course graph over the fresh concept set ----
+    # the extraction worker already chained a rebuild; POSTing again is
+    # idempotent and just re-answers the poll below. create_quiz orders
+    # questions by this graph, so a fresh build matters before Stage 6.
+    if client.post(f"/courses/{course}/graph").status_code != 202:
+        fail("graph build trigger failed")
+    graph = poll_until(
+        client, f"/courses/{course}/graph",
+        lambda sc, j: sc == 200, POLL_TIMEOUT_S, "graph build",
+    ).json()
+    save(run_dir, "03_graph.json", graph)
+    src_methods: dict = {}
+    for e in graph["edges"]:
+        m = e.get("source_method", "classifier")
+        src_methods[m] = src_methods.get(m, 0) + 1
+    print(f"STAGE 3/4 course graph: {graph['node_count']} nodes, "
+          f"{graph['edge_count']} edges "
+          f"({', '.join(f'{m}: {n}' for m, n in src_methods.items())}), "
+          f"order starts {graph['topological_order'][:3]}")
+
+    # ---- Lecture Structure artifacts: passages + spoken links + eval stats ----
+    with sqlite3.connect(str(run_dir / "lecgap.db")) as con:
+        passages = [
+            {"title": r[0], "kind": r[1], "start_s": r[2], "end_s": r[3],
+             "summary": r[4], "text": r[5]}
+            for r in con.execute(
+                "SELECT title, kind, start_s, end_s, summary, text "
+                "FROM passages WHERE lecture_id = ? ORDER BY idx", (lid,)
+            )
+        ]
+        n_links = con.execute(
+            "SELECT count(*) FROM lecture_links WHERE lecture_id = ?", (lid,)
+        ).fetchone()[0]
+    spans = [c["end_s"] - c["start_s"] for c in concepts
+             if c["start_s"] is not None and c["end_s"] is not None]
+    sorted_spans = sorted(spans)
+    metrics = {
+        "n_passages": len(passages),
+        "n_spoken_links": n_links,
+        "n_concepts": len(concepts),
+        "n_spanned": len(sorted_spans),
+        "tight_le_120s": sum(1 for s in sorted_spans if s <= 120),
+        "median_span_s": sorted_spans[len(sorted_spans) // 2] if sorted_spans else None,
+        "max_span_s": sorted_spans[-1] if sorted_spans else None,
+        "edge_methods": src_methods,
+    }
+    save(run_dir, "08_structure.json", {"passages": passages, "metrics": metrics})
+    print(f"STRUCTURE: {len(passages)} passages, {n_links} spoken links, "
+          f"{metrics['tight_le_120s']}/{len(sorted_spans)} concepts tight <=120s, "
+          f"median span {metrics['median_span_s']}s, "
+          f"longest span {metrics['max_span_s']}s")
 
     # ---- Stage 5: re-cut clips on the refined spans ----
     client.post(f"/lectures/{lid}/clips")

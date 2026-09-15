@@ -1,0 +1,113 @@
+{
+  "passages": [
+    {
+      "title": "Handling Transaction Commit and Auto\u2011Increment IDs",
+      "kind": "explain",
+      "start_s": 1813.3,
+      "end_s": 1880.1,
+      "summary": "The professor explains why a transaction must be committed before new rows are visible and why manually assigning IDs is error\u2011prone, illustrating the auto\u2011increment behavior of PostgreSQL.",
+      "text": "that we get an error here, which says that the key owner three is not present in table people, because we didn't commit Mike. So the reason we have the ID two is we had Mike, we had Jane, Mike had ID one, Jane has ID two, Mike was deleted, no longer present. So the next ID that is going to be created is three. But since we didn't commit the changes, we don't have the changes made in the database yet. So we need to say connection commit. And that is going to create the people objects. And then we're going to have the ability to link to them here using their ID. So if I run this now, we get another problem. Okay, so my explanation was actually correct. But because of a couple of things that I ran here off screen, the ID has incremented a little bit more than just once or twice. So we now have 23, 24, and so on. This is also why you don't want to provide IDs manually. So now we have 23, Let just go and change that We had 23 24 25 Now if I run this"
+    },
+    {
+      "title": "Using SQL JOINs to Combine Tables",
+      "kind": "worked_example",
+      "start_s": 1943.7,
+      "end_s": 2104.7,
+      "summary": "The lecturer demonstrates how to construct an INNER JOIN between the people and things tables to retrieve owners and their items, then contrasts it with a LEFT OUTER JOIN to include all people.",
+      "text": "we can join these two tables and make a select statement on the joint table So what I can do here is I can say join underscore statement is equal to and then people dot and then I can decide what kind of join I want to have Do I want to have an inner join? Do I want to have an outer join? Let's start with a basic inner join, which means we're going to combine the tables and only keep what's present or when both tables are relevant. So for example, some of these people don't own any things. these are not going to be included in the join table because if Clara doesn't own anything, there's no reason to display her in an inner join when we join these two tables. So we only are interested in ownerships. And if Clara doesn't own anything, she's not going to be part of the table if we perform an inner join. So we're going to say people.join things. And then we have to provide the fields that are going to be used for that join. we're going to say people.c.id is going to be equal to things.c.owner. So where these two match, we're going to do a join. And then we can do another select statement here, we can say select statements equal to people select and then with underscore only columns So we can choose the columns that we want to show And in this case we going to go with people dot C dot name and with thing dot C dot description to see who owns what. And then we can say select underscore from and we provide the join statement as the source here. So what we do is we say, select the name of the person and the thing description, the description of the thing from the join statement. And the join statement is basically joined the tables, people and things where the idea of a person matches the owner of a thing. And we can then go ahead and say, result is going to be equal to connection, execute the select statement. and then we can say for row in result dot fetch all print rope. And of course, we need to say things not thing. And then we get Jane owns a laptop and mouse, a keyboard, Mike owns a book, Bob owns a bottle and Anna owns the speakers. So that is exactly what we wanted. This worked. And we can also do now a different type of joint. So if I go ahead and say outer joint, for example,"
+    },
+    {
+      "title": "Aggregating Data with GROUP BY and HAVING",
+      "kind": "worked_example",
+      "start_s": 2127.8,
+      "end_s": 2262.1,
+      "summary": "The professor shows how to group rows by owner, sum item values, and filter groups using HAVING to retrieve owners whose total item value exceeds a threshold.",
+      "text": "example, I can say here, group underscore by statement is equal to things select. So I want to select the things, only specific columns here. And here now we're going to need an additional import, we're going to need the funk or function import here, which is going to allow us to aggregate stuff. Because when we group data, we also aggregate data. If I say group all the things by owners, I need to define what happens with the values, for example. So if I say, I only allow for one row for owner two, what does it mean? Do I sum up the value? Do I calculate the mean? That is the aggregation. So what I want to do here now is I want to say, I want to have the things dot owner And I also want to have func dot sum So I want to sum up all the values So things dot value this is going to give me for every owner how much total value their items have or their things have. So I say select with only columns. And then I say group by and I want to group by things dot c dot owner. And I think I need to do it here as well. Sorry, things dot c dot owner, things dot c dot value. And then we can do the same thing result is equal to connection execute group by statement for row in result dot fetch all print row. Run this and you can see that for person two, we get 951 because everything summed up equals that and all the others only own a single item. So they get a total of the value of that item. So this is how you can do that. You can also specify a condition here. So we can say something like I interested in all of that but only if the total sum is above let say 50 So I can say having and then the same expression function some things dot C dot value is greater than 50 And then again for row in results dot fetch all print row. That is going to give me two and 25. So now let us move on"
+    },
+    {
+      "title": "Transition to Object\u2011Relational Mapping",
+      "kind": "transition",
+      "start_s": 2270.9,
+      "end_s": 2293.2,
+      "summary": "The lecturer signals a shift to discussing SQLAlchemy ORM, preparing to introduce Python code for database interaction.",
+      "text": "to the in my opinion, more interesting part, which is the object relational mapper for this, we're going to open up a new Python file, this time, we're going to call it just main dot py. And here, we're still going to do some basic imports from SQL Alchemy, we're going to say from SQL Alchemy, still import create engine, still import data types like integer and string and float,"
+    },
+    {
+      "title": "Using Session Flush to Obtain Auto\u2011Generated IDs",
+      "kind": "explain",
+      "start_s": 2767.8,
+      "end_s": 2796.8,
+      "summary": "The professor explains how session.flush() temporarily writes objects to the database to generate IDs without committing the transaction.",
+      "text": "to new person dot ID That is how you would do that Now the problem is before I commit that person I don have an ID But sometimes also I don want to commit before I have done everything So I don want to get an error here and have the person committed, but not the thing. What I can do in this case with a with a session is I can say session dot flush, this is going to temporarily add the person, it's going to give me the ID, but it's not going to write the changes permanently to the database."
+    },
+    {
+      "title": "Committing Transactions and Creating New Objects",
+      "kind": "explain",
+      "start_s": 2796.8,
+      "end_s": 2808.9,
+      "summary": "The lecturer shows how to commit a transaction after creating a new object and the necessity of calling session.new before committing.",
+      "text": "So what I can do is I can access that. And then in the end, I can say session dot commit. Of course, what I need to do before that is I need to say session at new thing. Otherwise, I'm not writing anything to the database."
+    },
+    {
+      "title": "Querying with SQLAlchemy ORM",
+      "kind": "worked_example",
+      "start_s": 2810.7,
+      "end_s": 2915.8,
+      "summary": "The professor demonstrates querying, filtering, and retrieving data using session.query, including selecting whole objects versus specific fields.",
+      "text": "And let's now look at the database. If I say select everything from things, I have a camera, the camera is owned by person 30. If I select everything from people, I can see person 30 is Charlie. Now, since I ran this twice now, I have Charlie twice in the database because this was executed twice. But you get the idea, I get the ID dynamically, I don't have to provide 30, I can just get the ID from the created object. And in Python, what I can do is I can now get a list of all the things that Charlie owns And I can get also the owner of the thing by just accessing the attributes So I can say now this is of course always going to create now a new person on you think but it doesn matter for our purposes now So new person if I say dot things I going to get the list of all things And if I say new thing dot person I going to get the person owning that thing as a Python object. So here you can see I get the thing instance, and I get the person instance as a Python object, I can also say here, person dot name, for example, or here I could say a list comprehension, t dot description for t in things, if I had multiple of those. And then I would get camera as a list here and Charlie as the owner. So that is super convenient. I don't need to care about anything database related, I don't need to do any joins here, I don't need to do any, any manual database stuff at all, I just have to define the objects here as classes. And I can then use them where the tables here as classes, and then I can use them as Python objects easily without caring about the database. Now the syntax for querying, updating and deleting is pretty similar to before we just have to use different function names. So what we do in this case is we use session dot query. And what we provide here as a parameter is what we exactly interested in So either the entire object for example person or just individual fields like person name and person h Depending on what I provide here I going to get a different type of output If I just say person the resulting set if I just do a select statement is going to be a list of Python objects a list of person objects"
+    },
+    {
+      "title": "Deleting and Updating Records with SQLAlchemy",
+      "kind": "worked_example",
+      "start_s": 2915.8,
+      "end_s": 3208.3,
+      "summary": "The lecturer covers deletion, bulk updates, and the use of filter conditions to modify or remove records.",
+      "text": "And what we provide here as a parameter is what we exactly interested in So either the entire object for example person or just individual fields like person name and person h Depending on what I provide here I going to get a different type of output If I just say person the resulting set if I just do a select statement is going to be a list of Python objects a list of person objects And if I provide person.name or person.h, I'm going to get a tuple, in this case with a string and an integer. so these are not going to be objects not instances of the person class these are just going to be the raw values so the name and the age we can take a look at that if i say person name person age and then dot all this is now the alternative to fetch all this is going to return all the tuples to me if i now say if i store this as results and if i now say print results then what i'm going to get here is I'm going to get Jane 40, Mike 30, Bob 35, and so on as tuples. Whereas if I say just person, in this case, I'm going to get a list of Python objects which are not really readable, especially because we don't have a string function or representation function here. So what we could do here is we could say p dot name for p in result, that would object. And in this case, I'm just printing the name of that entire object. So this is quite convenient, because I can just work now with these with these classes and objects instead of working just with the raw values that I get from the database. Now, if I want to have some conditions, if I want to filter, I don't use the where function, I use the filter function. So in this case, I could say, give me all the people where the person age is above 50, for example. And in this case, this is going to only return Sam and four times Charlie since we added him a couple of times to the database. If I set this to 40, for example, this is going to give me john, Clara, Sam and Charlie's again. But this is the syntax for the querying and for the filtering in SQL Alchemy or M. Now, we can also use that for deletion and updating. So let's do something that doesn't have dependencies. Let's go for the things. And let's say we're actually maybe we're going to encounter some problems here because we do back population. Let's see. If I say give me all the things where the value of the thing So let say thing dot value is below 50 For example let see if we even have something like this That would be t for t in results What's the problem here? Actually, I need the correct operator. Things is not defined, a thing is not defined, so... No, sorry. Things is not defined, so we need to go with thing. In this case, I get book and bottle, So what we can try to do here, let's see if this works is we can say delete. And this should work. So in this case, now it deleted the entries. So maybe if I go now and say just all, so maybe let me get this back here. If I say all, this should have deleted the objects. The only problem, of course, is I didn't apply this. So I have to say delete. then I have to say session dot commit. And then we can run this again as a query. So I can just say in the end, all. And when I run this, you can see I get an empty list because the objects have been removed from the database So we can use the same syntax here for querying with all I can use delete in the end if I want to delete it I can also use update to do a an update on a specific batch So I can say for example let go with filter where the person, so person name is equal to Charlie. What I want to do is I want to do an update, I want to say that the person should now be renamed according to a dictionary, the name now should be equal to Charles, for example. So if I run this, that of course, is not going to give me anything here. But if I now say give me all the person name values, without a filter, just dot all, I need to remove the filter. And I need to also print a result. So print results. Now I should have five times Charles instead of Charlie. Also, we can easily"
+    },
+    {
+      "title": "Joins and Grouping in SQLAlchemy",
+      "kind": "explain",
+      "start_s": 3216.1,
+      "end_s": 3276.7,
+      "summary": "The professor demonstrates how to perform SQL JOINs and GROUP BY operations using SQLAlchemy ORM, showing query construction and result interpretation.",
+      "text": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this would be query person name thing description joining the thing all and then I can print the results. And that would give me Jane laptop, Jane mouse, Jane keyboard, and a speaker, Charles camera, and so on. And finally, grouping is also done quite easily, we just have to import func again for the aggregation function. And then we can do something like query thing dot owner, and then function dot some thing dot value. And in this case, we don't need to join. So we can just say group by and then thing dot owner. And then all, that's basically it. That is going to give us here the owner ID. And of course, we could do a"
+    },
+    {
+      "title": "Using HAVING and Session Commit",
+      "kind": "explain",
+      "start_s": 3281.9,
+      "end_s": 3319.7,
+      "summary": "The lecture covers the HAVING clause for filtering aggregated results and explains how to properly close a session to commit pending transactions.",
+      "text": "join and get the owner name as based on the idea and so on. But we're going to keep it simple here. And then I can also of course, do something like having again, same as before. And I can say function, some thing dot value has to be above 50, for example. And that is going to give me only the IDs of the owners that fit this criteria. And in general, one thing you want to do in the end, this is also going to commit by the way, is you want to do session dot close also for the connection, you want to just close and this is going to properly close the connection and also commit everything that's not committed up until this point. Now, another cool thing that we can do with SQL Alchemy is we can connect pandas"
+    },
+    {
+      "title": "Integrating Pandas with SQLAlchemy",
+      "kind": "worked_example",
+      "start_s": 3319.7,
+      "end_s": 3438.3,
+      "summary": "The professor shows how to read from and write to a database using pandas DataFrames via SQLAlchemy, including installation, reading SQL, and inserting data frames.",
+      "text": "until this point. Now, another cool thing that we can do with SQL Alchemy is we can connect pandas to our database. So we can either take the data from the database and turn it into a data frame, or we can take a data frame and add it to the database. Both is very useful. And all we need to do for that is we need to import pandas. If you don't have it on your system, of course, you need to install it just pip or pip three install pandas. And I still have my engine here. So all I have to do is I have to say data frame is equal to PD dot read underscore SQL. And what I have to pass here is a statement, select everything from people, for example, and then I have to pass a connection. In this case, it's going to be the engine. And then I can just print the data frame. in my command line. So you can see I get the database content here as a pandas data frame. And I can also do the opposite or the other way around, I can take a data frame and insert it into the database So I can say for example new data is equal to PD data frame And I can pass a dictionary here where I say name is going to be equal to let use I don know what name don we have already in the database, let's use my name here. And let's use maybe jack as well. Then let's go with age. And my age at the moment is 26. And Jack, let's say is 90 years old. So that would be the data that I'm going to feed into the database and then new data dot to SQL, specify the people table. And the connection still has to be equal to engine. Now, if this already exists, If we have a problem here, we can say just append. So so if the table already exists, we can just append to the table. And index equals false here, we are not interested in the index, I can just run this. Now we didn't get any output for this, obviously, but I can comment this out now run the"
+    },
+    {
+      "title": "Practical Flask Application Using SQLAlchemy",
+      "kind": "review",
+      "start_s": 3442.9,
+      "end_s": 3593.8,
+      "summary": "The lecturer presents a real-world Flask application that uses SQLAlchemy for database interactions, covering model definitions, routing, and ORM usage.",
+      "text": "Now last but not least I would like to show you a practical use case an example where I have used SQL Alchemy in the past in a project This is an old version of a side project of mine called Brain Center a management tool essentially for my YouTube channel for sponsorships for to and so on And I used this in the past I now have a more recent version that uses Django Ninja with the Django ORM. But in this Flask application, in this Flask version of the application, I used SQL Alchemy. I want to show you what this looks like. So basically, here I have my app, I have the run py file. So this is now flask in general, I have the different blueprints. So I have YouTube, for example, and sponsorships and to do's. And each of them has routes. So here, for example, I have the default route where I get the YouTube videos, you can see already I have YouTube video query filters. So here I get all the videos that are actual videos here, I get all the videos that are ideas. And you can see I get filter paginate so I have different pages. I can also use query here to get or actually this is yeah, this is query or 404. But essentially, what I have is I have the models behind the scenes. And you can see that I get db model here But what is db model What is db I imported from app if I go now to where my app if I go here to init this is a database SQL alchemy instance now to be fair here I using flask SQL alchemy which is a wrapper around SQL alchemy so the syntax is not exactly the same I'm using this SQL alchemy object which of course behind the scenes is SQL alchemy but all in all it's the same idea I still have my classes with table name, I still have my fields here with the columns, with the different data types, and also here with a representation dunder. And the routing or the the querying is pretty much the same. I do query, order by filter, all and so on, you can see it's the same idea. So even though this is Flask SQL Alchemy, this is just another interface. The idea is you're using SQL Alchemy in Flask, and you also use it in fast API and you can also use it in Django. And it is what you use oftentimes, if you choose to use it as an object relational mapper, so that you can work in Python with objects and classes and in the database, you have everything translated without any effort on your side behind the scenes. So that's it for today's video. I hope you enjoyed it and hope you learned something. If so, let me know by hitting like button and leaving"
+    }
+  ],
+  "metrics": {
+    "n_passages": 12,
+    "n_spoken_links": 7,
+    "n_concepts": 28,
+    "n_spanned": 28,
+    "tight_le_120s": 27,
+    "median_span_s": 25.299999999999955,
+    "max_span_s": 160.99999999999977,
+    "edge_methods": {
+      "classifier": 21,
+      "transcript": 7
+    }
+  }
+}

@@ -1,1036 +1,253 @@
 [
   {
     "id": 1,
-    "concept_name": "SQLAlchemy",
-    "start_s": 319.6,
-    "end_s": 366.5,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy__320-366.mp4",
+    "concept_name": "transaction commit",
+    "start_s": 1813.3,
+    "end_s": 1838.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\transaction commit__1813-1839.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 2,
-    "concept_name": "SQLAlchemy Core",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Core__0-667.mp4",
+    "concept_name": "auto\u2011increment primary key",
+    "start_s": 1838.6,
+    "end_s": 1880.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\auto_increment primary key__1839-1880.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 3,
-    "concept_name": "SQLAlchemy ORM",
-    "start_s": 170.1,
-    "end_s": 192.9,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy ORM__170-193.mp4",
+    "concept_name": "INNER JOIN",
+    "start_s": 1960.3,
+    "end_s": 1997.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\INNER JOIN__1960-1998.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 4,
-    "concept_name": "Object-Relational Mapping (ORM)",
-    "start_s": 170.1,
-    "end_s": 192.9,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object-Relational Mapping _ORM___170-193.mp4",
+    "concept_name": "LEFT OUTER JOIN",
+    "start_s": 1943.7,
+    "end_s": 2104.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\LEFT OUTER JOIN__1944-2105.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 5,
-    "concept_name": "Engine (SQLAlchemy)",
-    "start_s": 343.3,
-    "end_s": 366.5,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Engine _SQLAlchemy___343-366.mp4",
+    "concept_name": "SELECT statement",
+    "start_s": 2012.4,
+    "end_s": 2048.2,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SELECT statement__2012-2048.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 6,
-    "concept_name": "Connection (SQLAlchemy)",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Connection _SQLAlchemy___0-667.mp4",
+    "concept_name": "GROUP BY",
+    "start_s": 2127.8,
+    "end_s": 2147.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GROUP BY__2128-2148.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 7,
-    "concept_name": "Session (SQLAlchemy)",
-    "start_s": 570.6,
-    "end_s": 637.1,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session _SQLAlchemy___571-637.mp4",
+    "concept_name": "SUM aggregation",
+    "start_s": 2160.2,
+    "end_s": 2186.3,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SUM aggregation__2160-2186.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 8,
-    "concept_name": "Create Engine function",
-    "start_s": 343.3,
-    "end_s": 366.5,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Create Engine function__343-366.mp4",
+    "concept_name": "HAVING clause",
+    "start_s": 2237.5,
+    "end_s": 2262.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\HAVING clause__2238-2262.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 9,
-    "concept_name": "Text construct for raw SQL",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Text construct for raw SQL__0-667.mp4",
+    "concept_name": "session.flush",
+    "start_s": 2786.0,
+    "end_s": 2796.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.flush__2786-2797.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 10,
-    "concept_name": "Database URL/Connection string",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database URL_Connection string__0-667.mp4",
+    "concept_name": "auto\u2011generated ID",
+    "start_s": 2786.0,
+    "end_s": 2796.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\auto_generated ID__2786-2797.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 11,
-    "concept_name": "SQLite",
-    "start_s": 396.7,
-    "end_s": 420.4,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLite__397-420.mp4",
+    "concept_name": "session.commit",
+    "start_s": 2799.4,
+    "end_s": 2801.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.commit__2799-2802.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 12,
-    "concept_name": "PostgreSQL",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\PostgreSQL__0-667.mp4",
+    "concept_name": "session.new",
+    "start_s": 2801.7,
+    "end_s": 2806.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.new__2802-2807.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 13,
-    "concept_name": "MySQL",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\MySQL__0-667.mp4",
+    "concept_name": "session.query",
+    "start_s": 2910.0,
+    "end_s": 2915.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.query__2910-2916.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 14,
-    "concept_name": "In-memory database",
-    "start_s": 343.3,
-    "end_s": 366.5,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\In-memory database__343-366.mp4",
+    "concept_name": "filter",
+    "start_s": 2810.7,
+    "end_s": 2915.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\filter__2811-2916.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 15,
-    "concept_name": "SQL dialects",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL dialects__0-667.mp4",
+    "concept_name": "selecting fields",
+    "start_s": 2810.7,
+    "end_s": 2915.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\selecting fields__2811-2916.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 16,
-    "concept_name": "Raw SQL execution via SQLAlchemy",
-    "start_s": 601.6500000000001,
-    "end_s": 621.6500000000001,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Raw SQL execution via SQLAlchemy__602-622.mp4",
+    "concept_name": "tuple vs object results",
+    "start_s": 2810.7,
+    "end_s": 2915.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\tuple vs object results__2811-2916.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 17,
-    "concept_name": "Commit transaction",
-    "start_s": 618.0,
-    "end_s": 638.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Commit transaction__618-638.mp4",
+    "concept_name": "delete",
+    "start_s": 3050.8,
+    "end_s": 3112.2,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\delete__3051-3112.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 18,
-    "concept_name": "Transaction management",
-    "start_s": 588.4,
-    "end_s": 637.1,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Transaction management__588-637.mp4",
+    "concept_name": "update",
+    "start_s": 3164.0,
+    "end_s": 3199.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\update__3164-3199.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 19,
-    "concept_name": "Pip package installation",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pip package installation__0-667.mp4",
+    "concept_name": "filter conditions",
+    "start_s": 3015.5,
+    "end_s": 3027.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\filter conditions__3016-3028.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 20,
-    "concept_name": "Version checking (SQLAlchemy 2.x vs 1.x)",
-    "start_s": 260.1,
-    "end_s": 314.8,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Version checking _SQLAlchemy 2.x vs 1.x___260-315.mp4",
+    "concept_name": "session.commit after delete/update",
+    "start_s": 3118.5,
+    "end_s": 3137.2,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.commit after delete_update__3118-3137.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 21,
-    "concept_name": "Flask integration with SQLAlchemy",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Flask integration with SQLAlchemy__0-667.mp4",
+    "concept_name": "SQL JOIN",
+    "start_s": 3216.1,
+    "end_s": 3235.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL JOIN__3216-3236.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 22,
-    "concept_name": "FastAPI integration with SQLAlchemy",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\FastAPI integration with SQLAlchemy__0-667.mp4",
+    "concept_name": "HAVING",
+    "start_s": 3281.9,
+    "end_s": 3304.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\HAVING__3282-3305.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 23,
-    "concept_name": "Django ORM replacement",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Django ORM replacement__0-667.mp4",
+    "concept_name": "Session close/commit",
+    "start_s": 3304.6,
+    "end_s": 3319.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session close_commit__3305-3320.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 24,
-    "concept_name": "Pandas integration with SQLAlchemy",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pandas integration with SQLAlchemy__0-667.mp4",
+    "concept_name": "pandas read_sql",
+    "start_s": 3324.5,
+    "end_s": 3358.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\pandas read_sql__3324-3358.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 25,
-    "concept_name": "Database schema definition via Python classes",
-    "start_s": 163.05,
-    "end_s": 183.05,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database schema definition via Python classes__163-183.mp4",
+    "concept_name": "DataFrame to SQL",
+    "start_s": 3368.9,
+    "end_s": 3438.3,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\DataFrame to SQL__3369-3438.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 26,
-    "concept_name": "CRUD operations",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\CRUD operations__0-667.mp4",
+    "concept_name": "Flask-SQLAlchemy",
+    "start_s": 3465.7,
+    "end_s": 3540.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Flask-SQLAlchemy__3466-3541.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 27,
-    "concept_name": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-    "start_s": 0.0,
-    "end_s": 666.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL syntax basics _CREATE TABLE_ INSERT_ SELECT___0-667.mp4",
+    "concept_name": "ORM models",
+    "start_s": 3547.0,
+    "end_s": 3567.5,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\ORM models__3547-3568.mp4",
     "ok": true,
     "error": null
   },
   {
     "id": 28,
-    "concept_name": "SQLAlchemy Core",
-    "start_s": 1057.0,
-    "end_s": 1085.4,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Core__1057-1085.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 29,
-    "concept_name": "Object Relational Mapper (ORM)",
-    "start_s": 666.88,
-    "end_s": 686.88,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object Relational Mapper _ORM___667-687.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 30,
-    "concept_name": "Metadata object",
-    "start_s": 740.0,
-    "end_s": 760.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Metadata object__740-760.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 31,
-    "concept_name": "Table class",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Table class__667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 32,
-    "concept_name": "Column class",
-    "start_s": 784.9,
-    "end_s": 809.7,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Column class__785-810.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 33,
-    "concept_name": "Data types (Integer, String)",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data types _Integer_ String___667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 34,
-    "concept_name": "Primary key constraint",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Primary key constraint__667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 35,
-    "concept_name": "Nullable constraint",
-    "start_s": 800.5,
-    "end_s": 873.5,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Nullable constraint__800-874.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 36,
-    "concept_name": "Engine",
-    "start_s": 1023.0,
-    "end_s": 1043.7,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Engine__1023-1044.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 37,
-    "concept_name": "Connection object",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Connection object__667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 38,
-    "concept_name": "Insert statement",
-    "start_s": 1043.7,
-    "end_s": 1104.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Insert statement__1044-1104.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 39,
-    "concept_name": "Select statement",
-    "start_s": 1196.0,
-    "end_s": 1268.1,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Select statement__1196-1268.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 40,
-    "concept_name": "Update statement",
-    "start_s": 1280.7,
-    "end_s": 1356.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Update statement__1281-1356.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 41,
-    "concept_name": "Delete statement",
-    "start_s": 1363.1,
-    "end_s": 1387.2,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Delete statement__1363-1387.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 42,
-    "concept_name": "SQL dialects",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL dialects__667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 43,
-    "concept_name": "Connection string / database URL",
-    "start_s": 938.7,
-    "end_s": 981.2,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Connection string _ database URL__939-981.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 44,
-    "concept_name": "Transaction commit",
-    "start_s": 1337.85,
-    "end_s": 1357.85,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Transaction commit__1338-1358.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 45,
-    "concept_name": "Fetching results (fetchall, fetchone)",
-    "start_s": 1243.5,
-    "end_s": 1264.1,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Fetching results _fetchall_ fetchone___1244-1264.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 46,
-    "concept_name": "Prepared statements / placeholders",
-    "start_s": 1321.9,
-    "end_s": 1356.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Prepared statements _ placeholders__1322-1356.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 47,
-    "concept_name": "Declarative base (for ORM)",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Declarative base _for ORM___667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 48,
-    "concept_name": "Abstraction layer between Python and SQL",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Abstraction layer between Python and SQL__667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 49,
-    "concept_name": "CRUD operations",
-    "start_s": 1057.0,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\CRUD operations__1057-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 50,
-    "concept_name": "Schema definition",
-    "start_s": 666.88,
-    "end_s": 1402.66,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Schema definition__667-1403.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 51,
-    "concept_name": "SQLAlchemy Core",
-    "start_s": 1594.1,
-    "end_s": 2034.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Core__1594-2034.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 52,
-    "concept_name": "Table definition",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Table definition__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 53,
-    "concept_name": "Metadata object",
-    "start_s": 1415.7,
-    "end_s": 1442.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Metadata object__1416-1443.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 54,
-    "concept_name": "Column definition",
-    "start_s": 1429.4,
-    "end_s": 1449.4,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Column definition__1429-1449.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 55,
-    "concept_name": "Primary key",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Primary key__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 56,
-    "concept_name": "Data types (Integer, String, Float)",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data types _Integer_ String_ Float___1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 57,
-    "concept_name": "Foreign key constraint",
-    "start_s": 1504.85,
-    "end_s": 1524.85,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Foreign key constraint__1505-1525.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 58,
-    "concept_name": "One-to-many relationship",
-    "start_s": 1517.3,
-    "end_s": 1555.1,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\One-to-many relationship__1517-1555.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 59,
-    "concept_name": "Many-to-many relationship",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Many-to-many relationship__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 60,
-    "concept_name": "Association table",
-    "start_s": 1536.9499999999998,
-    "end_s": 1556.9499999999998,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Association table__1537-1557.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 61,
-    "concept_name": "One-to-one relationship",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\One-to-one relationship__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 62,
-    "concept_name": "Insert statement",
-    "start_s": 1765.5,
-    "end_s": 1798.8,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Insert statement__1766-1799.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 63,
-    "concept_name": "Bulk insert with values list",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Bulk insert with values list__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 64,
-    "concept_name": "Transaction commit",
-    "start_s": 1750.0,
-    "end_s": 1800.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Transaction commit__1750-1800.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 65,
-    "concept_name": "Auto-incrementing IDs",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Auto-incrementing IDs__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 66,
-    "concept_name": "SQL SELECT statement",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL SELECT statement__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 67,
-    "concept_name": "Column selection (select only specific columns)",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Column selection _select only specific columns___1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 68,
-    "concept_name": "INNER JOIN",
-    "start_s": 1960.3,
-    "end_s": 2007.1,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\INNER JOIN__1960-2007.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 69,
-    "concept_name": "LEFT OUTER JOIN (left join)",
-    "start_s": 2100.0,
-    "end_s": 2122.2,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\LEFT OUTER JOIN _left join___2100-2122.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 70,
-    "concept_name": "JOIN condition (ON clause)",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\JOIN condition _ON clause___1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 71,
-    "concept_name": "Result fetching (fetchall)",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Result fetching _fetchall___1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 72,
-    "concept_name": "Aggregation functions (SUM)",
-    "start_s": 2168.15,
-    "end_s": 2188.15,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Aggregation functions _SUM___2168-2188.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 73,
-    "concept_name": "GROUP BY clause",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GROUP BY clause__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 74,
-    "concept_name": "SQLAlchemy func module",
-    "start_s": 1402.66,
-    "end_s": 2213.72,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy func module__1403-2214.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 75,
-    "concept_name": "SQL GROUP BY clause",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL GROUP BY clause__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 76,
-    "concept_name": "SQL HAVING clause",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL HAVING clause__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 77,
-    "concept_name": "Object-Relational Mapping (ORM)",
-    "start_s": 2270.9,
-    "end_s": 2367.3,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object-Relational Mapping _ORM___2271-2367.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 78,
-    "concept_name": "SQLAlchemy declarative base",
-    "start_s": 2414.6,
-    "end_s": 2438.3,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy declarative base__2415-2438.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 79,
-    "concept_name": "SQLAlchemy session management",
-    "start_s": 2634.4,
-    "end_s": 2700.0,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session management__2634-2700.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 80,
-    "concept_name": "SQLAlchemy relationship() function",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy relationship__ function__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 81,
-    "concept_name": "Foreign key constraint",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Foreign key constraint__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 82,
-    "concept_name": "Primary key definition",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Primary key definition__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 83,
-    "concept_name": "SQLAlchemy create_engine function",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy create_engine function__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 84,
-    "concept_name": "SQLAlchemy Column definition",
-    "start_s": 2465.6,
-    "end_s": 2527.7,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Column definition__2466-2528.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 85,
-    "concept_name": "SQLAlchemy Table metadata",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Table metadata__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 86,
-    "concept_name": "SQLAlchemy session.flush method",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session.flush method__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 87,
-    "concept_name": "SQLAlchemy session.commit method",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session.commit method__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 88,
-    "concept_name": "SQLAlchemy session.add method",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session.add method__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 89,
-    "concept_name": "SQLAlchemy query API",
-    "start_s": 2905.6,
-    "end_s": 2946.5,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy query API__2906-2946.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 90,
-    "concept_name": "Lazy loading of related objects",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Lazy loading of related objects__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 91,
-    "concept_name": "Back-populates parameter in relationship",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Back-populates parameter in relationship__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 92,
-    "concept_name": "Python class mapping to database table",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Python class mapping to database table__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 93,
-    "concept_name": "SQL SELECT statement",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL SELECT statement__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 94,
-    "concept_name": "SQL INSERT operation via ORM",
-    "start_s": 2213.72,
-    "end_s": 2957.6,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL INSERT operation via ORM__2214-2958.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 95,
-    "concept_name": "SQLAlchemy ORM",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy ORM__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 96,
-    "concept_name": "CRUD operations (Create, Read, Update, Delete)",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\CRUD operations _Create_ Read_ Update_ Delete___2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 97,
-    "concept_name": "Session management (session.commit, session.close)",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session management _session.commit_ session.close___2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 98,
-    "concept_name": "Querying with .all()",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Querying with .all____2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 99,
-    "concept_name": "Filtering with .filter()",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Filtering with .filter____2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 100,
-    "concept_name": "Ordering with .order_by()",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Ordering with .order_by____2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 101,
-    "concept_name": "Joining tables",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Joining tables__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 102,
-    "concept_name": "Grouping and aggregation (func.sum, GROUP BY)",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Grouping and aggregation _func.sum_ GROUP BY___2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 103,
-    "concept_name": "HAVING clause",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\HAVING clause__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 104,
-    "concept_name": "Object\u2011relational mapping (ORM) concepts",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object_relational mapping _ORM_ concepts__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 105,
-    "concept_name": "Back\u2011population / relationship handling",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Back_population _ relationship handling__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 106,
-    "concept_name": "Transaction handling",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Transaction handling__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 107,
-    "concept_name": "Pandas integration with databases (read_sql, to_sql)",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pandas integration with databases _read_sql_ to_sql___2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 108,
-    "concept_name": "Flask\u2011SQLAlchemy extension",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Flask_SQLAlchemy extension__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 109,
-    "concept_name": "Blueprints in Flask",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Blueprints in Flask__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 110,
-    "concept_name": "RESTful routing and query parameters",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\RESTful routing and query parameters__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 111,
-    "concept_name": "Pagination of query results",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pagination of query results__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 112,
-    "concept_name": "Data types and column definitions in ORM models",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data types and column definitions in ORM models__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 113,
-    "concept_name": "__repr__ method for model representation",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\__repr__ method for model representation__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 114,
-    "concept_name": "Database engine and connection handling",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database engine and connection handling__2958-3660.mp4",
-    "ok": true,
-    "error": null
-  },
-  {
-    "id": 115,
-    "concept_name": "Using ORM across frameworks (Flask, FastAPI, Django)",
-    "start_s": 2957.6,
-    "end_s": 3659.98,
-    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Using ORM across frameworks _Flask_ FastAPI_ Django___2958-3660.mp4",
+    "concept_name": "Querying with ORM",
+    "start_s": 3561.6,
+    "end_s": 3578.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Querying with ORM__3562-3579.mp4",
     "ok": true,
     "error": null
   }

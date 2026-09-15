@@ -1,1087 +1,332 @@
 {
   "quiz_id": 1,
   "student_id": "sample-student",
-  "score": 58,
-  "total": 88,
+  "score": 18,
+  "total": 28,
   "remediation": [
     {
-      "concept": "Association table",
+      "concept": "DataFrame to SQL",
       "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Association table__1537-1557.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\DataFrame to SQL__3369-3438.mp4"
     },
     {
-      "concept": "Create Engine function",
+      "concept": "SQL JOIN",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL JOIN__3216-3236.mp4"
+    },
+    {
+      "concept": "auto\u2011increment primary key",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\auto_increment primary key__1839-1880.mp4"
+    },
+    {
+      "concept": "filter conditions",
       "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Create Engine function__343-366.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\filter conditions__3016-3028.mp4"
     },
     {
-      "concept": "Data types and column definitions in ORM models",
+      "concept": "session.flush",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.flush__2786-2797.mp4"
+    },
+    {
+      "concept": "session.query",
       "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data types and column definitions in ORM models__2958-3660.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.query__2910-2916.mp4"
     },
     {
-      "concept": "Database engine and connection handling",
+      "concept": "tuple vs object results",
       "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database engine and connection handling__2958-3660.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\tuple vs object results__2811-2916.mp4"
     },
     {
-      "concept": "Database schema definition via Python classes",
+      "concept": "Flask-SQLAlchemy",
       "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Database schema definition via Python classes__163-183.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Flask-SQLAlchemy__3466-3541.mp4"
     },
     {
-      "concept": "Engine",
+      "concept": "HAVING",
       "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Engine__1023-1044.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\HAVING__3282-3305.mp4"
     },
     {
-      "concept": "In-memory database",
+      "concept": "delete",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\delete__3051-3112.mp4"
+    },
+    {
+      "concept": "session.commit after delete/update",
       "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\In-memory database__343-366.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.commit after delete_update__3118-3137.mp4"
     },
     {
-      "concept": "Joining tables",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Joining tables__2958-3660.mp4"
-    },
-    {
-      "concept": "MySQL",
+      "concept": "ORM models",
       "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\MySQL__0-667.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\ORM models__3547-3568.mp4"
     },
     {
-      "concept": "Querying with .all()",
+      "concept": "session.commit",
       "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Querying with .all____2958-3660.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\session.commit__2799-2802.mp4"
     },
     {
-      "concept": "SQL SELECT statement",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL SELECT statement__1403-2214.mp4"
-    },
-    {
-      "concept": "SQLAlchemy Column definition",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Column definition__2466-2528.mp4"
-    },
-    {
-      "concept": "Table class",
+      "concept": "Session close/commit",
       "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Table class__667-1403.mp4"
-    },
-    {
-      "concept": "Object\u2011relational mapping (ORM) concepts",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object_relational mapping _ORM_ concepts__2958-3660.mp4"
-    },
-    {
-      "concept": "Transaction handling",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Transaction handling__2958-3660.mp4"
-    },
-    {
-      "concept": "SQLite",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLite__397-420.mp4"
-    },
-    {
-      "concept": "INNER JOIN",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\INNER JOIN__1960-2007.mp4"
-    },
-    {
-      "concept": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL syntax basics _CREATE TABLE_ INSERT_ SELECT___0-667.mp4"
-    },
-    {
-      "concept": "Fetching results (fetchall, fetchone)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Fetching results _fetchall_ fetchone___1244-1264.mp4"
-    },
-    {
-      "concept": "Data types (Integer, String)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Data types _Integer_ String___667-1403.mp4"
-    },
-    {
-      "concept": "GROUP BY clause",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\GROUP BY clause__1403-2214.mp4"
-    },
-    {
-      "concept": "Python class mapping to database table",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Python class mapping to database table__2214-2958.mp4"
-    },
-    {
-      "concept": "Column class",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Column class__785-810.mp4"
-    },
-    {
-      "concept": "Connection object",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Connection object__667-1403.mp4"
-    },
-    {
-      "concept": "Abstraction layer between Python and SQL",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Abstraction layer between Python and SQL__667-1403.mp4"
-    },
-    {
-      "concept": "Table definition",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Table definition__1403-2214.mp4"
-    },
-    {
-      "concept": "Commit transaction",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Commit transaction__618-638.mp4"
-    },
-    {
-      "concept": "PostgreSQL",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\PostgreSQL__0-667.mp4"
-    },
-    {
-      "concept": "JOIN condition (ON clause)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\JOIN condition _ON clause___1403-2214.mp4"
-    },
-    {
-      "concept": "Aggregation functions (SUM)",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Aggregation functions _SUM___2168-2188.mp4"
-    },
-    {
-      "concept": "HAVING clause",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\HAVING clause__2958-3660.mp4"
-    },
-    {
-      "concept": "SQLAlchemy Table metadata",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy Table metadata__2214-2958.mp4"
-    },
-    {
-      "concept": "Many-to-many relationship",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Many-to-many relationship__1403-2214.mp4"
-    },
-    {
-      "concept": "Text construct for raw SQL",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Text construct for raw SQL__0-667.mp4"
-    },
-    {
-      "concept": "Grouping and aggregation (func.sum, GROUP BY)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Grouping and aggregation _func.sum_ GROUP BY___2958-3660.mp4"
-    },
-    {
-      "concept": "SQLAlchemy relationship() function",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy relationship__ function__2214-2958.mp4"
-    },
-    {
-      "concept": "Foreign key constraint",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Foreign key constraint__1505-1525.mp4"
-    },
-    {
-      "concept": "One-to-one relationship",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\One-to-one relationship__1403-2214.mp4"
-    },
-    {
-      "concept": "SQL dialects",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQL dialects__0-667.mp4"
-    },
-    {
-      "concept": "Back-populates parameter in relationship",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Back-populates parameter in relationship__2214-2958.mp4"
-    },
-    {
-      "concept": "Object Relational Mapper (ORM)",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Object Relational Mapper _ORM___667-687.mp4"
-    },
-    {
-      "concept": "Engine (SQLAlchemy)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Engine _SQLAlchemy___343-366.mp4"
-    },
-    {
-      "concept": "SQLAlchemy create_engine function",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy create_engine function__2214-2958.mp4"
-    },
-    {
-      "concept": "SQLAlchemy declarative base",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy declarative base__2415-2438.mp4"
-    },
-    {
-      "concept": "SQLAlchemy func module",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy func module__1403-2214.mp4"
-    },
-    {
-      "concept": "Raw SQL execution via SQLAlchemy",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Raw SQL execution via SQLAlchemy__602-622.mp4"
-    },
-    {
-      "concept": "SQLAlchemy query API",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy query API__2906-2946.mp4"
-    },
-    {
-      "concept": "SQLAlchemy session management",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session management__2634-2700.mp4"
-    },
-    {
-      "concept": "SQLAlchemy session.add method",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session.add method__2214-2958.mp4"
-    },
-    {
-      "concept": "SQLAlchemy ORM",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy ORM__170-193.mp4"
-    },
-    {
-      "concept": "SQLAlchemy session.commit method",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\SQLAlchemy session.commit method__2214-2958.mp4"
-    },
-    {
-      "concept": "Version checking (SQLAlchemy 2.x vs 1.x)",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Version checking _SQLAlchemy 2.x vs 1.x___260-315.mp4"
-    },
-    {
-      "concept": "Pandas integration with databases (read_sql, to_sql)",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Pandas integration with databases _read_sql_ to_sql___2958-3660.mp4"
-    },
-    {
-      "concept": "Flask integration with SQLAlchemy",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Flask integration with SQLAlchemy__0-667.mp4"
-    },
-    {
-      "concept": "Blueprints in Flask",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Blueprints in Flask__2958-3660.mp4"
-    },
-    {
-      "concept": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "failed": false,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Using ORM across frameworks _Flask_ FastAPI_ Django___2958-3660.mp4"
-    },
-    {
-      "concept": "Django ORM replacement",
-      "failed": true,
-      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Django ORM replacement__0-667.mp4"
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Session close_commit__3305-3320.mp4"
     }
   ],
   "feedback": [
     {
       "question_id": 1,
-      "concept": "Association table",
+      "concept": "DataFrame to SQL",
       "correct": false,
-      "selected": "It stores duplicate copies of data from the related tables to improve query speed.",
-      "answer": "It is a separate table that contains two foreign keys\u2014one to each related entity\u2014and uses both as a composite primary key to model a many\u2011to\u2011many relationship.",
-      "explanation": "The excerpt explains that an association table has two foreign keys (to person and thing) and both serve as the primary key, enabling a many\u2011to\u2011many link.",
-      "rationale": "An association table does not duplicate data; it only references existing rows via foreign keys."
+      "selected": "It converts a SQL query result directly into a DataFrame without needing pandas.",
+      "answer": "It allows a pandas DataFrame to be written into a database table using the DataFrame.to_sql method, optionally appending to an existing table.",
+      "explanation": "The lecture shows using pd.read_sql to read into a DataFrame and df.to_sql to write a DataFrame into a table, with an option to append if the table exists.",
+      "rationale": "The excerpt shows reading with pd.read_sql, not converting a query result without pandas."
     },
     {
       "question_id": 2,
-      "concept": "Create Engine function",
+      "concept": "GROUP BY",
       "correct": true,
-      "selected": "It creates an engine object that serves as the connection point to a database using a provided connection string.",
-      "answer": "It creates an engine object that serves as the connection point to a database using a provided connection string.",
-      "explanation": "The excerpt states that the engine created by the function is used to connect to a database via a connection string.",
+      "selected": "It groups rows by specified columns and then applies aggregate functions to produce one result row per group.",
+      "answer": "It groups rows by specified columns and then applies aggregate functions to produce one result row per group.",
+      "explanation": "The lecture explains that GROUP BY collects rows with the same owner and then uses aggregate functions like SUM to compute values per group.",
       "rationale": null
     },
     {
       "question_id": 3,
-      "concept": "Data types and column definitions in ORM models",
+      "concept": "SELECT statement",
       "correct": true,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "explanation": null,
+      "selected": "It retrieves specified columns from a joined table, such as selecting a person's name and a thing's description after performing an inner join.",
+      "answer": "It retrieves specified columns from a joined table, such as selecting a person's name and a thing's description after performing an inner join.",
+      "explanation": "The lecture shows using SELECT to pull specific columns (people.c.name, thing.c.description) from the result of an inner join between people and things.",
       "rationale": null
     },
     {
       "question_id": 4,
-      "concept": "Database engine and connection handling",
+      "concept": "SQL JOIN",
       "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "you can see that I get db model here But what is db model What is db I imported from app if I go now to where my app if I go here to init this is a database SQL alchemy instance now to be fair here I",
-      "explanation": null,
-      "rationale": null
+      "selected": "A JOIN merges all rows from two tables regardless of any matching column.",
+      "answer": "A JOIN combines rows from two tables based on a related column, producing a result set that includes columns from both tables.",
+      "explanation": "The lecture shows a query that selects person name and thing description by joining the two tables on a common key, demonstrating that JOIN returns rows where the join condition is satisfied.",
+      "rationale": "The example shows rows only where the tables match, not all rows."
     },
     {
       "question_id": 5,
-      "concept": "Database schema definition via Python classes",
+      "concept": "SUM aggregation",
       "correct": true,
-      "selected": "Alchemy ORM. So the object relational mapper where we can define database tables as Python classes,",
-      "answer": "Alchemy ORM. So the object relational mapper where we can define database tables as Python classes,",
-      "explanation": null,
+      "selected": "It sums the values of a column for each group defined by a GROUP BY clause.",
+      "answer": "It sums the values of a column for each group defined by a GROUP BY clause.",
+      "explanation": "The lecture shows using func.sum to add up the values for each owner after grouping, producing a total per group.",
       "rationale": null
     },
     {
       "question_id": 6,
-      "concept": "Declarative base (for ORM)",
+      "concept": "auto\u2011generated ID",
       "correct": true,
-      "selected": "So that would be the definition of a table Now in order to create a table in the database what I have to do is I have to do meta dot create all and I have to pass the engine So the metadata that I hav",
-      "answer": "So that would be the definition of a table Now in order to create a table in the database what I have to do is I have to do meta dot create all and I have to pass the engine So the metadata that I hav",
-      "explanation": null,
+      "selected": "It is assigned to a new object only after the session is flushed, allowing the object to receive an ID without immediately persisting it to the database.",
+      "answer": "It is assigned to a new object only after the session is flushed, allowing the object to receive an ID without immediately persisting it to the database.",
+      "explanation": "The lecture explains that calling session.flush() temporarily adds the person, assigns an ID, but does not write the changes permanently, illustrating how auto\u2011generated IDs are obtained before final persistence.",
       "rationale": null
     },
     {
       "question_id": 7,
-      "concept": "Engine",
+      "concept": "auto\u2011increment primary key",
       "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "code, we're going to use functions. And what we can do here is we can either use the people",
+      "selected": "It only works if the table has no existing rows.",
+      "answer": "It automatically assigns a unique, sequential numeric ID to each new row, and the next ID is always one greater than the current maximum, regardless of uncommitted changes.",
       "explanation": null,
       "rationale": null
     },
     {
       "question_id": 8,
-      "concept": "In-memory database",
+      "concept": "filter conditions",
       "correct": true,
-      "selected": "just work with a database that is stored in a file or even in RAM. But the cool thing about SQL",
-      "answer": "just work with a database that is stored in a file or even in RAM. But the cool thing about SQL",
-      "explanation": null,
+      "selected": "Filter conditions use the filter function to restrict query results based on a predicate, such as selecting only people whose age exceeds a given value.",
+      "answer": "Filter conditions use the filter function to restrict query results based on a predicate, such as selecting only people whose age exceeds a given value.",
+      "explanation": "The transcript explains that to apply conditions one uses the filter function (e.g., filter(person.age > 50)) rather than a WHERE clause, and it is used for querying, deleting, or updating, not just for updates.",
       "rationale": null
     },
     {
       "question_id": 9,
-      "concept": "Joining tables",
+      "concept": "selecting fields",
       "correct": true,
-      "selected": "data that I'm going to feed into the database and then new data dot to SQL, specify the people table.",
-      "answer": "data that I'm going to feed into the database and then new data dot to SQL, specify the people table.",
-      "explanation": null,
+      "selected": "When you query with session.query(Person.name, Person.age) you receive a list of tuples containing only the specified columns instead of full Person objects.",
+      "answer": "When you query with session.query(Person.name, Person.age) you receive a list of tuples containing only the specified columns instead of full Person objects.",
+      "explanation": "The excerpt explains that providing specific fields like Person.name and Person.age to session.query returns a different type of output\u2014only the selected columns\u2014rather than full Python objects.",
       "rationale": null
     },
     {
       "question_id": 10,
-      "concept": "MySQL",
+      "concept": "session.flush",
       "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "we need to also say connection commit to persist the changes So I can run this now And you can see what happens here is begin create table if not exists people and then generate it and then commit Wha",
-      "explanation": null,
-      "rationale": null
+      "selected": "It only assigns temporary IDs without touching the database.",
+      "answer": "It temporarily writes pending changes to the database to generate IDs, but does not commit them permanently.",
+      "explanation": "The lecture explains that session.flush temporarily adds the object, assigns an ID, but does not write the changes permanently to the database.",
+      "rationale": "Flush does write to the database to generate IDs, so it is not merely temporary."
     },
     {
       "question_id": 11,
-      "concept": "Nullable constraint",
+      "concept": "session.query",
       "correct": true,
-      "selected": "Setting nullable to false makes a field required by disallowing null values.",
-      "answer": "Setting nullable to false makes a field required by disallowing null values.",
-      "explanation": "The excerpt explains that to prevent null values and make a field required, you set nullable equal to false.",
+      "selected": "It is used to retrieve Python objects from the database by specifying the target class or fields, returning a list of objects or values.",
+      "answer": "It is used to retrieve Python objects from the database by specifying the target class or fields, returning a list of objects or values.",
+      "explanation": "The excerpt explains that session.query takes a class or fields as a parameter and returns a list of Python objects or values, without needing manual joins or SQL.",
       "rationale": null
     },
     {
       "question_id": 12,
-      "concept": "Ordering with .order_by()",
+      "concept": "transaction commit",
       "correct": true,
-      "selected": "easily, we just have to import func again for the aggregation function. And then we can do something",
-      "answer": "easily, we just have to import func again for the aggregation function. And then we can do something",
-      "explanation": null,
+      "selected": "It finalizes all pending changes, making them permanently visible in the database and allowing related IDs to be used in subsequent operations.",
+      "answer": "It finalizes all pending changes, making them permanently visible in the database and allowing related IDs to be used in subsequent operations.",
+      "explanation": "The transcript explains that without calling connection commit, changes are not yet in the database, so commit creates the objects and makes their IDs usable.",
       "rationale": null
     },
     {
       "question_id": 13,
-      "concept": "Querying with .all()",
+      "concept": "tuple vs object results",
       "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "code again. And now you can see I have these two new entries that are also loaded from the database.",
-      "explanation": null,
-      "rationale": null
+      "selected": "The result is a dictionary mapping field names to values for each row.",
+      "answer": "When the query selects entire objects, the result is a list of Python objects; when it selects individual fields, the result is a list of tuples containing those field values.",
+      "explanation": "The lecture explains that selecting whole objects yields a list of Python objects, while selecting specific fields returns tuples of those field values.",
+      "rationale": "The lecture does not mention dictionaries; it talks about tuples for field selections."
     },
     {
       "question_id": 14,
-      "concept": "SQL SELECT statement",
+      "concept": "Flask-SQLAlchemy",
       "correct": true,
-      "selected": "And if I provide person.name or person.h, I'm going to get a tuple, in this case with a string and an integer.",
-      "answer": "And if I provide person.name or person.h, I'm going to get a tuple, in this case with a string and an integer.",
-      "explanation": null,
+      "selected": "Flask\u2011SQLAlchemy is a lightweight wrapper around SQLAlchemy that lets you use SQLAlchemy\u2019s ORM features directly in a Flask application.",
+      "answer": "Flask\u2011SQLAlchemy is a lightweight wrapper around SQLAlchemy that lets you use SQLAlchemy\u2019s ORM features directly in a Flask application.",
+      "explanation": "The transcript explains that Flask\u2011SQLAlchemy is a wrapper around SQLAlchemy, providing the same ORM syntax and functionality within Flask, not a replacement or a different query language.",
       "rationale": null
     },
     {
       "question_id": 15,
-      "concept": "SQLAlchemy Column definition",
+      "concept": "HAVING clause",
       "correct": true,
-      "selected": "before. And then age is going to be a column. And it's just going to be an integer column. That's it.",
-      "answer": "before. And then age is going to be a column. And it's just going to be an integer column. That's it.",
-      "explanation": null,
+      "selected": "The HAVING clause filters aggregated results after GROUP BY, allowing conditions on aggregate expressions such as SUM or AVG.",
+      "answer": "The HAVING clause filters aggregated results after GROUP BY, allowing conditions on aggregate expressions such as SUM or AVG.",
+      "explanation": "The excerpt shows HAVING used after GROUP BY to restrict groups where SUM(value) > 50, demonstrating it filters aggregated results.",
       "rationale": null
     },
     {
       "question_id": 16,
-      "concept": "Table class",
+      "concept": "HAVING",
       "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "second one is the metadata object. So in this case, meta. And then what we do is we pass the column.",
-      "explanation": null,
-      "rationale": null
+      "selected": "It replaces the WHERE clause for all types of conditions.",
+      "answer": "It filters grouped query results after aggregation, allowing conditions on aggregate values such as requiring a function's value to be above 50.",
+      "explanation": "The lecture explains that 'HAVING' is applied after grouping and can impose conditions on aggregate functions, e.g., filtering owners whose function value exceeds 50.",
+      "rationale": "The lecture specifically contrasts HAVING with WHERE, not as a replacement for all conditions."
     },
     {
       "question_id": 17,
-      "concept": "Object\u2011relational mapping (ORM) concepts",
+      "concept": "pandas read_sql",
       "correct": true,
-      "selected": "convenient, because I can just work now with these with these classes and objects instead of working",
-      "answer": "convenient, because I can just work now with these with these classes and objects instead of working",
-      "explanation": null,
+      "selected": "It loads the result of a SQL query into a pandas DataFrame by passing the query string and a database connection (engine).",
+      "answer": "It loads the result of a SQL query into a pandas DataFrame by passing the query string and a database connection (engine).",
+      "explanation": "The lecture shows pd.read_sql('SELECT * FROM people', engine) returning a DataFrame, illustrating that the function takes a query and a connection to fetch data.",
       "rationale": null
     },
     {
       "question_id": 18,
-      "concept": "Session management (session.commit, session.close)",
+      "concept": "INNER JOIN",
       "correct": true,
-      "selected": "here with a representation dunder. And the routing or the the querying is pretty much the same. I do",
+      "selected": "It combines two tables and returns only rows where the join condition matches in both tables, excluding rows that have no match.",
+      "answer": "It combines two tables and returns only rows where the join condition matches in both tables, excluding rows that have no match.",
+      "explanation": "The lecture explains that an inner join keeps only rows where both tables have matching values, excluding people who own nothing.",
+      "rationale": null
+    },
+    {
+      "question_id": 19,
+      "concept": "delete",
+      "correct": false,
+      "selected": "Delete permanently erases the database schema along with the data.",
+      "answer": "The delete function removes selected records from the database, and the changes are persisted only after calling session.commit().",
+      "explanation": "The transcript shows that after calling delete on a query, the records are removed only when session.commit() is executed; otherwise the database remains unchanged.",
+      "rationale": "The operation affects only data rows, not the database schema, as demonstrated in the example."
+    },
+    {
+      "question_id": 20,
+      "concept": "session.commit after delete/update",
+      "correct": true,
+      "selected": "After issuing a delete or update query, session.commit must be called to persist the changes to the database; without it the operations remain in the session only and the database is unchanged.",
+      "answer": "After issuing a delete or update query, session.commit must be called to persist the changes to the database; without it the operations remain in the session only and the database is unchanged.",
+      "explanation": "The transcript shows that after performing delete or update, the lecturer explicitly calls session.commit to apply the changes; otherwise the database remains unchanged.",
+      "rationale": null
+    },
+    {
+      "question_id": 21,
+      "concept": "filter",
+      "correct": true,
+      "selected": "It narrows the set of returned objects by specifying criteria in a query, producing only those that match the conditions.",
+      "answer": "It narrows the set of returned objects by specifying criteria in a query, producing only those that match the conditions.",
+      "explanation": "The lecture explains that using session.query with specific parameters (e.g., person name) returns only matching Python objects, effectively filtering the data.",
+      "rationale": null
+    },
+    {
+      "question_id": 22,
+      "concept": "ORM models",
+      "correct": false,
+      "selected": "And then we can do another select statement here, we can say select statements equal to people",
       "answer": "here with a representation dunder. And the routing or the the querying is pretty much the same. I do",
       "explanation": null,
       "rationale": null
     },
     {
-      "question_id": 19,
-      "concept": "Transaction handling",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "join and get the owner name as based on the idea and so on. But we're going to keep it simple here.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 20,
-      "concept": "RESTful routing and query parameters",
-      "correct": true,
-      "selected": "and to do's. And each of them has routes. So here, for example, I have the default route where I get",
-      "answer": "and to do's. And each of them has routes. So here, for example, I have the default route where I get",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 21,
-      "concept": "Schema definition",
-      "correct": true,
-      "selected": "connection, execute, select statement. Now, did I import something? Actually, I didn't want to import",
-      "answer": "connection, execute, select statement. Now, did I import something? Actually, I didn't want to import",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 22,
-      "concept": "SQLite",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "but let's get started by just typing SQLite and then colon slash slash slash, so three slashes,",
-      "explanation": null,
-      "rationale": null
-    },
-    {
       "question_id": 23,
-      "concept": "Pagination of query results",
+      "concept": "LEFT OUTER JOIN",
       "correct": true,
-      "selected": "fit this criteria. And in general, one thing you want to do in the end, this is also going to commit",
-      "answer": "fit this criteria. And in general, one thing you want to do in the end, this is also going to commit",
-      "explanation": null,
+      "selected": "It returns all rows from the left table and matching rows from the right table, filling in NULLs when there is no match.",
+      "answer": "It returns all rows from the left table and matching rows from the right table, filling in NULLs when there is no match.",
+      "explanation": "The lecture explains that a LEFT OUTER JOIN keeps every person even if they own nothing, unlike an inner join which drops such rows.",
       "rationale": null
     },
     {
       "question_id": 24,
-      "concept": "INNER JOIN",
+      "concept": "update",
       "correct": true,
-      "selected": "if we perform an inner join.",
-      "answer": "if we perform an inner join.",
+      "selected": "It changes the values of existing database rows by specifying new values for selected columns, typically using a filter to target specific records.",
+      "answer": "It changes the values of existing database rows by specifying new values for selected columns, typically using a filter to target specific records.",
       "explanation": null,
       "rationale": null
     },
     {
       "question_id": 25,
-      "concept": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
+      "concept": "session.commit",
       "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "how to mitigate and fix these vulnerabilities or how to write secure code, and how to not fall into",
-      "explanation": null,
-      "rationale": null
+      "selected": "It only logs the changes without affecting the database.",
+      "answer": "It writes all pending changes in the session to the database, finalizing the transaction.",
+      "explanation": "The lecture states that after adding new objects to the session, calling session.commit writes those changes to the database, indicating it finalizes the transaction.",
+      "rationale": "session.commit actually writes to the database, not just logs changes."
     },
     {
       "question_id": 26,
-      "concept": "Filtering with .filter()",
+      "concept": "Querying with ORM",
       "correct": true,
-      "selected": "things where the value of the thing So let say thing dot value is below 50 For example let see if we even have something like this That would be t for t in results",
-      "answer": "things where the value of the thing So let say thing dot value is below 50 For example let see if we even have something like this That would be t for t in results",
-      "explanation": null,
+      "selected": "Querying with ORM allows you to use Python classes and methods like filter, order_by, and all to retrieve database records, with the ORM translating these calls into SQL behind the scenes.",
+      "answer": "Querying with ORM allows you to use Python classes and methods like filter, order_by, and all to retrieve database records, with the ORM translating these calls into SQL behind the scenes.",
+      "explanation": "The lecture shows that using SQLAlchemy (or its Flask wrapper) you can query models with methods such as filter, order_by, and all, and the ORM handles translating those into SQL, keeping the database schema defined in Python classes.",
       "rationale": null
     },
     {
       "question_id": 27,
-      "concept": "Update statement",
+      "concept": "session.new",
       "correct": true,
-      "selected": "a simple select statement. Now, updating is also quite straightforward. Let's say I want to change",
-      "answer": "a simple select statement. Now, updating is also quite straightforward. Let's say I want to change",
-      "explanation": null,
+      "selected": "It initializes a new session so that subsequent changes are tracked and can be committed to the database.",
+      "answer": "It initializes a new session so that subsequent changes are tracked and can be committed to the database.",
+      "explanation": "The excerpt states that before calling session.commit, one must call session.new to ensure that changes are written to the database, indicating that session.new starts a new session for tracking changes.",
       "rationale": null
     },
     {
       "question_id": 28,
-      "concept": "Fetching results (fetchall, fetchone)",
+      "concept": "Session close/commit",
       "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "multiple rows. For each row, I want to actually result dot fetch all. So this is going to give me",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 29,
-      "concept": "Prepared statements / placeholders",
-      "correct": true,
-      "selected": "actually no I made a mistake We need to of course to commit to change So connection commit it important otherwise it not applied to the database So I can close this again And now we can go back to the",
-      "answer": "actually no I made a mistake We need to of course to commit to change So connection commit it important otherwise it not applied to the database So I can close this again And now we can go back to the",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 30,
-      "concept": "Primary key",
-      "correct": true,
-      "selected": "one to the thing, and then you would have both as a primary key, that would be a many, many,",
-      "answer": "one to the thing, and then you would have both as a primary key, that would be a many, many,",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 31,
-      "concept": "Data types (Integer, String)",
-      "correct": false,
-      "selected": "Data types determine the order in which tables are created in the database.",
-      "answer": "Data types such as Integer and String define the kind of values a column can store in a database table.",
-      "explanation": "The lecture explains that Integer and String are examples of data types that specify what kind of data a column can hold.",
-      "rationale": "The creation order of tables is unrelated to column data types."
-    },
-    {
-      "question_id": 32,
-      "concept": "Bulk insert with values list",
-      "correct": true,
-      "selected": "And this is important, of course, because if we don't commit the changes made by the insert statement, we're not going to be able to access the IDs because the ID is automatically assigned when the in",
-      "answer": "And this is important, of course, because if we don't commit the changes made by the insert statement, we're not going to be able to access the IDs because the ID is automatically assigned when the in",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 33,
-      "concept": "Auto-incrementing IDs",
-      "correct": true,
-      "selected": "because a person can only own a single thing doesn make a lot of sense And if you want to have a one to one relationship we going to cover that in the ORM So I not going to cover that here But what we",
-      "answer": "because a person can only own a single thing doesn make a lot of sense And if you want to have a one to one relationship we going to cover that in the ORM So I not going to cover that here But what we",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 34,
-      "concept": "GROUP BY clause",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "select and then with underscore only columns So we can choose the columns that we want to show And in this case we going to go with people dot C dot name and with thing dot C dot description to see wh",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 35,
-      "concept": "Python class mapping to database table",
-      "correct": true,
-      "selected": "to new person dot ID That is how you would do that Now the problem is before I commit that person I don have an ID But sometimes also I don want to commit before I have done everything So I don want t",
-      "answer": "to new person dot ID That is how you would do that Now the problem is before I commit that person I don have an ID But sometimes also I don want to commit before I have done everything So I don want t",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 36,
-      "concept": "Column class",
-      "correct": true,
-      "selected": "So I can say the ID is an integer column and it's also the primary key.",
-      "answer": "So I can say the ID is an integer column and it's also the primary key.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 37,
-      "concept": "Connection object",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "we need a connection object. So I need to say connection is equal to engine dot connect,",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 38,
-      "concept": "Abstraction layer between Python and SQL",
-      "correct": true,
-      "selected": "it for is to work with either SQL Alchemy core where you can use functions and you can use metadata to create everything in the database easily Or you use an ORM the object relational mapper to map Py",
-      "answer": "it for is to work with either SQL Alchemy core where you can use functions and you can use metadata to create everything in the database easily Or you use an ORM the object relational mapper to map Py",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 39,
-      "concept": "Table definition",
-      "correct": true,
-      "selected": "want to create a person, then you want to get the ID as a response, we're going to look at that when",
-      "answer": "want to create a person, then you want to get the ID as a response, we're going to look at that when",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 40,
-      "concept": "Commit transaction",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "and then just do session dot commit. When I run that you can see this is also executed.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 41,
-      "concept": "CRUD operations",
-      "correct": true,
-      "selected": "that is going to give me Mike and Jane So that a simple select statement with a filter Of course if you don provide a filter you just going to get everything That also a possibility here No problem wi",
-      "answer": "that is going to give me Mike and Jane So that a simple select statement with a filter Of course if you don provide a filter you just going to get everything That also a possibility here No problem wi",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 42,
-      "concept": "Back\u2011population / relationship handling",
-      "correct": true,
-      "selected": "the objects have been removed from the database So we can use the same syntax here for querying with all I can use delete in the end if I want to delete it I can also use update to do a an update on a",
-      "answer": "the objects have been removed from the database So we can use the same syntax here for querying with all I can use delete in the end if I want to delete it I can also use update to do a an update on a",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 43,
-      "concept": "PostgreSQL",
-      "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "let us get right into it. Now, before we get into the actual tutorial, I would like to mention that",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 44,
-      "concept": "Insert statement",
-      "correct": true,
-      "selected": "or if we don't commit the change, we're not going to be able to access Mike. So if I say",
-      "answer": "or if we don't commit the change, we're not going to be able to access Mike. So if I say",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 45,
-      "concept": "Delete statement",
-      "correct": true,
-      "selected": "same with the delete statement, I can just go ahead and say, the lead statement statement is",
-      "answer": "same with the delete statement, I can just go ahead and say, the lead statement statement is",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 46,
-      "concept": "JOIN condition (ON clause)",
-      "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "is going to be related to the people table because a person can own a thing and a thing can be owned by a person and a person can own multiple things So how is this modeled here using SQL alchemy How",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 47,
-      "concept": "Aggregation functions (SUM)",
-      "correct": true,
-      "selected": "dot owner And I also want to have func dot sum So I want to sum up all the values So things dot value this is going to give me for every owner how much total value their items have or their",
-      "answer": "dot owner And I also want to have func dot sum So I want to sum up all the values So things dot value this is going to give me for every owner how much total value their items have or their",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 48,
-      "concept": "HAVING clause",
-      "correct": true,
-      "selected": "have to pass here is a statement, select everything from people, for example, and then I have to pass",
-      "answer": "have to pass here is a statement, select everything from people, for example, and then I have to pass",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 49,
-      "concept": "SQLAlchemy Table metadata",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "here, things is equal to relationship, then I pass thing here as a string, so that it knows the class.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 50,
-      "concept": "Metadata object",
-      "correct": true,
-      "selected": "That is going to be the replacement for our metadata object or metadata class.",
-      "answer": "That is going to be the replacement for our metadata object or metadata class.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 51,
-      "concept": "Column definition",
-      "correct": true,
-      "selected": "we can say column ID again is going to be an integer, which is also of course, the primary",
-      "answer": "we can say column ID again is going to be an integer, which is also of course, the primary",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 52,
-      "concept": "Many-to-many relationship",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "That a mouse that going to be a keyboard 150 or 100 Then here we going to have a different snow let go with a book Let say the book is worth 30 bucks Then we want to have",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 53,
-      "concept": "Text construct for raw SQL",
-      "correct": true,
-      "selected": "and so on. I'm going to assume for this tutorial that you either already know SQL or that you don't",
-      "answer": "and so on. I'm going to assume for this tutorial that you either already know SQL or that you don't",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 54,
-      "concept": "Pip package installation",
-      "correct": true,
-      "selected": "to replace the default Django or M. What it allows us to do is to work with databases without having",
-      "answer": "to replace the default Django or M. What it allows us to do is to work with databases without having",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 55,
-      "concept": "Grouping and aggregation (func.sum, GROUP BY)",
-      "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "and this is going to properly close the connection and also commit everything that's not committed up",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 56,
-      "concept": "LEFT OUTER JOIN (left join)",
-      "correct": true,
-      "selected": "Clara that don't own anything, that would be a left join in this case, because we want all the",
-      "answer": "Clara that don't own anything, that would be a left join in this case, because we want all the",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 57,
-      "concept": "SQLAlchemy relationship() function",
-      "correct": true,
-      "selected": "the raw values so the name and the age we can take a look at that if i say person name person age and",
-      "answer": "the raw values so the name and the age we can take a look at that if i say person name person age and",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 58,
-      "concept": "Foreign key constraint",
-      "correct": false,
-      "selected": "A foreign key constraint automatically creates indexes on both the referencing and referenced columns to improve query performance.",
-      "answer": "A foreign key constraint ensures that values in a column (or set of columns) must match existing primary key values in another related table, enforcing referential integrity.",
-      "explanation": "The lecture explained that a foreign key constraint links tables by requiring matching values to existing primary keys, thereby maintaining referential integrity.",
-      "rationale": "Indexes are not created automatically by a foreign key constraint; they may be added manually for performance."
-    },
-    {
-      "question_id": 59,
-      "concept": "SQL INSERT operation via ORM",
-      "correct": true,
-      "selected": "all the things that Charlie owns And I can get also the owner of the thing by just accessing the attributes So I can say now this is of course always going to create now a new person on you think but",
-      "answer": "all the things that Charlie owns And I can get also the owner of the thing by just accessing the attributes So I can say now this is of course always going to create now a new person on you think but",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 60,
-      "concept": "Column selection (select only specific columns)",
-      "correct": true,
-      "selected": "Mike had ID one, Jane has ID two, Mike was deleted, no longer present. So the next ID that is going to be created is three. But since we didn't commit the changes, we don't have the changes made in th",
-      "answer": "Mike had ID one, Jane has ID two, Mike was deleted, no longer present. So the next ID that is going to be created is three. But since we didn't commit the changes, we don't have the changes made in th",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 61,
-      "concept": "One-to-one relationship",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "which are worth 80.50, for example. So these would be the things. And now what we do is we say connection, execute, insert people, connection, commit.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 62,
-      "concept": "Connection string / database URL",
-      "correct": true,
-      "selected": "of course is I need to say create DB as a tutorial database But then I can just go into my code I can run this you can see everything was executed here Now since this is a different type of database n",
-      "answer": "of course is I need to say create DB as a tutorial database But then I can just go into my code I can run this you can see everything was executed here Now since this is a different type of database n",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 63,
-      "concept": "SQL dialects",
-      "correct": true,
-      "selected": "and then it returns a people ID if I need that for some reason And we can go now back into the database I can say select everything from people of course with a semicolon again",
-      "answer": "and then it returns a people ID if I need that for some reason And we can go now back into the database I can say select everything from people of course with a semicolon again",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 64,
-      "concept": "Back-populates parameter in relationship",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "like I interested in all of that but only if the total sum is above let say 50 So I can say having and then the same expression function some things dot C dot value is greater than 50 And then again f",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 65,
-      "concept": "Primary key constraint",
-      "correct": true,
-      "selected": "table or we can use specific functions that we can import from SQL alchemy So one way for example to insert data would be to say I want to have an insert statement This insert statement is equal to pe",
-      "answer": "table or we can use specific functions that we can import from SQL alchemy So one way for example to insert data would be to say I want to have an insert statement This insert statement is equal to pe",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 66,
-      "concept": "Object Relational Mapper (ORM)",
-      "correct": true,
-      "selected": "going to take a look at that later on in the video. So what I want to show you now is how we can do",
-      "answer": "going to take a look at that later on in the video. So what I want to show you now is how we can do",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 67,
-      "concept": "Engine (SQLAlchemy)",
-      "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "is to just use an in memory database or a file based database. So we can use SQLite. And we can",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 68,
-      "concept": "Lazy loading of related objects",
-      "correct": true,
-      "selected": "And we also going to import relationship which is going to be important inside of the class to define the relationship between two different classes or two different tables Because what the object rel",
-      "answer": "And we also going to import relationship which is going to be important inside of the class to define the relationship between two different classes or two different tables Because what the object rel",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 69,
-      "concept": "SQLAlchemy create_engine function",
-      "correct": true,
-      "selected": "equal to camera, and the value is going to be 500. Now, if I want to specify the owner of that thing,",
-      "answer": "equal to camera, and the value is going to be 500. Now, if I want to specify the owner of that thing,",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 70,
-      "concept": "SQLAlchemy declarative base",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "equal to declarative base. And in order to define a table, now what we do is we say class, people,",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 71,
-      "concept": "SQLAlchemy func module",
-      "correct": true,
-      "selected": "for example, I want to have a second table, let's call it things. And this table that contains things",
-      "answer": "for example, I want to have a second table, let's call it things. And this table that contains things",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 72,
-      "concept": "Raw SQL execution via SQLAlchemy",
-      "correct": true,
-      "selected": "and then maybe I should use single quotations here.",
-      "answer": "and then maybe I should use single quotations here.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 73,
-      "concept": "SQLAlchemy query API",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "have to use different function names. So what we do in this case is we use session dot query.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 74,
-      "concept": "SQLAlchemy session management",
-      "correct": true,
-      "selected": "populated. So of course, we need both arm. But when I run this now, you can see this is executed.",
-      "answer": "populated. So of course, we need both arm. But when I run this now, you can see this is executed.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 75,
-      "concept": "SQLAlchemy session.flush method",
-      "correct": true,
-      "selected": "I just have to define the objects here as classes. And I can then use them where the tables here as",
-      "answer": "I just have to define the objects here as classes. And I can then use them where the tables here as",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 76,
-      "concept": "SQLAlchemy session.add method",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "echo equals true. And now instead of creating a metadata object, we're going to create a declarative",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 77,
-      "concept": "SQLAlchemy ORM",
-      "correct": true,
-      "selected": "yeah, this is query or 404. But essentially, what I have is I have the models behind the scenes. And",
-      "answer": "yeah, this is query or 404. But essentially, what I have is I have the models behind the scenes. And",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 78,
-      "concept": "SQLAlchemy session.commit method",
-      "correct": true,
-      "selected": "to define the table name. So underscore underscore, table name, underscore underscore is going to be",
-      "answer": "to define the table name. So underscore underscore, table name, underscore underscore is going to be",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 79,
-      "concept": "Version checking (SQLAlchemy 2.x vs 1.x)",
-      "correct": false,
-      "selected": "connection strings. So we need a database URL. Now, the most simple way to work with a database",
-      "answer": "that starts with two. So two point something, you can make sure that that's the case by opening up",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 80,
-      "concept": "Pandas integration with databases (read_sql, to_sql)",
-      "correct": true,
-      "selected": "append to the table. And index equals false here, we are not interested in the index, I can just run",
-      "answer": "append to the table. And index equals false here, we are not interested in the index, I can just run",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 81,
-      "concept": "__repr__ method for model representation",
-      "correct": true,
-      "selected": "query, order by filter, all and so on, you can see it's the same idea. So even though this is Flask",
-      "answer": "query, order by filter, all and so on, you can see it's the same idea. So even though this is Flask",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 82,
-      "concept": "Flask integration with SQLAlchemy",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "like create table if not exists by the way I not going to teach SQL code in this video today I do have a SQL crash course where you can learn about the syntax of creating a table inserting data into a",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 83,
-      "concept": "Connection (SQLAlchemy)",
-      "correct": true,
-      "selected": "this video was sponsored by SNCC a company focusing on AI security And I do recommend that you don skip this section because it going to be quite relevant to a lot of you guys since my audience is mai",
-      "answer": "this video was sponsored by SNCC a company focusing on AI security And I do recommend that you don skip this section because it going to be quite relevant to a lot of you guys since my audience is mai",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 84,
-      "concept": "Pandas integration with SQLAlchemy",
-      "correct": true,
-      "selected": "And I also want to show you a Pandas example, because we can use SQL Alchemy in combination with Pandas to apply certain data frame operations to the database by using SQL Alchemy.",
-      "answer": "And I also want to show you a Pandas example, because we can use SQL Alchemy in combination with Pandas to apply certain data frame operations to the database by using SQL Alchemy.",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 85,
-      "concept": "Blueprints in Flask",
-      "correct": false,
-      "selected": "an association table where you have an additional table that has two foreign keys, one to the person,",
-      "answer": "it into the database So I can say for example new data is equal to PD data frame And I can pass a dictionary here where I say name is going to be equal to let use I don know what name don we have alre",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 86,
-      "concept": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "correct": true,
-      "selected": "flask in general, I have the different blueprints. So I have YouTube, for example, and sponsorships",
-      "answer": "flask in general, I have the different blueprints. So I have YouTube, for example, and sponsorships",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 87,
-      "concept": "FastAPI integration with SQLAlchemy",
-      "correct": true,
-      "selected": "Alchemy is that you don really have to care about the underlying database You can use Postgres you can use SQLite you can use MySQL it doesn really matter because you just have to write Python code an",
-      "answer": "Alchemy is that you don really have to care about the underlying database You can use Postgres you can use SQLite you can use MySQL it doesn really matter because you just have to write Python code an",
-      "explanation": null,
-      "rationale": null
-    },
-    {
-      "question_id": 88,
-      "concept": "Django ORM replacement",
-      "correct": false,
-      "selected": "do joins as before So what we could do for example so we can say give me the person name and give me the thing description So two tables here and I can just say then this is joining the thing So this",
-      "answer": "So when we use Flask or FastAPI or Django as I said sometimes to replace the Django ORM And in the end I also want to show you a practical example of an old application of an old Flask application whe",
-      "explanation": null,
-      "rationale": null
+      "selected": "Session.close() only rolls back uncommitted transactions and discards all changes made during the session.",
+      "answer": "Calling session.close() properly closes the database connection and automatically commits any pending changes that have not yet been committed.",
+      "explanation": "The transcript states that session.close() will properly close the connection and commit everything that has not been committed up until that point.",
+      "rationale": "The passage notes that close commits pending changes, not that it rolls them back or discards them."
     }
   ]
 }

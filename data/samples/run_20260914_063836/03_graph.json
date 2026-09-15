@@ -1,1663 +1,264 @@
 {
   "course_id": "ml",
   "nodes": [
-    "Abstraction layer between Python and SQL",
-    "Aggregation functions (SUM)",
-    "Association table",
-    "Auto-incrementing IDs",
-    "Back-populates parameter in relationship",
-    "Back\u2011population / relationship handling",
-    "Blueprints in Flask",
-    "Bulk insert with values list",
-    "CRUD operations",
-    "Column class",
-    "Column definition",
-    "Column selection (select only specific columns)",
-    "Commit transaction",
-    "Connection (SQLAlchemy)",
-    "Connection object",
-    "Connection string / database URL",
-    "Create Engine function",
-    "Data types (Integer, String)",
-    "Data types and column definitions in ORM models",
-    "Database engine and connection handling",
-    "Database schema definition via Python classes",
-    "Declarative base (for ORM)",
-    "Delete statement",
-    "Django ORM replacement",
-    "Engine",
-    "Engine (SQLAlchemy)",
-    "FastAPI integration with SQLAlchemy",
-    "Fetching results (fetchall, fetchone)",
-    "Filtering with .filter()",
-    "Flask integration with SQLAlchemy",
-    "Foreign key constraint",
-    "GROUP BY clause",
-    "Grouping and aggregation (func.sum, GROUP BY)",
+    "DataFrame to SQL",
+    "Flask-SQLAlchemy",
+    "GROUP BY",
+    "HAVING",
     "HAVING clause",
     "INNER JOIN",
-    "In-memory database",
-    "Insert statement",
-    "JOIN condition (ON clause)",
-    "Joining tables",
-    "LEFT OUTER JOIN (left join)",
-    "Lazy loading of related objects",
-    "Many-to-many relationship",
-    "Metadata object",
-    "MySQL",
-    "Nullable constraint",
-    "Object Relational Mapper (ORM)",
-    "Object\u2011relational mapping (ORM) concepts",
-    "One-to-one relationship",
-    "Ordering with .order_by()",
-    "Pagination of query results",
-    "Pandas integration with SQLAlchemy",
-    "Pandas integration with databases (read_sql, to_sql)",
-    "Pip package installation",
-    "PostgreSQL",
-    "Prepared statements / placeholders",
-    "Primary key",
-    "Primary key constraint",
-    "Python class mapping to database table",
-    "Querying with .all()",
-    "RESTful routing and query parameters",
-    "Raw SQL execution via SQLAlchemy",
-    "SQL INSERT operation via ORM",
-    "SQL SELECT statement",
-    "SQL dialects",
-    "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-    "SQLAlchemy Column definition",
-    "SQLAlchemy ORM",
-    "SQLAlchemy Table metadata",
-    "SQLAlchemy create_engine function",
-    "SQLAlchemy declarative base",
-    "SQLAlchemy func module",
-    "SQLAlchemy query API",
-    "SQLAlchemy relationship() function",
-    "SQLAlchemy session management",
-    "SQLAlchemy session.add method",
-    "SQLAlchemy session.commit method",
-    "SQLAlchemy session.flush method",
-    "SQLite",
-    "Schema definition",
-    "Session management (session.commit, session.close)",
-    "Table class",
-    "Table definition",
-    "Text construct for raw SQL",
-    "Transaction handling",
-    "Update statement",
-    "Using ORM across frameworks (Flask, FastAPI, Django)",
-    "Version checking (SQLAlchemy 2.x vs 1.x)",
-    "__repr__ method for model representation"
+    "LEFT OUTER JOIN",
+    "ORM models",
+    "Querying with ORM",
+    "SELECT statement",
+    "SQL JOIN",
+    "SUM aggregation",
+    "Session close/commit",
+    "auto\u2011generated ID",
+    "auto\u2011increment primary key",
+    "delete",
+    "filter",
+    "filter conditions",
+    "pandas read_sql",
+    "selecting fields",
+    "session.commit",
+    "session.commit after delete/update",
+    "session.flush",
+    "session.new",
+    "session.query",
+    "transaction commit",
+    "tuple vs object results",
+    "update"
   ],
   "edges": [
     {
-      "source": "Abstraction layer between Python and SQL",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9602593206134318
+      "source": "DataFrame to SQL",
+      "target": "pandas read_sql",
+      "confidence": 0.9914093157207223,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Abstraction layer between Python and SQL",
-      "target": "Object Relational Mapper (ORM)",
-      "confidence": 0.5622280501963135
+      "source": "DataFrame to SQL",
+      "target": "Flask-SQLAlchemy",
+      "confidence": 0.8069806797463404,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Abstraction layer between Python and SQL",
-      "target": "SQL dialects",
-      "confidence": 0.8254627441370735
+      "source": "Flask-SQLAlchemy",
+      "target": "ORM models",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"I am using Flask SQLAlchemy which is a wrapper around SQLAlchemy\""
     },
     {
-      "source": "Aggregation functions (SUM)",
-      "target": "Grouping and aggregation (func.sum, GROUP BY)",
-      "confidence": 0.8989534920256715
-    },
-    {
-      "source": "Association table",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.5883895604559406
-    },
-    {
-      "source": "Association table",
-      "target": "Foreign key constraint",
-      "confidence": 0.5830789391106697
-    },
-    {
-      "source": "Association table",
-      "target": "Many-to-many relationship",
-      "confidence": 0.7473091859020792
-    },
-    {
-      "source": "Column class",
-      "target": "Metadata object",
-      "confidence": 0.5534383830464212
-    },
-    {
-      "source": "Column class",
-      "target": "SQL dialects",
-      "confidence": 0.6121142534288824
-    },
-    {
-      "source": "Column class",
-      "target": "Column definition",
-      "confidence": 0.9737036195184262
-    },
-    {
-      "source": "Column definition",
-      "target": "Column selection (select only specific columns)",
-      "confidence": 0.7317371789014191
-    },
-    {
-      "source": "Commit transaction",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.5381196682665654
-    },
-    {
-      "source": "Connection (SQLAlchemy)",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9565260943254319
-    },
-    {
-      "source": "Connection string / database URL",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.8662730470248035
-    },
-    {
-      "source": "Connection string / database URL",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.5618633910561389
-    },
-    {
-      "source": "Create Engine function",
-      "target": "SQLAlchemy create_engine function",
-      "confidence": 0.761279670628494
-    },
-    {
-      "source": "Data types and column definitions in ORM models",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.84748945968869
-    },
-    {
-      "source": "Data types and column definitions in ORM models",
-      "target": "Object\u2011relational mapping (ORM) concepts",
-      "confidence": 0.8307756896345713
-    },
-    {
-      "source": "Data types and column definitions in ORM models",
-      "target": "__repr__ method for model representation",
-      "confidence": 0.8583182493699909
-    },
-    {
-      "source": "Data types and column definitions in ORM models",
-      "target": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "confidence": 0.8408118073461858
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.6812177928344705
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.6272788120433853
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "CRUD operations",
-      "confidence": 0.6583681800061036
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "Session management (session.commit, session.close)",
-      "confidence": 0.6954997332247917
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "Transaction handling",
-      "confidence": 0.6661550656473433
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "Pandas integration with databases (read_sql, to_sql)",
-      "confidence": 0.7529874952035818
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.6307688225346282
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "RESTful routing and query parameters",
-      "confidence": 0.5394795463128695
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "Pagination of query results",
-      "confidence": 0.5744433582759104
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "__repr__ method for model representation",
-      "confidence": 0.5460952058578818
-    },
-    {
-      "source": "Database engine and connection handling",
-      "target": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "confidence": 0.7495276242596153
-    },
-    {
-      "source": "Database schema definition via Python classes",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.8132336122100543
-    },
-    {
-      "source": "Database schema definition via Python classes",
-      "target": "Version checking (SQLAlchemy 2.x vs 1.x)",
-      "confidence": 0.7064163588423055
-    },
-    {
-      "source": "Database schema definition via Python classes",
-      "target": "Schema definition",
-      "confidence": 0.8915072969730905
-    },
-    {
-      "source": "Database schema definition via Python classes",
-      "target": "Python class mapping to database table",
-      "confidence": 0.9651950147603796
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "Version checking (SQLAlchemy 2.x vs 1.x)",
-      "confidence": 0.9099213152340088
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9860955078500471
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9885586364244123
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9789480052149171
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "Django ORM replacement",
-      "confidence": 0.554886997637584
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9792835186632577
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.9873903007826087
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy session management",
-      "confidence": 0.9685290900840656
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9882617047478104
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.9907608833836489
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy declarative base",
-      "confidence": 0.971685357847631
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy create_engine function",
-      "confidence": 0.9855004265924037
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.9681207683196837
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.967214588653392
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9702809646053775
-    },
-    {
-      "source": "Engine (SQLAlchemy)",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9908988799217645
-    },
-    {
-      "source": "Flask integration with SQLAlchemy",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9638476935545879
-    },
-    {
-      "source": "Flask integration with SQLAlchemy",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9690635382106075
-    },
-    {
-      "source": "Flask integration with SQLAlchemy",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.975039826803643
-    },
-    {
-      "source": "Flask integration with SQLAlchemy",
-      "target": "Blueprints in Flask",
-      "confidence": 0.7382449611361018
-    },
-    {
-      "source": "Flask integration with SQLAlchemy",
-      "target": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "confidence": 0.5651380044216008
-    },
-    {
-      "source": "Foreign key constraint",
-      "target": "Primary key constraint",
-      "confidence": 0.8167572834736524
-    },
-    {
-      "source": "GROUP BY clause",
-      "target": "JOIN condition (ON clause)",
-      "confidence": 0.6047816402885114
-    },
-    {
-      "source": "GROUP BY clause",
-      "target": "LEFT OUTER JOIN (left join)",
-      "confidence": 0.8778336311006294
-    },
-    {
-      "source": "GROUP BY clause",
-      "target": "Aggregation functions (SUM)",
-      "confidence": 0.7898231235441137
-    },
-    {
-      "source": "GROUP BY clause",
+      "source": "GROUP BY",
       "target": "HAVING clause",
-      "confidence": 0.94220538563373
-    },
-    {
-      "source": "GROUP BY clause",
-      "target": "SQL INSERT operation via ORM",
-      "confidence": 0.5042612387607948
-    },
-    {
-      "source": "HAVING clause",
-      "target": "LEFT OUTER JOIN (left join)",
-      "confidence": 0.8137846006411487
-    },
-    {
-      "source": "HAVING clause",
-      "target": "SQLAlchemy relationship() function",
-      "confidence": 0.6307482692687593
-    },
-    {
-      "source": "HAVING clause",
-      "target": "Foreign key constraint",
-      "confidence": 0.8071106834374759
-    },
-    {
-      "source": "HAVING clause",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.5195519912676424
-    },
-    {
-      "source": "HAVING clause",
-      "target": "Back-populates parameter in relationship",
-      "confidence": 0.5815367255819968
-    },
-    {
-      "source": "HAVING clause",
-      "target": "SQL INSERT operation via ORM",
-      "confidence": 0.5759830037092704
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"I can say having and then the same expression function some things dot C dot value is greater than 50\""
     },
     {
       "source": "INNER JOIN",
-      "target": "LEFT OUTER JOIN (left join)",
-      "confidence": 0.9877733749047388
+      "target": "LEFT OUTER JOIN",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"that is going to give me all the people, even those that don't own anything\""
     },
     {
-      "source": "INNER JOIN",
-      "target": "JOIN condition (ON clause)",
-      "confidence": 0.7722270191608458
+      "source": "ORM models",
+      "target": "Querying with ORM",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"I do query, order by filter, all and so on\""
     },
     {
-      "source": "In-memory database",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.7098552062548549
-    },
-    {
-      "source": "In-memory database",
-      "target": "SQLite",
-      "confidence": 0.8040335165017582
-    },
-    {
-      "source": "Insert statement",
-      "target": "SQL INSERT operation via ORM",
-      "confidence": 0.934481179857444
-    },
-    {
-      "source": "JOIN condition (ON clause)",
-      "target": "LEFT OUTER JOIN (left join)",
-      "confidence": 0.8588988945838394
-    },
-    {
-      "source": "Joining tables",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.624048955641497
-    },
-    {
-      "source": "Joining tables",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.5357374456598814
-    },
-    {
-      "source": "Joining tables",
-      "target": "Grouping and aggregation (func.sum, GROUP BY)",
-      "confidence": 0.5804665330947649
-    },
-    {
-      "source": "Joining tables",
-      "target": "HAVING clause",
-      "confidence": 0.7205805444879292
-    },
-    {
-      "source": "Joining tables",
-      "target": "Pagination of query results",
-      "confidence": 0.6084902529215492
-    },
-    {
-      "source": "Joining tables",
+      "source": "SELECT statement",
       "target": "INNER JOIN",
-      "confidence": 0.960512869270944
+      "confidence": 0.6307893233049404,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Joining tables",
-      "target": "LEFT OUTER JOIN (left join)",
-      "confidence": 0.9706659892279796
+      "source": "SELECT statement",
+      "target": "LEFT OUTER JOIN",
+      "confidence": 0.6575368478126301,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Many-to-many relationship",
-      "target": "One-to-one relationship",
-      "confidence": 0.9726844476462655
+      "source": "SQL JOIN",
+      "target": "update",
+      "confidence": 0.8060459319219166,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.7709805233513228
+      "source": "SQL JOIN",
+      "target": "HAVING",
+      "confidence": 0.8156462838621443,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.7813568804244765
+      "source": "SQL JOIN",
+      "target": "Session close/commit",
+      "confidence": 0.6469794156144631,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "Text construct for raw SQL",
-      "confidence": 0.6685475963236935
+      "source": "SQL JOIN",
+      "target": "pandas read_sql",
+      "confidence": 0.8656886195919029,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "Connection string / database URL",
-      "confidence": 0.7909783016090667
+      "source": "SQL JOIN",
+      "target": "INNER JOIN",
+      "confidence": 0.9811781048054449,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "PostgreSQL",
-      "confidence": 0.9458549689431676
+      "source": "SQL JOIN",
+      "target": "LEFT OUTER JOIN",
+      "confidence": 0.9724607299332025,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "SQL dialects",
-      "confidence": 0.7834185540331479
+      "source": "delete",
+      "target": "update",
+      "confidence": 0.6990814477971503,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.660704855981997
+      "source": "filter conditions",
+      "target": "delete",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "I can say for example let go with filter where the person, so person name is equal to Charlie"
     },
     {
-      "source": "MySQL",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.7628899095586305
+      "source": "filter conditions",
+      "target": "update",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "I want to say that the person should now be renamed according to a dictionary"
     },
     {
-      "source": "MySQL",
-      "target": "Django ORM replacement",
-      "confidence": 0.673617160410112
+      "source": "filter conditions",
+      "target": "filter",
+      "confidence": 0.8524744113936279,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.6039712683188656
+      "source": "session.commit",
+      "target": "session.new",
+      "confidence": 0.8732892277138434,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "MySQL",
-      "target": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "confidence": 0.7126245840426384
+      "source": "session.commit",
+      "target": "Session close/commit",
+      "confidence": 0.9774975976139805,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Object Relational Mapper (ORM)",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.6458925793255393
+      "source": "session.commit after delete/update",
+      "target": "session.commit",
+      "confidence": 0.9785710518053954,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Object Relational Mapper (ORM)",
-      "target": "Lazy loading of related objects",
-      "confidence": 0.5962564004293481
+      "source": "session.commit after delete/update",
+      "target": "Session close/commit",
+      "confidence": 0.9493155676169778,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Object\u2011relational mapping (ORM) concepts",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.6816631387829988
+      "source": "session.flush",
+      "target": "session.commit",
+      "confidence": 0.9559948850523909,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Object\u2011relational mapping (ORM) concepts",
-      "target": "__repr__ method for model representation",
-      "confidence": 0.6219589848493621
+      "source": "session.flush",
+      "target": "session.new",
+      "confidence": 0.8957651639806378,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Object\u2011relational mapping (ORM) concepts",
-      "target": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "confidence": 0.8100000173127143
+      "source": "session.flush",
+      "target": "session.commit after delete/update",
+      "confidence": 0.7800736722400287,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Object\u2011relational mapping (ORM) concepts",
-      "target": "Object Relational Mapper (ORM)",
-      "confidence": 0.9960066009393971
+      "source": "session.query",
+      "target": "filter",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "if I want to filter, I don't use the where function, I use the filter function"
     },
     {
-      "source": "Pandas integration with SQLAlchemy",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9690581077329976
+      "source": "session.query",
+      "target": "session.commit",
+      "confidence": 0.9247142087648588,
+      "source_method": "classifier",
+      "evidence": null
     },
     {
-      "source": "Pandas integration with databases (read_sql, to_sql)",
-      "target": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "confidence": 0.7268121912284227
-    },
-    {
-      "source": "Pandas integration with databases (read_sql, to_sql)",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.991952548187319
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.7602607950440256
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.7724732440739821
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Text construct for raw SQL",
-      "confidence": 0.6278470219797474
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Connection string / database URL",
-      "confidence": 0.6898491309042745
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "SQL dialects",
-      "confidence": 0.70958237742276
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Pip package installation",
-      "confidence": 0.5181134996245649
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.7309939172580198
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.7230551087578131
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Django ORM replacement",
-      "confidence": 0.5557721035810916
-    },
-    {
-      "source": "PostgreSQL",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.6805793472942762
-    },
-    {
-      "source": "Primary key",
-      "target": "Primary key constraint",
-      "confidence": 0.9449470715210553
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "Object Relational Mapper (ORM)",
-      "confidence": 0.7051712172910184
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "SQLAlchemy relationship() function",
-      "confidence": 0.8375416579122525
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "SQLAlchemy create_engine function",
-      "confidence": 0.8361423683404211
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "SQLAlchemy Table metadata",
-      "confidence": 0.947579214539461
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.8935870946851041
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.8637109985047147
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9049203373194845
-    },
-    {
-      "source": "Python class mapping to database table",
-      "target": "Lazy loading of related objects",
-      "confidence": 0.5042665200107028
-    },
-    {
-      "source": "Querying with .all()",
-      "target": "Filtering with .filter()",
-      "confidence": 0.5536506362367246
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.9554415111189809
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9552479579497632
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9766489422018069
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9681900095208786
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9711036858966553
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.9537585269559222
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9658053263423656
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9494568055574509
-    },
-    {
-      "source": "Raw SQL execution via SQLAlchemy",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9856624067007406
-    },
-    {
-      "source": "SQL INSERT operation via ORM",
-      "target": "Object Relational Mapper (ORM)",
-      "confidence": 0.702806508754308
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Update statement",
-      "confidence": 0.8339868958482133
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Fetching results (fetchall, fetchone)",
-      "confidence": 0.9032660475503456
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Delete statement",
-      "confidence": 0.9279355045660332
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Commit transaction",
-      "confidence": 0.7655239159909691
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Prepared statements / placeholders",
-      "confidence": 0.8493816979440447
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Table definition",
-      "confidence": 0.7019844057496863
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Metadata object",
-      "confidence": 0.5961404716519396
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Column definition",
-      "confidence": 0.6455314166429517
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Primary key",
-      "confidence": 0.773466904753816
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Data types (Integer, String)",
-      "confidence": 0.512591898904127
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Foreign key constraint",
-      "confidence": 0.7874223954363211
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Many-to-many relationship",
-      "confidence": 0.6260364397321717
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Bulk insert with values list",
-      "confidence": 0.8256566929084703
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Auto-incrementing IDs",
-      "confidence": 0.6434835626409957
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Column selection (select only specific columns)",
-      "confidence": 0.951604270189674
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "JOIN condition (ON clause)",
-      "confidence": 0.9494848104941215
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "GROUP BY clause",
-      "confidence": 0.9708614815604771
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.8340674475294398
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "LEFT OUTER JOIN (left join)",
-      "confidence": 0.9043930753646363
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Aggregation functions (SUM)",
-      "confidence": 0.5903688544475819
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "HAVING clause",
-      "confidence": 0.9829801937056974
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Object Relational Mapper (ORM)",
-      "confidence": 0.5470070203121721
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy relationship() function",
-      "confidence": 0.7901573402443044
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy create_engine function",
-      "confidence": 0.7254398310694029
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy Table metadata",
-      "confidence": 0.8260837137085302
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.7905370933500735
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.7534471991138421
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.7679354368531708
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Back-populates parameter in relationship",
-      "confidence": 0.6237061434674993
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "Python class mapping to database table",
-      "confidence": 0.6526221446631816
-    },
-    {
-      "source": "SQL SELECT statement",
-      "target": "SQL INSERT operation via ORM",
-      "confidence": 0.8931240871907532
-    },
-    {
-      "source": "SQL dialects",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.5602152586130236
-    },
-    {
-      "source": "SQL dialects",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.5843236055468959
-    },
-    {
-      "source": "SQL dialects",
-      "target": "Django ORM replacement",
-      "confidence": 0.536840279856889
-    },
-    {
-      "source": "SQL dialects",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.6822236600179122
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.8603077459197913
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.8748055230861609
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Text construct for raw SQL",
-      "confidence": 0.9650853898232291
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Connection string / database URL",
-      "confidence": 0.663183103883977
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "PostgreSQL",
-      "confidence": 0.7580069552527356
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "SQL dialects",
-      "confidence": 0.8360683350130259
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.8869827967406713
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9142531478246745
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Django ORM replacement",
-      "confidence": 0.7140252770538202
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.8575030590403759
-    },
-    {
-      "source": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-      "target": "Insert statement",
-      "confidence": 0.9489532924533969
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy declarative base",
-      "confidence": 0.9754837734567597
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.9862281106753633
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.9589877218455533
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.970071147861898
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy session management",
-      "confidence": 0.9206330902724222
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9763848647924026
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.978122307058642
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9714535062405887
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.9840028033541733
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy relationship() function",
-      "confidence": 0.9847660261013629
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy create_engine function",
-      "confidence": 0.9754144230729791
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy Table metadata",
-      "confidence": 0.9929036253732982
-    },
-    {
-      "source": "SQLAlchemy Column definition",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9857524064714585
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Version checking (SQLAlchemy 2.x vs 1.x)",
-      "confidence": 0.8438749832780489
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Pandas integration with databases (read_sql, to_sql)",
-      "confidence": 0.5249903495815695
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.949403573749203
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "__repr__ method for model representation",
-      "confidence": 0.5363170887655246
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "confidence": 0.8812126460377534
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9537724959018036
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9392810070420368
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Django ORM replacement",
-      "confidence": 0.9468576080574553
-    },
-    {
-      "source": "SQLAlchemy ORM",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9619667523705634
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.9378582383699865
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9259693211096534
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9527774100150005
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.9406259905772736
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9603666540213099
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy session management",
-      "confidence": 0.9445177683958276
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9802050033723995
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9757854338743629
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9648004650657312
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.9760935596457737
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy declarative base",
-      "confidence": 0.9332813823267669
-    },
-    {
-      "source": "SQLAlchemy Table metadata",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9838739423814583
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9472822824160423
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.8477507982469218
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9346166759843837
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9430104437570376
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9524783393262006
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9159922510931141
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.9734320137547103
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "SQLAlchemy declarative base",
-      "confidence": 0.7758429748769813
-    },
-    {
-      "source": "SQLAlchemy create_engine function",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9539951682339579
-    },
-    {
-      "source": "SQLAlchemy declarative base",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.914552028757424
-    },
-    {
-      "source": "SQLAlchemy declarative base",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.882515858243768
-    },
-    {
-      "source": "SQLAlchemy declarative base",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9528219878770999
-    },
-    {
-      "source": "SQLAlchemy declarative base",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.942720877719506
-    },
-    {
-      "source": "SQLAlchemy declarative base",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.9385346940031233
-    },
-    {
-      "source": "SQLAlchemy declarative base",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9374605276323897
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.9239331847121082
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.954272233634977
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "SQLAlchemy session management",
-      "confidence": 0.9028834413477926
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9501272043971072
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9678347294176392
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9253430075431565
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9346417491128585
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.89257302883583
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9381800818502052
-    },
-    {
-      "source": "SQLAlchemy func module",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9560150403526764
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9787519591425168
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9507404932151684
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "SQLAlchemy session management",
-      "confidence": 0.9007591021695593
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.9549253798092089
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.9435588102189499
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9025329319252372
-    },
-    {
-      "source": "SQLAlchemy query API",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9255712545431554
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.9232215386796273
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9189394370870554
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9359680015110377
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "Back-populates parameter in relationship",
-      "confidence": 0.8617782762347067
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.9737569854574586
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.9097283478151976
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9731463926549935
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.9414676552950553
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.9663471880746553
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy declarative base",
-      "confidence": 0.9097344685409703
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "SQLAlchemy query API",
-      "confidence": 0.9813565244872726
-    },
-    {
-      "source": "SQLAlchemy relationship() function",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9309603066057851
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9627071223704354
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9389603507064531
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "SQLAlchemy session.flush method",
-      "confidence": 0.9917033662681234
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9865527595886682
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "SQLAlchemy session.add method",
-      "confidence": 0.9913638228850093
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "SQLAlchemy ORM",
-      "confidence": 0.7150017183221717
-    },
-    {
-      "source": "SQLAlchemy session management",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.7617533825092296
-    },
-    {
-      "source": "SQLAlchemy session.add method",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9715697359225706
-    },
-    {
-      "source": "SQLAlchemy session.add method",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9283293562018015
-    },
-    {
-      "source": "SQLAlchemy session.add method",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.9087923207828057
-    },
-    {
-      "source": "SQLAlchemy session.commit method",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.8747807755462363
-    },
-    {
-      "source": "SQLAlchemy session.flush method",
-      "target": "SQLAlchemy session.commit method",
-      "confidence": 0.9869181890460982
-    },
-    {
-      "source": "SQLAlchemy session.flush method",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.9151205850268826
-    },
-    {
-      "source": "SQLite",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.5875711738826035
-    },
-    {
-      "source": "Table class",
-      "target": "SQLAlchemy session management",
-      "confidence": 0.7259208351253267
-    },
-    {
-      "source": "Table class",
-      "target": "Raw SQL execution via SQLAlchemy",
-      "confidence": 0.74921135547758
-    },
-    {
-      "source": "Table class",
-      "target": "Object Relational Mapper (ORM)",
-      "confidence": 0.761041560759559
-    },
-    {
-      "source": "Table class",
-      "target": "Metadata object",
-      "confidence": 0.6635702835697166
-    },
-    {
-      "source": "Table class",
-      "target": "Column class",
-      "confidence": 0.990453545582867
-    },
-    {
-      "source": "Table class",
-      "target": "Connection object",
-      "confidence": 0.5913978896693897
-    },
-    {
-      "source": "Table class",
-      "target": "SQL dialects",
-      "confidence": 0.797728667024564
-    },
-    {
-      "source": "Table class",
-      "target": "Abstraction layer between Python and SQL",
-      "confidence": 0.6540465209942546
-    },
-    {
-      "source": "Table class",
-      "target": "Table definition",
-      "confidence": 0.9775675888053009
-    },
-    {
-      "source": "Table definition",
-      "target": "Column definition",
-      "confidence": 0.9307815829211693
-    },
-    {
-      "source": "Table definition",
-      "target": "Many-to-many relationship",
-      "confidence": 0.5454399047911204
-    },
-    {
-      "source": "Table definition",
-      "target": "SQLAlchemy func module",
-      "confidence": 0.7134906888718344
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "Engine (SQLAlchemy)",
-      "confidence": 0.7652595063608633
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "Connection (SQLAlchemy)",
-      "confidence": 0.711672765531413
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "Connection string / database URL",
-      "confidence": 0.5709473704839432
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "SQL dialects",
-      "confidence": 0.9260111817093506
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "Flask integration with SQLAlchemy",
-      "confidence": 0.7086395851774061
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "FastAPI integration with SQLAlchemy",
-      "confidence": 0.8089800177450042
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "Django ORM replacement",
-      "confidence": 0.6566801535576837
-    },
-    {
-      "source": "Text construct for raw SQL",
-      "target": "Pandas integration with SQLAlchemy",
-      "confidence": 0.7074939068991528
-    },
-    {
-      "source": "Transaction handling",
-      "target": "Commit transaction",
-      "confidence": 0.9511572626433515
-    },
-    {
-      "source": "Transaction handling",
-      "target": "CRUD operations",
-      "confidence": 0.7666179831215475
-    },
-    {
-      "source": "Transaction handling",
-      "target": "Back\u2011population / relationship handling",
-      "confidence": 0.5291191306131812
-    },
-    {
-      "source": "Update statement",
-      "target": "Delete statement",
-      "confidence": 0.6886833477242668
-    },
-    {
-      "source": "Using ORM across frameworks (Flask, FastAPI, Django)",
-      "target": "Django ORM replacement",
-      "confidence": 0.9262381463270125
+      "source": "session.query",
+      "target": "session.new",
+      "confidence": 0.8985311898244888,
+      "source_method": "classifier",
+      "evidence": null
     }
   ],
-  "node_count": 88,
-  "edge_count": 295,
+  "node_count": 28,
+  "edge_count": 28,
   "is_dag": true,
   "topological_order": [
-    "Association table",
-    "Create Engine function",
-    "Data types and column definitions in ORM models",
-    "Database engine and connection handling",
-    "Database schema definition via Python classes",
-    "Declarative base (for ORM)",
-    "Engine",
-    "In-memory database",
-    "Joining tables",
-    "MySQL",
-    "Nullable constraint",
-    "Ordering with .order_by()",
-    "Querying with .all()",
-    "SQL SELECT statement",
-    "SQLAlchemy Column definition",
-    "Table class",
-    "Object\u2011relational mapping (ORM) concepts",
-    "Session management (session.commit, session.close)",
-    "Transaction handling",
-    "RESTful routing and query parameters",
-    "Schema definition",
-    "SQLite",
-    "Pagination of query results",
-    "INNER JOIN",
-    "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-    "Filtering with .filter()",
-    "Update statement",
-    "Fetching results (fetchall, fetchone)",
-    "Prepared statements / placeholders",
-    "Primary key",
-    "Data types (Integer, String)",
-    "Bulk insert with values list",
-    "Auto-incrementing IDs",
-    "GROUP BY clause",
-    "Python class mapping to database table",
-    "Column class",
-    "Connection object",
-    "Abstraction layer between Python and SQL",
-    "Table definition",
-    "Commit transaction",
-    "CRUD operations",
-    "Back\u2011population / relationship handling",
-    "PostgreSQL",
-    "Insert statement",
-    "Delete statement",
-    "JOIN condition (ON clause)",
-    "Aggregation functions (SUM)",
+    "DataFrame to SQL",
+    "GROUP BY",
+    "SELECT statement",
+    "SQL JOIN",
+    "SUM aggregation",
+    "auto\u2011generated ID",
+    "auto\u2011increment primary key",
+    "filter conditions",
+    "selecting fields",
+    "session.flush",
+    "session.query",
+    "transaction commit",
+    "tuple vs object results",
+    "Flask-SQLAlchemy",
     "HAVING clause",
-    "SQLAlchemy Table metadata",
-    "Metadata object",
-    "Column definition",
-    "Many-to-many relationship",
-    "Text construct for raw SQL",
-    "Pip package installation",
-    "Grouping and aggregation (func.sum, GROUP BY)",
-    "LEFT OUTER JOIN (left join)",
-    "SQLAlchemy relationship() function",
-    "Foreign key constraint",
-    "SQL INSERT operation via ORM",
-    "Column selection (select only specific columns)",
-    "One-to-one relationship",
-    "Connection string / database URL",
-    "SQL dialects",
-    "Back-populates parameter in relationship",
-    "Primary key constraint",
-    "Object Relational Mapper (ORM)",
-    "Engine (SQLAlchemy)",
-    "Lazy loading of related objects",
-    "SQLAlchemy create_engine function",
-    "SQLAlchemy declarative base",
-    "SQLAlchemy func module",
-    "Raw SQL execution via SQLAlchemy",
-    "SQLAlchemy query API",
-    "SQLAlchemy session management",
-    "SQLAlchemy session.flush method",
-    "SQLAlchemy session.add method",
-    "SQLAlchemy ORM",
-    "SQLAlchemy session.commit method",
-    "Version checking (SQLAlchemy 2.x vs 1.x)",
-    "Pandas integration with databases (read_sql, to_sql)",
-    "__repr__ method for model representation",
-    "Flask integration with SQLAlchemy",
-    "Connection (SQLAlchemy)",
-    "Pandas integration with SQLAlchemy",
-    "Blueprints in Flask",
-    "Using ORM across frameworks (Flask, FastAPI, Django)",
-    "FastAPI integration with SQLAlchemy",
-    "Django ORM replacement"
+    "HAVING",
+    "pandas read_sql",
+    "INNER JOIN",
+    "delete",
+    "session.commit after delete/update",
+    "filter",
+    "ORM models",
+    "LEFT OUTER JOIN",
+    "update",
+    "session.commit",
+    "Querying with ORM",
+    "session.new",
+    "Session close/commit"
   ]
 }

@@ -1,922 +1,226 @@
 [
   {
     "id": 1,
-    "name": "SQLAlchemy",
+    "name": "transaction commit",
     "source": "spoken",
     "implicit": false,
-    "start_s": 319.6,
-    "end_s": 366.5
+    "start_s": 1813.3,
+    "end_s": 1838.6
   },
   {
     "id": 2,
-    "name": "SQLAlchemy Core",
+    "name": "auto\u2011increment primary key",
     "source": "spoken",
     "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
+    "start_s": 1838.6,
+    "end_s": 1880.1
   },
   {
     "id": 3,
-    "name": "SQLAlchemy ORM",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 170.1,
-    "end_s": 192.9
-  },
-  {
-    "id": 4,
-    "name": "Object-Relational Mapping (ORM)",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 170.1,
-    "end_s": 192.9
-  },
-  {
-    "id": 5,
-    "name": "Engine (SQLAlchemy)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 343.3,
-    "end_s": 366.5
-  },
-  {
-    "id": 6,
-    "name": "Connection (SQLAlchemy)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 7,
-    "name": "Session (SQLAlchemy)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 570.6,
-    "end_s": 637.1
-  },
-  {
-    "id": 8,
-    "name": "Create Engine function",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 343.3,
-    "end_s": 366.5
-  },
-  {
-    "id": 9,
-    "name": "Text construct for raw SQL",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 10,
-    "name": "Database URL/Connection string",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 11,
-    "name": "SQLite",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 396.7,
-    "end_s": 420.4
-  },
-  {
-    "id": 12,
-    "name": "PostgreSQL",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 13,
-    "name": "MySQL",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 14,
-    "name": "In-memory database",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 343.3,
-    "end_s": 366.5
-  },
-  {
-    "id": 15,
-    "name": "SQL dialects",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 16,
-    "name": "Raw SQL execution via SQLAlchemy",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 601.6500000000001,
-    "end_s": 621.6500000000001
-  },
-  {
-    "id": 17,
-    "name": "Commit transaction",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 618.0,
-    "end_s": 638.0
-  },
-  {
-    "id": 18,
-    "name": "Transaction management",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 588.4,
-    "end_s": 637.1
-  },
-  {
-    "id": 19,
-    "name": "Pip package installation",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 20,
-    "name": "Version checking (SQLAlchemy 2.x vs 1.x)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 260.1,
-    "end_s": 314.8
-  },
-  {
-    "id": 21,
-    "name": "Flask integration with SQLAlchemy",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 22,
-    "name": "FastAPI integration with SQLAlchemy",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 23,
-    "name": "Django ORM replacement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 24,
-    "name": "Pandas integration with SQLAlchemy",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 25,
-    "name": "Database schema definition via Python classes",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 163.05,
-    "end_s": 183.05
-  },
-  {
-    "id": 26,
-    "name": "CRUD operations",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 27,
-    "name": "SQL syntax basics (CREATE TABLE, INSERT, SELECT)",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 0.0,
-    "end_s": 666.88
-  },
-  {
-    "id": 28,
-    "name": "SQLAlchemy Core",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1057.0,
-    "end_s": 1085.4
-  },
-  {
-    "id": 29,
-    "name": "Object Relational Mapper (ORM)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 666.88,
-    "end_s": 686.88
-  },
-  {
-    "id": 30,
-    "name": "Metadata object",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 740.0,
-    "end_s": 760.0
-  },
-  {
-    "id": 31,
-    "name": "Table class",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 32,
-    "name": "Column class",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 784.9,
-    "end_s": 809.7
-  },
-  {
-    "id": 33,
-    "name": "Data types (Integer, String)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 34,
-    "name": "Primary key constraint",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 35,
-    "name": "Nullable constraint",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 800.5,
-    "end_s": 873.5
-  },
-  {
-    "id": 36,
-    "name": "Engine",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1023.0,
-    "end_s": 1043.7
-  },
-  {
-    "id": 37,
-    "name": "Connection object",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 38,
-    "name": "Insert statement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1043.7,
-    "end_s": 1104.0
-  },
-  {
-    "id": 39,
-    "name": "Select statement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1196.0,
-    "end_s": 1268.1
-  },
-  {
-    "id": 40,
-    "name": "Update statement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1280.7,
-    "end_s": 1356.0
-  },
-  {
-    "id": 41,
-    "name": "Delete statement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1363.1,
-    "end_s": 1387.2
-  },
-  {
-    "id": 42,
-    "name": "SQL dialects",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 43,
-    "name": "Connection string / database URL",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 938.7,
-    "end_s": 981.2
-  },
-  {
-    "id": 44,
-    "name": "Transaction commit",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1337.85,
-    "end_s": 1357.85
-  },
-  {
-    "id": 45,
-    "name": "Fetching results (fetchall, fetchone)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1243.5,
-    "end_s": 1264.1
-  },
-  {
-    "id": 46,
-    "name": "Prepared statements / placeholders",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 1321.9,
-    "end_s": 1356.0
-  },
-  {
-    "id": 47,
-    "name": "Declarative base (for ORM)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 48,
-    "name": "Abstraction layer between Python and SQL",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 49,
-    "name": "CRUD operations",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 1057.0,
-    "end_s": 1402.66
-  },
-  {
-    "id": 50,
-    "name": "Schema definition",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 666.88,
-    "end_s": 1402.66
-  },
-  {
-    "id": 51,
-    "name": "SQLAlchemy Core",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1594.1,
-    "end_s": 2034.0
-  },
-  {
-    "id": 52,
-    "name": "Table definition",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 53,
-    "name": "Metadata object",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1415.7,
-    "end_s": 1442.6
-  },
-  {
-    "id": 54,
-    "name": "Column definition",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1429.4,
-    "end_s": 1449.4
-  },
-  {
-    "id": 55,
-    "name": "Primary key",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 56,
-    "name": "Data types (Integer, String, Float)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 57,
-    "name": "Foreign key constraint",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1504.85,
-    "end_s": 1524.85
-  },
-  {
-    "id": 58,
-    "name": "One-to-many relationship",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1517.3,
-    "end_s": 1555.1
-  },
-  {
-    "id": 59,
-    "name": "Many-to-many relationship",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 60,
-    "name": "Association table",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1536.9499999999998,
-    "end_s": 1556.9499999999998
-  },
-  {
-    "id": 61,
-    "name": "One-to-one relationship",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 62,
-    "name": "Insert statement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1765.5,
-    "end_s": 1798.8
-  },
-  {
-    "id": 63,
-    "name": "Bulk insert with values list",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 64,
-    "name": "Transaction commit",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1750.0,
-    "end_s": 1800.0
-  },
-  {
-    "id": 65,
-    "name": "Auto-incrementing IDs",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 66,
-    "name": "SQL SELECT statement",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 67,
-    "name": "Column selection (select only specific columns)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 68,
     "name": "INNER JOIN",
     "source": "spoken",
     "implicit": false,
     "start_s": 1960.3,
-    "end_s": 2007.1
+    "end_s": 1997.6
   },
   {
-    "id": 69,
-    "name": "LEFT OUTER JOIN (left join)",
+    "id": 4,
+    "name": "LEFT OUTER JOIN",
     "source": "spoken",
     "implicit": false,
-    "start_s": 2100.0,
-    "end_s": 2122.2
+    "start_s": 1943.7,
+    "end_s": 2104.7
   },
   {
-    "id": 70,
-    "name": "JOIN condition (ON clause)",
+    "id": 5,
+    "name": "SELECT statement",
     "source": "spoken",
     "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
+    "start_s": 2012.4,
+    "end_s": 2048.2
   },
   {
-    "id": 71,
-    "name": "Result fetching (fetchall)",
+    "id": 6,
+    "name": "GROUP BY",
     "source": "spoken",
     "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
+    "start_s": 2127.8,
+    "end_s": 2147.6
   },
   {
-    "id": 72,
-    "name": "Aggregation functions (SUM)",
+    "id": 7,
+    "name": "SUM aggregation",
     "source": "spoken",
     "implicit": false,
-    "start_s": 2168.15,
-    "end_s": 2188.15
+    "start_s": 2160.2,
+    "end_s": 2186.3
   },
   {
-    "id": 73,
-    "name": "GROUP BY clause",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 74,
-    "name": "SQLAlchemy func module",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 1402.66,
-    "end_s": 2213.72
-  },
-  {
-    "id": 75,
-    "name": "SQL GROUP BY clause",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 76,
-    "name": "SQL HAVING clause",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 77,
-    "name": "Object-Relational Mapping (ORM)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2270.9,
-    "end_s": 2367.3
-  },
-  {
-    "id": 78,
-    "name": "SQLAlchemy declarative base",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2414.6,
-    "end_s": 2438.3
-  },
-  {
-    "id": 79,
-    "name": "SQLAlchemy session management",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2634.4,
-    "end_s": 2700.0
-  },
-  {
-    "id": 80,
-    "name": "SQLAlchemy relationship() function",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 81,
-    "name": "Foreign key constraint",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 82,
-    "name": "Primary key definition",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 83,
-    "name": "SQLAlchemy create_engine function",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 84,
-    "name": "SQLAlchemy Column definition",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2465.6,
-    "end_s": 2527.7
-  },
-  {
-    "id": 85,
-    "name": "SQLAlchemy Table metadata",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 86,
-    "name": "SQLAlchemy session.flush method",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 87,
-    "name": "SQLAlchemy session.commit method",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 88,
-    "name": "SQLAlchemy session.add method",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 89,
-    "name": "SQLAlchemy query API",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2905.6,
-    "end_s": 2946.5
-  },
-  {
-    "id": 90,
-    "name": "Lazy loading of related objects",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 91,
-    "name": "Back-populates parameter in relationship",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 92,
-    "name": "Python class mapping to database table",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 93,
-    "name": "SQL SELECT statement",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 94,
-    "name": "SQL INSERT operation via ORM",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2213.72,
-    "end_s": 2957.6
-  },
-  {
-    "id": 95,
-    "name": "SQLAlchemy ORM",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 96,
-    "name": "CRUD operations (Create, Read, Update, Delete)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 97,
-    "name": "Session management (session.commit, session.close)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 98,
-    "name": "Querying with .all()",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 99,
-    "name": "Filtering with .filter()",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 100,
-    "name": "Ordering with .order_by()",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 101,
-    "name": "Joining tables",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 102,
-    "name": "Grouping and aggregation (func.sum, GROUP BY)",
-    "source": "spoken",
-    "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 103,
+    "id": 8,
     "name": "HAVING clause",
     "source": "spoken",
     "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "start_s": 2237.5,
+    "end_s": 2262.1
   },
   {
-    "id": 104,
-    "name": "Object\u2011relational mapping (ORM) concepts",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 105,
-    "name": "Back\u2011population / relationship handling",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 106,
-    "name": "Transaction handling",
-    "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
-  },
-  {
-    "id": 107,
-    "name": "Pandas integration with databases (read_sql, to_sql)",
+    "id": 9,
+    "name": "session.flush",
     "source": "spoken",
     "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "start_s": 2786.0,
+    "end_s": 2796.8
   },
   {
-    "id": 108,
-    "name": "Flask\u2011SQLAlchemy extension",
+    "id": 10,
+    "name": "auto\u2011generated ID",
     "source": "spoken",
     "implicit": false,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "start_s": 2786.0,
+    "end_s": 2796.8
   },
   {
-    "id": 109,
-    "name": "Blueprints in Flask",
+    "id": 11,
+    "name": "session.commit",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 2799.4,
+    "end_s": 2801.6
   },
   {
-    "id": 110,
-    "name": "RESTful routing and query parameters",
+    "id": 12,
+    "name": "session.new",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 2801.7,
+    "end_s": 2806.7
   },
   {
-    "id": 111,
-    "name": "Pagination of query results",
+    "id": 13,
+    "name": "session.query",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 2910.0,
+    "end_s": 2915.8
   },
   {
-    "id": 112,
-    "name": "Data types and column definitions in ORM models",
+    "id": 14,
+    "name": "filter",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 2810.7,
+    "end_s": 2915.8
   },
   {
-    "id": 113,
-    "name": "__repr__ method for model representation",
+    "id": 15,
+    "name": "selecting fields",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 2810.7,
+    "end_s": 2915.8
   },
   {
-    "id": 114,
-    "name": "Database engine and connection handling",
+    "id": 16,
+    "name": "tuple vs object results",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 2810.7,
+    "end_s": 2915.8
   },
   {
-    "id": 115,
-    "name": "Using ORM across frameworks (Flask, FastAPI, Django)",
+    "id": 17,
+    "name": "delete",
     "source": "spoken",
-    "implicit": true,
-    "start_s": 2957.6,
-    "end_s": 3659.98
+    "implicit": false,
+    "start_s": 3050.8,
+    "end_s": 3112.2
+  },
+  {
+    "id": 18,
+    "name": "update",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3164.0,
+    "end_s": 3199.0
+  },
+  {
+    "id": 19,
+    "name": "filter conditions",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3015.5,
+    "end_s": 3027.9
+  },
+  {
+    "id": 20,
+    "name": "session.commit after delete/update",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3118.5,
+    "end_s": 3137.2
+  },
+  {
+    "id": 21,
+    "name": "SQL JOIN",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3216.1,
+    "end_s": 3235.6
+  },
+  {
+    "id": 22,
+    "name": "HAVING",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3281.9,
+    "end_s": 3304.6
+  },
+  {
+    "id": 23,
+    "name": "Session close/commit",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3304.6,
+    "end_s": 3319.7
+  },
+  {
+    "id": 24,
+    "name": "pandas read_sql",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3324.5,
+    "end_s": 3358.4
+  },
+  {
+    "id": 25,
+    "name": "DataFrame to SQL",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3368.9,
+    "end_s": 3438.3
+  },
+  {
+    "id": 26,
+    "name": "Flask-SQLAlchemy",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3465.7,
+    "end_s": 3540.7
+  },
+  {
+    "id": 27,
+    "name": "ORM models",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3547.0,
+    "end_s": 3567.5
+  },
+  {
+    "id": 28,
+    "name": "Querying with ORM",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3561.6,
+    "end_s": 3578.7
   }
 ]

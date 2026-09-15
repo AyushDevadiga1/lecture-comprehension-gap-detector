@@ -100,9 +100,9 @@
       "Using SQLAlchemy with other frameworks (FastAPI, Django)"
     ]
   },
-  "clips_ok": 115,
-  "quiz_questions": 88,
-  "score": "58/88",
+  "clips_ok": 28,
+  "quiz_questions": 28,
+  "score": "18/28",
   "artifacts": [
     "00_input__SQLAlchemy Crash Course - Master Databases in Python [529LYDgRTgQ].mp4",
     "01_transcript.json",
@@ -112,6 +112,7 @@
     "05_quiz.json",
     "06_remediation.json",
     "07_stats.json",
+    "08_structure.json",
     "lecgap.db",
     "report.html",
     "run_manifest.json"
