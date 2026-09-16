@@ -1,0 +1,651 @@
+{
+  "quiz_id": 1,
+  "course_id": "prob",
+  "student_id": "sample-student",
+  "questions": [
+    {
+      "id": 1,
+      "concept": "Bayes\u2019 Rule",
+      "question": "Which best describes Bayes\u2019 Rule as taught in the lecture?",
+      "options": [
+        "Bayes\u2019 Rule updates the probability of a hypothesis (e.g., the coin being fair) by dividing the likelihood of the observed evidence given that hypothesis times the prior probability of the hypothesis by the overall probability of the evidence.",
+        "Bayes\u2019 Rule calculates the probability of the evidence occurring regardless of the hypothesis.",
+        "Bayes\u2019 Rule states that the probability of a hypothesis is always equal to the probability of the evidence.",
+        "Bayes\u2019 Rule only applies when the evidence is impossible under one of the hypotheses."
+      ],
+      "distractor_a": "Bayes\u2019 Rule states that the probability of a hypothesis is always equal to the probability of the evidence.",
+      "distractor_b": "Bayes\u2019 Rule calculates the probability of the evidence occurring regardless of the hypothesis.",
+      "distractor_c": "Bayes\u2019 Rule only applies when the evidence is impossible under one of the hypotheses."
+    },
+    {
+      "id": 2,
+      "concept": "Bernoulli Distribution",
+      "question": "Which best describes the Bernoulli Distribution as taught in the lecture?",
+      "options": [
+        "It is a continuous distribution defined over the interval [0,1] with density proportional to p^x(1\u2212p)^(1\u2212x).",
+        "It is a discrete distribution that takes only two values, 0 and 1, with probabilities 1\u2212p and p respectively.",
+        "It models the number of successes in a fixed number of independent trials, each with probability p.",
+        "It requires that the random variable can take any integer value from 0 up to n, where n is the number of trials."
+      ],
+      "distractor_a": "It requires that the random variable can take any integer value from 0 up to n, where n is the number of trials.",
+      "distractor_b": "It is a continuous distribution defined over the interval [0,1] with density proportional to p^x(1\u2212p)^(1\u2212x).",
+      "distractor_c": "It models the number of successes in a fixed number of independent trials, each with probability p."
+    },
+    {
+      "id": 3,
+      "concept": "Convolution of Discrete Distributions",
+      "question": "Which best describes the \"Convolution of Discrete Distributions\" as taught in the lecture?",
+      "options": [
+        "The convolution gives the probability mass function of the sum of two independent discrete random variables by summing the products of their individual probabilities for each possible outcome.",
+        "It requires the two variables to be identically distributed but not necessarily independent.",
+        "It is the product of the two probability mass functions evaluated at each point.",
+        "It only applies to continuous random variables with overlapping support."
+      ],
+      "distractor_a": "It only applies to continuous random variables with overlapping support.",
+      "distractor_b": "It is the product of the two probability mass functions evaluated at each point.",
+      "distractor_c": "It requires the two variables to be identically distributed but not necessarily independent."
+    },
+    {
+      "id": 4,
+      "concept": "Correlation coefficient (rho)",
+      "question": "Which best describes the Correlation coefficient (\u03c1) as taught in the lecture?",
+      "options": [
+        "It measures the average difference between X and Y.",
+        "It is always positive for any two variables.",
+        "It is the covariance of X and Y divided by the product of their standard deviations, ranging from \u20131 to 1.",
+        "It is the same as the covariance of X and Y."
+      ],
+      "distractor_a": "It is the same as the covariance of X and Y.",
+      "distractor_b": "It is always positive for any two variables.",
+      "distractor_c": "It measures the average difference between X and Y."
+    },
+    {
+      "id": 5,
+      "concept": "Derangement",
+      "question": "Which best describes a derangement as taught in the lecture?",
+      "options": [
+        "A derangement is a permutation that can be achieved by swapping two elements only.",
+        "A derangement is a permutation where at least one element appears in its original position.",
+        "A derangement is a permutation where exactly half of the elements appear in their original positions.",
+        "A derangement is a permutation in which no element appears in its original position."
+      ],
+      "distractor_a": "A derangement is a permutation where at least one element appears in its original position.",
+      "distractor_b": "A derangement is a permutation where exactly half of the elements appear in their original positions.",
+      "distractor_c": "A derangement is a permutation that can be achieved by swapping two elements only."
+    },
+    {
+      "id": 6,
+      "concept": "Disjoint Events and Additivity",
+      "question": "Which best describes \"Disjoint Events and Additivity\" as taught in the lecture?",
+      "options": [
+        "Disjoint events are the same as independent events.",
+        "When two events cannot occur simultaneously, their probabilities can be added to find the probability of either event occurring.",
+        "The probability of a disjoint event is always zero.",
+        "The sum of probabilities of disjoint events is always greater than one."
+      ],
+      "distractor_a": "The sum of probabilities of disjoint events is always greater than one.",
+      "distractor_b": "Disjoint events are the same as independent events.",
+      "distractor_c": "The probability of a disjoint event is always zero."
+    },
+    {
+      "id": 7,
+      "concept": "Independence",
+      "question": "Which statement best describes the concept 'Independence' as taught in the lecture?",
+      "options": [
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "now we need to calculate each one of them here expectation of x given y",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+      ],
+      "distractor_a": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "distractor_b": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_c": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now"
+    },
+    {
+      "id": 8,
+      "concept": "Independent and Identically Distributed (IID) Variables",
+      "question": "Which best describes \"Independent and Identically Distributed (IID) Variables\" as taught in the lecture?",
+      "options": [
+        "They are random variables that are statistically independent and each has the same probability distribution.",
+        "They are random variables that are correlated but share the same mean.",
+        "They are random variables that are independent but each has a different distribution.",
+        "They are random variables that have the same distribution but may be dependent."
+      ],
+      "distractor_a": "They are random variables that are independent but each has a different distribution.",
+      "distractor_b": "They are random variables that have the same distribution but may be dependent.",
+      "distractor_c": "They are random variables that are correlated but share the same mean."
+    },
+    {
+      "id": 9,
+      "concept": "Law of the Unconscious Statistician",
+      "question": "Which best describes the Law of the Unconscious Statistician as taught in the lecture?",
+      "options": [
+        "It only applies to discrete random variables, not continuous ones.",
+        "It allows you to compute the expectation of a function of a random variable by integrating the function times the variable\u2019s density, without first finding the distribution of the function.",
+        "It states that the expectation of a function equals the function evaluated at the expectation of the variable.",
+        "It requires you to first transform the variable\u2019s distribution before computing expectations."
+      ],
+      "distractor_a": "It requires you to first transform the variable\u2019s distribution before computing expectations.",
+      "distractor_b": "It only applies to discrete random variables, not continuous ones.",
+      "distractor_c": "It states that the expectation of a function equals the function evaluated at the expectation of the variable."
+    },
+    {
+      "id": 10,
+      "concept": "Maximum of Random Variables",
+      "question": "Which statement best describes the concept 'Maximum of Random Variables' as taught in the lecture?",
+      "options": [
+        "than 0.8 now that means that each and everyone is less than 0.8 correct now if let's say that m is the maximum",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now"
+      ],
+      "distractor_a": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_b": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "distractor_c": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+    },
+    {
+      "id": 11,
+      "concept": "Probability of exact match",
+      "question": "Which best describes the concept of 'Probability of exact match' as taught in the lecture?",
+      "options": [
+        "The probability that exactly three letters are in the correct envelopes is 1/24, derived from the total number of permutations of four letters.",
+        "The probability that exactly three letters are in the correct envelopes is 1/4, since each letter has a 1/4 chance of being correct.",
+        "The probability that exactly three letters are in the correct envelopes is zero, because if three are correct the fourth must also be correct, making the event impossible.",
+        "The probability that exactly three letters are in the correct envelopes is 1/12, calculated by choosing 3 correct letters and permuting the remaining one."
+      ],
+      "distractor_a": "The probability that exactly three letters are in the correct envelopes is 1/12, calculated by choosing 3 correct letters and permuting the remaining one.",
+      "distractor_b": "The probability that exactly three letters are in the correct envelopes is 1/4, since each letter has a 1/4 chance of being correct.",
+      "distractor_c": "The probability that exactly three letters are in the correct envelopes is 1/24, derived from the total number of permutations of four letters."
+    },
+    {
+      "id": 12,
+      "concept": "Probability of head with biased coin",
+      "question": "Which best describes the probability of getting a head with the biased coin as taught in the lecture?",
+      "options": [
+        "The biased coin has a 0.75 probability of landing heads because it is more likely to show heads than tails.",
+        "The biased coin has a 0.5 probability of landing heads, just like the fair coin.",
+        "The biased coin has a 0 probability of landing heads because it is weighted toward tails.",
+        "The biased coin always lands heads, so the probability of a head is 1."
+      ],
+      "distractor_a": "The biased coin has a 0.5 probability of landing heads, just like the fair coin.",
+      "distractor_b": "The biased coin has a 0 probability of landing heads because it is weighted toward tails.",
+      "distractor_c": "The biased coin has a 0.75 probability of landing heads because it is more likely to show heads than tails."
+    },
+    {
+      "id": 13,
+      "concept": "Standardization of a Random Variable",
+      "question": "Which best describes the concept of \"Standardization of a Random Variable\" as taught in the lecture?",
+      "options": [
+        "Standardizing a random variable X means subtracting its mean \u03bc and dividing by its standard deviation \u03c3, producing a new variable Y with mean 0 and variance 1.",
+        "Standardizing a random variable X means dividing X by its mean \u03bc and adding its standard deviation \u03c3, producing a new variable Y with mean 1 and variance 0.",
+        "Standardizing a random variable X means multiplying X by its mean \u03bc and dividing by its standard deviation \u03c3, producing a new variable Y with mean \u03bc and variance \u03c3\u00b2.",
+        "Standardizing a random variable X means subtracting its mean \u03bc and dividing by its variance \u03c3\u00b2, producing a new variable Y with mean 0 and variance 1."
+      ],
+      "distractor_a": "Standardizing a random variable X means dividing X by its mean \u03bc and adding its standard deviation \u03c3, producing a new variable Y with mean 1 and variance 0.",
+      "distractor_b": "Standardizing a random variable X means multiplying X by its mean \u03bc and dividing by its standard deviation \u03c3, producing a new variable Y with mean \u03bc and variance \u03c3\u00b2.",
+      "distractor_c": "Standardizing a random variable X means subtracting its mean \u03bc and dividing by its variance \u03c3\u00b2, producing a new variable Y with mean 0 and variance 1."
+    },
+    {
+      "id": 14,
+      "concept": "Variance",
+      "question": "Which statement best describes the concept 'Variance' as taught in the lecture?",
+      "options": [
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "and then variance is 1 that is variance of x equals variance of y equals 1 and then the covariance",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+      ],
+      "distractor_a": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_b": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 15,
+      "concept": "discrete random variable",
+      "question": "Which statement best describes the concept 'discrete random variable' as taught in the lecture?",
+      "options": [
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "when so but for both of them we use the same notation but while using it you should be very",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+      ],
+      "distractor_a": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_b": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "distractor_c": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now"
+    },
+    {
+      "id": 16,
+      "concept": "expectation formula",
+      "question": "Which best describes the expectation formula as taught in the lecture?",
+      "options": [
+        "The expectation of a continuous random variable is calculated by integrating the probability density function over its support.",
+        "For a discrete random variable X, the expectation is the sum over all possible values of X of the value multiplied by its probability, i.e., E[X] = \u03a3 x\u00b7P(X=x).",
+        "The expectation formula requires the random variable to have a finite variance.",
+        "The expectation is always equal to the median of the distribution for discrete variables."
+      ],
+      "distractor_a": "The expectation formula requires the random variable to have a finite variance.",
+      "distractor_b": "The expectation of a continuous random variable is calculated by integrating the probability density function over its support.",
+      "distractor_c": "The expectation is always equal to the median of the distribution for discrete variables."
+    },
+    {
+      "id": 17,
+      "concept": "normalizing constant",
+      "question": "Which best describes the \"normalizing constant\" as taught in the lecture?",
+      "options": [
+        "It is a constant that scales the density so that its maximum value is one.",
+        "It is a constant that determines the mean of the distribution.",
+        "It is a constant that, when multiplied by a proposed density function, makes the total integral over its support equal to one.",
+        "It is a constant that adjusts the variance of the distribution."
+      ],
+      "distractor_a": "It is a constant that scales the density so that its maximum value is one.",
+      "distractor_b": "It is a constant that determines the mean of the distribution.",
+      "distractor_c": "It is a constant that adjusts the variance of the distribution."
+    },
+    {
+      "id": 18,
+      "concept": "uniform distribution",
+      "question": "Which best describes \"uniform distribution\" as taught in the lecture?",
+      "options": [
+        "A uniform distribution on [a,b] has a constant density of 1/(b\u2212a) over that interval and zero elsewhere.",
+        "The probability of any specific value in a uniform distribution is zero.",
+        "A uniform distribution is only defined for integer values between a and b.",
+        "A uniform distribution has a density that increases linearly from a to b."
+      ],
+      "distractor_a": "The probability of any specific value in a uniform distribution is zero.",
+      "distractor_b": "A uniform distribution is only defined for integer values between a and b.",
+      "distractor_c": "A uniform distribution has a density that increases linearly from a to b."
+    },
+    {
+      "id": 19,
+      "concept": "Product Rule for Independent Events",
+      "question": "Which statement best describes the concept 'Product Rule for Independent Events' as taught in the lecture?",
+      "options": [
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "i less than 0 now you multiply each one of them so therefore I will get 10 here now x i taking a value less than 0 Now this is you know this already",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+      ],
+      "distractor_a": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_b": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 20,
+      "concept": "Probability of tail with biased coin",
+      "question": "Which statement best describes the concept 'Probability of tail with biased coin' as taught in the lecture?",
+      "options": [
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "Now, it is not possible at all. Why? A biased coin has two heads in our case.",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+      ],
+      "distractor_a": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_b": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 21,
+      "concept": "Covariance",
+      "question": "Which best describes \"Covariance\" as taught in the lecture?",
+      "options": [
+        "Covariance is always zero when the two variables have the same mean.",
+        "Covariance measures how much the sum of two variables varies from its mean.",
+        "Covariance is the product of the variances of the two variables.",
+        "Covariance is the expectation of the product of two centered random variables, i.e., Cov(X,Y)=E[(X\u2212E[X])(Y\u2212E[Y])]."
+      ],
+      "distractor_a": "Covariance is the product of the variances of the two variables.",
+      "distractor_b": "Covariance measures how much the sum of two variables varies from its mean.",
+      "distractor_c": "Covariance is always zero when the two variables have the same mean."
+    },
+    {
+      "id": 22,
+      "concept": "mass function",
+      "question": "Which best describes a \"mass function\" as taught in the lecture?",
+      "options": [
+        "It is the probability function used for discrete random variables, giving the probability that the variable takes each specific value.",
+        "It is the same as a density function but for continuous variables.",
+        "It is used to calculate the variance of a random variable.",
+        "It represents the cumulative distribution of a random variable."
+      ],
+      "distractor_a": "It is used to calculate the variance of a random variable.",
+      "distractor_b": "It is the same as a density function but for continuous variables.",
+      "distractor_c": "It represents the cumulative distribution of a random variable."
+    },
+    {
+      "id": 23,
+      "concept": "continuous random variable",
+      "question": "Which best describes a continuous random variable as taught in the lecture?",
+      "options": [
+        "It is a variable whose probability distribution is described by a density function that integrates to 1 over its entire range.",
+        "Its distribution function is always a step function.",
+        "Its probability mass function is defined for all real numbers.",
+        "It takes only integer values but can have a density function."
+      ],
+      "distractor_a": "Its probability mass function is defined for all real numbers.",
+      "distractor_b": "Its distribution function is always a step function.",
+      "distractor_c": "It takes only integer values but can have a density function."
+    },
+    {
+      "id": 24,
+      "concept": "sum of integers formula",
+      "question": "Which best describes the \"sum of integers formula\" as taught in the lecture?",
+      "options": [
+        "It gives the sum of the first n integers as (n+1)/2.",
+        "It gives the sum of the first n positive integers as n(n+1)/2.",
+        "It gives the sum of the first n integers as n^2.",
+        "It gives the sum of the first n even integers as n(n+1)."
+      ],
+      "distractor_a": "It gives the sum of the first n integers as (n+1)/2.",
+      "distractor_b": "It gives the sum of the first n even integers as n(n+1).",
+      "distractor_c": "It gives the sum of the first n integers as n^2."
+    },
+    {
+      "id": 25,
+      "concept": "Expectation",
+      "question": "Which best describes \"Expectation\" as taught in the lecture?",
+      "options": [
+        "Expectation is the same as the variance of a random variable.",
+        "Expectation is the average value of a random variable, calculated as the integral of the variable times its probability density function.",
+        "Expectation is the maximum possible value a random variable can attain.",
+        "Expectation is the probability that a random variable takes its mean value."
+      ],
+      "distractor_a": "Expectation is the maximum possible value a random variable can attain.",
+      "distractor_b": "Expectation is the probability that a random variable takes its mean value.",
+      "distractor_c": "Expectation is the same as the variance of a random variable."
+    },
+    {
+      "id": 26,
+      "concept": "probability calculation via integration",
+      "question": "Which best describes the probability calculation via integration as taught in the lecture?",
+      "options": [
+        "The probability that X is less than Y is 1.",
+        "The probability that the uniform random variable X is less than its absolute value Y is 1/3.",
+        "The probability that X is less than Y is 1/2.",
+        "The probability that X is less than Y is 2/3."
+      ],
+      "distractor_a": "The probability that X is less than Y is 2/3.",
+      "distractor_b": "The probability that X is less than Y is 1.",
+      "distractor_c": "The probability that X is less than Y is 1/2."
+    },
+    {
+      "id": 27,
+      "concept": "Uniform(0,1) Distribution",
+      "question": "Which statement best describes the concept 'Uniform(0,1) Distribution' as taught in the lecture?",
+      "options": [
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "that generates random numbers uniformly distributed over 0, 1.",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+      ],
+      "distractor_a": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "distractor_b": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_c": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+    },
+    {
+      "id": 28,
+      "concept": "Power Rule for Uniform Distribution",
+      "question": "Which statement best describes the concept 'Power Rule for Uniform Distribution' as taught in the lecture?",
+      "options": [
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "from uniform 0, 1, this value will be 0.8 to the power of 10. Now, why is this 0.8? Now,",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+      ],
+      "distractor_a": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_b": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 29,
+      "concept": "Posterior probability of fair coin after head",
+      "question": "Which best describes the \"Posterior probability of fair coin after head\" as taught in the lecture?",
+      "options": [
+        "After observing a head, the probability that the chosen coin is fair equals 2/3.",
+        "After observing a head, the probability that the chosen coin is fair equals 1/2.",
+        "After observing a head, the probability that the chosen coin is fair equals 0.5%.",
+        "After observing a head, the probability that the chosen coin is fair equals 1/3."
+      ],
+      "distractor_a": "After observing a head, the probability that the chosen coin is fair equals 2/3.",
+      "distractor_b": "After observing a head, the probability that the chosen coin is fair equals 1/2.",
+      "distractor_c": "After observing a head, the probability that the chosen coin is fair equals 0.5%."
+    },
+    {
+      "id": 30,
+      "concept": "Formula for \\(E[(X+Y)^2]\\)",
+      "question": "Which best describes the formula for \\(E[(X+Y)^2]\\) as taught in the lecture?",
+      "options": [
+        "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]\\)",
+        "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]+E[XY]\\)",
+        "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]+2E[XY]\\)",
+        "\\(E[(X+Y)^2]=E[X]^2+E[Y]^2+2E[XY]\\)"
+      ],
+      "distractor_a": "\\(E[(X+Y)^2]=E[X]^2+E[Y]^2+2E[XY]\\)",
+      "distractor_b": "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]+E[XY]\\)",
+      "distractor_c": "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]\\)"
+    },
+    {
+      "id": 31,
+      "concept": "Probability Mass Function (PMF) of a Sum",
+      "question": "Which statement best describes the concept 'Probability Mass Function (PMF) of a Sum' as taught in the lecture?",
+      "options": [
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "Now I am using the identical part of it This is 1 minus p whole square Now I presume that these minute differences are clear for you"
+      ],
+      "distractor_a": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_b": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 32,
+      "concept": "Conditional Expectation",
+      "question": "Which best describes \"Conditional Expectation\" as taught in the lecture?",
+      "options": [
+        "It is the same as the unconditional expectation of the variable.",
+        "It can only be computed when the variables are identically distributed.",
+        "It is the expected value of a random variable given another, and for independent variables the conditioning has no effect.",
+        "It always equals the product of the individual expectations when the variables are independent."
+      ],
+      "distractor_a": "It is the same as the unconditional expectation of the variable.",
+      "distractor_b": "It can only be computed when the variables are identically distributed.",
+      "distractor_c": "It always equals the product of the individual expectations when the variables are independent."
+    },
+    {
+      "id": 33,
+      "concept": "density function",
+      "question": "Which best describes a \"density function\" as taught in the lecture?",
+      "options": [
+        "It is a function that must always be greater than one for all values of the variable.",
+        "It is a non\u2011negative function whose integral over the entire real line equals one, representing the probability density of a continuous random variable.",
+        "It is a function that can take negative values but still integrates to one.",
+        "It is a function that gives the probability of each exact value of a discrete random variable."
+      ],
+      "distractor_a": "It is a function that must always be greater than one for all values of the variable.",
+      "distractor_b": "It is a function that gives the probability of each exact value of a discrete random variable.",
+      "distractor_c": "It is a function that can take negative values but still integrates to one."
+    },
+    {
+      "id": 34,
+      "concept": "Linearity of Expectation",
+      "question": "Which best describes \"Linearity of Expectation\" as taught in the lecture?",
+      "options": [
+        "The expectation of a product of random variables equals the product of their expectations.",
+        "The expectation of a sum of random variables equals the sum of their expectations, regardless of dependence.",
+        "The expectation of a function of a random variable can only be computed if the function is linear.",
+        "The expectation of a constant is always zero."
+      ],
+      "distractor_a": "The expectation of a product of random variables equals the product of their expectations.",
+      "distractor_b": "The expectation of a function of a random variable can only be computed if the function is linear.",
+      "distractor_c": "The expectation of a constant is always zero."
+    },
+    {
+      "id": 35,
+      "concept": "modulus transformation",
+      "question": "Which best describes the concept of 'modulus transformation' as taught in the lecture?",
+      "options": [
+        "It changes the sign of every number, turning positives into negatives and vice versa.",
+        "It maps a real number x to its absolute value |x|, preserving all positive values and turning negative values into their positive counterparts.",
+        "It shifts all numbers by a constant, adding the same value to each.",
+        "It scales all numbers by a fixed factor, such as doubling their magnitude."
+      ],
+      "distractor_a": "It changes the sign of every number, turning positives into negatives and vice versa.",
+      "distractor_b": "It scales all numbers by a fixed factor, such as doubling their magnitude.",
+      "distractor_c": "It shifts all numbers by a constant, adding the same value to each."
+    },
+    {
+      "id": 36,
+      "concept": "Expectation of X for Uniform(0,1)",
+      "question": "Which best describes the expectation of X for a Uniform(0,1) distribution as taught in the lecture?",
+      "options": [
+        "The expectation of X is 1, because the density is 1 over [0,1].",
+        "The expectation of X is 1/2, obtained by integrating x over the interval [0,1] with density 1.",
+        "The expectation of X is 0, since the uniform distribution is symmetric around 0.",
+        "The expectation of X is 1/3, because the integral of x^2 over [0,1] gives 1/3."
+      ],
+      "distractor_a": "The expectation of X is 1/3, because the integral of x^2 over [0,1] gives 1/3.",
+      "distractor_b": "The expectation of X is 1, because the density is 1 over [0,1].",
+      "distractor_c": "The expectation of X is 0, since the uniform distribution is symmetric around 0."
+    },
+    {
+      "id": 37,
+      "concept": "Expectation of Linear Combination",
+      "question": "Which best describes the 'Expectation of Linear Combination' as taught in the lecture?",
+      "options": [
+        "The expectation of a linear combination equals the product of the expectations of the individual variables.",
+        "The expectation of a linear combination depends on the variances of the variables, not just their means.",
+        "The expectation of a linear combination is always zero regardless of the coefficients.",
+        "The expectation of a linear combination of random variables equals the same linear combination of their expectations, i.e. E[aX + bY] = aE[X] + bE[Y]."
+      ],
+      "distractor_a": "The expectation of a linear combination is always zero regardless of the coefficients.",
+      "distractor_b": "The expectation of a linear combination equals the product of the expectations of the individual variables.",
+      "distractor_c": "The expectation of a linear combination depends on the variances of the variables, not just their means."
+    },
+    {
+      "id": 38,
+      "concept": "Variance of Linear Combination",
+      "question": "Which best describes the 'Variance of Linear Combination' as taught in the lecture?",
+      "options": [
+        "The variance of a linear combination is the product of the individual variances.",
+        "The variance of a linear combination is always zero if the variables are independent.",
+        "The variance of a linear combination depends only on the mean of the variables.",
+        "The variance of a linear combination of independent random variables equals the sum of each variable\u2019s variance weighted by the square of its coefficient."
+      ],
+      "distractor_a": "The variance of a linear combination depends only on the mean of the variables.",
+      "distractor_b": "The variance of a linear combination is always zero if the variables are independent.",
+      "distractor_c": "The variance of a linear combination is the product of the individual variances."
+    },
+    {
+      "id": 39,
+      "concept": "Linearity of Conditional Expectations",
+      "question": "Which best describes \"Linearity of Conditional Expectations\" as taught in the lecture?",
+      "options": [
+        "It allows the conditional expectation of a sum to be written as the sum of the conditional expectations of the summands.",
+        "It states that the conditional expectation of a product equals the product of the conditional expectations.",
+        "It only applies when the conditioning variable is independent of all others.",
+        "It requires the random variables to be identically distributed, not just independent."
+      ],
+      "distractor_a": "It states that the conditional expectation of a product equals the product of the conditional expectations.",
+      "distractor_b": "It requires the random variables to be identically distributed, not just independent.",
+      "distractor_c": "It only applies when the conditioning variable is independent of all others."
+    },
+    {
+      "id": 40,
+      "concept": "Gaussian Density Function",
+      "question": "Which statement best describes the concept 'Gaussian Density Function' as taught in the lecture?",
+      "options": [
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "conclude today's tutorial on the problems on probability theory now the main aim of this",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now"
+      ],
+      "distractor_a": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_b": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 41,
+      "concept": "Variance of a Linear Transformation",
+      "question": "Which statement best describes the concept 'Variance of a Linear Transformation' as taught in the lecture?",
+      "options": [
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+        "I will write these formulas used somewhere. Expectation, let me use some other color,",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now"
+      ],
+      "distractor_a": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_b": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 42,
+      "concept": "Variance of a Constant",
+      "question": "Which best describes 'Variance of a Constant' as taught in the lecture?",
+      "options": [
+        "The variance of a constant equals the constant itself.",
+        "The variance of a constant is zero.",
+        "The variance of a constant is the square of the constant's value.",
+        "The variance of a constant is undefined because constants have no spread."
+      ],
+      "distractor_a": "The variance of a constant is the square of the constant's value.",
+      "distractor_b": "The variance of a constant is undefined because constants have no spread.",
+      "distractor_c": "The variance of a constant equals the constant itself."
+    },
+    {
+      "id": 43,
+      "concept": "Expectation of a Linear Transformation",
+      "question": "Which statement best describes the concept 'Expectation of a Linear Transformation' as taught in the lecture?",
+      "options": [
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "it out. Okay. This is 1 over sigma into expectation of x minus mu. Now, by the linearity of expectations,",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+      ],
+      "distractor_a": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "distractor_b": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_c": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value"
+    },
+    {
+      "id": 44,
+      "concept": "Resulting Mean and Variance of Y",
+      "question": "Which best describes the Resulting Mean and Variance of Y as taught in the lecture?",
+      "options": [
+        "Y has mean \u03bc and variance \u03c3\u00b2.",
+        "Y has mean 0 and variance 1.",
+        "Y has mean 0 and variance \u03c3\u00b2.",
+        "Y has mean \u03bc and variance 1."
+      ],
+      "distractor_a": "Y has mean \u03bc and variance 1.",
+      "distractor_b": "Y has mean \u03bc and variance \u03c3\u00b2.",
+      "distractor_c": "Y has mean 0 and variance \u03c3\u00b2."
+    },
+    {
+      "id": 45,
+      "concept": "Expectation of a Constant",
+      "question": "Which best describes 'Expectation of a Constant' as taught in the lecture?",
+      "options": [
+        "The expectation of a constant is always zero.",
+        "The expectation of a constant is the mean of the variable it is added to.",
+        "The expectation of a constant equals that constant itself.",
+        "The expectation of a constant depends on the distribution of the underlying variable."
+      ],
+      "distractor_a": "The expectation of a constant is always zero.",
+      "distractor_b": "The expectation of a constant depends on the distribution of the underlying variable.",
+      "distractor_c": "The expectation of a constant is the mean of the variable it is added to."
+    },
+    {
+      "id": 46,
+      "concept": "Computing E[Y] for Y=X^2+2X+1",
+      "question": "Which statement best describes the concept 'Computing E[Y] for Y=X^2+2X+1' as taught in the lecture?",
+      "options": [
+        "everything now let us put them together expectation of y equals 1 over 3 plus 2 into half plus 1 this is 7 by 3 okay the key takeaways from this is how do you apply",
+        "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+        "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+        "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the"
+      ],
+      "distractor_a": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "distractor_b": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "distractor_c": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now"
+    }
+  ]
+}

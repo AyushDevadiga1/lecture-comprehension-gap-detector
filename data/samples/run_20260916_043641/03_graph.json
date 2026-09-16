@@ -1,0 +1,615 @@
+{
+  "course_id": "prob",
+  "nodes": [
+    "Bayes\u2019 Rule",
+    "Bernoulli Distribution",
+    "Computing E[Y] for Y=X^2+2X+1",
+    "Conditional Expectation",
+    "Convolution of Discrete Distributions",
+    "Correlation coefficient (rho)",
+    "Covariance",
+    "Derangement",
+    "Disjoint Events and Additivity",
+    "Expectation",
+    "Expectation of Linear Combination",
+    "Expectation of X for Uniform(0,1)",
+    "Expectation of a Constant",
+    "Expectation of a Linear Transformation",
+    "Formula for \\(E[(X+Y)^2]\\)",
+    "Gaussian Density Function",
+    "Independence",
+    "Independent and Identically Distributed (IID) Variables",
+    "Law of the Unconscious Statistician",
+    "Linearity of Conditional Expectations",
+    "Linearity of Expectation",
+    "Maximum of Random Variables",
+    "Posterior probability of fair coin after head",
+    "Power Rule for Uniform Distribution",
+    "Probability Mass Function (PMF) of a Sum",
+    "Probability of exact match",
+    "Probability of head with biased coin",
+    "Probability of tail with biased coin",
+    "Product Rule for Independent Events",
+    "Resulting Mean and Variance of Y",
+    "Standardization of a Random Variable",
+    "Uniform(0,1) Distribution",
+    "Variance",
+    "Variance of Linear Combination",
+    "Variance of a Constant",
+    "Variance of a Linear Transformation",
+    "continuous random variable",
+    "density function",
+    "discrete random variable",
+    "expectation formula",
+    "mass function",
+    "modulus transformation",
+    "normalizing constant",
+    "probability calculation via integration",
+    "sum of integers formula",
+    "uniform distribution"
+  ],
+  "edges": [
+    {
+      "source": "Bayes\u2019 Rule",
+      "target": "Posterior probability of fair coin after head",
+      "confidence": 0.645829129619479,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Bernoulli Distribution",
+      "target": "Probability Mass Function (PMF) of a Sum",
+      "confidence": 0.6521150440587047,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Conditional Expectation",
+      "target": "Linearity of Expectation",
+      "confidence": 0.7139598221077732,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Conditional Expectation",
+      "target": "Expectation of a Constant",
+      "confidence": 0.8898968219707252,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Conditional Expectation",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.8099437931812762,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Conditional Expectation",
+      "target": "Expectation of Linear Combination",
+      "confidence": 0.721005075008735,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Covariance",
+      "target": "Formula for \\(E[(X+Y)^2]\\)",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"and then the covariance between x and y is rho\""
+    },
+    {
+      "source": "Covariance",
+      "target": "Linearity of Conditional Expectations",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"and then the calculation of variance was the main idea the additional thing and this from here to\""
+    },
+    {
+      "source": "Disjoint Events and Additivity",
+      "target": "Probability Mass Function (PMF) of a Sum",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"Now you have disjoint events, now you can add them\""
+    },
+    {
+      "source": "Expectation",
+      "target": "Linearity of Expectation",
+      "confidence": 0.8674931887336099,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation",
+      "target": "Expectation of a Constant",
+      "confidence": 0.9723406769545152,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.9362491032000256,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation",
+      "target": "Linearity of Conditional Expectations",
+      "confidence": 0.7604850711375288,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation",
+      "target": "Conditional Expectation",
+      "confidence": 0.9044286889955261,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation",
+      "target": "Expectation of Linear Combination",
+      "confidence": 0.9051759017881449,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of Linear Combination",
+      "target": "Variance of Linear Combination",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"by the linearity 3 into expectation of x plus 4 into expectation of y\""
+    },
+    {
+      "source": "Expectation of Linear Combination",
+      "target": "Expectation of a Constant",
+      "confidence": 0.7813174268018214,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of Linear Combination",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.9149702838781747,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of Linear Combination",
+      "target": "Linearity of Conditional Expectations",
+      "confidence": 0.7568258220905836,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of X for Uniform(0,1)",
+      "target": "Expectation of a Constant",
+      "confidence": 0.836886833716928,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of X for Uniform(0,1)",
+      "target": "Computing E[Y] for Y=X^2+2X+1",
+      "confidence": 0.833651197628605,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of a Constant",
+      "target": "Computing E[Y] for Y=X^2+2X+1",
+      "confidence": 0.5480906439308183,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Expectation of a Linear Transformation",
+      "target": "Expectation of a Constant",
+      "confidence": 0.8639557040466084,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Formula for \\(E[(X+Y)^2]\\)",
+      "target": "Linearity of Conditional Expectations",
+      "confidence": 0.5295526950381606,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Independence",
+      "target": "Conditional Expectation",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"x and y are independent now therefore conditioning on y has no impact\""
+    },
+    {
+      "source": "Independent and Identically Distributed (IID) Variables",
+      "target": "Probability Mass Function (PMF) of a Sum",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"Now I am using the identical part of it\""
+    },
+    {
+      "source": "Independent and Identically Distributed (IID) Variables",
+      "target": "Product Rule for Independent Events",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"you multiply each one of them\""
+    },
+    {
+      "source": "Law of the Unconscious Statistician",
+      "target": "Linearity of Expectation",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"now how do you do it now integrate over it now you apply the function at a specific point\""
+    },
+    {
+      "source": "Linearity of Conditional Expectations",
+      "target": "Expectation of a Constant",
+      "confidence": 0.7803758519838572,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Linearity of Conditional Expectations",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.9218341696848531,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Linearity of Expectation",
+      "target": "Expectation of a Constant",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"the linearity of expectations? That is a catch. The linearity of expectations, expectation\""
+    },
+    {
+      "source": "Linearity of Expectation",
+      "target": "Expectation of X for Uniform(0,1)",
+      "confidence": 0.5190767134368888,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Linearity of Expectation",
+      "target": "Computing E[Y] for Y=X^2+2X+1",
+      "confidence": 0.5102238017304785,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Linearity of Expectation",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.9580894056712003,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Linearity of Expectation",
+      "target": "Linearity of Conditional Expectations",
+      "confidence": 0.9854413429663456,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Linearity of Expectation",
+      "target": "Expectation of Linear Combination",
+      "confidence": 0.8966591135464251,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Maximum of Random Variables",
+      "target": "Product Rule for Independent Events",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"the probability that the maximum is less than 0.8 is the probability that each is less than 0.8\""
+    },
+    {
+      "source": "Probability of head with biased coin",
+      "target": "Posterior probability of fair coin after head",
+      "confidence": 0.9842347180532444,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Probability of head with biased coin",
+      "target": "Probability of tail with biased coin",
+      "confidence": 0.8840370037722551,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Probability of tail with biased coin",
+      "target": "Posterior probability of fair coin after head",
+      "confidence": 0.9046157361970754,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Standardization of a Random Variable",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"now given y which is a function of x now now compute mean and variance of it\""
+    },
+    {
+      "source": "Uniform(0,1) Distribution",
+      "target": "Expectation of X for Uniform(0,1)",
+      "confidence": 0.9800205003626239,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance",
+      "target": "Formula for \\(E[(X+Y)^2]\\)",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"what is variance of x variance of x is expectation of x square minus expectation of x whole square\""
+    },
+    {
+      "source": "Variance",
+      "target": "Covariance",
+      "confidence": 0.6891449531311592,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance",
+      "target": "Variance of a Linear Transformation",
+      "confidence": 0.9608817065722267,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance",
+      "target": "Variance of a Constant",
+      "confidence": 0.978895946144487,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance",
+      "target": "Resulting Mean and Variance of Y",
+      "confidence": 0.9587215520673605,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance",
+      "target": "Variance of Linear Combination",
+      "confidence": 0.9466622219026859,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance of Linear Combination",
+      "target": "Gaussian Density Function",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"Now this is 3 square plus 4 square, which is 25. Therefore, z is a random variable.\""
+    },
+    {
+      "source": "Variance of Linear Combination",
+      "target": "Variance of a Linear Transformation",
+      "confidence": 0.9575646170503176,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance of Linear Combination",
+      "target": "Variance of a Constant",
+      "confidence": 0.9286609060587514,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance of a Constant",
+      "target": "Resulting Mean and Variance of Y",
+      "confidence": 0.8591123043202856,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance of a Constant",
+      "target": "Expectation of a Constant",
+      "confidence": 0.8767322950079645,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "Variance of a Linear Transformation",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.948675998251848,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "continuous random variable",
+      "target": "density function",
+      "confidence": 0.8009920778219227,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "density function",
+      "target": "modulus transformation",
+      "confidence": 0.5160820313180664,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "density function",
+      "target": "Gaussian Density Function",
+      "confidence": 0.9540809625779313,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "discrete random variable",
+      "target": "mass function",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"this is a mass function but it is not a density function\""
+    },
+    {
+      "source": "discrete random variable",
+      "target": "continuous random variable",
+      "confidence": 0.8755545241057433,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "expectation formula",
+      "target": "sum of integers formula",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"you should be knowing this\""
+    },
+    {
+      "source": "expectation formula",
+      "target": "Expectation of a Constant",
+      "confidence": 0.9585629590602956,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "expectation formula",
+      "target": "Expectation of a Linear Transformation",
+      "confidence": 0.8736803382833637,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "expectation formula",
+      "target": "Expectation",
+      "confidence": 0.9732133373341493,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "expectation formula",
+      "target": "Conditional Expectation",
+      "confidence": 0.8755917166574739,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "expectation formula",
+      "target": "Expectation of Linear Combination",
+      "confidence": 0.8217204403660169,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "mass function",
+      "target": "density function",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"but for both of them we use the same notation\""
+    },
+    {
+      "source": "mass function",
+      "target": "Probability Mass Function (PMF) of a Sum",
+      "confidence": 0.8719973906756187,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "probability calculation via integration",
+      "target": "density function",
+      "confidence": 0.9574386599327608,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "uniform distribution",
+      "target": "probability calculation via integration",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "\"now you might think that both of them are same actually hold on there is a very nice catch here\""
+    },
+    {
+      "source": "uniform distribution",
+      "target": "density function",
+      "confidence": 0.7867915823752938,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "uniform distribution",
+      "target": "Expectation of X for Uniform(0,1)",
+      "confidence": 0.9432780261956712,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "uniform distribution",
+      "target": "Uniform(0,1) Distribution",
+      "confidence": 0.9840421608754465,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "uniform distribution",
+      "target": "Power Rule for Uniform Distribution",
+      "confidence": 0.8395569808328721,
+      "source_method": "classifier",
+      "evidence": null
+    }
+  ],
+  "node_count": 46,
+  "edge_count": 73,
+  "is_dag": true,
+  "topological_order": [
+    "Bayes\u2019 Rule",
+    "Bernoulli Distribution",
+    "Convolution of Discrete Distributions",
+    "Correlation coefficient (rho)",
+    "Derangement",
+    "Disjoint Events and Additivity",
+    "Independence",
+    "Independent and Identically Distributed (IID) Variables",
+    "Law of the Unconscious Statistician",
+    "Maximum of Random Variables",
+    "Probability of exact match",
+    "Probability of head with biased coin",
+    "Standardization of a Random Variable",
+    "Variance",
+    "discrete random variable",
+    "expectation formula",
+    "normalizing constant",
+    "uniform distribution",
+    "Product Rule for Independent Events",
+    "Probability of tail with biased coin",
+    "Covariance",
+    "mass function",
+    "continuous random variable",
+    "sum of integers formula",
+    "Expectation",
+    "probability calculation via integration",
+    "Uniform(0,1) Distribution",
+    "Power Rule for Uniform Distribution",
+    "Posterior probability of fair coin after head",
+    "Formula for \\(E[(X+Y)^2]\\)",
+    "Probability Mass Function (PMF) of a Sum",
+    "Conditional Expectation",
+    "density function",
+    "Linearity of Expectation",
+    "modulus transformation",
+    "Expectation of X for Uniform(0,1)",
+    "Expectation of Linear Combination",
+    "Variance of Linear Combination",
+    "Linearity of Conditional Expectations",
+    "Gaussian Density Function",
+    "Variance of a Linear Transformation",
+    "Variance of a Constant",
+    "Expectation of a Linear Transformation",
+    "Resulting Mean and Variance of Y",
+    "Expectation of a Constant",
+    "Computing E[Y] for Y=X^2+2X+1"
+  ]
+}

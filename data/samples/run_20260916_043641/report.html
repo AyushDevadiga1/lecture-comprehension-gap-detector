@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>LecGap sample run — run_20260916_043641</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #1a1a2e; background:#f6f7fb; }
+  h1 { font-size: 22px; } h2 { font-size: 16px; margin: 8px 0 4px; }
+  .banner { background:#052e16; color:#d9f99d; padding:14px 18px; border-radius:10px; }
+  .card { background:#fff; border:1px solid #dbe2ea; border-left:6px solid #16a34a; border-radius:10px; padding:14px 18px; margin:10px 0; }
+  .stage { font-size:11px; letter-spacing:2px; color:#16a34a; font-weight:700; }
+  .mods { color:#64748b; font-size:13px; margin:4px 0; }
+  .art { font-size:13px; margin:4px 0; }
+  .size { color:#9333ea; font-weight:600; margin-left:8px; }
+  .body { margin-top:6px; font-size:13.5px; line-height:1.55; }
+  .tag { background:#dcfce7; color:#166534; border-radius:10px; padding:1px 8px; font-size:11px; }
+  .conf { color:#9333ea; }
+  .chip { display:inline-block; background:#f3e8ff; color:#6b21a8; border-radius:12px; padding:2px 10px; margin:2px; font-size:12px; }
+  .clip { color:#16a34a; font-weight:700; }
+  .arrow { text-align:center; color:#94a3b8; font-size:20px; line-height:1.1; }
+  ul { margin:6px 0 0; padding-left:20px; }
+  code { background:#eef2f7; padding:1px 6px; border-radius:5px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:12px; }
+  th, td { border:1px solid #dbe2ea; padding:6px 10px; text-align:left; }
+  th { background:#eef2f7; }
+</style></head><body>
+<h1>LecGap — end-to-end sample run</h1>
+<div class="banner">
+  <b>Run:</b> run_20260916_043641 · <b>clip:</b> C:\Users\hp\Desktop\lecture-comprehension-gap-detector\data\raw\lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4 ·
+  <b>course:</b> prob · <b>stage:</b> ALL PASSED ✓<br>
+  <b>Transcript:</b> 400 segments · <b>Concepts:</b> 51 ·
+  <b>Graph:</b> 46 nodes / 73 edges (DAG: True) ·
+  <b>Quiz:</b> 46 Q · <b>Score:</b> 30/46<br>
+  <b>Artifacts:</b> 12 files in this folder · <b>DB:</b> <code>lecgap.db</code> (dedicated)
+</div>
+
+<p style="font-size:13.5px">Flow of the real system: every card below is driven by the actual API +
+background workers on this clip, and each stage's output is saved next to it in this folder.
+Open <code>run_manifest.json</code> for the machine-readable record.</p>
+
+
+        <div class="card">
+          <div class="stage">STAGE 0</div>
+          <h2>Input — raw lecture</h2>
+          <div class="mods">data/raw/ · chosen clip</div>
+          <div class="art"><code>00_input__00_input__lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4</code> </div>
+          <div class="body">Copied into the run folder as the single input to the whole pipeline. Duration span 3225.7s.<ul><li>data\samples\run_20260916_043641\00_input__lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 1</div>
+          <h2>Transcription</h2>
+          <div class="mods">backend/pipeline/transcribe.py (local Whisper backend)</div>
+          <div class="art"><code>01_transcript.json</code> <span class=size>66 KB</span></div>
+          <div class="body">Whisper transcribes the audio into <b>400 timestamped segments</b>, persisted to SQLite.<ul><li><b>[0.0s–7.8s]</b> Hello all, welcome to this tutorial on problems of probability.</li><li><b>[9.5s–16.4s]</b> Till now, you have successfully completed two weeks of lecture sessions.</li><li><b>[16.4s–28.8s]</b> by now it should be clear to you that the basic ideas of probability are needed </li><li><b>[28.8s–39.4s]</b> the ideas of machine learning. So to reinforce that we have selected a few probl</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 2</div>
+          <h2>Concept extraction</h2>
+          <div class="mods">backend/pipeline/extract_concepts.py + llm.py (Groq)</div>
+          <div class="art"><code>02_concepts.json</code> <span class=size>8 KB</span></div>
+          <div class="body">LLM reads the transcript chunks and returns explicit + implicit concepts: <b>51</b> (0 implicit).<ul><li>Derangement <span class='tag'>explicit</span></li><li>Probability of exact match <span class='tag'>explicit</span></li><li>Bayes’ Rule <span class='tag'>explicit</span></li><li>Posterior probability of fair coin after head <span class='tag'>explicit</span></li><li>Posterior probability of fair coin after head and tail <span class='tag'>explicit</span></li><li>Probability of head with fair coin <span class='tag'>explicit</span></li><li>Probability of head with biased coin <span class='tag'>explicit</span></li><li>Probability of tail with biased coin <span class='tag'>explicit</span></li><li>continuous random variable <span class='tag'>explicit</span></li><li>density function <span class='tag'>explicit</span></li><li>normalizing constant <span class='tag'>explicit</span></li><li>uniform distribution <span class='tag'>explicit</span></li><li>probability density function <span class='tag'>explicit</span></li><li>modulus transformation <span class='tag'>explicit</span></li><li>probability calculation via integration <span class='tag'>explicit</span></li><li>discrete random variable <span class='tag'>explicit</span></li><li>mass function <span class='tag'>explicit</span></li><li>expectation formula <span class='tag'>explicit</span></li><li>sum of integers formula <span class='tag'>explicit</span></li><li>Law of the Unconscious Statistician <span class='tag'>explicit</span></li><li>Linearity of Expectation <span class='tag'>explicit</span></li><li>Expectation of a Constant <span class='tag'>explicit</span></li><li>Expectation of X for Uniform(0,1) <span class='tag'>explicit</span></li><li>Expectation of X^2 for Uniform(0,1) <span class='tag'>explicit</span></li><li>Computing E[Y] for Y=X^2+2X+1 <span class='tag'>explicit</span></li><li>Standardization of a Random Variable <span class='tag'>explicit</span></li><li>Expectation of a Linear Transformation <span class='tag'>explicit</span></li><li>Variance of a Linear Transformation <span class='tag'>explicit</span></li><li>Variance of a Constant <span class='tag'>explicit</span></li><li>Resulting Mean and Variance of Y <span class='tag'>explicit</span></li><li>Bernoulli Distribution <span class='tag'>explicit</span></li><li>Independent and Identically Distributed (IID) Variables <span class='tag'>explicit</span></li><li>Probability Mass Function (PMF) of a Sum <span class='tag'>explicit</span></li><li>Convolution of Discrete Distributions <span class='tag'>explicit</span></li><li>Disjoint Events and Additivity <span class='tag'>explicit</span></li><li>Uniform(0,1) Distribution <span class='tag'>explicit</span></li><li>Maximum of Random Variables <span class='tag'>explicit</span></li><li>Product Rule for Independent Events <span class='tag'>explicit</span></li><li>Power Rule for Uniform Distribution <span class='tag'>explicit</span></li><li>Expectation <span class='tag'>explicit</span></li><li>Variance <span class='tag'>explicit</span></li><li>Covariance <span class='tag'>explicit</span></li><li>Formula for \(E[(X+Y)^2]\) <span class='tag'>explicit</span></li><li>Correlation coefficient (rho) <span class='tag'>explicit</span></li><li>Linearity of Expectations <span class='tag'>explicit</span></li><li>Conditional Expectation <span class='tag'>explicit</span></li><li>Independence <span class='tag'>explicit</span></li><li>Linearity of Conditional Expectations <span class='tag'>explicit</span></li><li>Expectation of Linear Combination <span class='tag'>explicit</span></li><li>Variance of Linear Combination <span class='tag'>explicit</span></li><li>Gaussian Density Function <span class='tag'>explicit</span></li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 3+4</div>
+          <h2>Prerequisite graph</h2>
+          <div class="mods">classify_prerequisites.py + build_graph.py (LectureBank classifier)</div>
+          <div class="art"><code>03_graph.json</code> <span class=size>20 KB</span></div>
+          <div class="body">Candidate pairs are scored by the LectureBank-trained classifier; confirmed edges become a per-course prerequisite <b>DAG</b> with a learner order.<br><b>Edges:</b><ul><li>Bayes’ Rule → Posterior probability of fair coin after head <span class=conf>(0.65)</span></li><li>Bernoulli Distribution → Probability Mass Function (PMF) of a Sum <span class=conf>(0.65)</span></li><li>Conditional Expectation → Linearity of Expectation <span class=conf>(0.71)</span></li><li>Conditional Expectation → Expectation of a Constant <span class=conf>(0.89)</span></li><li>Conditional Expectation → Expectation of a Linear Transformation <span class=conf>(0.81)</span></li><li>Conditional Expectation → Expectation of Linear Combination <span class=conf>(0.72)</span></li><li>Covariance → Formula for \(E[(X+Y)^2]\) <span class=conf>(0.90)</span></li><li>Covariance → Linearity of Conditional Expectations <span class=conf>(0.90)</span></li></ul><b>Learner order:</b> <span class='chip'>Bayes’ Rule</span><span class='chip'>Bernoulli Distribution</span><span class='chip'>Convolution of Discrete Distributions</span><span class='chip'>Correlation coefficient (rho)</span><span class='chip'>Derangement</span><span class='chip'>Disjoint Events and Additivity</span><span class='chip'>Independence</span><span class='chip'>Independent and Identically Distributed (IID) Variables</span><span class='chip'>Law of the Unconscious Statistician</span><span class='chip'>Maximum of Random Variables</span><span class='chip'>Probability of exact match</span><span class='chip'>Probability of head with biased coin</span><span class='chip'>Standardization of a Random Variable</span><span class='chip'>Variance</span><span class='chip'>discrete random variable</span><span class='chip'>expectation formula</span><span class='chip'>normalizing constant</span><span class='chip'>uniform distribution</span><span class='chip'>Product Rule for Independent Events</span><span class='chip'>Probability of tail with biased coin</span><span class='chip'>Covariance</span><span class='chip'>mass function</span><span class='chip'>continuous random variable</span><span class='chip'>sum of integers formula</span><span class='chip'>Expectation</span><span class='chip'>probability calculation via integration</span><span class='chip'>Uniform(0,1) Distribution</span><span class='chip'>Power Rule for Uniform Distribution</span><span class='chip'>Posterior probability of fair coin after head</span><span class='chip'>Formula for \(E[(X+Y)^2]\)</span><span class='chip'>Probability Mass Function (PMF) of a Sum</span><span class='chip'>Conditional Expectation</span><span class='chip'>density function</span><span class='chip'>Linearity of Expectation</span><span class='chip'>modulus transformation</span><span class='chip'>Expectation of X for Uniform(0,1)</span><span class='chip'>Expectation of Linear Combination</span><span class='chip'>Variance of Linear Combination</span><span class='chip'>Linearity of Conditional Expectations</span><span class='chip'>Gaussian Density Function</span><span class='chip'>Variance of a Linear Transformation</span><span class='chip'>Variance of a Constant</span><span class='chip'>Expectation of a Linear Transformation</span><span class='chip'>Resulting Mean and Variance of Y</span><span class='chip'>Expectation of a Constant</span><span class='chip'>Computing E[Y] for Y=X^2+2X+1</span></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 5</div>
+          <h2>Clip segmentation</h2>
+          <div class="mods">backend/pipeline/segment_clips.py (ffmpeg)</div>
+          <div class="art"><code>04_clips.json</code> <span class=size>15 KB</span></div>
+          <div class="body">One playable video per concept — <b>51/51 cut OK</b> under <code>data/processed/clips/</code> (paths recorded here).<ul><li>Derangement — [OK] Derangement__108-156.mp4</li><li>Probability of exact match — [OK] Probability of exact match__108-156.mp4</li><li>Bayes’ Rule — [OK] Bayes_ Rule__272-384.mp4</li><li>Posterior probability of fair coin after head — [OK] Posterior probability of fair coin after head__327-475.mp4</li><li>Posterior probability of fair coin after head and tail — [OK] Posterior probability of fair coin after head and tail__509-617.mp4</li><li>Probability of head with fair coin — [OK] Probability of head with fair coin__421-428.mp4</li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 6</div>
+          <h2>Quiz + remediation</h2>
+          <div class="mods">backend/pipeline/quiz.py + routes.py</div>
+          <div class="art"><code>05_quiz.json · 06_remediation.json</code> </div>
+          <div class="body">Questions asked in learner order; answers graded; missed concepts lifted with their upstream prerequisites into a watch-list with clip links.<ul><li>1. Which best describes Bayes’ Rule as taught in the lecture?</li><li>2. Which best describes the Bernoulli Distribution as taught in the lecture?</li><li>3. Which best describes the &quot;Convolution of Discrete Distributions&quot; as taught in the lecture?</li><li>4. Which best describes the Correlation coefficient (ρ) as taught in the lecture?</li><li>5. Which best describes a derangement as taught in the lecture?</li></ul><b>Remediation watch-list</b> (30/46):<ul><li><b>Bayes’ Rule</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Bernoulli Distribution</b> — ok <span class=clip>▶ clip</span></li><li><b>Correlation coefficient (rho)</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Disjoint Events and Additivity</b> — ok <span class=clip>▶ clip</span></li><li><b>Independence</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Independent and Identically Distributed (IID) Variables</b> — ok <span class=clip>▶ clip</span></li><li><b>Law of the Unconscious Statistician</b> — ok <span class=clip>▶ clip</span></li><li><b>Maximum of Random Variables</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Standardization of a Random Variable</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Variance</b> — ok <span class=clip>▶ clip</span></li><li><b>discrete random variable</b> — ok <span class=clip>▶ clip</span></li><li><b>expectation formula</b> — FAILED <span class=clip>▶ clip</span></li><li><b>uniform distribution</b> — ok <span class=clip>▶ clip</span></li><li><b>Product Rule for Independent Events</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Covariance</b> — ok <span class=clip>▶ clip</span></li><li><b>mass function</b> — FAILED <span class=clip>▶ clip</span></li><li><b>continuous random variable</b> — ok <span class=clip>▶ clip</span></li><li><b>Expectation</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Power Rule for Uniform Distribution</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Formula for \(E[(X+Y)^2]\)</b> — ok <span class=clip>▶ clip</span></li><li><b>Probability Mass Function (PMF) of a Sum</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Conditional Expectation</b> — ok <span class=clip>▶ clip</span></li><li><b>density function</b> — ok <span class=clip>▶ clip</span></li><li><b>Linearity of Expectation</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Expectation of X for Uniform(0,1)</b> — ok <span class=clip>▶ clip</span></li><li><b>Expectation of Linear Combination</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Variance of Linear Combination</b> — ok <span class=clip>▶ clip</span></li><li><b>Linearity of Conditional Expectations</b> — ok <span class=clip>▶ clip</span></li><li><b>Gaussian Density Function</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Variance of a Linear Transformation</b> — ok <span class=clip>▶ clip</span></li><li><b>Expectation of a Linear Transformation</b> — FAILED <span class=clip>▶ clip</span></li><li><b>Expectation of a Constant</b> — ok <span class=clip>▶ clip</span></li><li><b>Computing E[Y] for Y=X^2+2X+1</b> — FAILED <span class=clip>▶ clip</span></li></ul></div>
+        </div>
+<div class="arrow">▼</div>
+
+        <div class="card">
+          <div class="stage">STAGE 7</div>
+          <h2>Faculty analytics</h2>
+          <div class="mods">routes.py /courses/{{id}}/stats</div>
+          <div class="art"><code>07_stats.json</code> <span class=size>15 KB</span></div>
+          <div class="body">Confusion heatmap + taught-vs-learned divergence, served to the faculty tab.<ul><li>Bayes’ Rule — miss-rate 100%</li><li>Correlation coefficient (rho) — miss-rate 100%</li><li>Independence — miss-rate 100%</li><li>Maximum of Random Variables — miss-rate 100%</li><li>Standardization of a Random Variable — miss-rate 100%</li></ul><ul><li>Independence — taught#46 vs learned#6 (gap -40)</li><li>Correlation coefficient (rho) — taught#43 vs learned#3 (gap -40)</li><li>Convolution of Discrete Distributions — taught#33 vs learned#2 (gap -31)</li><li>Bernoulli Distribution — taught#30 vs learned#1 (gap -29)</li><li>Disjoint Events and Additivity — taught#34 vs learned#5 (gap -29)</li></ul></div>
+        </div>
+
+<h2>Verification — what you asked vs what exists</h2>
+<table>
+<tr><th>Original plan (plan/ARCHITECTURE.md)</th><th>In this run</th><th>Status</th></tr>
+<tr><td>Transcribe lecture audio → segments</td><td>74-ish segments, saved to 01_transcript.json</td><td>✓</td></tr>
+<tr><td>Concept extraction (spoken)</td><td>Concepts saved to 02_concepts.json</td><td>✓</td></tr>
+<tr><td>Prerequisite classification + graph</td><td>DAG saved to 03_graph.json</td><td>✓</td></tr>
+<tr><td>Clip segmentation</td><td>Clip videos + 04_clips.json</td><td>✓</td></tr>
+<tr><td>Quiz / remediation loop</td><td>05_quiz.json + 06_remediation.json</td><td>✓</td></tr>
+<tr><td>Faculty analytics</td><td>07_stats.json</td><td>✓</td></tr>
+<tr><td>Refinement loop (Claim 2)</td><td>separate controlled experiment (scripts/recovery_experiment.py)</td><td>↳ see WORKLOG §8</td></tr>
+<tr><td>Visual track — CLIP/OCR (Phase 2b)</td><td>stub — not part of this flow</td><td>✗ open</td></tr>
+</table>
+
+<h2>Artifacts in this folder</h2>
+<table><tr><th>File</th><th>Size</th><th>Contents</th></tr>
+<tr><td><code>data\samples\run_20260916_043641\00_input__lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4</code></td><td>162.4 MB</td><td>run artifact</td></tr><tr><td><code>data\samples\run_20260916_043641\01_transcript.json</code></td><td>66 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\02_concepts.json</code></td><td>8 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\03_graph.json</code></td><td>20 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\04_clips.json</code></td><td>15 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\05_quiz.json</code></td><td>49 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\06_remediation.json</code></td><td>33 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\07_stats.json</code></td><td>15 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\08_structure.json</code></td><td>33 KB</td><td>run metadata</td></tr><tr><td><code>data\samples\run_20260916_043641\lecgap.db</code></td><td>400 KB</td><td>dedicated run database</td></tr><tr><td><code>data\samples\run_20260916_043641\report.html</code></td><td>12 KB</td><td>this verification report</td></tr><tr><td><code>data\samples\run_20260916_043641\run_manifest.json</code></td><td>1 KB</td><td>run metadata</td></tr>
+</table>
+</body></html>

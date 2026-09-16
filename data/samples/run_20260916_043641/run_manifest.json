@@ -1,0 +1,47 @@
+{
+  "run_id": "run_20260916_043641",
+  "course": "prob",
+  "student": "sample-student",
+  "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\raw\\lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4",
+  "started": "20260916_043641",
+  "steps": [
+    {
+      "stage": 0,
+      "name": "input",
+      "artifact": "00_input__lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4"
+    }
+  ],
+  "finished": "04:46:04",
+  "transcript_segments": 400,
+  "concepts": 6,
+  "graph": {
+    "nodes": 6,
+    "edges": 5,
+    "is_dag": true,
+    "order": [
+      "Bayes\u2019 Rule",
+      "Derangement",
+      "Prior probability of coin types",
+      "Probability of exact match",
+      "Posterior probability of fair coin",
+      "Likelihood of head/tail outcomes"
+    ]
+  },
+  "clips_ok": 51,
+  "quiz_questions": 46,
+  "score": "30/46",
+  "artifacts": [
+    "00_input__lec1_Tutorial 2 _ Simple Problem solving in Probability Theory _nGwjqvLHguA_.mp4",
+    "01_transcript.json",
+    "02_concepts.json",
+    "03_graph.json",
+    "04_clips.json",
+    "05_quiz.json",
+    "06_remediation.json",
+    "07_stats.json",
+    "08_structure.json",
+    "lecgap.db",
+    "report.html",
+    "run_manifest.json"
+  ]
+}

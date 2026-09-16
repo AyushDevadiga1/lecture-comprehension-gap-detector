@@ -1,0 +1,660 @@
+{
+  "course_id": "prob",
+  "heatmap": [
+    {
+      "concept": "Bayes\u2019 Rule",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Correlation coefficient (rho)",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Independence",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Maximum of Random Variables",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Standardization of a Random Variable",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "expectation formula",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Product Rule for Independent Events",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "mass function",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Expectation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Power Rule for Uniform Distribution",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Probability Mass Function (PMF) of a Sum",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Linearity of Expectation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Expectation of Linear Combination",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Gaussian Density Function",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Expectation of a Linear Transformation",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Computing E[Y] for Y=X^2+2X+1",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "Bernoulli Distribution",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Convolution of Discrete Distributions",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Derangement",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Disjoint Events and Additivity",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Independent and Identically Distributed (IID) Variables",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Law of the Unconscious Statistician",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Probability of exact match",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Probability of head with biased coin",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Variance",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "discrete random variable",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "normalizing constant",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "uniform distribution",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Probability of tail with biased coin",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Covariance",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "continuous random variable",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "sum of integers formula",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "probability calculation via integration",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Uniform(0,1) Distribution",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Posterior probability of fair coin after head",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Formula for \\(E[(X+Y)^2]\\)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Conditional Expectation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "density function",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "modulus transformation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Expectation of X for Uniform(0,1)",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Variance of Linear Combination",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Linearity of Conditional Expectations",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Variance of a Linear Transformation",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Variance of a Constant",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Resulting Mean and Variance of Y",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "Expectation of a Constant",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "Independence",
+      "taught_idx": 46,
+      "learned_idx": 6,
+      "gap": -40
+    },
+    {
+      "concept": "Correlation coefficient (rho)",
+      "taught_idx": 43,
+      "learned_idx": 3,
+      "gap": -40
+    },
+    {
+      "concept": "Convolution of Discrete Distributions",
+      "taught_idx": 33,
+      "learned_idx": 2,
+      "gap": -31
+    },
+    {
+      "concept": "Bernoulli Distribution",
+      "taught_idx": 30,
+      "learned_idx": 1,
+      "gap": -29
+    },
+    {
+      "concept": "Disjoint Events and Additivity",
+      "taught_idx": 34,
+      "learned_idx": 5,
+      "gap": -29
+    },
+    {
+      "concept": "Variance",
+      "taught_idx": 40,
+      "learned_idx": 13,
+      "gap": -27
+    },
+    {
+      "concept": "Maximum of Random Variables",
+      "taught_idx": 36,
+      "learned_idx": 9,
+      "gap": -27
+    },
+    {
+      "concept": "Posterior probability of fair coin after head",
+      "taught_idx": 3,
+      "learned_idx": 28,
+      "gap": 25
+    },
+    {
+      "concept": "Independent and Identically Distributed (IID) Variables",
+      "taught_idx": 31,
+      "learned_idx": 7,
+      "gap": -24
+    },
+    {
+      "concept": "density function",
+      "taught_idx": 9,
+      "learned_idx": 32,
+      "gap": 23
+    },
+    {
+      "concept": "Expectation of a Constant",
+      "taught_idx": 21,
+      "learned_idx": 44,
+      "gap": 23
+    },
+    {
+      "concept": "modulus transformation",
+      "taught_idx": 13,
+      "learned_idx": 34,
+      "gap": 21
+    },
+    {
+      "concept": "Covariance",
+      "taught_idx": 41,
+      "learned_idx": 20,
+      "gap": -21
+    },
+    {
+      "concept": "Computing E[Y] for Y=X^2+2X+1",
+      "taught_idx": 24,
+      "learned_idx": 45,
+      "gap": 21
+    },
+    {
+      "concept": "Product Rule for Independent Events",
+      "taught_idx": 37,
+      "learned_idx": 18,
+      "gap": -19
+    },
+    {
+      "concept": "Expectation of a Linear Transformation",
+      "taught_idx": 26,
+      "learned_idx": 42,
+      "gap": 16
+    },
+    {
+      "concept": "Expectation",
+      "taught_idx": 39,
+      "learned_idx": 24,
+      "gap": -15
+    },
+    {
+      "concept": "Conditional Expectation",
+      "taught_idx": 45,
+      "learned_idx": 31,
+      "gap": -14
+    },
+    {
+      "concept": "continuous random variable",
+      "taught_idx": 8,
+      "learned_idx": 22,
+      "gap": 14
+    },
+    {
+      "concept": "Resulting Mean and Variance of Y",
+      "taught_idx": 29,
+      "learned_idx": 43,
+      "gap": 14
+    },
+    {
+      "concept": "Expectation of X for Uniform(0,1)",
+      "taught_idx": 22,
+      "learned_idx": 35,
+      "gap": 13
+    },
+    {
+      "concept": "Linearity of Expectation",
+      "taught_idx": 20,
+      "learned_idx": 33,
+      "gap": 13
+    },
+    {
+      "concept": "Variance of a Linear Transformation",
+      "taught_idx": 27,
+      "learned_idx": 40,
+      "gap": 13
+    },
+    {
+      "concept": "Formula for \\(E[(X+Y)^2]\\)",
+      "taught_idx": 42,
+      "learned_idx": 29,
+      "gap": -13
+    },
+    {
+      "concept": "Variance of a Constant",
+      "taught_idx": 28,
+      "learned_idx": 41,
+      "gap": 13
+    },
+    {
+      "concept": "Standardization of a Random Variable",
+      "taught_idx": 25,
+      "learned_idx": 12,
+      "gap": -13
+    },
+    {
+      "concept": "Probability of tail with biased coin",
+      "taught_idx": 7,
+      "learned_idx": 19,
+      "gap": 12
+    },
+    {
+      "concept": "Expectation of Linear Combination",
+      "taught_idx": 48,
+      "learned_idx": 36,
+      "gap": -12
+    },
+    {
+      "concept": "Variance of Linear Combination",
+      "taught_idx": 49,
+      "learned_idx": 37,
+      "gap": -12
+    },
+    {
+      "concept": "Gaussian Density Function",
+      "taught_idx": 50,
+      "learned_idx": 39,
+      "gap": -11
+    },
+    {
+      "concept": "Power Rule for Uniform Distribution",
+      "taught_idx": 38,
+      "learned_idx": 27,
+      "gap": -11
+    },
+    {
+      "concept": "probability calculation via integration",
+      "taught_idx": 14,
+      "learned_idx": 25,
+      "gap": 11
+    },
+    {
+      "concept": "Law of the Unconscious Statistician",
+      "taught_idx": 19,
+      "learned_idx": 8,
+      "gap": -11
+    },
+    {
+      "concept": "Probability of exact match",
+      "taught_idx": 1,
+      "learned_idx": 10,
+      "gap": 9
+    },
+    {
+      "concept": "Uniform(0,1) Distribution",
+      "taught_idx": 35,
+      "learned_idx": 26,
+      "gap": -9
+    },
+    {
+      "concept": "Linearity of Conditional Expectations",
+      "taught_idx": 47,
+      "learned_idx": 38,
+      "gap": -9
+    },
+    {
+      "concept": "uniform distribution",
+      "taught_idx": 11,
+      "learned_idx": 17,
+      "gap": 6
+    },
+    {
+      "concept": "normalizing constant",
+      "taught_idx": 10,
+      "learned_idx": 16,
+      "gap": 6
+    },
+    {
+      "concept": "Probability of head with biased coin",
+      "taught_idx": 5,
+      "learned_idx": 11,
+      "gap": 6
+    },
+    {
+      "concept": "mass function",
+      "taught_idx": 16,
+      "learned_idx": 21,
+      "gap": 5
+    },
+    {
+      "concept": "sum of integers formula",
+      "taught_idx": 18,
+      "learned_idx": 23,
+      "gap": 5
+    },
+    {
+      "concept": "Derangement",
+      "taught_idx": 0,
+      "learned_idx": 4,
+      "gap": 4
+    },
+    {
+      "concept": "expectation formula",
+      "taught_idx": 17,
+      "learned_idx": 15,
+      "gap": -2
+    },
+    {
+      "concept": "Probability Mass Function (PMF) of a Sum",
+      "taught_idx": 32,
+      "learned_idx": 30,
+      "gap": -2
+    },
+    {
+      "concept": "Bayes\u2019 Rule",
+      "taught_idx": 2,
+      "learned_idx": 0,
+      "gap": -2
+    },
+    {
+      "concept": "discrete random variable",
+      "taught_idx": 15,
+      "learned_idx": 14,
+      "gap": -1
+    }
+  ],
+  "taught_order": [
+    "Derangement",
+    "Probability of exact match",
+    "Bayes\u2019 Rule",
+    "Posterior probability of fair coin after head",
+    "Probability of head with fair coin",
+    "Probability of head with biased coin",
+    "Posterior probability of fair coin after head and tail",
+    "Probability of tail with biased coin",
+    "continuous random variable",
+    "density function",
+    "normalizing constant",
+    "uniform distribution",
+    "probability density function",
+    "modulus transformation",
+    "probability calculation via integration",
+    "discrete random variable",
+    "mass function",
+    "expectation formula",
+    "sum of integers formula",
+    "Law of the Unconscious Statistician",
+    "Linearity of Expectation",
+    "Expectation of a Constant",
+    "Expectation of X for Uniform(0,1)",
+    "Expectation of X^2 for Uniform(0,1)",
+    "Computing E[Y] for Y=X^2+2X+1",
+    "Standardization of a Random Variable",
+    "Expectation of a Linear Transformation",
+    "Variance of a Linear Transformation",
+    "Variance of a Constant",
+    "Resulting Mean and Variance of Y",
+    "Bernoulli Distribution",
+    "Independent and Identically Distributed (IID) Variables",
+    "Probability Mass Function (PMF) of a Sum",
+    "Convolution of Discrete Distributions",
+    "Disjoint Events and Additivity",
+    "Uniform(0,1) Distribution",
+    "Maximum of Random Variables",
+    "Product Rule for Independent Events",
+    "Power Rule for Uniform Distribution",
+    "Expectation",
+    "Variance",
+    "Covariance",
+    "Formula for \\(E[(X+Y)^2]\\)",
+    "Correlation coefficient (rho)",
+    "Linearity of Expectations",
+    "Conditional Expectation",
+    "Independence",
+    "Linearity of Conditional Expectations",
+    "Expectation of Linear Combination",
+    "Variance of Linear Combination",
+    "Gaussian Density Function"
+  ],
+  "learned_order": [
+    "Bayes\u2019 Rule",
+    "Bernoulli Distribution",
+    "Convolution of Discrete Distributions",
+    "Correlation coefficient (rho)",
+    "Derangement",
+    "Disjoint Events and Additivity",
+    "Independence",
+    "Independent and Identically Distributed (IID) Variables",
+    "Law of the Unconscious Statistician",
+    "Maximum of Random Variables",
+    "Probability of exact match",
+    "Probability of head with biased coin",
+    "Standardization of a Random Variable",
+    "Variance",
+    "discrete random variable",
+    "expectation formula",
+    "normalizing constant",
+    "uniform distribution",
+    "Product Rule for Independent Events",
+    "Probability of tail with biased coin",
+    "Covariance",
+    "mass function",
+    "continuous random variable",
+    "sum of integers formula",
+    "Expectation",
+    "probability calculation via integration",
+    "Uniform(0,1) Distribution",
+    "Power Rule for Uniform Distribution",
+    "Posterior probability of fair coin after head",
+    "Formula for \\(E[(X+Y)^2]\\)",
+    "Probability Mass Function (PMF) of a Sum",
+    "Conditional Expectation",
+    "density function",
+    "Linearity of Expectation",
+    "modulus transformation",
+    "Expectation of X for Uniform(0,1)",
+    "Expectation of Linear Combination",
+    "Variance of Linear Combination",
+    "Linearity of Conditional Expectations",
+    "Gaussian Density Function",
+    "Variance of a Linear Transformation",
+    "Variance of a Constant",
+    "Expectation of a Linear Transformation",
+    "Resulting Mean and Variance of Y",
+    "Expectation of a Constant",
+    "Computing E[Y] for Y=X^2+2X+1"
+  ]
+}

@@ -1,0 +1,589 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 30,
+  "total": 46,
+  "remediation": [
+    {
+      "concept": "Bayes\u2019 Rule",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Bayes_ Rule__272-384.mp4"
+    },
+    {
+      "concept": "Bernoulli Distribution",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Bernoulli Distribution__2020-2036.mp4"
+    },
+    {
+      "concept": "Correlation coefficient (rho)",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Correlation coefficient _rho___2670-2729.mp4"
+    },
+    {
+      "concept": "Disjoint Events and Additivity",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Disjoint Events and Additivity__2214-2260.mp4"
+    },
+    {
+      "concept": "Independence",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Independence__2893-2915.mp4"
+    },
+    {
+      "concept": "Independent and Identically Distributed (IID) Variables",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Independent and Identically Distributed _IID_ Variables__2041-2051.mp4"
+    },
+    {
+      "concept": "Law of the Unconscious Statistician",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Law of the Unconscious Statistician__1363-1408.mp4"
+    },
+    {
+      "concept": "Maximum of Random Variables",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Maximum of Random Variables__2383-2428.mp4"
+    },
+    {
+      "concept": "Standardization of a Random Variable",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Standardization of a Random Variable__1604-1629.mp4"
+    },
+    {
+      "concept": "Variance",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance__2574-2586.mp4"
+    },
+    {
+      "concept": "discrete random variable",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\discrete random variable__1192-1207.mp4"
+    },
+    {
+      "concept": "expectation formula",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\expectation formula__1224-1284.mp4"
+    },
+    {
+      "concept": "uniform distribution",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\uniform distribution__892-913.mp4"
+    },
+    {
+      "concept": "Product Rule for Independent Events",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Product Rule for Independent Events__2442-2481.mp4"
+    },
+    {
+      "concept": "Covariance",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Covariance__2586-2598.mp4"
+    },
+    {
+      "concept": "mass function",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\mass function__1207-1220.mp4"
+    },
+    {
+      "concept": "continuous random variable",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\continuous random variable__648-666.mp4"
+    },
+    {
+      "concept": "Expectation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation__2566-2574.mp4"
+    },
+    {
+      "concept": "Power Rule for Uniform Distribution",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Power Rule for Uniform Distribution__2481-2503.mp4"
+    },
+    {
+      "concept": "Formula for \\(E[(X+Y)^2]\\)",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Formula for __E__X_Y__2_____2636-2680.mp4"
+    },
+    {
+      "concept": "Probability Mass Function (PMF) of a Sum",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Probability Mass Function _PMF_ of a Sum__2054-2270.mp4"
+    },
+    {
+      "concept": "Conditional Expectation",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Conditional Expectation__2838-2893.mp4"
+    },
+    {
+      "concept": "density function",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\density function__666-682.mp4"
+    },
+    {
+      "concept": "Linearity of Expectation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linearity of Expectation__1435-1475.mp4"
+    },
+    {
+      "concept": "Expectation of X for Uniform(0,1)",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of X for Uniform_0_1___1475-1500.mp4"
+    },
+    {
+      "concept": "Expectation of Linear Combination",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of Linear Combination__3107-3125.mp4"
+    },
+    {
+      "concept": "Variance of Linear Combination",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance of Linear Combination__3125-3148.mp4"
+    },
+    {
+      "concept": "Linearity of Conditional Expectations",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linearity of Conditional Expectations__2893-2915.mp4"
+    },
+    {
+      "concept": "Gaussian Density Function",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gaussian Density Function__3149-3165.mp4"
+    },
+    {
+      "concept": "Variance of a Linear Transformation",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance of a Linear Transformation__1789-1837.mp4"
+    },
+    {
+      "concept": "Expectation of a Linear Transformation",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of a Linear Transformation__1722-1753.mp4"
+    },
+    {
+      "concept": "Expectation of a Constant",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of a Constant__1454-1462.mp4"
+    },
+    {
+      "concept": "Computing E[Y] for Y=X^2+2X+1",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Computing E_Y_ for Y_X_2_2X_1__1548-1586.mp4"
+    }
+  ],
+  "feedback": [
+    {
+      "question_id": 1,
+      "concept": "Bayes\u2019 Rule",
+      "correct": false,
+      "selected": "Bayes\u2019 Rule calculates the probability of the evidence occurring regardless of the hypothesis.",
+      "answer": "Bayes\u2019 Rule updates the probability of a hypothesis (e.g., the coin being fair) by dividing the likelihood of the observed evidence given that hypothesis times the prior probability of the hypothesis by the overall probability of the evidence.",
+      "explanation": "The lecture shows the formula P(fair|H)=P(H|fair)P(fair)/[P(H|fair)P(fair)+P(H|biased)P(biased)], illustrating how the prior and likelihood combine to give the posterior.",
+      "rationale": "This ignores the division by the total evidence probability, which is essential."
+    },
+    {
+      "question_id": 2,
+      "concept": "Bernoulli Distribution",
+      "correct": true,
+      "selected": "It is a discrete distribution that takes only two values, 0 and 1, with probabilities 1\u2212p and p respectively.",
+      "answer": "It is a discrete distribution that takes only two values, 0 and 1, with probabilities 1\u2212p and p respectively.",
+      "explanation": "The lecture explains that a Bernoulli random variable can only be 0 or 1, with probabilities 1\u2212p and p, and that the sum of two independent Bernoulli variables is a binomial variable.",
+      "rationale": null
+    },
+    {
+      "question_id": 3,
+      "concept": "Convolution of Discrete Distributions",
+      "correct": true,
+      "selected": "The convolution gives the probability mass function of the sum of two independent discrete random variables by summing the products of their individual probabilities for each possible outcome.",
+      "answer": "The convolution gives the probability mass function of the sum of two independent discrete random variables by summing the products of their individual probabilities for each possible outcome.",
+      "explanation": "The lecture shows that for independent discrete variables X and Y, P(Z=z) is obtained by summing P(X=x)P(Y=z\u2212x) over all x, i.e., the convolution of their mass functions.",
+      "rationale": null
+    },
+    {
+      "question_id": 4,
+      "concept": "Correlation coefficient (rho)",
+      "correct": false,
+      "selected": "It measures the average difference between X and Y.",
+      "answer": "It is the covariance of X and Y divided by the product of their standard deviations, ranging from \u20131 to 1.",
+      "explanation": "The lecture explains that \u03c1 is calculated by dividing the covariance of X and Y by the product of their standard deviations, yielding a value between \u20131 and 1.",
+      "rationale": "Correlation captures linear association, not average difference, which is a different statistic."
+    },
+    {
+      "question_id": 5,
+      "concept": "Derangement",
+      "correct": true,
+      "selected": "A derangement is a permutation in which no element appears in its original position.",
+      "answer": "A derangement is a permutation in which no element appears in its original position.",
+      "explanation": "The lecture explains that if three letters are correctly placed, the fourth must also be correct, making the event impossible; this illustrates that a derangement has no fixed points.",
+      "rationale": null
+    },
+    {
+      "question_id": 6,
+      "concept": "Disjoint Events and Additivity",
+      "correct": true,
+      "selected": "When two events cannot occur simultaneously, their probabilities can be added to find the probability of either event occurring.",
+      "answer": "When two events cannot occur simultaneously, their probabilities can be added to find the probability of either event occurring.",
+      "explanation": "The lecture states that for disjoint events you can add their probabilities, e.g., P(x=0,y=1)+P(x=1,y=0) to get P(z=1).",
+      "rationale": null
+    },
+    {
+      "question_id": 7,
+      "concept": "Independence",
+      "correct": false,
+      "selected": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "answer": "now we need to calculate each one of them here expectation of x given y",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 8,
+      "concept": "Independent and Identically Distributed (IID) Variables",
+      "correct": true,
+      "selected": "They are random variables that are statistically independent and each has the same probability distribution.",
+      "answer": "They are random variables that are statistically independent and each has the same probability distribution.",
+      "explanation": "The lecture explains that independence allows probabilities to be multiplied and identical distribution means each variable has the same probability of taking each value, as shown with X and Y both having probability 1\u2212p of 0 and p of 1.",
+      "rationale": null
+    },
+    {
+      "question_id": 9,
+      "concept": "Law of the Unconscious Statistician",
+      "correct": true,
+      "selected": "It allows you to compute the expectation of a function of a random variable by integrating the function times the variable\u2019s density, without first finding the distribution of the function.",
+      "answer": "It allows you to compute the expectation of a function of a random variable by integrating the function times the variable\u2019s density, without first finding the distribution of the function.",
+      "explanation": "The lecture explains that to find E[g(X)] you integrate g(x) times the density of X directly, bypassing the need to find the distribution of g(X).",
+      "rationale": null
+    },
+    {
+      "question_id": 10,
+      "concept": "Maximum of Random Variables",
+      "correct": false,
+      "selected": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "answer": "than 0.8 now that means that each and everyone is less than 0.8 correct now if let's say that m is the maximum",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 11,
+      "concept": "Probability of exact match",
+      "correct": true,
+      "selected": "The probability that exactly three letters are in the correct envelopes is zero, because if three are correct the fourth must also be correct, making the event impossible.",
+      "answer": "The probability that exactly three letters are in the correct envelopes is zero, because if three are correct the fourth must also be correct, making the event impossible.",
+      "explanation": "The lecture explains that if three letters are correctly matched, the fourth must also be correct, so the event of exactly three correct matches cannot occur, giving a probability of zero.",
+      "rationale": null
+    },
+    {
+      "question_id": 12,
+      "concept": "Probability of head with biased coin",
+      "correct": true,
+      "selected": "The biased coin always lands heads, so the probability of a head is 1.",
+      "answer": "The biased coin always lands heads, so the probability of a head is 1.",
+      "explanation": "The transcript states the biased coin has two heads, making a head outcome certain (probability = 1).",
+      "rationale": null
+    },
+    {
+      "question_id": 13,
+      "concept": "Standardization of a Random Variable",
+      "correct": false,
+      "selected": "Standardizing a random variable X means dividing X by its mean \u03bc and adding its standard deviation \u03c3, producing a new variable Y with mean 1 and variance 0.",
+      "answer": "Standardizing a random variable X means subtracting its mean \u03bc and dividing by its standard deviation \u03c3, producing a new variable Y with mean 0 and variance 1.",
+      "explanation": "The lecture shows that Y = (X\u2013\u03bc)/\u03c3 has E[Y]=0 and Var[Y]=1, which is the definition of standardization.",
+      "rationale": "This option incorrectly adds \u03c3 instead of subtracting \u03bc and misstates the resulting mean and variance."
+    },
+    {
+      "question_id": 14,
+      "concept": "Variance",
+      "correct": true,
+      "selected": "and then variance is 1 that is variance of x equals variance of y equals 1 and then the covariance",
+      "answer": "and then variance is 1 that is variance of x equals variance of y equals 1 and then the covariance",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 15,
+      "concept": "discrete random variable",
+      "correct": true,
+      "selected": "when so but for both of them we use the same notation but while using it you should be very",
+      "answer": "when so but for both of them we use the same notation but while using it you should be very",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 16,
+      "concept": "expectation formula",
+      "correct": false,
+      "selected": "The expectation of a continuous random variable is calculated by integrating the probability density function over its support.",
+      "answer": "For a discrete random variable X, the expectation is the sum over all possible values of X of the value multiplied by its probability, i.e., E[X] = \u03a3 x\u00b7P(X=x).",
+      "explanation": "The lecture states that for a discrete random variable, the expectation is computed as the sum of each value times its probability, exemplified by summing k\u00b7(1/20) from k=1 to 20.",
+      "rationale": "The lecture distinguishes between discrete mass functions and continuous density functions; the expectation formula given applies only to discrete variables."
+    },
+    {
+      "question_id": 17,
+      "concept": "normalizing constant",
+      "correct": true,
+      "selected": "It is a constant that, when multiplied by a proposed density function, makes the total integral over its support equal to one.",
+      "answer": "It is a constant that, when multiplied by a proposed density function, makes the total integral over its support equal to one.",
+      "explanation": "The lecture shows that the constant k is chosen so that the integral of k\u00b7(1\u2212x) over [0,1] equals 1, i.e., it normalizes the area under the density to one.",
+      "rationale": null
+    },
+    {
+      "question_id": 18,
+      "concept": "uniform distribution",
+      "correct": true,
+      "selected": "A uniform distribution on [a,b] has a constant density of 1/(b\u2212a) over that interval and zero elsewhere.",
+      "answer": "A uniform distribution on [a,b] has a constant density of 1/(b\u2212a) over that interval and zero elsewhere.",
+      "explanation": "The lecture states that for a uniform variable x on [a,b] the density is 1/(b\u2212a) and is defined only between those bounds, which matches the correct answer.",
+      "rationale": null
+    },
+    {
+      "question_id": 19,
+      "concept": "Product Rule for Independent Events",
+      "correct": false,
+      "selected": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "answer": "i less than 0 now you multiply each one of them so therefore I will get 10 here now x i taking a value less than 0 Now this is you know this already",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 20,
+      "concept": "Probability of tail with biased coin",
+      "correct": true,
+      "selected": "Now, it is not possible at all. Why? A biased coin has two heads in our case.",
+      "answer": "Now, it is not possible at all. Why? A biased coin has two heads in our case.",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 21,
+      "concept": "Covariance",
+      "correct": true,
+      "selected": "Covariance is the expectation of the product of two centered random variables, i.e., Cov(X,Y)=E[(X\u2212E[X])(Y\u2212E[Y])].",
+      "answer": "Covariance is the expectation of the product of two centered random variables, i.e., Cov(X,Y)=E[(X\u2212E[X])(Y\u2212E[Y])].",
+      "explanation": "The lecture states that the covariance between X and Y is denoted by \u03c1 and is derived from E[XY] after centering, which matches the definition of expectation of the product of centered variables.",
+      "rationale": null
+    },
+    {
+      "question_id": 22,
+      "concept": "mass function",
+      "correct": false,
+      "selected": "It is the same as a density function but for continuous variables.",
+      "answer": "It is the probability function used for discrete random variables, giving the probability that the variable takes each specific value.",
+      "explanation": "The transcript states that a mass function applies to discrete random variables and is not a density function, distinguishing it from continuous cases.",
+      "rationale": "The lecture explicitly says a mass function is not a density function, so this is incorrect."
+    },
+    {
+      "question_id": 23,
+      "concept": "continuous random variable",
+      "correct": true,
+      "selected": "It is a variable whose probability distribution is described by a density function that integrates to 1 over its entire range.",
+      "answer": "It is a variable whose probability distribution is described by a density function that integrates to 1 over its entire range.",
+      "explanation": "The lecture explains that a continuous random variable has a density function whose integral over the real line equals 1, distinguishing it from discrete variables with mass functions.",
+      "rationale": null
+    },
+    {
+      "question_id": 24,
+      "concept": "sum of integers formula",
+      "correct": true,
+      "selected": "It gives the sum of the first n positive integers as n(n+1)/2.",
+      "answer": "It gives the sum of the first n positive integers as n(n+1)/2.",
+      "explanation": "The lecture states the sum of k from 1 to 20 equals 20\u00b721/2, illustrating the general formula n(n+1)/2 for the sum of the first n integers.",
+      "rationale": null
+    },
+    {
+      "question_id": 25,
+      "concept": "Expectation",
+      "correct": false,
+      "selected": "Expectation is the same as the variance of a random variable.",
+      "answer": "Expectation is the average value of a random variable, calculated as the integral of the variable times its probability density function.",
+      "explanation": "The lecture explains that expectation is computed by integrating the variable times its probability density, i.e., the average or mean value of the random variable.",
+      "rationale": "The lecture distinguishes expectation from variance; variance measures spread, not average."
+    },
+    {
+      "question_id": 26,
+      "concept": "probability calculation via integration",
+      "correct": true,
+      "selected": "The probability that the uniform random variable X is less than its absolute value Y is 1/3.",
+      "answer": "The probability that the uniform random variable X is less than its absolute value Y is 1/3.",
+      "explanation": "Since X is uniform on [-1,2], X<|X| holds only when X is negative, which occupies 1 unit of the 3\u2011unit interval, giving probability 1/3.",
+      "rationale": null
+    },
+    {
+      "question_id": 27,
+      "concept": "Uniform(0,1) Distribution",
+      "correct": true,
+      "selected": "that generates random numbers uniformly distributed over 0, 1.",
+      "answer": "that generates random numbers uniformly distributed over 0, 1.",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 28,
+      "concept": "Power Rule for Uniform Distribution",
+      "correct": false,
+      "selected": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "answer": "from uniform 0, 1, this value will be 0.8 to the power of 10. Now, why is this 0.8? Now,",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 29,
+      "concept": "Posterior probability of fair coin after head",
+      "correct": true,
+      "selected": "After observing a head, the probability that the chosen coin is fair equals 1/3.",
+      "answer": "After observing a head, the probability that the chosen coin is fair equals 1/3.",
+      "explanation": "The lecture shows that P(fair|head)=P(head|fair)P(fair)/[P(head|fair)P(fair)+P(head|biased)P(biased)]=0.5*0.5/(0.5*0.5+1*0.5)=1/3.",
+      "rationale": null
+    },
+    {
+      "question_id": 30,
+      "concept": "Formula for \\(E[(X+Y)^2]\\)",
+      "correct": true,
+      "selected": "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]+2E[XY]\\)",
+      "answer": "\\(E[(X+Y)^2]=E[X^2]+E[Y^2]+2E[XY]\\)",
+      "explanation": "The lecture shows that \\((X+Y)^2=X^2+Y^2+2XY\\) and taking expectations yields \\(E[(X+Y)^2]=E[X^2]+E[Y^2]+2E[XY]\\).",
+      "rationale": null
+    },
+    {
+      "question_id": 31,
+      "concept": "Probability Mass Function (PMF) of a Sum",
+      "correct": false,
+      "selected": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "answer": "Now I am using the identical part of it This is 1 minus p whole square Now I presume that these minute differences are clear for you",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 32,
+      "concept": "Conditional Expectation",
+      "correct": true,
+      "selected": "It is the expected value of a random variable given another, and for independent variables the conditioning has no effect.",
+      "answer": "It is the expected value of a random variable given another, and for independent variables the conditioning has no effect.",
+      "explanation": "The lecture shows that E[X+Y|Y] = E[X|Y]+E[Y|Y] and, because X and Y are independent, E[X|Y] = E[X], illustrating that conditioning on an independent variable does not change its expectation.",
+      "rationale": null
+    },
+    {
+      "question_id": 33,
+      "concept": "density function",
+      "correct": true,
+      "selected": "It is a non\u2011negative function whose integral over the entire real line equals one, representing the probability density of a continuous random variable.",
+      "answer": "It is a non\u2011negative function whose integral over the entire real line equals one, representing the probability density of a continuous random variable.",
+      "explanation": "The lecture states that for a continuous random variable the density is between 0 and 1 and its integral over all values equals one, which is the definition of a probability density function.",
+      "rationale": null
+    },
+    {
+      "question_id": 34,
+      "concept": "Linearity of Expectation",
+      "correct": false,
+      "selected": "The expectation of a product of random variables equals the product of their expectations.",
+      "answer": "The expectation of a sum of random variables equals the sum of their expectations, regardless of dependence.",
+      "explanation": "The lecture states that E[x^2+2x+1] = E[x^2]+2E[x]+E[1], illustrating that expectation distributes over addition, not multiplication or non\u2011linear functions.",
+      "rationale": "The lecture explicitly shows E[x^2+2x+1] = E[x^2]+2E[x]+E[1], not a product rule."
+    },
+    {
+      "question_id": 35,
+      "concept": "modulus transformation",
+      "correct": true,
+      "selected": "It maps a real number x to its absolute value |x|, preserving all positive values and turning negative values into their positive counterparts.",
+      "answer": "It maps a real number x to its absolute value |x|, preserving all positive values and turning negative values into their positive counterparts.",
+      "explanation": "The lecture explains that y = |x| keeps positive x unchanged and converts negative x into a positive value, so the transformation is taking the absolute value.",
+      "rationale": null
+    },
+    {
+      "question_id": 36,
+      "concept": "Expectation of X for Uniform(0,1)",
+      "correct": true,
+      "selected": "The expectation of X is 1/2, obtained by integrating x over the interval [0,1] with density 1.",
+      "answer": "The expectation of X is 1/2, obtained by integrating x over the interval [0,1] with density 1.",
+      "explanation": "The transcript shows the calculation \u222b\u2080\u00b9 x\u00b71 dx = x\u00b2/2|\u2080\u00b9 = 1/2, confirming that E[X] = 1/2 for Uniform(0,1).",
+      "rationale": null
+    },
+    {
+      "question_id": 37,
+      "concept": "Expectation of Linear Combination",
+      "correct": false,
+      "selected": "The expectation of a linear combination equals the product of the expectations of the individual variables.",
+      "answer": "The expectation of a linear combination of random variables equals the same linear combination of their expectations, i.e. E[aX + bY] = aE[X] + bE[Y].",
+      "explanation": "The lecture emphasized that linearity of expectation allows us to pull constants out and sum expectations, giving E[aX + bY] = aE[X] + bE[Y].",
+      "rationale": "This statement confuses expectation with multiplication; expectation is additive, not multiplicative."
+    },
+    {
+      "question_id": 38,
+      "concept": "Variance of Linear Combination",
+      "correct": true,
+      "selected": "The variance of a linear combination of independent random variables equals the sum of each variable\u2019s variance weighted by the square of its coefficient.",
+      "answer": "The variance of a linear combination of independent random variables equals the sum of each variable\u2019s variance weighted by the square of its coefficient.",
+      "explanation": "The lecture explained that for independent variables, the variance of a linear combination is obtained by squaring each coefficient and multiplying by the corresponding variance, then summing these products.",
+      "rationale": null
+    },
+    {
+      "question_id": 39,
+      "concept": "Linearity of Conditional Expectations",
+      "correct": true,
+      "selected": "It allows the conditional expectation of a sum to be written as the sum of the conditional expectations of the summands.",
+      "answer": "It allows the conditional expectation of a sum to be written as the sum of the conditional expectations of the summands.",
+      "explanation": "The transcript shows the lecturer applying linearity to write E[X+Y|Y]=E[X|Y]+E[Y|Y], demonstrating that the expectation of a sum given Y splits into the sum of expectations.",
+      "rationale": null
+    },
+    {
+      "question_id": 40,
+      "concept": "Gaussian Density Function",
+      "correct": false,
+      "selected": "taking one is p now if z that you have is x plus y what is the mass function of z the mass function is at each point now what is the values what is the",
+      "answer": "conclude today's tutorial on the problems on probability theory now the main aim of this",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 41,
+      "concept": "Variance of a Linear Transformation",
+      "correct": true,
+      "selected": "I will write these formulas used somewhere. Expectation, let me use some other color,",
+      "answer": "I will write these formulas used somewhere. Expectation, let me use some other color,",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 42,
+      "concept": "Variance of a Constant",
+      "correct": true,
+      "selected": "The variance of a constant is zero.",
+      "answer": "The variance of a constant is zero.",
+      "explanation": "The lecture states that the variance of a constant is a constant, and since a constant has no variability, its variance is zero.",
+      "rationale": null
+    },
+    {
+      "question_id": 43,
+      "concept": "Expectation of a Linear Transformation",
+      "correct": false,
+      "selected": "to 0 y is equal to 1 plus probability that x is equal to 1 y is equal to 0 Now I think curve From here you are capable enough to take it Similarly the z of 2 this is probability that z takes the value",
+      "answer": "it out. Okay. This is 1 over sigma into expectation of x minus mu. Now, by the linearity of expectations,",
+      "explanation": null,
+      "rationale": null
+    },
+    {
+      "question_id": 44,
+      "concept": "Resulting Mean and Variance of Y",
+      "correct": true,
+      "selected": "Y has mean 0 and variance 1.",
+      "answer": "Y has mean 0 and variance 1.",
+      "explanation": "The lecture shows that Y=(X\u2212\u03bc)/\u03c3 has expectation 0 and variance 1 by linearity of expectation and scaling of variance.",
+      "rationale": null
+    },
+    {
+      "question_id": 45,
+      "concept": "Expectation of a Constant",
+      "correct": true,
+      "selected": "The expectation of a constant equals that constant itself.",
+      "answer": "The expectation of a constant equals that constant itself.",
+      "explanation": "The lecture states that the expectation of a constant is a constant itself, illustrating the linearity of expectations.",
+      "rationale": null
+    },
+    {
+      "question_id": 46,
+      "concept": "Computing E[Y] for Y=X^2+2X+1",
+      "correct": false,
+      "selected": "of heads given a fair coin into probability of choosing a fair coin this is the numerator divided by in the denominator we have two terms now probability of H head now",
+      "answer": "everything now let us put them together expectation of y equals 1 over 3 plus 2 into half plus 1 this is 7 by 3 okay the key takeaways from this is how do you apply",
+      "explanation": null,
+      "rationale": null
+    }
+  ]
+}

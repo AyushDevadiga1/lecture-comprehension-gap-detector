@@ -1,0 +1,410 @@
+[
+  {
+    "id": 1,
+    "name": "Derangement",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 108.0,
+    "end_s": 155.6
+  },
+  {
+    "id": 2,
+    "name": "Probability of exact match",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 108.0,
+    "end_s": 155.6
+  },
+  {
+    "id": 3,
+    "name": "Bayes\u2019 Rule",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 271.8,
+    "end_s": 384.1
+  },
+  {
+    "id": 4,
+    "name": "Posterior probability of fair coin after head",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 326.8,
+    "end_s": 474.9
+  },
+  {
+    "id": 5,
+    "name": "Posterior probability of fair coin after head and tail",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 509.1,
+    "end_s": 617.2
+  },
+  {
+    "id": 6,
+    "name": "Probability of head with fair coin",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 421.1,
+    "end_s": 428.2
+  },
+  {
+    "id": 7,
+    "name": "Probability of head with biased coin",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 432.1,
+    "end_s": 456.4
+  },
+  {
+    "id": 8,
+    "name": "Probability of tail with biased coin",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 589.5,
+    "end_s": 597.4
+  },
+  {
+    "id": 9,
+    "name": "continuous random variable",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 647.8,
+    "end_s": 665.5
+  },
+  {
+    "id": 10,
+    "name": "density function",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 665.5,
+    "end_s": 682.5
+  },
+  {
+    "id": 11,
+    "name": "normalizing constant",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 682.5,
+    "end_s": 835.4
+  },
+  {
+    "id": 12,
+    "name": "uniform distribution",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 892.5,
+    "end_s": 913.0
+  },
+  {
+    "id": 13,
+    "name": "probability density function",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 913.0,
+    "end_s": 924.7
+  },
+  {
+    "id": 14,
+    "name": "modulus transformation",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 935.7,
+    "end_s": 965.6
+  },
+  {
+    "id": 15,
+    "name": "probability calculation via integration",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1062.2,
+    "end_s": 1071.1
+  },
+  {
+    "id": 16,
+    "name": "discrete random variable",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1191.6,
+    "end_s": 1206.9
+  },
+  {
+    "id": 17,
+    "name": "mass function",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1206.9,
+    "end_s": 1219.6
+  },
+  {
+    "id": 18,
+    "name": "expectation formula",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1223.8,
+    "end_s": 1283.9
+  },
+  {
+    "id": 19,
+    "name": "sum of integers formula",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1283.9,
+    "end_s": 1299.3
+  },
+  {
+    "id": 20,
+    "name": "Law of the Unconscious Statistician",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1362.8,
+    "end_s": 1408.5
+  },
+  {
+    "id": 21,
+    "name": "Linearity of Expectation",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1435.1,
+    "end_s": 1474.6
+  },
+  {
+    "id": 22,
+    "name": "Expectation of a Constant",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1453.6,
+    "end_s": 1462.0
+  },
+  {
+    "id": 23,
+    "name": "Expectation of X for Uniform(0,1)",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1474.6,
+    "end_s": 1499.9
+  },
+  {
+    "id": 24,
+    "name": "Expectation of X^2 for Uniform(0,1)",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1500.0,
+    "end_s": 1547.7
+  },
+  {
+    "id": 25,
+    "name": "Computing E[Y] for Y=X^2+2X+1",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1547.7,
+    "end_s": 1586.1
+  },
+  {
+    "id": 26,
+    "name": "Standardization of a Random Variable",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1604.3,
+    "end_s": 1628.7
+  },
+  {
+    "id": 27,
+    "name": "Expectation of a Linear Transformation",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1721.7,
+    "end_s": 1752.6
+  },
+  {
+    "id": 28,
+    "name": "Variance of a Linear Transformation",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1789.1,
+    "end_s": 1836.8
+  },
+  {
+    "id": 29,
+    "name": "Variance of a Constant",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1888.1,
+    "end_s": 1900.9
+  },
+  {
+    "id": 30,
+    "name": "Resulting Mean and Variance of Y",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 1930.4,
+    "end_s": 1957.7
+  },
+  {
+    "id": 31,
+    "name": "Bernoulli Distribution",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2019.6,
+    "end_s": 2035.8
+  },
+  {
+    "id": 32,
+    "name": "Independent and Identically Distributed (IID) Variables",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2041.0,
+    "end_s": 2050.9
+  },
+  {
+    "id": 33,
+    "name": "Probability Mass Function (PMF) of a Sum",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2053.9,
+    "end_s": 2269.9
+  },
+  {
+    "id": 34,
+    "name": "Convolution of Discrete Distributions",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2080.7,
+    "end_s": 2269.9
+  },
+  {
+    "id": 35,
+    "name": "Disjoint Events and Additivity",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2213.9,
+    "end_s": 2260.3
+  },
+  {
+    "id": 36,
+    "name": "Uniform(0,1) Distribution",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2332.3,
+    "end_s": 2345.4
+  },
+  {
+    "id": 37,
+    "name": "Maximum of Random Variables",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2383.4,
+    "end_s": 2427.7
+  },
+  {
+    "id": 38,
+    "name": "Product Rule for Independent Events",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2442.0,
+    "end_s": 2481.4
+  },
+  {
+    "id": 39,
+    "name": "Power Rule for Uniform Distribution",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2481.4,
+    "end_s": 2503.4
+  },
+  {
+    "id": 40,
+    "name": "Expectation",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2565.5,
+    "end_s": 2573.8
+  },
+  {
+    "id": 41,
+    "name": "Variance",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2573.8,
+    "end_s": 2586.1
+  },
+  {
+    "id": 42,
+    "name": "Covariance",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2586.1,
+    "end_s": 2598.4
+  },
+  {
+    "id": 43,
+    "name": "Formula for \\(E[(X+Y)^2]\\)",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2635.8,
+    "end_s": 2679.9
+  },
+  {
+    "id": 44,
+    "name": "Correlation coefficient (rho)",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2669.9,
+    "end_s": 2729.3
+  },
+  {
+    "id": 45,
+    "name": "Linearity of Expectations",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2729.3,
+    "end_s": 2808.9
+  },
+  {
+    "id": 46,
+    "name": "Conditional Expectation",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2838.1,
+    "end_s": 2893.2
+  },
+  {
+    "id": 47,
+    "name": "Independence",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2893.2,
+    "end_s": 2914.9
+  },
+  {
+    "id": 48,
+    "name": "Linearity of Conditional Expectations",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 2893.2,
+    "end_s": 2914.9
+  },
+  {
+    "id": 49,
+    "name": "Expectation of Linear Combination",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3106.7,
+    "end_s": 3125.1
+  },
+  {
+    "id": 50,
+    "name": "Variance of Linear Combination",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3125.1,
+    "end_s": 3147.5
+  },
+  {
+    "id": 51,
+    "name": "Gaussian Density Function",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 3149.4,
+    "end_s": 3164.8
+  }
+]

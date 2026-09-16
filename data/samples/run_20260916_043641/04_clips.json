@@ -1,0 +1,461 @@
+[
+  {
+    "id": 1,
+    "concept_name": "Derangement",
+    "start_s": 108.0,
+    "end_s": 155.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Derangement__108-156.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 2,
+    "concept_name": "Probability of exact match",
+    "start_s": 108.0,
+    "end_s": 155.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Probability of exact match__108-156.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 3,
+    "concept_name": "Bayes\u2019 Rule",
+    "start_s": 271.8,
+    "end_s": 384.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Bayes_ Rule__272-384.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 4,
+    "concept_name": "Posterior probability of fair coin after head",
+    "start_s": 326.8,
+    "end_s": 474.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Posterior probability of fair coin after head__327-475.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 5,
+    "concept_name": "Posterior probability of fair coin after head and tail",
+    "start_s": 509.1,
+    "end_s": 617.2,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Posterior probability of fair coin after head and tail__509-617.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 6,
+    "concept_name": "Probability of head with fair coin",
+    "start_s": 421.1,
+    "end_s": 428.2,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Probability of head with fair coin__421-428.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 7,
+    "concept_name": "Probability of head with biased coin",
+    "start_s": 432.1,
+    "end_s": 456.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Probability of head with biased coin__432-456.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 8,
+    "concept_name": "Probability of tail with biased coin",
+    "start_s": 589.5,
+    "end_s": 597.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Probability of tail with biased coin__590-597.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 9,
+    "concept_name": "continuous random variable",
+    "start_s": 647.8,
+    "end_s": 665.5,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\continuous random variable__648-666.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 10,
+    "concept_name": "density function",
+    "start_s": 665.5,
+    "end_s": 682.5,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\density function__666-682.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 11,
+    "concept_name": "normalizing constant",
+    "start_s": 682.5,
+    "end_s": 835.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\normalizing constant__682-835.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 12,
+    "concept_name": "uniform distribution",
+    "start_s": 892.5,
+    "end_s": 913.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\uniform distribution__892-913.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 13,
+    "concept_name": "probability density function",
+    "start_s": 913.0,
+    "end_s": 924.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\probability density function__913-925.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 14,
+    "concept_name": "modulus transformation",
+    "start_s": 935.7,
+    "end_s": 965.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\modulus transformation__936-966.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 15,
+    "concept_name": "probability calculation via integration",
+    "start_s": 1062.2,
+    "end_s": 1071.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\probability calculation via integration__1062-1071.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 16,
+    "concept_name": "discrete random variable",
+    "start_s": 1191.6,
+    "end_s": 1206.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\discrete random variable__1192-1207.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 17,
+    "concept_name": "mass function",
+    "start_s": 1206.9,
+    "end_s": 1219.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\mass function__1207-1220.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 18,
+    "concept_name": "expectation formula",
+    "start_s": 1223.8,
+    "end_s": 1283.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\expectation formula__1224-1284.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 19,
+    "concept_name": "sum of integers formula",
+    "start_s": 1283.9,
+    "end_s": 1299.3,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\sum of integers formula__1284-1299.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 20,
+    "concept_name": "Law of the Unconscious Statistician",
+    "start_s": 1362.8,
+    "end_s": 1408.5,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Law of the Unconscious Statistician__1363-1408.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 21,
+    "concept_name": "Linearity of Expectation",
+    "start_s": 1435.1,
+    "end_s": 1474.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linearity of Expectation__1435-1475.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 22,
+    "concept_name": "Expectation of a Constant",
+    "start_s": 1453.6,
+    "end_s": 1462.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of a Constant__1454-1462.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 23,
+    "concept_name": "Expectation of X for Uniform(0,1)",
+    "start_s": 1474.6,
+    "end_s": 1499.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of X for Uniform_0_1___1475-1500.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 24,
+    "concept_name": "Expectation of X^2 for Uniform(0,1)",
+    "start_s": 1500.0,
+    "end_s": 1547.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of X_2 for Uniform_0_1___1500-1548.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 25,
+    "concept_name": "Computing E[Y] for Y=X^2+2X+1",
+    "start_s": 1547.7,
+    "end_s": 1586.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Computing E_Y_ for Y_X_2_2X_1__1548-1586.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 26,
+    "concept_name": "Standardization of a Random Variable",
+    "start_s": 1604.3,
+    "end_s": 1628.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Standardization of a Random Variable__1604-1629.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 27,
+    "concept_name": "Expectation of a Linear Transformation",
+    "start_s": 1721.7,
+    "end_s": 1752.6,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of a Linear Transformation__1722-1753.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 28,
+    "concept_name": "Variance of a Linear Transformation",
+    "start_s": 1789.1,
+    "end_s": 1836.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance of a Linear Transformation__1789-1837.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 29,
+    "concept_name": "Variance of a Constant",
+    "start_s": 1888.1,
+    "end_s": 1900.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance of a Constant__1888-1901.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 30,
+    "concept_name": "Resulting Mean and Variance of Y",
+    "start_s": 1930.4,
+    "end_s": 1957.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Resulting Mean and Variance of Y__1930-1958.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 31,
+    "concept_name": "Bernoulli Distribution",
+    "start_s": 2019.6,
+    "end_s": 2035.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Bernoulli Distribution__2020-2036.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 32,
+    "concept_name": "Independent and Identically Distributed (IID) Variables",
+    "start_s": 2041.0,
+    "end_s": 2050.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Independent and Identically Distributed _IID_ Variables__2041-2051.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 33,
+    "concept_name": "Probability Mass Function (PMF) of a Sum",
+    "start_s": 2053.9,
+    "end_s": 2269.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Probability Mass Function _PMF_ of a Sum__2054-2270.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 34,
+    "concept_name": "Convolution of Discrete Distributions",
+    "start_s": 2080.7,
+    "end_s": 2269.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Convolution of Discrete Distributions__2081-2270.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 35,
+    "concept_name": "Disjoint Events and Additivity",
+    "start_s": 2213.9,
+    "end_s": 2260.3,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Disjoint Events and Additivity__2214-2260.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 36,
+    "concept_name": "Uniform(0,1) Distribution",
+    "start_s": 2332.3,
+    "end_s": 2345.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Uniform_0_1_ Distribution__2332-2345.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 37,
+    "concept_name": "Maximum of Random Variables",
+    "start_s": 2383.4,
+    "end_s": 2427.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Maximum of Random Variables__2383-2428.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 38,
+    "concept_name": "Product Rule for Independent Events",
+    "start_s": 2442.0,
+    "end_s": 2481.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Product Rule for Independent Events__2442-2481.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 39,
+    "concept_name": "Power Rule for Uniform Distribution",
+    "start_s": 2481.4,
+    "end_s": 2503.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Power Rule for Uniform Distribution__2481-2503.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 40,
+    "concept_name": "Expectation",
+    "start_s": 2565.5,
+    "end_s": 2573.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation__2566-2574.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 41,
+    "concept_name": "Variance",
+    "start_s": 2573.8,
+    "end_s": 2586.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance__2574-2586.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 42,
+    "concept_name": "Covariance",
+    "start_s": 2586.1,
+    "end_s": 2598.4,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Covariance__2586-2598.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 43,
+    "concept_name": "Formula for \\(E[(X+Y)^2]\\)",
+    "start_s": 2635.8,
+    "end_s": 2679.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Formula for __E__X_Y__2_____2636-2680.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 44,
+    "concept_name": "Correlation coefficient (rho)",
+    "start_s": 2669.9,
+    "end_s": 2729.3,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Correlation coefficient _rho___2670-2729.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 45,
+    "concept_name": "Linearity of Expectations",
+    "start_s": 2729.3,
+    "end_s": 2808.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linearity of Expectations__2729-2809.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 46,
+    "concept_name": "Conditional Expectation",
+    "start_s": 2838.1,
+    "end_s": 2893.2,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Conditional Expectation__2838-2893.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 47,
+    "concept_name": "Independence",
+    "start_s": 2893.2,
+    "end_s": 2914.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Independence__2893-2915.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 48,
+    "concept_name": "Linearity of Conditional Expectations",
+    "start_s": 2893.2,
+    "end_s": 2914.9,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Linearity of Conditional Expectations__2893-2915.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 49,
+    "concept_name": "Expectation of Linear Combination",
+    "start_s": 3106.7,
+    "end_s": 3125.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Expectation of Linear Combination__3107-3125.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 50,
+    "concept_name": "Variance of Linear Combination",
+    "start_s": 3125.1,
+    "end_s": 3147.5,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Variance of Linear Combination__3125-3148.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 51,
+    "concept_name": "Gaussian Density Function",
+    "start_s": 3149.4,
+    "end_s": 3164.8,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\Gaussian Density Function__3149-3165.mp4",
+    "ok": true,
+    "error": null
+  }
+]
