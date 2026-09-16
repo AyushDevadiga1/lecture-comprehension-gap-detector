@@ -69,7 +69,7 @@ def main() -> None:
     if lid_row is None:
         fail("no lecture in the run DB")
     lid = lid_row[0]
-    print(f"refreshing lecture id={lid}, course={course} in {run_dir}")
+    print(f"refreshing lecture id={lid}, course={course} in {run_dir}", flush=True)
 
     # ---- Stage 2: Lecture-Structure pass (concept extraction) ----
     # a stale error from an earlier failed run would trip the post-extraction
@@ -88,7 +88,7 @@ def main() -> None:
     concepts = lecture["concepts"]
     save(run_dir, "02_concepts.json", concepts)
     print(f"STAGE 2 structure pass: {len(concepts)} concepts "
-          f"(teach-spans come from the pass itself)")
+          f"(teach-spans come from the pass itself)", flush=True)
 
     # ---- Stage 3/4: rebuild the course graph over the fresh concept set ----
     # the extraction worker already chained a rebuild; POSTing again is
@@ -108,7 +108,7 @@ def main() -> None:
     print(f"STAGE 3/4 course graph: {graph['node_count']} nodes, "
           f"{graph['edge_count']} edges "
           f"({', '.join(f'{m}: {n}' for m, n in src_methods.items())}), "
-          f"order starts {graph['topological_order'][:3]}")
+          f"order starts {graph['topological_order'][:3]}", flush=True)
 
     # ---- Lecture Structure artifacts: passages + spoken links + eval stats ----
     with sqlite3.connect(str(run_dir / "lecgap.db")) as con:
@@ -140,7 +140,7 @@ def main() -> None:
     print(f"STRUCTURE: {len(passages)} passages, {n_links} spoken links, "
           f"{metrics['tight_le_120s']}/{len(sorted_spans)} concepts tight <=120s, "
           f"median span {metrics['median_span_s']}s, "
-          f"longest span {metrics['max_span_s']}s")
+          f"longest span {metrics['max_span_s']}s", flush=True)
 
     # ---- Stage 5: re-cut clips on the refined spans ----
     client.post(f"/lectures/{lid}/clips")
@@ -159,7 +159,7 @@ def main() -> None:
         if c["ok"] and c["path"]:
             shutil.copy2(c["path"], clips_dir / Path(c["path"]).name)
             ok_count += 1
-    print(f"STAGE 5 clips: {ok_count}/{len(clips)} cut OK on refined windows")
+    print(f"STAGE 5 clips: {ok_count}/{len(clips)} cut OK on refined windows", flush=True)
 
     # ---- Stage 6: LLM-written quiz (with explanation per option) ----
     quiz = client.post("/quizzes",
@@ -173,7 +173,7 @@ def main() -> None:
             "SELECT count(*) FROM quiz_questions WHERE explanation IS NOT NULL"
         ).fetchone()[0]
     print(f"STAGE 6 quiz: {len(quiz['questions'])} questions "
-          f"({n_expl} with LLM explanation + why-wrong)")
+          f"({n_expl} with LLM explanation + why-wrong)", flush=True)
 
     # ---- Stage 6b: driver submit (fail every 3rd) + remediation ----
     # the run DB holds a previous submission's rows; restart the record clean
@@ -200,7 +200,7 @@ def main() -> None:
         fail(f"submit failed: {sub.status_code} {sub.text}")
     submission = sub.json()
     save(run_dir, "06_remediation.json", submission)
-    print(f"STAGE 6b submit: score {submission['score']}/{submission['total']}")
+    print(f"STAGE 6b submit: score {submission['score']}/{submission['total']}", flush=True)
 
     # ---- Stage 8: stats ----
     stats = client.get(f"/courses/{course}/stats")
@@ -217,7 +217,7 @@ def main() -> None:
 
     ctx = load_artifacts(run_dir)
     build_report(run_dir, manifest, ctx)
-    print(f"\nDONE — {run_dir} refreshed; report rebuilt.")
+    print(f"\nDONE — {run_dir} refreshed; report rebuilt.", flush=True)
 
 
 if __name__ == "__main__":
