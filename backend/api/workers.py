@@ -234,7 +234,7 @@ def _rebuild_course_graph(course_id: str) -> None:
     the graph request can query an empty Concept table and silently exit).
     Idempotent — existing rows are replaced per course on re-run.
     """
-    from backend.pipeline import classify_prerequisites
+    from backend.pipeline.build_graph import ConceptGraph
 
     with SessionLocal() as db:
         rows = (
@@ -269,7 +269,16 @@ def _rebuild_course_graph(course_id: str) -> None:
 
     names = sorted({c["name"] for c in concepts})
 
-    graph = ConceptGraph()
+    # Load the embedding model ONCE (lazily, wherever it is first needed) and
+    # share that single instance across concept dedup, the candidate
+    # pre-filter, and the classifier fit/predict — previously each stage
+    # constructed its own SentenceTransformer, so one graph rebuild printed
+    # "Loading weights" three times and paid the load cost 3x.
+    from backend.pipeline.classify_prerequisites import PrerequisiteClassifier, \
+        classify_course_pairs
+
+    clf = PrerequisiteClassifier()
+    graph = ConceptGraph(encoder_fn=clf._get_encoder)
     graph.add_concepts(names)
     g = graph.to_networkx()
     edge_meta: dict = {}
@@ -278,7 +287,7 @@ def _rebuild_course_graph(course_id: str) -> None:
         edge_meta[(a_res, b_res)] = ("transcript", ev)
         graph.add_edge(a, b, 0.9)
     try:
-        confirmed = classify_prerequisites.classify_course_pairs(concepts)
+        confirmed = classify_course_pairs(concepts, encoder=clf._encoder)
     except ValueError:
         confirmed = []  # LectureBank absent on this deployment -> nodes-only
     for e in confirmed:

@@ -35,10 +35,10 @@ def _make_graph(dedup_threshold=0.85):
     vecs = _hand_vecs()
     g = ConceptGraph(dedup_threshold=dedup_threshold)
 
-    def fake_vec(name):
-        return vecs.get(name, np.zeros(4))
+    def fake_embed(names):
+        return [vecs.get(name, np.zeros(4)) for name in names]
 
-    g._vec = fake_vec
+    g._embed = fake_embed
     return g
 
 
@@ -82,7 +82,8 @@ def test_build_graph_from_pairs_dedups_edge_endpoints(monkeypatch):
 
     vecs = _hand_vecs()
     monkeypatch.setattr(
-        ConceptGraph, "_vec", lambda self, name: vecs.get(str(name), np.zeros(4))
+        ConceptGraph, "_embed",
+        lambda self, names: [vecs.get(n, np.zeros(4)) for n in names],
     )
 
     graph, removed = build_graph_from_pairs(

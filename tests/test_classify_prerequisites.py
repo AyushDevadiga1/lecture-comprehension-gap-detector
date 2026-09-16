@@ -231,13 +231,14 @@ def test_classify_course_pairs_empty_when_no_candidates(monkeypatch):
     monkeypatch.setattr(CP, "_st", _stub_st)
     monkeypatch.setattr(CP, "_load_lecturebank", lambda d: [("A", "B", 1)])
     # no candidate pairs -> short-circuits before any fitting
-    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts: [])
+    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts, **kw: [])
+
     out = CP.classify_course_pairs([{"name": "A"}, {"name": "B"}], lecturebank_dir="dir")
     assert out == []
 
 
 def test_classify_course_pairs_raises_without_lecturebank(monkeypatch):
-    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts: [("A", "B")])
+    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts, **kw: [("A", "B")])
     monkeypatch.setattr(CP, "_load_lecturebank", lambda d: [])
     with pytest.raises(ValueError):
         CP.classify_course_pairs([{"name": "A"}, {"name": "B"}], lecturebank_dir="empty")
@@ -257,7 +258,7 @@ def test_classify_course_pairs_filters_below_threshold(monkeypatch):
             return [0.95, 0.20]
 
     monkeypatch.setattr(CP, "PrerequisiteClassifier", _FixedClf)
-    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts: [("A", "B"), ("C", "D")])
+    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts, **kw: [("A", "B"), ("C", "D")])
     monkeypatch.setattr(CP, "_load_lecturebank", lambda d: [("X", "Y", 1)])
 
     out = CP.classify_course_pairs(

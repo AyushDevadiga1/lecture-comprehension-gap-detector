@@ -276,7 +276,7 @@ def test_concept_extraction_chains_graph_build(api, monkeypatch):
     monkeypatch.setattr(
         CP,
         "classify_course_pairs",
-        lambda concepts: [{"a": "Loss Function", "b": "Gradient Descent",
+        lambda concepts, **kw: [{"a": "Loss Function", "b": "Gradient Descent",
                            "confidence": 0.8}],  # already grounded -> skipped
     )
     lid = _add_lecture(Session, status="ready", course_id="ml1")
@@ -303,8 +303,8 @@ def test_course_graph_build_and_fetch(api, monkeypatch):
     monkeypatch.setattr(
         CP,
         "classify_course_pairs",
-        lambda concepts: [{"a": "Gradient Descent", "b": "Loss Function",
-                           "confidence": 0.8}],
+lambda concepts, **kw: [{"a": "Gradient Descent", "b": "Loss Function",
+                                     "confidence": 0.8}],
     )
     lid = _add_lecture(Session, course_id="ml1", status="ready")
     with Session() as s:

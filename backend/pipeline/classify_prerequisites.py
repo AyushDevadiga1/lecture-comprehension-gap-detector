@@ -40,11 +40,19 @@ def _st():
     return SentenceTransformer, util
 
 
+def _cosine(a, b) -> float:
+    a = np.asarray(a, dtype=float).ravel()
+    b = np.asarray(b, dtype=float).ravel()
+    denom = float(np.linalg.norm(a) * np.linalg.norm(b))
+    return float(a @ b / max(denom, 1e-8))
+
+
 def get_candidate_pairs(
     concepts: List[Dict],
     *,
     time_window_s: float = 120.0,
     sim_threshold: float = 0.6,
+    encoder=None,
 ) -> List[Tuple[str, str]]:
     """
     Return candidate (prerequisite, target) name pairs worth classifying.
@@ -54,6 +62,10 @@ def get_candidate_pairs(
          window of a lecture are candidates.
       2. Embedding similarity: concepts that are semantically related
          (cosine >= sim_threshold) are candidates even if far apart in time.
+
+    `encoder` is an optional already-loaded SentenceTransformer; pass the one
+    PrerequisiteClassifier/graph builder are using so the weights load once
+    per process instead of once per stage.
     """
     candidates: List[Tuple[str, str]] = []
     seen = set()
@@ -72,16 +84,16 @@ def get_candidate_pairs(
                     candidates.append((a["name"], b["name"]))
 
     # 2. Embedding similarity (across everything, incl. far-apart concepts).
-    SentenceTransformer, util = _st()
+    if encoder is None:
+        SentenceTransformer, _ = _st()
+        encoder = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     names = [c["name"] for c in concepts]
-    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-    vecs = model.encode(names, convert_to_tensor=False)
+    vecs = encoder.encode(names, convert_to_tensor=False)
     for i in range(len(names)):
         for j in range(len(names)):
             if i == j:
                 continue
-            sim = float(util.cos_sim([vecs[i]], [vecs[j]])[0][0])
-            if sim >= sim_threshold:
+            if _cosine(vecs[i], vecs[j]) >= sim_threshold:
                 key = (names[i], names[j])
                 if key not in seen:
                     seen.add(key)
@@ -125,9 +137,14 @@ class PrerequisiteClassifier:
     labeled pairs, with class oversampling to counter the ~2% positive rate.
     """
 
-    def __init__(self, embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"):
+    def __init__(
+        self,
+        embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+        *,
+        encoder=None,
+    ):
         self.embedding_model = embedding_model
-        self._encoder = None
+        self._encoder = encoder
         self._vec_cache: Dict[str, np.ndarray] = {}
         self._head = None
         self._interactions: bool = True
@@ -281,12 +298,17 @@ def classify_course_pairs(
     *,
     threshold: float = 0.5,
     lecturebank_dir: Optional[str] = None,
+    encoder=None,
 ) -> List[Dict]:
     """Course-scoped bridge into Stage 4 (graph construction).
 
     Takes a course's extracted concepts, generates candidate (A, B) pairs
     with get_candidate_pairs, and scores them with a PrerequisiteClassifier
     fitted on LectureBank (same recipe as the Phase 3 evaluation).
+
+    `encoder` is an optional shared SentenceTransformer; when given, the same
+    loaded weights serve candidate pre-filtering, fitting, and prediction (one
+    "Loading weights" line per process instead of three).
 
     Returns confirmed pairs as [{"a": name, "b": name, "confidence": p}] for
     p >= threshold, ready for build_graph.add_edge.
@@ -302,11 +324,11 @@ def classify_course_pairs(
             "cannot be learned without it."
         )
 
-    candidates = get_candidate_pairs(concepts)
+    candidates = get_candidate_pairs(concepts, encoder=encoder)
     if not candidates:
         return []
 
-    clf = PrerequisiteClassifier().fit(
+    clf = PrerequisiteClassifier(encoder=encoder).fit(
         [(a, b) for a, b, _ in lib],
         [lbl for _, _, lbl in lib],
         balance="undersample",

@@ -44,11 +44,21 @@ class ConceptGraph:
         self,
         embedding_model: str = DEFAULT_EMBEDDING_MODEL,
         dedup_threshold: float = DEDUP_THRESHOLD,
+        *,
+        encoder=None,
+        encoder_fn=None,
     ) -> None:
         self._g = nx.DiGraph()
         self.embedding_model = embedding_model
         self.dedup_threshold = dedup_threshold
-        self._encoder = None
+        # Optionally share an already-loaded encoder (e.g. the one the
+        # prerequisite classifier holds) so a graph build does not re-load
+        # the MiniLM weights a second/third time ("Loading weights" spam).
+        # `encoder_fn` is a lazy alternative: a 0-arg callable returning the
+        # shared encoder (typically `classifier._get_encoder`), so the load
+        # happens once, wherever the encoder is first actually needed.
+        self._encoder = encoder
+        self._encoder_fn = encoder_fn
         self._vec_cache: dict = {}
         self._canon: dict = {}  # raw name -> canonical node name
         self.removed_edges = []  # [(source, target, confidence)] from resolve_cycles
@@ -56,11 +66,22 @@ class ConceptGraph:
     # ------------------------------------------------------------------ nodes
 
     def _get_encoder(self):
-        from sentence_transformers import SentenceTransformer
-
         if self._encoder is None:
-            self._encoder = SentenceTransformer(self.embedding_model)
+            if self._encoder_fn is not None:
+                self._encoder = self._encoder_fn()
+            else:
+                from sentence_transformers import SentenceTransformer
+
+                self._encoder = SentenceTransformer(self.embedding_model)
         return self._encoder
+
+    def _embed(self, names) -> list:
+        """Embed MANY names in ONE encoder.encode call (the per-name loop was
+        the dominant cost of add_concepts on CPU). Kept as a seam so tests can
+        stub it with hand-made vectors and skip MiniLM entirely."""
+        enc = self._get_encoder()
+        raw = enc.encode(list(names), convert_to_tensor=False)
+        return [np.asarray(v, dtype=np.float32) for v in raw]
 
     def _vec(self, name: str) -> np.ndarray:
         if name not in self._vec_cache:
@@ -74,12 +95,24 @@ class ConceptGraph:
         similarity (cosine >= dedup_threshold) so "Gradient Descent" and
         "GD optimization" from different lectures collapse into one node.
 
+        All new names are embedded in a SINGLE batched encoder call, then the
+        per-name cosine comparisons run from the cached vectors — that turns a
+        ~50s/51-concept pass into ~1-2s.
+
         Returns one canonical name per input name (same order/length), which
         callers should reuse when adding edges.
         """
+        plain = [str(raw).strip() for raw in names]
+        to_embed = [
+            name for name in plain
+            if name and name not in self._canon and name not in self._vec_cache
+        ]
+        if to_embed:
+            for name, vec in zip(to_embed, self._embed(to_embed)):
+                self._vec_cache[name] = vec
+
         canonical = []
-        for raw in names:
-            name = str(raw).strip()
+        for name in plain:
             if not name:
                 canonical.append("")
                 continue
@@ -87,7 +120,7 @@ class ConceptGraph:
                 canonical.append(self._canon[name])
                 continue
 
-            vec = self._vec(name)
+            vec = self._vec_cache[name]
             target = name
             for node in self._g.nodes:
                 if node == name:
@@ -229,6 +262,8 @@ def build_graph_from_pairs(
     *,
     embedding_model: str = DEFAULT_EMBEDDING_MODEL,
     dedup_threshold: float = DEDUP_THRESHOLD,
+    encoder=None,
+    encoder_fn=None,
 ) -> "tuple[ConceptGraph, list]":
     """Thin convenience for the API worker: dedup `names` into nodes, add
     `pairs` (each (A, B, confidence)) as edges, and resolve any cycles.
@@ -236,7 +271,10 @@ def build_graph_from_pairs(
     Returns (graph, removed_edges).
     """
     graph = ConceptGraph(
-        embedding_model=embedding_model, dedup_threshold=dedup_threshold
+        embedding_model=embedding_model,
+        dedup_threshold=dedup_threshold,
+        encoder=encoder,
+        encoder_fn=encoder_fn,
     )
     graph.add_concepts(names)
     for a, b, confidence in pairs:
