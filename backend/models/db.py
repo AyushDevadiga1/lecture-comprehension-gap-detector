@@ -305,6 +305,8 @@ def _migrate_schema() -> None:
 
     create_all() does not alter existing tables, so columns added to the
     models need an explicit ALTER TABLE on live databases. Idempotent.
+    Runs AFTER create_all() in init_db so fresh databases (no tables yet)
+    are created with the current model and every ALTER here becomes a no-op.
     `passages` / `lecture_links` are NEW tables, so create_all() covers them;
     only the extra COLUMNS on existing tables are touched here.
     """
@@ -354,5 +356,5 @@ def _migrate_schema() -> None:
 
 def init_db() -> None:
     DEFAULT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _migrate_schema()
     Base.metadata.create_all(bind=engine)
+    _migrate_schema()
