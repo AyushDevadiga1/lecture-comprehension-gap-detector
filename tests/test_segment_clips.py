@@ -34,16 +34,43 @@ def _true_ffmpeg(monkeypatch, returncode=0):
 def test_cut_clip_ok(tmp_path, monkeypatch):
     seg, calls = _true_ffmpeg(monkeypatch)
     out = tmp_path / "clip.mp4"
-    res = seg.cut_clip("media.mp4", 1.5, 4.0, str(out))
+    # 100s span is at/above the re-encode threshold (60s) -> frame-accurate
+    res = seg.cut_clip("media.mp4", 10.0, 110.0, str(out))
     assert res["ok"] is True
     assert res["error"] is None
-    assert res["start_s"] == 1.5 and res["end_s"] == 4.0
+    assert res["start_s"] == 10.0 and res["end_s"] == 110.0
     assert calls[0][0] == "ffmpeg"
-    assert calls[0][1:-1][0:4] == ["-y", "-ss", "1.500", "-to"]
-    assert "-i" in calls[0] and "-c:v" in calls[0]
-    assert "libx264" in calls[0]  # re-encode = keyframe-accurate cut
+    assert calls[0][1:6] == ["-y", "-ss", "10.000", "-to", "110.000"]
+    assert "-c:v" in calls[0] and "libx264" in calls[0]  # re-encode = keyframe-accurate cut
     assert Path(res["out_path"]).parent == tmp_path
     assert out.parent.exists()  # out dir created
+
+
+def test_cut_clip_short_span_stream_copies(tmp_path, monkeypatch):
+    # spans below the hybrid threshold snap to the prior keyframe via -c copy
+    seg, calls = _true_ffmpeg(monkeypatch)
+    res = seg.cut_clip("media.mp4", 1.5, 4.0, str(tmp_path / "c.mp4"))
+    assert res["ok"] is True
+    assert "-c:v" not in calls[0]
+    assert calls[0][calls[0].index("-c") + 1] == "copy"
+
+
+def test_cut_clip_streamcopy_env_forces_copy_for_long_spans(tmp_path, monkeypatch):
+    import backend.pipeline.segment_clips as seg_mod
+
+    seg, calls = _true_ffmpeg(monkeypatch)
+    monkeypatch.setenv("LECGAP_CLIP_STREAMCOPY", "1")
+    seg.cut_clip("media.mp4", 10.0, 110.0, str(tmp_path / "c.mp4"))
+    assert calls[0][calls[0].index("-c") + 1] == "copy"
+
+
+def test_cut_clip_reencode_threshold_env(tmp_path, monkeypatch):
+    seg, calls = _true_ffmpeg(monkeypatch)
+    monkeypatch.setenv("LECGAP_CLIP_REENCODE_THRESHOLD_S", "5")
+    seg.cut_clip("media.mp4", 0.0, 3.0, str(tmp_path / "a.mp4"))  # 3s < 5 -> copy
+    assert "-c:v" not in calls[0]
+    seg.cut_clip("media.mp4", 0.0, 20.0, str(tmp_path / "b.mp4"))  # 20s >= 5 -> encode
+    assert "-c:v" in calls[1] and "libx264" in calls[1]
 
 
 def test_cut_clip_reports_ffmpeg_error_without_raising(tmp_path, monkeypatch):
