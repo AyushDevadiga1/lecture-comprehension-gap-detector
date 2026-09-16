@@ -46,7 +46,7 @@ OVERLAP_FRAC = float(os.getenv("LECGAP_STRUCTURE_OVERLAP_FRAC", "0.25"))
 MAX_PASSAGES = 4
 MAX_CONCEPTS_PER_PASSAGE = 6
 MAX_LINKS = 8
-MAX_TOKENS = 800
+MAX_TOKENS = int(os.getenv("LECGAP_STRUCTURE_MAX_TOKENS", "3000"))
 _HEADER_BUDGET = 8  # how many prior passage titles the rolling header carries
 
 _KINDS = {"define", "explain", "worked_example", "review", "transition"}
@@ -142,17 +142,93 @@ def _prompt(excerpt: Dict, header: List[str]) -> str:
 
 
 def _parse_json(text: str) -> Optional[Dict]:
-    """Fence-strip + last-object JSON parse (mirrors mcq_gen._parse_mcq)."""
+    """Fence-strip + structural parse (mirrors mcq_gen._parse_mcq).
+
+    Resilient: a window answer can arrive truncated at the output budget, or
+    carry a stray LaTeX escape (`\\(`/`\\)`) that strict JSON rejects. A
+    single bad or cut-off passage must never sink the whole window, so we
+    fall back to decoding the `passages` array element-by-element, keeping
+    every complete passage and dropping only the fragment that got cut.
+    """
     m = re.search(r"```(?:json)?\s*(.*?)\s*```", text or "", re.DOTALL)
     payload = m.group(1) if m else (text or "")
-    start, end = payload.find("{"), payload.rfind("}")
-    if start == -1 or end <= start:
+
+    def _repair_backslashes(s: str) -> str:
+        # stray LaTeX backslashes (`\(`, `\)`, `\[`) are invalid JSON escapes;
+        # double them so the JSON decoder sees an escaped backslash + literal.
+        return re.sub(r"\\([^\"\\/bfnrtu])", r"\\\\\1", s)
+
+    def _loads(s: str) -> Optional[Dict]:
+        try:
+            d = json.loads(s)
+        except (ValueError, TypeError):
+            return None
+        return d if isinstance(d, dict) else None
+
+    d = _loads(payload)
+    if d is not None:
+        return d
+    d = _loads(_repair_backslashes(payload))
+    if d is not None:
+        return d
+
+    # whole-payload parse failed (usually truncation): walk the `passages`
+    # array, raw_decode each complete object, skip interior garbage or a
+    # cut-off tail — one bad fragment costs only itself.
+    m = re.search(r'"passages"\s*:\s*\[', payload)
+    if not m:
         return None
-    try:
-        data = json.loads(payload[start: end + 1])
-    except (ValueError, TypeError):
-        return None
-    return data if isinstance(data, dict) else None
+    dec = json.JSONDecoder()
+    i, n, objs = m.end(), len(payload), []
+    while i < n:
+        ch = payload[i]
+        if ch in " \t\r\n,":
+            i += 1
+            continue
+        if ch == "]":
+            break
+        if ch == "{":
+            k, depth = i, 0
+            while k < n:  # brace-balanced chunk (honour escaped quotes)
+                c = payload[k]
+                if c == '"':
+                    k += 1
+                    while k < n:
+                        cc = payload[k]
+                        if cc == "\\":
+                            k += 2
+                            continue
+                        if cc == '"':
+                            break
+                        k += 1
+                elif c == "{":
+                    depth += 1
+                elif c == "}":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                k += 1
+            depth0 = depth == 0
+            chunk = payload[i:k + 1] if depth0 else payload[i:]
+            v = None
+            for cand in (chunk, _repair_backslashes(chunk)):
+                if not cand:
+                    continue
+                try:
+                    raw, _ = dec.raw_decode(cand)
+                except (ValueError, TypeError):
+                    continue
+                if isinstance(raw, dict):
+                    v = raw
+                    break
+            if v is not None and v.get("title"):
+                objs.append(v)
+            i = k + 1 if depth0 else n
+            continue
+        i += 1
+    if objs:
+        return {"passages": objs}
+    return None
 
 
 def _clamp(x, lo, hi):
