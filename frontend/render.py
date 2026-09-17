@@ -199,8 +199,9 @@ def dag_html(graph: dict) -> str:
 
     Layout: hierarchical top-down, prerequisites above dependents (mirrors the
     topological learner order). Node tooltip = learner-order position; edge
-    tooltip = prerequisite-classifier confidence. Empty graphs return a short
-    placeholder message instead of an empty canvas.
+    tooltip = confidence + where the link came from (spoken transcript vs
+    classifier) + the verbatim evidence sentence when one exists. Empty graphs
+    return a short placeholder message instead of an empty canvas.
     """
     nodes = graph.get("nodes") or []
     if not nodes:
@@ -270,10 +271,15 @@ var options = {
         )
     for edge in graph.get("edges") or []:
         conf = edge.get("confidence", 1.0)
+        method = edge.get("source_method", "classifier")
+        tip = "edge confidence %.2f · source: %s" % (conf, method)
+        evidence = (edge.get("evidence") or "").strip()
+        if evidence:
+            tip += "<br/>evidence: %s" % _html.escape(evidence[:300])
         net.add_edge(
             edge["source"],
             edge["target"],
-            title="prerequisite classifier confidence %.2f" % conf,
+            title=tip,
         )
 
     return net.generate_html()

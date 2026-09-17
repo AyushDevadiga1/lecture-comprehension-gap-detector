@@ -17,7 +17,9 @@ def test_dag_html_embeds_nodes_edges_and_loads_vis_from_cdn():
         "nodes": ["A", "B", "C"],
         "edges": [
             {"source": "A", "target": "B", "confidence": 0.9},
-            {"source": "A", "target": "C", "confidence": 0.8},
+            {"source": "A", "target": "C", "confidence": 0.8,
+             "source_method": "transcript",
+             "evidence": "to understand C you need A first"},
         ],
         "node_count": 3,
         "edge_count": 2,
@@ -32,7 +34,9 @@ def test_dag_html_embeds_nodes_edges_and_loads_vis_from_cdn():
     assert "https://cdnjs.cloudflare.com/ajax/libs/vis-network" in html
     assert len(html) < 60_000
     assert "A" in html and "B" in html and "C" in html
-    assert "prerequisite classifier confidence 0.90" in html
+    assert "edge confidence 0.90" in html and "source: classifier" in html
+    assert "edge confidence 0.80" in html and "source: transcript" in html
+    assert "to understand C you need A first" in html  # verbatim evidence in the tooltip
     assert "learner order #1/3" in html
     assert "hierarchical" in html and '"direction": "UD"' in html
 
