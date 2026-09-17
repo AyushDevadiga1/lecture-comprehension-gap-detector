@@ -384,7 +384,7 @@ curl http://127.0.0.1:8000/lectures/1
 curl http://127.0.0.1:8000/health   # shows which LLM backends are usable
 
 # 6. (Later phases) Student / faculty UI
-streamlit run frontend/app.py
+python -m streamlit run frontend/app.py
 ```
 
 Tests and benchmarks:

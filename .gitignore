@@ -44,3 +44,10 @@ WORKLOG.md
 
 # pyvis bundled JS/CSS assets (recreated on every graph save)
 /lib/
+
+#security audit-skill
+security-audit-skill
+
+# SQLite WAL sidecars produced next to data/lecgap.db by the live backend
+data/*.db-shm
+data/*.db-wal
