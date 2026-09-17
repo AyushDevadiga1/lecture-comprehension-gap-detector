@@ -29,6 +29,41 @@ class LectureOut(BaseModel):
     processed_at: Optional[datetime] = None
 
 
+class LectureProgressOut(BaseModel):
+    """Live job progress — the payload behind GET /lectures/{id}/progress."""
+
+    lecture_id: int
+    status: str
+    stage: str
+    progress_pct: int
+    detail: str
+    elapsed_s: float
+    updated_at: str
+
+
+class LectureDeleteOut(BaseModel):
+    deleted: bool
+    lecture_id: int
+    message: str
+
+
+class CourseSummaryOut(BaseModel):
+    course_id: str
+    total_lectures: int
+    ready_lectures: int
+    total_concepts: int
+    has_graph: bool
+    node_count: int
+    edge_count: int
+
+
+class CourseDeleteOut(BaseModel):
+    deleted: bool
+    course_id: str
+    lectures_removed: int
+    message: str
+
+
 class ConceptOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
