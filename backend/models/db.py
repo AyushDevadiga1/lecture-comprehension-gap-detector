@@ -24,6 +24,7 @@ from pathlib import Path
 from sqlalchemy import (
     Column,
     DateTime,
+    event,
     Float,
     ForeignKey,
     Integer,
@@ -37,7 +38,27 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = REPO_ROOT / "data" / "lecgap.db"
 DATABASE_URL = os.getenv("LECGAP_DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+# Background workers + API threads write concurrently; WAL + a busy timeout
+# keep "database is locked" out of the picture (long jobs no longer block
+# /health and friends while a graph rebuild or segmentation is writing).
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False, "timeout": 30},
+)
+
+
+@event.listens_for(engine, "connect")
+def _set_sqlite_pragma(dbapi_connection, connection_record):  # noqa: ARG001
+    if not DATABASE_URL.startswith("sqlite"):
+        return
+    try:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.close()
+    except Exception:  # noqa: BLE001 — a pragma failure must not kill boot
+        pass
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 Base = declarative_base()
 
