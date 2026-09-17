@@ -1,20 +1,69 @@
-"""Course endpoints — per-course prerequisite graph build/fetch and the
-faculty stats view (Stage 8). All paths live under /courses."""
+"""Course endpoints — per-course prerequisite graph build/fetch, the faculty
+stats view (Stage 8), course listing and course cleanup. All paths live under
+/courses."""
+
+import os
+import shutil
+from pathlib import Path
+from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from backend.api import workers
-from backend.api.schemas import CourseBuildOut, CourseGraphOut
+from backend.api.schemas import (
+    CourseBuildOut,
+    CourseDeleteOut,
+    CourseGraphOut,
+    CourseSummaryOut,
+)
 from backend.models.db import (
     Concept,
     GraphEdge,
     GraphNode,
+    Lecture,
     QuizResponse,
     SessionLocal,
 )
 from backend.pipeline.build_graph import ConceptGraph
 
 router = APIRouter(prefix="/courses", tags=["courses"])
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
+
+
+@router.get("", response_model=List[CourseSummaryOut])
+def list_courses() -> List[CourseSummaryOut]:
+    """Teacher-dashboard course list (review_1 C2): one row per course with
+    lecture/concept/graph counts so stale junk courses are obvious."""
+    with SessionLocal() as db:
+        lectures = db.query(Lecture).order_by(Lecture.id).all()
+    course_ids = sorted({lec.course_id for lec in lectures})
+    summaries: List[CourseSummaryOut] = []
+    with SessionLocal() as db:
+        for cid in course_ids:
+            lecs = [lec for lec in lectures if lec.course_id == cid]
+            summaries.append(
+                CourseSummaryOut(
+                    course_id=cid,
+                    total_lectures=len(lecs),
+                    ready_lectures=sum(1 for lec in lecs if lec.status == "ready"),
+                    total_concepts=(
+                        db.query(Concept).filter(Concept.course_id == cid).count()
+                    ),
+                    node_count=(
+                        db.query(GraphNode).filter(GraphNode.course_id == cid).count()
+                    ),
+                    edge_count=(
+                        db.query(GraphEdge).filter(GraphEdge.course_id == cid).count()
+                    ),
+                    has_graph=(
+                        db.query(GraphNode).filter(GraphNode.course_id == cid).count()
+                        > 0
+                    ),
+                )
+            )
+    return summaries
 
 
 @router.get("/{course_id}/graph", response_model=CourseGraphOut)
@@ -152,3 +201,41 @@ def course_stats(course_id: str) -> dict:
         "taught_order": taught_order,
         "learned_order": learned_order,
     }
+
+
+@router.delete("/{course_id}", response_model=CourseDeleteOut)
+def delete_course(course_id: str) -> CourseDeleteOut:
+    """Nuke a course: every DB row (lectures + course-scoped graph/questions/
+    responses via workers.purge_course) plus raw media and cut clips on disk."""
+    course_id = course_id.strip()
+
+    with SessionLocal() as db:
+        lecs = (
+            db.query(Lecture).filter(Lecture.course_id == course_id).all()
+        )
+        has_leftovers = (
+            db.query(Concept).filter(Concept.course_id == course_id).first()
+            or db.query(GraphNode).filter(GraphNode.course_id == course_id).first()
+        )
+
+    if not lecs and not has_leftovers:
+        raise HTTPException(
+            status_code=404, detail=f"Course '{course_id}' not found"
+        )
+
+    n_removed = workers.purge_course(course_id)
+
+    for lec in lecs:
+        if lec.source_path:
+            try:
+                os.remove(lec.source_path)
+            except OSError:
+                pass
+        shutil.rmtree(CLIPS_DIR / str(lec.id), ignore_errors=True)
+
+    return CourseDeleteOut(
+        deleted=True,
+        course_id=course_id,
+        lectures_removed=n_removed,
+        message=f"Course '{course_id}' deleted ({n_removed} lectures, media + clips removed)",
+    )
