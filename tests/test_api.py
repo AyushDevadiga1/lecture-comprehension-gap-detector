@@ -192,7 +192,7 @@ def test_concept_extraction_flow(api, monkeypatch):
     )
     # keep this suite hermetic: the chained graph rebuild is exercised by
     # test_concept_extraction_chains_graph_build with the classifier patched
-    monkeypatch.setattr(workers, "_rebuild_course_graph", lambda course_id: None)
+    monkeypatch.setattr(workers, "_rebuild_course_graph", lambda course_id, lecture_id=None: None)
     lid = _add_lecture(Session, status="ready")
 
     assert client.post(f"/lectures/{lid}/concepts").status_code == 200
@@ -228,7 +228,7 @@ def test_concept_extraction_falls_back_on_pass_failure(api, monkeypatch):
                        "implicit": False, "start_s": 0.0, "end_s": 5.0}],
     )
     monkeypatch.setattr(workers, "refine_concept_times", lambda c, docs: c)
-    monkeypatch.setattr(workers, "_rebuild_course_graph", lambda course_id: None)
+    monkeypatch.setattr(workers, "_rebuild_course_graph", lambda course_id, lecture_id=None: None)
     lid = _add_lecture(Session, status="ready")
 
     workers._extract_concepts_worker(lid)
@@ -353,7 +353,7 @@ def test_clips_cut_and_list(api, monkeypatch):
     monkeypatch.setattr(
         workers,
         "cut_concept_clips",
-        lambda media, concepts, out_dir: [
+        lambda media, concepts, out_dir, on_done=None: [
             {
                 "name": c["name"],
                 "start_s": c["start_s"],
@@ -610,3 +610,173 @@ def test_course_stats_heatmap_and_divergence(api):
     # taught order: A first (start_s 0), then B; learned order: B before A
     assert stats["taught_order"] == ["A", "B"]
     assert stats["learned_order"] == ["B", "A"]
+
+
+# --------------------------------------------------- progress / delete / rerun
+
+def test_lecture_progress_live_and_db_fallback(api):
+    client, Session = api
+    lid = _add_lecture(Session, status="uploaded")
+
+    # no live job -> DB-derived fallback snapshot
+    r = client.get(f"/lectures/{lid}/progress")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["lecture_id"] == lid
+    assert body["status"] == "uploaded"
+    assert body["elapsed_s"] == 0.0
+    assert isinstance(body["updated_at"], str)
+
+    # a live job supersedes the DB fallback and keeps its own timing
+    workers.update_lecture_progress(
+        lid, "extracting", 42, "Running structure pass...", status="extracting"
+    )
+    body = client.get(f"/lectures/{lid}/progress").json()
+    assert body["status"] == "extracting"
+    assert body["stage"] == "extracting"
+    assert body["progress_pct"] == 42
+    assert body["detail"] == "Running structure pass..."
+    assert body["elapsed_s"] >= 0.0
+
+    workers._progress_finish(lid)
+    body = client.get(f"/lectures/{lid}/progress").json()
+    assert body["status"] == "uploaded"
+
+    assert client.get("/lectures/9999/progress").status_code == 200
+    assert client.get("/lectures/9999/progress").json()["status"] == "not_found"
+
+
+def test_delete_lecture_purges_course_only_when_orphaned(api):
+    """F-2 regression: deleting the LAST lecture of a course must also clear
+    the course-scoped leftovers (graph rows, quiz rows) that outlived it."""
+    client, Session = api
+    with Session() as s:  # two lectures, shared course with graph + quiz rows
+        for _ in range(2):
+            s.add(models.Lecture(course_id="ml1", title="t", status="ready",
+                                 source_path="nonexistent-media.mp4"))
+        s.commit()
+    with Session() as s:
+        for lec in s.query(models.Lecture).all():
+            s.add(models.Concept(course_id="ml1", lecture_id=lec.id, name="A",
+                                 source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.GraphNode(course_id="ml1", name="A"))
+        qa = models.ConceptItem(course_id="ml1", concept="A", question="q", order=0)
+        s.add(qa)
+        s.commit()
+        s.add(models.QuizResponse(course_id="ml1", student_id="p",
+                                  question_id=qa.id, concept="A",
+                                  correct=1, latency_s=1.0))
+        s.commit()
+        ids = [lec.id for lec in s.query(models.Lecture).all()]
+
+    # one lecture remains -> course-scoped rows survive
+    r = client.delete(f"/lectures/{ids[0]}")
+    assert r.status_code == 200
+    assert r.json()["deleted"] is True
+    with Session() as s:
+        assert s.query(models.GraphNode).filter_by(course_id="ml1").count() == 1
+        assert s.query(models.ConceptItem).count() == 1
+
+    # last lecture deleted -> the course's graph + quiz rows are swept too
+    r = client.delete(f"/lectures/{ids[1]}")
+    assert r.status_code == 200
+    assert "course data purged" in r.json()["message"]
+    with Session() as s:
+        assert s.query(models.Lecture).filter_by(course_id="ml1").count() == 0
+        assert s.query(models.GraphNode).filter_by(course_id="ml1").count() == 0
+        assert s.query(models.ConceptItem).count() == 0
+        assert s.query(models.QuizResponse).count() == 0
+
+    assert client.delete("/lectures/9999").status_code == 404
+
+
+def test_rerun_lecture(api, monkeypatch, tmp_path):
+    client, Session = api
+    monkeypatch.setattr(workers, "transcribe", lambda path, **kwargs: [])
+    media = tmp_path / "lec.mp4"
+    media.write_bytes(b"fake")
+    lid = _add_lecture(Session, status="ready", source_path=str(media))
+
+    r = client.post(f"/lectures/{lid}/rerun?whisper_backend=local")
+    assert r.status_code == 200
+    assert r.json()["status"] == "uploaded"  # reset before the bg job re-runs
+
+    # missing media on disk -> HTTP 400 instead of a swallowed backtrace
+    lost = _add_lecture(Session, status="ready", source_path="gone.mp4")
+    assert client.post(f"/lectures/{lost}/rerun").status_code == 400
+
+
+def test_upload_lecture_rejects_bad_whisper_backend(api, monkeypatch):
+    client, _ = api
+    monkeypatch.setattr(workers, "transcribe", lambda path, **kwargs: [])
+    r = client.post(
+        "/lectures",
+        files={"file": ("lec.mp4", b"fake", "video/mp4")},
+        data={"course_id": "ml1", "whisper_backend": "bogus"},
+    )
+    assert r.status_code == 400
+    assert client.get("/lectures").json() == []  # nothing was persisted
+
+
+# ------------------------------------------------------------ course manager
+
+def test_course_list_summaries(api):
+    client, Session = api
+    with Session() as s:
+        s.add_all([
+            models.Lecture(course_id="ml1", title="a", status="ready"),
+            models.Lecture(course_id="ml1", title="b", status="uploaded"),
+            models.Lecture(course_id="ml2", title="c", status="ready"),
+        ])
+        s.add(models.Concept(course_id="ml1", lecture_id=1, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.GraphNode(course_id="ml1", name="A"))
+        s.add(models.GraphEdge(course_id="ml1", source="A", target="B",
+                               confidence=0.8))
+        s.commit()
+
+    courses_list = client.get("/courses").json()
+    by_id = {c["course_id"]: c for c in courses_list}
+    assert set(by_id) == {"ml1", "ml2"}
+    assert by_id["ml1"]["total_lectures"] == 2
+    assert by_id["ml1"]["ready_lectures"] == 1
+    assert by_id["ml1"]["total_concepts"] == 1
+    assert by_id["ml1"]["has_graph"] is True
+    assert by_id["ml1"]["node_count"] == 1
+    assert by_id["ml2"]["has_graph"] is False
+
+
+def test_delete_course_purges_everything(api, monkeypatch, tmp_path):
+    client, Session = api
+    media = tmp_path / "lec.mp4"
+    media.write_bytes(b"fake")
+    with Session() as s:
+        s.add(models.Lecture(course_id="ml1", title="a", status="ready",
+                             source_path=str(media)))
+        s.commit()
+        lid = s.query(models.Lecture).one().id
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.GraphNode(course_id="ml1", name="A"))
+        qa = models.ConceptItem(course_id="ml1", concept="A", question="q", order=0)
+        s.add(qa)
+        s.commit()
+        s.add(models.QuizResponse(course_id="ml1", student_id="p",
+                                  question_id=qa.id, concept="A",
+                                  correct=1, latency_s=1.0))
+        s.commit()
+
+    r = client.delete("/courses/ml1")
+    assert r.status_code == 200
+    assert r.json()["lectures_removed"] == 1
+    assert not media.exists()  # raw media removed from disk
+
+    with Session() as s:
+        assert s.query(models.Lecture).count() == 0
+        assert s.query(models.Concept).count() == 0
+        assert s.query(models.GraphNode).count() == 0
+        assert s.query(models.ConceptItem).count() == 0
+        assert s.query(models.QuizResponse).count() == 0
+
+    assert client.delete("/courses/ml1").status_code == 404
+    assert client.delete("/courses/nope").status_code == 404
