@@ -148,6 +148,7 @@ def cut_concept_clips(
     *,
     ffmpeg: str = "ffmpeg",
     max_workers: Optional[int] = None,
+    on_done=None,
 ) -> List[Dict]:
     """Cut one clip per concept into out_dir.
 
@@ -155,6 +156,9 @@ def cut_concept_clips(
     float, "end_s": float}. Returns a list (same order) of per-concept results
     with the clip path; concepts missing start/end are reported as skipped
     (ok=False, error="missing timestamps") rather than crashing the batch.
+
+    `on_done(done, total)` is called after each clip finishes (skipped clips
+    included) so callers can surface live progress.
 
     Cuts run concurrently (one ffmpeg subprocess per clip, up to `max_workers`
     or the LECGAP_CLIP_WORKERS/default worker count) because the re-encoding
@@ -179,13 +183,19 @@ def cut_concept_clips(
                 "start_s": None, "end_s": None, "path": None,
                 "ok": False, "error": "missing timestamps",
             }
+            if on_done:
+                on_done(1, len(concepts))
             continue
         start, end = float(start_s), float(end_s)
         out_path = str(Path(out_dir) / f"{name}__{start:.0f}-{end:.0f}.mp4")
         jobs.append((i, concept, out_path))
 
     if not jobs:
+        if on_done and len(concepts) > 1:
+            on_done(len(concepts), len(concepts))
         return results
+
+    done_count = len(concepts) - len(jobs)  # skipped clips count as done too
 
     def run_cut(args: tuple) -> tuple:
         i, concept, out_path = args
@@ -194,13 +204,20 @@ def cut_concept_clips(
         res["path"] = out_path if res["ok"] else None
         return i, res
 
+    def harvest(i: int, res: dict) -> None:
+        results[i] = res
+        nonlocal done_count
+        done_count += 1
+        if on_done:
+            on_done(done_count, len(concepts))
+
     workers = max_workers if max_workers is not None else _default_workers()
     if workers > 1 and len(jobs) > 1:
         with ThreadPoolExecutor(max_workers=workers) as pool:
             for i, res in pool.map(run_cut, jobs):
-                results[i] = res
+                harvest(i, res)
     else:
         for i, res in map(run_cut, jobs):
-            results[i] = res
+            harvest(i, res)
 
     return results
