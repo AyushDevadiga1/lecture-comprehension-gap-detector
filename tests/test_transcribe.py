@@ -99,7 +99,7 @@ def test_transcribe_returns_normalised_segments(monkeypatch):
         "whisper.load_model", _fake_load_model_for({"base"})
     )
 
-    segs = tr.transcribe("some/media.mp4")
+    segs = tr.transcribe("some/media.mp4", backend="local")
 
     assert segs == [
         {"start": 1.0, "end": 4.0, "text": "hello world"},
@@ -113,8 +113,8 @@ def test_transcribe_caches_model_across_calls(monkeypatch):
     fake = _fake_load_model_for({"base"})
     monkeypatch.setattr("whisper.load_model", fake)
 
-    tr.transcribe("media1.mp4")
-    tr.transcribe("media2.mp4")
+    tr.transcribe("media1.mp4", backend="local")
+    tr.transcribe("media2.mp4", backend="local")
 
     model = tr._model_cache[tr.MODEL_SIZE]
     assert model.calls == 2  # two transcribes, one model instance
@@ -136,7 +136,7 @@ def test_transcribe_passes_media_path_and_verbose_false(monkeypatch):
 
     monkeypatch.setattr("whisper.load_model", fake_load_model)
 
-    tr.transcribe("/abs/path/lec.mp4")
+    tr.transcribe("/abs/path/lec.mp4", backend="local")
 
     assert seen["path"] == "/abs/path/lec.mp4"
     assert seen["verbose"] is False
@@ -182,7 +182,7 @@ def test_backend_defaults_to_local():
 def test_transcribe_dispatches_to_groq_backend(monkeypatch):
     calls = []
 
-    def fake_groq(media_path):
+    def fake_groq(media_path, progress_callback=None):
         calls.append(media_path)
         return ["segments-from-groq"]
 

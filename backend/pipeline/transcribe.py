@@ -223,7 +223,9 @@ def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, 
     ]
 
 
-def _transcribe_groq(media_path: str) -> List[Dict[str, float | str]]:
+def _transcribe_groq(
+    media_path: str, progress_callback=None
+) -> List[Dict[str, float | str]]:
     if not os.getenv("GROQ_API_KEY"):
         raise RuntimeError(
             "WHISPER_BACKEND=groq needs GROQ_API_KEY set (see .env). "
@@ -237,8 +239,13 @@ def _transcribe_groq(media_path: str) -> List[Dict[str, float | str]]:
 
     from groq import Groq
 
+    if progress_callback:
+        progress_callback("probing", 5, "Probing audio duration with ffprobe...")
+
     client = Groq()
     with tempfile.TemporaryDirectory(prefix="lecgap_groq_") as tmp:
+        if progress_callback:
+            progress_callback("downmixing", 15, "Normalizing audio to 16 kHz mono FLAC...")
         flac = _downmix_to_flac(media_path, os.path.join(tmp, "audio.flac"))
         size = os.path.getsize(flac)
         duration = _probe_duration(flac)
@@ -246,27 +253,75 @@ def _transcribe_groq(media_path: str) -> List[Dict[str, float | str]]:
         chunk_s = _chunk_seconds(duration, size, GROQ_UPLOAD_LIMIT,
                                  max_s=GROQ_MAX_CHUNK_S)
         if chunk_s:
+            if progress_callback:
+                progress_callback(
+                    "chunking", 25,
+                    f"Audio length: {duration:.0f}s. Slicing into clean {chunk_s}s chunks...",
+                )
             chunks = _split_flac(flac, tmp, chunk_s, duration)
             offsets = [float(i * chunk_s) for i in range(len(chunks))]
         else:
             chunks, offsets = [flac], [0.0]
 
+        total_chunks = len(chunks)
         segments: List[Dict[str, float | str]] = []
-        for chunk, offset in zip(chunks, offsets):
+        for idx, (chunk, offset) in enumerate(zip(chunks, offsets)):
+            if progress_callback:
+                pct = 30 + int(60 * idx / total_chunks)
+                progress_callback(
+                    "transcribing", pct,
+                    f"Transcribing chunk {idx + 1} of {total_chunks} via Groq Whisper...",
+                )
             segments.extend(_transcribe_chunk(client, chunk, offset))
+        if progress_callback:
+            progress_callback(
+                "finalizing", 95, f"Extracted {len(segments)} timestamped segments."
+            )
     return segments
 
 
-def transcribe(media_path: str) -> List[Dict[str, float | str]]:
+def transcribe(
+    media_path: str,
+    backend: str = None,
+    progress_callback=None,
+) -> List[Dict[str, float | str]]:
     """
     Transcribe a media file (any format ffmpeg can read) into segments:
         [{"start": 14.22, "end": 17.10, "text": "..."}, ...]
-    """
-    if BACKEND == "groq":
-        return _transcribe_groq(media_path)
 
+    ``backend`` overrides the WHISPER_BACKEND env pick for this call ("groq" or
+    "local"). When nothing pins a backend, groq is auto-selected if
+    GROQ_API_KEY is set AND ffmpeg is on PATH (hosted Whisper runs ~200x
+    real-time); otherwise the offline Whisper path is used.
+    """
+    selected_backend = backend or BACKEND
+    if not backend and not os.getenv("WHISPER_BACKEND") and os.getenv("GROQ_API_KEY"):
+        if _ffmpeg_available():
+            selected_backend = "groq"
+        elif progress_callback:
+            progress_callback(
+                "loading_model", 20,
+                "GROQ_API_KEY set but ffmpeg/ffprobe missing on PATH — using local Whisper.",
+            )
+
+    if selected_backend == "groq":
+        return _transcribe_groq(media_path, progress_callback=progress_callback)
+
+    if progress_callback:
+        progress_callback(
+            "loading_model", 20, f"Loading Whisper model '{MODEL_SIZE}' on CPU..."
+        )
     model = _get_model()
+    if progress_callback:
+        progress_callback(
+            "local_transcribing", 50,
+            "Transcribing with Whisper on CPU (this takes time for long audio)...",
+        )
     result = model.transcribe(media_path, verbose=False)
+    if progress_callback:
+        progress_callback(
+            "finalizing", 95, f"Extracted {len(result['segments'])} segments."
+        )
     return [
         {
             "start": float(seg["start"]),
