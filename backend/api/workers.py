@@ -14,11 +14,13 @@ from typing import List
 from backend.models.db import (
     Clip,
     Concept,
+    ConceptItem,
     GraphEdge,
     GraphNode,
     Lecture,
     LectureLink,
     Passage,
+    QuizResponse,
     SessionLocal,
     TranscriptSegment,
 )
@@ -30,33 +32,122 @@ from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
 from backend.api.schemas import QuizQuestionOut
 
+import threading
+import time
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+# Live per-lecture job progress, published by the long-running workers and
+# read by GET /lectures/{id}/progress (the Streamlit progress bars poll it).
+# Thread-safe (workers run on the request threadpool). Entries are pruned on
+# a job's final state (ready/error) so long-lived processes don't leak.
+_progress_lock = threading.Lock()
+_lecture_progress: dict = {}
 
-def _process_lecture(lecture_id: int) -> None:
-    """Background worker: transcribe one lecture and persist its segments."""
+
+def update_lecture_progress(
+    lecture_id: int, stage: str, pct: int, detail: str, status: str = "transcribing"
+) -> None:
+    with _progress_lock:
+        entry = _lecture_progress.get(lecture_id)
+        if entry is None:
+            entry = _lecture_progress[lecture_id] = {"start_time": time.time()}
+        entry["stage"] = stage
+        entry["pct"] = int(max(0, min(pct, 100)))
+        entry["detail"] = detail
+        entry["status"] = status
+        entry["updated_at"] = time.time()
+
+
+def _progress_finish(lecture_id: int) -> None:
+    """Drop the in-memory entry once a job settles (ready/error)."""
+    with _progress_lock:
+        _lecture_progress.pop(lecture_id, None)
+
+
+def get_lecture_progress(lecture_id: int) -> dict:
+    """Snapshot of live progress, or a DB-derived fallback once the job ended."""
+    with _progress_lock:
+        prog = _lecture_progress.get(lecture_id)
+        if prog is not None:
+            elapsed = time.time() - prog["start_time"]
+            return {
+                "lecture_id": lecture_id,
+                "status": prog.get("status", "transcribing"),
+                "stage": prog.get("stage", "working"),
+                "progress_pct": prog.get("pct", 0),
+                "detail": prog.get("detail", "Processing..."),
+                "elapsed_s": round(elapsed, 1),
+                "updated_at": datetime.fromtimestamp(
+                    prog.get("updated_at", time.time())
+                ).astimezone().isoformat(),
+            }
+    with SessionLocal() as db:
+        lec = db.get(Lecture, lecture_id)
+        if lec is None:
+            status, pct, detail = "not_found", 0, "Lecture not found"
+        elif lec.status == "ready":
+            status, pct, detail = "ready", 100, "Ready"
+        elif lec.status == "error":
+            status, pct, detail = "error", 0, lec.error or "Error"
+        else:
+            status, pct, detail = lec.status, 50, f"Lecture status: {lec.status}"
+        return {
+            "lecture_id": lecture_id,
+            "status": status,
+            "stage": status,
+            "progress_pct": pct,
+            "detail": detail,
+            "elapsed_s": 0.0,
+            "updated_at": datetime.now().astimezone().isoformat(),
+        }
+
+
+def _process_lecture(lecture_id: int, backend: str = None) -> None:
+    """Background worker: transcribe one lecture and persist its segments.
+
+    ``backend`` ("groq"/"local"/None) maps onto transcribe()'s override — the
+    upload endpoint surfaces whatever the user picked in the UI.
+    """
+    update_lecture_progress(
+        lecture_id, "initializing", 2, "Starting transcription job...",
+        status="transcribing",
+    )
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
+            _progress_finish(lecture_id)
             return
         lecture.status = "transcribing"
+        lecture.error = None
         db.commit()
         source_path = lecture.source_path
 
+    def _on_progress(stage, pct, detail) -> None:
+        update_lecture_progress(lecture_id, stage, pct, detail, status="transcribing")
+
     try:
-        segments = transcribe(source_path)
+        segments = transcribe(source_path, backend=backend, progress_callback=_on_progress)
     except Exception as exc:  # noqa: BLE001 — surface any failure on the lecture row
+        err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+        update_lecture_progress(lecture_id, "error", 0, err_msg, status="error")
         with SessionLocal() as db:
             lecture = db.get(Lecture, lecture_id)
             if lecture is not None:
                 lecture.status = "error"
-                lecture.error = f"{type(exc).__name__}: {exc}"[:2000]
+                lecture.error = err_msg
                 db.commit()
+        _progress_finish(lecture_id)
         return
 
+    update_lecture_progress(
+        lecture_id, "saving_segments", 97,
+        f"Saving {len(segments)} segments to database...", status="transcribing",
+    )
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
+            _progress_finish(lecture_id)
             return
         lecture.segments.clear()
         for i, seg in enumerate(segments):
@@ -72,6 +163,11 @@ def _process_lecture(lecture_id: int) -> None:
         lecture.status = "ready"
         lecture.processed_at = datetime.now().astimezone()
         db.commit()
+    update_lecture_progress(
+        lecture_id, "ready", 100,
+        f"Ready! {len(segments)} transcript segments processed.", status="ready",
+    )
+    _progress_finish(lecture_id)
 
 
 def _extract_concepts_worker(lecture_id: int) -> None:
@@ -85,9 +181,14 @@ def _extract_concepts_worker(lecture_id: int) -> None:
     chunk-atomic path (extract_spoken_concepts + refine_concept_times) so a
     user is never stranded — the old path is the rescue rope, not the default.
     """
+    update_lecture_progress(
+        lecture_id, "extracting", 10, "Reading transcript and starting structure pass...",
+        status="extracting",
+    )
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
+            _progress_finish(lecture_id)
             return
         docs = [
             {"start_s": s.start_s, "end_s": s.end_s, "text": s.text}
@@ -98,26 +199,43 @@ def _extract_concepts_worker(lecture_id: int) -> None:
     passages: List[dict] = []
     links: List[dict] = []
     try:
+        update_lecture_progress(
+            lecture_id, "extracting", 25, "Running structure pass (LLM)...",
+            status="extracting",
+        )
         structure = extract_lecture_structure(docs)
         concepts = structure["concepts"]
         passages = structure["passages"]
         links = structure["links"]
     except Exception:  # noqa: BLE001 — whole-pass failure -> old path
+        update_lecture_progress(
+            lecture_id, "extracting", 30,
+            "Structure pass failed — falling back to chunk-atomic concept extraction.",
+            status="extracting",
+        )
         try:
             concepts = extract_spoken_concepts(docs)
             # Stage 2b fallback: pin chunk-stamped spans down to teach-spans.
             concepts = refine_concept_times(concepts, docs)
         except Exception as exc:  # noqa: BLE001 — any failure is fine to surface
+            err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+            update_lecture_progress(lecture_id, "error", 0, err_msg, status="error")
             with SessionLocal() as db:
                 lecture = db.get(Lecture, lecture_id)
                 if lecture is not None:
-                    lecture.error = f"{type(exc).__name__}: {exc}"[:2000]
+                    lecture.error = err_msg
                     db.commit()
+            _progress_finish(lecture_id)
             return
 
+    update_lecture_progress(
+        lecture_id, "extracting", 70, "Persisting concepts, passages, and spoken links...",
+        status="extracting",
+    )
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
+            _progress_finish(lecture_id)
             return
         lecture.error = None  # a success supersedes any earlier failed run
         db.query(Concept).filter(Concept.lecture_id == lecture_id).delete()
@@ -167,14 +285,44 @@ def _extract_concepts_worker(lecture_id: int) -> None:
     # the fresh concepts are persisted — closes the UI race where a parallel
     # POST /courses/{id}/graph queries an empty Concept table and silently
     # exits. Idempotent, so an explicit graph build is harmless either way.
-    _rebuild_course_graph(course_id)
+    update_lecture_progress(
+        lecture_id, "building_graph", 75, "Rebuilding course prerequisite graph...",
+        status="extracting",
+    )
+    try:
+        _rebuild_course_graph(course_id, lecture_id=lecture_id)
+    except Exception as exc:  # noqa: BLE001 — graph failure must not strand silently
+        err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+        update_lecture_progress(
+            lecture_id, "error", 0,
+            f"Concepts saved, but course-graph rebuild failed: {err_msg}",
+            status="error",
+        )
+        with SessionLocal() as db:
+            lecture = db.get(Lecture, lecture_id)
+            if lecture is not None:
+                lecture.error = err_msg
+                db.commit()
+        _progress_finish(lecture_id)
+        return
+    update_lecture_progress(
+        lecture_id, "ready", 100,
+        f"Ready! {len(concepts)} concepts extracted, course graph rebuilt.",
+        status="extracting",
+    )
+    _progress_finish(lecture_id)
 
 
 def _cut_clips_worker(lecture_id: int) -> None:
     """Background worker: cut one clip per concept and persist the rows."""
+    update_lecture_progress(
+        lecture_id, "cutting_clips", 5, "Collecting concepts for clip cutting...",
+        status="clips",
+    )
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id)
         if lecture is None:
+            _progress_finish(lecture_id)
             return
         media_path = lecture.source_path
         concepts = [
@@ -187,9 +335,44 @@ def _cut_clips_worker(lecture_id: int) -> None:
             for c in lecture.concepts
         ]
 
-    out_dir = REPO_ROOT / "data" / "processed" / "clips" / str(lecture_id)
-    results = cut_concept_clips(str(media_path) if media_path else "", concepts, out_dir)
+    if not concepts:
+        update_lecture_progress(
+            lecture_id, "ready", 100, "No concepts to cut.", status="clips"
+        )
+        _progress_finish(lecture_id)
+        return
 
+    out_dir = REPO_ROOT / "data" / "processed" / "clips" / str(lecture_id)
+
+    def _on_clip_done(done: int, total: int) -> None:
+        update_lecture_progress(
+            lecture_id, "cutting_clips", 10 + int(80 * done / total),
+            f"Cutting clip {done} of {total}: {REPO_ROOT.name}/data/processed/clips/{lecture_id}/",
+            status="clips",
+        )
+
+    results = []
+    try:
+        results = cut_concept_clips(
+            str(media_path) if media_path else "", concepts, out_dir,
+            on_done=_on_clip_done,
+        )
+    except Exception as exc:  # noqa: BLE001 — a bad concept must not strand the lecture
+        err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+        update_lecture_progress(
+            lecture_id, "error", 0, err_msg, status="error"
+        )
+        with SessionLocal() as db:
+            lecture = db.get(Lecture, lecture_id)
+            if lecture is not None:
+                lecture.error = err_msg
+                db.commit()
+        _progress_finish(lecture_id)
+        return
+
+    update_lecture_progress(
+        lecture_id, "saving_clips", 90, "Persisting clip rows...", status="clips"
+    )
     with SessionLocal() as db:
         db.query(Clip).filter(Clip.lecture_id == lecture_id).delete()
         for concept, res in zip(concepts, results):
@@ -206,6 +389,12 @@ def _cut_clips_worker(lecture_id: int) -> None:
                 )
             )
         db.commit()
+    update_lecture_progress(
+        lecture_id, "ready", 100,
+        f"Done! {sum(1 for r in results if r.get('ok'))} clips cut.",
+        status="clips",
+    )
+    _progress_finish(lecture_id)
 
 
 def _build_course_graph_worker(course_id: str) -> None:
@@ -218,7 +407,7 @@ def _build_course_graph_worker(course_id: str) -> None:
     _rebuild_course_graph(course_id.strip())
 
 
-def _rebuild_course_graph(course_id: str) -> None:
+def _rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:
     """Regenerate a course's prerequisite graph from its current concept rows.
 
     Transcript-first (plan/LECTURE_STRUCTURE.md §4): lecture_links persisted by
@@ -233,7 +422,15 @@ def _rebuild_course_graph(course_id: str) -> None:
     call order (the UI fires both requests back-to-back; without this chaining
     the graph request can query an empty Concept table and silently exit).
     Idempotent — existing rows are replaced per course on re-run.
+
+    ``lecture_id`` ties progress updates to the lecture that triggered the
+    rebuild (extraction worker passes its own id so the progress bar moves).
     """
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "building_graph", 60, "Loading shared concept encoder...",
+            status="building_graph",
+        )
     from backend.pipeline.build_graph import ConceptGraph
 
     with SessionLocal() as db:
@@ -244,6 +441,8 @@ def _rebuild_course_graph(course_id: str) -> None:
             .all()
         )
         if not rows:
+            if lecture_id is not None:
+                _progress_finish(lecture_id)
             return
         concepts = [
             {"name": c.name, "start_s": c.start_s, "end_s": c.end_s} for c in rows
@@ -277,7 +476,15 @@ def _rebuild_course_graph(course_id: str) -> None:
     from backend.pipeline.classify_prerequisites import PrerequisiteClassifier, \
         classify_course_pairs
 
-    clf = PrerequisiteClassifier()
+    try:
+        clf = PrerequisiteClassifier()
+    except Exception as exc:  # noqa: BLE001 — HF model load is network-dependent
+        raise RuntimeError(f"Classifier model load failed: {type(exc).__name__}: {exc}") from exc
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "building_graph", 75, f"Deduplicating {len(names)} concepts...",
+            status="building_graph",
+        )
     graph = ConceptGraph(encoder_fn=clf._get_encoder)
     graph.add_concepts(names)
     g = graph.to_networkx()
@@ -286,6 +493,11 @@ def _rebuild_course_graph(course_id: str) -> None:
         a_res, b_res = graph._resolve(a), graph._resolve(b)
         edge_meta[(a_res, b_res)] = ("transcript", ev)
         graph.add_edge(a, b, 0.9)
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "building_graph", 85, "Scoring candidate prerequisite pairs...",
+            status="building_graph",
+        )
     try:
         confirmed = classify_course_pairs(concepts, encoder=clf._encoder)
     except ValueError:
@@ -298,6 +510,11 @@ def _rebuild_course_graph(course_id: str) -> None:
         edge_meta[(a_res, b_res)] = ("classifier", None)
     graph.resolve_cycles()
 
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "building_graph", 92, "Persisting graph rows...",
+            status="building_graph",
+        )
     with SessionLocal() as db:
         db.query(GraphNode).filter(GraphNode.course_id == course_id).delete()
         db.query(GraphEdge).filter(GraphEdge.course_id == course_id).delete()
@@ -318,6 +535,12 @@ def _rebuild_course_graph(course_id: str) -> None:
                 )
             )
         db.commit()
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "building_graph", 98, f"{len(graph.nodes())} nodes, "
+            f"{len(graph.edges())} edges persisted.",
+            status="building_graph",
+        )
 
 
 def _lecture_segments(db, course_id: str) -> List[TranscriptSegment]:
@@ -387,3 +610,52 @@ def _clips_by_concept(course_id: str) -> dict:
     for clip in rows:
         out.setdefault(clip.concept_name, clip.path)
     return out
+
+
+def purge_course(course_id: str) -> int:
+    """Delete every DB row belonging to a course and return lectures removed.
+
+    Covers both lecture-scoped rows (segments, concepts, passages, links,
+    clips) and the course-scoped tables that outlive lecture deletion
+    (graph nodes/edges, quiz questions, quiz responses) — the exact gap that
+    left stale smoke-test courses behind. Idempotent; media files on disk are
+    the caller's job (routes own their file layout).
+    """
+    with SessionLocal() as db:
+        lect_ids = [
+            row[0]
+            for row in db.query(Lecture.id).filter(Lecture.course_id == course_id).all()
+        ]
+        db.query(QuizResponse).filter(QuizResponse.course_id == course_id).delete(
+            synchronize_session=False
+        )
+        db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete(
+            synchronize_session=False
+        )
+        db.query(GraphEdge).filter(GraphEdge.course_id == course_id).delete(
+            synchronize_session=False
+        )
+        db.query(GraphNode).filter(GraphNode.course_id == course_id).delete(
+            synchronize_session=False
+        )
+        for lid in lect_ids:
+            db.query(Clip).filter(Clip.lecture_id == lid).delete(
+                synchronize_session=False
+            )
+            db.query(LectureLink).filter(LectureLink.lecture_id == lid).delete(
+                synchronize_session=False
+            )
+            db.query(Passage).filter(Passage.lecture_id == lid).delete(
+                synchronize_session=False
+            )
+            db.query(Concept).filter(Concept.lecture_id == lid).delete(
+                synchronize_session=False
+            )
+            db.query(TranscriptSegment).filter(
+                TranscriptSegment.lecture_id == lid
+            ).delete(synchronize_session=False)
+            db.query(Lecture).filter(Lecture.id == lid).delete(
+                synchronize_session=False
+            )
+        db.commit()
+        return len(lect_ids)
