@@ -334,6 +334,53 @@ def test_course_graph_404_without_rows(api, monkeypatch):
     assert client.get("/courses/ml1/graph").status_code == 404
 
 
+def test_rebuild_graph_shortcircuits_without_concepts(api, monkeypatch):
+    """A rebuild over a course with no extracted concepts writes nothing and
+    never pulls in the classifier/encoder."""
+    client, Session = api
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    workers._rebuild_course_graph("ml1")  # no concepts -> early return
+    with Session() as s:
+        assert s.query(models.GraphNode).count() == 0
+        assert s.query(models.GraphEdge).count() == 0
+    assert client.get("/courses/ml1/graph").status_code == 404
+
+
+def test_rebuild_graph_drops_phantom_link_endpoints(api, monkeypatch):
+    """H2: a spoken LectureLink whose endpoint was never extracted (LLM
+    hallucination / name variant / cross-lecture reference) must not create an
+    orphan GraphNode — the edge is skipped, not auto-created."""
+    client, Session = api
+    from backend.pipeline import classify_prerequisites as CP
+
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(CP, "classify_course_pairs", lambda concepts, **kw: [])
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="Gradient Descent",
+                             source="spoken", start_s=0.0, end_s=10.0))
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="Loss Function",
+                             source="spoken", start_s=5.0, end_s=15.0))
+        # end-to-end edge is grounded, but the Ghost is never extracted
+        s.add(models.LectureLink(lecture_id=lid, source_name="Loss Function",
+                                 target_name="Gradient Descent",
+                                 evidence="we descend the gradient of the loss"))
+        s.add(models.LectureLink(lecture_id=lid, source_name="Backpropagation",
+                                 target_name="Loss Function",
+                                 evidence="backprop references the loss"))
+        s.commit()
+
+    workers._rebuild_course_graph("ml1")
+
+    g = client.get("/courses/ml1/graph").json()
+    assert set(g["nodes"]) == {"Gradient Descent", "Loss Function"}
+    assert g["edges"] == [
+        {"source": "Loss Function", "target": "Gradient Descent",
+         "confidence": 0.9, "source_method": "transcript",
+         "evidence": "we descend the gradient of the loss"}
+    ]
+
+
 # --------------------------------------------------------------------- clips
 
 def test_clips_guards(api):
@@ -501,7 +548,8 @@ def test_create_quiz_uses_llm_mcq_when_available(api, monkeypatch):
     assert first["question"] == "Which best describes 'A' as taught?"
     assert "A definition" in first["options"]
     assert len(first["options"]) == 4
-    assert all(k not in first for k in ("answer", "explanation"))
+    assert all(k not in first for k in ("answer", "explanation",
+                                        "distractor_a", "distractor_b", "distractor_c"))
 
     wrong_pick = next(o for o in first["options"] if o != "A definition")
     rationales = {"wrong one": "that is not definitional of it",
@@ -561,6 +609,201 @@ def test_quiz_submit_unknown_question_404(api):
               "answers": [{"question_id": 999, "correct": True}]},
     )
     assert r.status_code == 404
+
+
+def test_quiz_submit_rejects_cross_course_question(api):
+    """M3: a question may only be answered under its own course."""
+    client, Session = api
+    with Session() as s:
+        s.add(models.ConceptItem(course_id="ml1", concept="A",
+                                 question="qA", answer="optA", order=0))
+        s.commit()
+        qid = s.query(models.ConceptItem).first().id
+    r = client.post(
+        "/quizzes/submit",
+        json={"course_id": "OTHER", "student_id": "p1",
+              "answers": [{"question_id": qid, "selected": "optA"}]},
+    )
+    assert r.status_code == 400
+
+
+def test_quiz_submit_ignores_client_correct_flag(api, monkeypatch):
+    """M3: the client-supplied `correct` flag is dropped — a legacy question
+    with no stored key grades as wrong even when the client claims success."""
+    client, Session = api
+    with Session() as s:
+        q = models.ConceptItem(course_id="ml1", concept="A",
+                               question="qA", order=0)  # answer is NULL
+        s.add(q)
+        s.commit()
+        qid = q.id
+    r = client.post(
+        "/quizzes/submit",
+        json={"course_id": "ml1", "student_id": "spoof",
+              "answers": [{"question_id": qid, "correct": True}]},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["feedback"][0]["correct"] is False
+    assert body["score"] == 0
+
+
+def test_create_quiz_404_without_concepts(api):
+    """A course with no extracted concepts cannot host a quiz."""
+    client, _ = api
+    r = client.post("/quizzes", json={"course_id": "empty", "student_id": "s"})
+    assert r.status_code == 404
+
+
+def test_quiz_submit_increments_attempt_per_student_question(api):
+    client, Session = api
+    with Session() as s:
+        q = models.ConceptItem(course_id="ml1", concept="A",
+                               question="qA", answer="optA", order=0)
+        s.add(q)
+        s.commit()
+        qid = q.id
+    body = {
+        "course_id": "ml1", "student_id": "s1",
+        "answers": [{"question_id": qid, "selected": "optA"}],
+    }
+    assert client.post("/quizzes/submit", json=body).status_code == 200
+    assert client.post("/quizzes/submit", json=body).status_code == 200
+    with Session() as s:
+        rows = (s.query(models.QuizResponse)
+                .filter_by(course_id="ml1", student_id="s1", question_id=qid)
+                .order_by(models.QuizResponse.attempt)
+                .all())
+        assert [r.attempt for r in rows] == [1, 2]
+        assert all(r.correct == 1 for r in rows)
+
+
+def test_get_remediation_returns_latest_sequence(api, monkeypatch):
+    client, Session = api
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="B",
+                             source="spoken", start_s=1.0, end_s=2.0))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.2,
+                                       end_s=0.8, text="the A concept is alpha"))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=1, start_s=1.2,
+                                       end_s=1.8, text="the B concept is beta"))
+        s.add(models.GraphNode(course_id="ml1", name="A"))
+        s.add(models.GraphNode(course_id="ml1", name="B"))
+        s.add(models.GraphEdge(course_id="ml1", source="A", target="B",
+                               confidence=0.9))
+        s.add(models.Clip(lecture_id=lid, concept_name="A", start_s=0.0,
+                          end_s=1.0, path="clips/a.mp4", ok=1))
+        s.commit()
+
+    quiz = client.post("/quizzes", json={"course_id": "ml1", "student_id": "s1"})
+    assert quiz.status_code == 201
+    qs = quiz.json()["questions"]
+    ids = {q["concept"]: q["id"] for q in qs}
+    fail_opt = next(o for o in qs[1]["options"]
+                    if o != "the B concept is beta")
+    sub = client.post(
+        "/quizzes/submit",
+        json={"course_id": "ml1", "student_id": "s1",
+              "answers": [
+                  {"question_id": ids["A"], "selected": "the A concept is alpha"},
+                  {"question_id": ids["B"], "selected": fail_opt},
+              ]},
+    )
+    assert sub.status_code == 200
+
+    rem = client.get("/students/s1/remediation", params={"course_id": "ml1"})
+    assert rem.status_code == 200
+    body = rem.json()
+    assert body["total"] == 2 and body["score"] == 1
+    watch = [(x["concept"], x["failed"]) for x in body["remediation"]]
+    # upstream A (has a clip) then the failed B — prerequisite first
+    assert watch == [("A", False), ("B", True)]
+    # clips are attached for playback where they exist
+    assert body["remediation"][0]["clip"] == "clips/a.mp4"
+
+
+def test_get_remediation_404_without_responses(api):
+    client, _ = api
+    r = client.get("/students/nobody/remediation", params={"course_id": "ml1"})
+    assert r.status_code == 404
+
+
+# ------------------------------------------- worker failure status + sanitization
+
+def test_transcription_worker_error_is_sanitized_and_sets_status(api, monkeypatch):
+    """H1 + M2: a failing pipeline stage must set Lecture.status='error' (not
+    leave it 'ready') and persist a GENERIC error — never ffmpeg stderr/temp
+    paths/Groq internals."""
+    client, Session = api
+    lid = _add_lecture(Session, status="uploaded")
+
+    monkeypatch.setattr(
+        workers, "transcribe",
+        lambda *a, **k: (_ for _ in ()).throw(
+            RuntimeError("ffmpeg error: /tmp/xyz-273/audio.flac: invalid data")
+        ),
+    )
+    workers._process_lecture(lid)
+
+    detail = client.get(f"/lectures/{lid}").json()
+    assert detail["status"] == "error"
+    err = detail["error"]
+    assert err
+    for secret in ("ffmpeg", "/tmp", "RuntimeError", "invalid data"):
+        assert secret not in err
+    # the generic message still tells the operator WHERE it failed
+    assert "Transcription" in err
+    assert "logs" in err
+
+    prog = client.get(f"/lectures/{lid}/progress").json()
+    assert prog["status"] == "error"
+
+
+def test_extraction_worker_total_failure_is_sanitized(api, monkeypatch):
+    """H1: when the structure pass AND its chunk-atomic fallback both fail, the
+    lecture lands in status=error with a generic message (no internal detail)."""
+    client, Session = api
+    lid = _add_lecture(Session, status="ready")
+
+    def boom(docs):
+        raise RuntimeError("groq 500: INTERNAL gsk_...")
+
+    monkeypatch.setattr(workers, "extract_lecture_structure", boom)
+    monkeypatch.setattr(workers, "extract_spoken_concepts", boom)
+    workers._extract_concepts_worker(lid)
+
+    detail = client.get(f"/lectures/{lid}").json()
+    assert detail["status"] == "error"
+    for secret in ("gsk_", "500", "RuntimeError"):
+        assert secret not in detail["error"]
+
+
+def test_clips_worker_error_is_sanitized_and_sets_status(api, monkeypatch):
+    """H1 + M2: a clipping-stage exception marks the lecture error and does not
+    surface ffmpeg stderr to the client."""
+    client, Session = api
+    lid = _add_lecture(Session, status="ready", source_path="media.mp4")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.commit()
+
+    monkeypatch.setattr(
+        workers, "cut_concept_clips",
+        lambda *a, **k: (_ for _ in ()).throw(
+            RuntimeError("/tmp/lecgap-8x.mp4: Invalid NAL unit")
+        ),
+    )
+    workers._cut_clips_worker(lid)
+
+    detail = client.get(f"/lectures/{lid}").json()
+    assert detail["status"] == "error"
+    assert "/tmp" not in detail["error"]
+    assert "Clip cutting" in detail["error"]
 
 
 # --------------------------------------------------------- faculty stats (8)
