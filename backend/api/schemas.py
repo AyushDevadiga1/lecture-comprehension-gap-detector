@@ -122,13 +122,14 @@ class ClipBatchOut(BaseModel):
 
 
 class QuizQuestionOut(BaseModel):
+    """A question as presented to the client. It must never reveal the answer:
+    only the shuffled ``options`` are returned (the answer is exactly one of
+    them). Distractor/answer columns stay server-side."""
+
     id: int
     concept: str
     question: str
     options: List[str] = []
-    distractor_a: Optional[str] = None
-    distractor_b: Optional[str] = None
-    distractor_c: Optional[str] = None
 
 
 class QuizOut(BaseModel):
@@ -139,9 +140,11 @@ class QuizOut(BaseModel):
 
 
 class QuizAnswerIn(BaseModel):
+    """One student answer. Grading is always server-side: the client submits
+    only what it *selected* — the `correct` flag is deliberately not accepted
+    for input (a client-reported key would defeat the quiz)."""
     question_id: int
     selected: Optional[str] = None
-    correct: Optional[bool] = None
     latency_s: Optional[float] = None
 
 

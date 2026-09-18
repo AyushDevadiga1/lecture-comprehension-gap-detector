@@ -173,13 +173,19 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
             if quest is None:
                 raise HTTPException(status_code=404,
                                     detail=f"Question {a.question_id} not found")
+            if quest.course_id != payload.course_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Question {a.question_id} belongs to course "
+                           f"{quest.course_id!r}, not {payload.course_id!r}",
+                )
             # server-side grading: the ground-truth option is stored with the
-            # question. Legacy probe answers (self-reported `correct`, no
-            # answer key) still grade via their `correct` flag.
+            # question. The client only ever reports what it *selected*; a
+            # question without a stored key grades as wrong (no flag from the
+            # client is trusted — that would defeat the quiz and pollute the
+            # remediation/heatmap signals).
             if quest.answer is not None:
                 correct = a.selected == quest.answer
-            elif a.correct is not None:
-                correct = bool(a.correct)
             else:
                 correct = False
             # post-submit feedback: why the right answer is right, and if the
