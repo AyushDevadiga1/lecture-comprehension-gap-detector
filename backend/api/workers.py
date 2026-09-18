@@ -8,6 +8,7 @@ layer calls.
 """
 
 from datetime import datetime
+import logging
 from pathlib import Path
 from typing import List
 
@@ -36,6 +37,44 @@ import threading
 import time
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+_LOGGER = logging.getLogger("lecgap.workers")
+
+# One long-lived classifier per process (H4): the MiniLM encoder weights and
+# the LectureBank-fitted logistic head construct/fit ONCE and are reused by
+# every course-graph rebuild. Previously each rebuild built a fresh
+# PrerequisiteClassifier and re-fitted the head on ~42k rows, and re-loaded
+# the encoder per stage.
+_shared_clf_guard = threading.Lock()
+_shared_clf = None
+
+
+def _get_shared_classifier():
+    """Lazily construct (once per process) the shared prerequisite classifier."""
+    global _shared_clf
+    if _shared_clf is None:
+        from backend.pipeline.classify_prerequisites import PrerequisiteClassifier
+
+        with _shared_clf_guard:
+            if _shared_clf is None:
+                try:
+                    _shared_clf = PrerequisiteClassifier()
+                except Exception as exc:  # noqa: BLE001 — HF model load is network-dependent
+                    raise RuntimeError(
+                        f"Classifier model load failed: {type(exc).__name__}: {exc}"
+                    ) from exc
+    return _shared_clf
+
+
+def _client_error_message(exc: Exception, context: str = "Pipeline stage") -> str:
+    """Sanitize a stage failure for the client (M2).
+
+    Full exception detail and traceback are logged server-side; what lands in
+    `lecture.error` (and is returned by GET /lectures[/{id}] / /progress) is a
+    generic message — never ffmpeg stderr, temp paths, or Groq internals.
+    """
+    _LOGGER.exception("%s failed: %s", context, exc)
+    return f"{context} failed — see server logs for details."
 
 # Live per-lecture job progress, published by the long-running workers and
 # read by GET /lectures/{id}/progress (the Streamlit progress bars poll it).
@@ -129,7 +168,7 @@ def _process_lecture(lecture_id: int, backend: str = None) -> None:
     try:
         segments = transcribe(source_path, backend=backend, progress_callback=_on_progress)
     except Exception as exc:  # noqa: BLE001 — surface any failure on the lecture row
-        err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+        err_msg = _client_error_message(exc, "Transcription")
         update_lecture_progress(lecture_id, "error", 0, err_msg, status="error")
         with SessionLocal() as db:
             lecture = db.get(Lecture, lecture_id)
@@ -218,11 +257,12 @@ def _extract_concepts_worker(lecture_id: int) -> None:
             # Stage 2b fallback: pin chunk-stamped spans down to teach-spans.
             concepts = refine_concept_times(concepts, docs)
         except Exception as exc:  # noqa: BLE001 — any failure is fine to surface
-            err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+            err_msg = _client_error_message(exc, "Concept extraction")
             update_lecture_progress(lecture_id, "error", 0, err_msg, status="error")
             with SessionLocal() as db:
                 lecture = db.get(Lecture, lecture_id)
                 if lecture is not None:
+                    lecture.status = "error"
                     lecture.error = err_msg
                     db.commit()
             _progress_finish(lecture_id)
@@ -292,7 +332,7 @@ def _extract_concepts_worker(lecture_id: int) -> None:
     try:
         _rebuild_course_graph(course_id, lecture_id=lecture_id)
     except Exception as exc:  # noqa: BLE001 — graph failure must not strand silently
-        err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+        err_msg = _client_error_message(exc, "Course-graph rebuild")
         update_lecture_progress(
             lecture_id, "error", 0,
             f"Concepts saved, but course-graph rebuild failed: {err_msg}",
@@ -301,6 +341,7 @@ def _extract_concepts_worker(lecture_id: int) -> None:
         with SessionLocal() as db:
             lecture = db.get(Lecture, lecture_id)
             if lecture is not None:
+                lecture.status = "error"
                 lecture.error = err_msg
                 db.commit()
         _progress_finish(lecture_id)
@@ -358,13 +399,14 @@ def _cut_clips_worker(lecture_id: int) -> None:
             on_done=_on_clip_done,
         )
     except Exception as exc:  # noqa: BLE001 — a bad concept must not strand the lecture
-        err_msg = f"{type(exc).__name__}: {exc}"[:2000]
+        err_msg = _client_error_message(exc, "Clip cutting")
         update_lecture_progress(
             lecture_id, "error", 0, err_msg, status="error"
         )
         with SessionLocal() as db:
             lecture = db.get(Lecture, lecture_id)
             if lecture is not None:
+                lecture.status = "error"
                 lecture.error = err_msg
                 db.commit()
         _progress_finish(lecture_id)
@@ -468,18 +510,14 @@ def _rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:
 
     names = sorted({c["name"] for c in concepts})
 
-    # Load the embedding model ONCE (lazily, wherever it is first needed) and
-    # share that single instance across concept dedup, the candidate
-    # pre-filter, and the classifier fit/predict — previously each stage
-    # constructed its own SentenceTransformer, so one graph rebuild printed
-    # "Loading weights" three times and paid the load cost 3x.
-    from backend.pipeline.classify_prerequisites import PrerequisiteClassifier, \
-        classify_course_pairs
+    # Load/keep the shared embedding model + fitted head (H4): one
+    # MiniLM instance serves concept dedup, the candidate pre-filter, and the
+    # classifier fit/predict across every rebuild for the process lifetime —
+    # previously each rebuild printed "Loading weights" three times, paid the
+    # load cost 3x, and re-fit the logistic head on LectureBank per lecture.
+    from backend.pipeline.classify_prerequisites import classify_course_pairs
 
-    try:
-        clf = PrerequisiteClassifier()
-    except Exception as exc:  # noqa: BLE001 — HF model load is network-dependent
-        raise RuntimeError(f"Classifier model load failed: {type(exc).__name__}: {exc}") from exc
+    clf = _get_shared_classifier()
     if lecture_id is not None:
         update_lecture_progress(
             lecture_id, "building_graph", 75, f"Deduplicating {len(names)} concepts...",
@@ -489,8 +527,16 @@ def _rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:
     graph.add_concepts(names)
     g = graph.to_networkx()
     edge_meta: dict = {}
+    # Only the concepts extracted (and dedup-canonicalised) above are valid
+    # nodes. A spoken link whose endpoints were never extracted (LLM
+    # hallucination, name variant, cross-lecture reference) is dropped here —
+    # letting add_edge auto-create it (build_graph.add_edge) would plant a
+    # GraphNode with no Concept row in topo order and remediation.
+    known_nodes = set(graph.nodes())
     for a, b, ev in link_pairs:
         a_res, b_res = graph._resolve(a), graph._resolve(b)
+        if a_res not in known_nodes or b_res not in known_nodes:
+            continue
         edge_meta[(a_res, b_res)] = ("transcript", ev)
         graph.add_edge(a, b, 0.9)
     if lecture_id is not None:
@@ -607,9 +653,6 @@ def _question_out(item) -> QuizQuestionOut:
         concept=item.concept,
         question=item.question,
         options=options,
-        distractor_a=item.distractor_a,
-        distractor_b=item.distractor_b,
-        distractor_c=item.distractor_c,
     )
 
 
