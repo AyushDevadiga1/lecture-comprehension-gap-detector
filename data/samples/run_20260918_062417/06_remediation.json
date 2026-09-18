@@ -1,0 +1,84 @@
+{
+  "quiz_id": 1,
+  "student_id": "sample-student",
+  "score": 4,
+  "total": 6,
+  "remediation": [
+    {
+      "concept": "equation mx+b",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\equation mx_b__29-39.mp4"
+    },
+    {
+      "concept": "simple linear regression concepts",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\simple linear regression concepts__69-115.mp4"
+    },
+    {
+      "concept": "simple linear regression",
+      "failed": false,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\simple linear regression__0-29.mp4"
+    },
+    {
+      "concept": "multiple linear regression",
+      "failed": true,
+      "clip": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\multiple linear regression__69-115.mp4"
+    }
+  ],
+  "feedback": [
+    {
+      "question_id": 1,
+      "concept": "equation mx+b",
+      "correct": false,
+      "selected": "It is used to calculate the slope of a parabola.",
+      "answer": "It is the formula for the regression (best\u2011fit) line that relates the X and Y quantities in a linear relationship.",
+      "explanation": "The excerpt explains that when X and Y show a linear relationship, the best\u2011fit line (regression line) is drawn using the equation mx+b, where m and b are found from the data.",
+      "rationale": "A parabola requires a quadratic equation, not mx+b."
+    },
+    {
+      "question_id": 2,
+      "concept": "simple linear regression concepts",
+      "correct": true,
+      "selected": "Simple linear regression models the relationship between a single predictor and a response variable using a straight line, estimating the slope and intercept that minimize the sum of squared residuals.",
+      "answer": "Simple linear regression models the relationship between a single predictor and a response variable using a straight line, estimating the slope and intercept that minimize the sum of squared residuals.",
+      "explanation": "The lecture explained that simple linear regression involves one predictor and fits a straight line by minimizing squared errors, capturing the slope and intercept.",
+      "rationale": null
+    },
+    {
+      "question_id": 3,
+      "concept": "simple linear regression",
+      "correct": true,
+      "selected": "It is the process of drawing a best\u2011fit line through plotted X and Y points, whose equation is of the form y = mx + b, where m and b are determined from the data.",
+      "answer": "It is the process of drawing a best\u2011fit line through plotted X and Y points, whose equation is of the form y = mx + b, where m and b are determined from the data.",
+      "explanation": "The lecture explains that simple linear regression involves plotting X and Y, checking for a linear relationship, and drawing a best\u2011fit line whose equation is y = mx + b, with m and b found from the data.",
+      "rationale": null
+    },
+    {
+      "question_id": 4,
+      "concept": "multiple linear regression",
+      "correct": false,
+      "selected": "It requires that all independent variables be categorical.",
+      "answer": "Multiple linear regression models a dependent variable as a linear combination of two or more independent variables, estimating coefficients that minimize the sum of squared residuals.",
+      "explanation": "The lecture explains that multiple linear regression involves more than one predictor and fits a linear equation by minimizing squared errors, not limited to one variable or categorical predictors.",
+      "rationale": "The method works with both continuous and categorical predictors; it is not restricted to categorical ones."
+    },
+    {
+      "question_id": 5,
+      "concept": "regression line",
+      "correct": true,
+      "selected": "It is the best\u2011fit straight line drawn through plotted X and Y points, whose equation is of the form y = mx + b.",
+      "answer": "It is the best\u2011fit straight line drawn through plotted X and Y points, whose equation is of the form y = mx + b.",
+      "explanation": "The lecture explains that a regression line is the best\u2011fit line drawn through X and Y points, with an equation y = mx + b.",
+      "rationale": null
+    },
+    {
+      "question_id": 6,
+      "concept": "best\u2011fit line",
+      "correct": true,
+      "selected": "\u091c\u093f\u0938\u0915\u094b \u0906\u092a best fit line \u092c\u0942\u0932\u0924\u0947 \u0925\u0947 \u0914\u0930 best fit line \u0939\u0940 \u0906\u092a\u0915\u093e regression line \u0939\u094b\u0924\u093e \u0925\u093e \u0914\u0930 \u0907\u0938 line \u0915\u094b draw \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0906\u092a\u0915\u094b \u0907\u0938 line \u0915\u093e equation \u091a\u093e\u0939\u093f\u090f",
+      "answer": "\u091c\u093f\u0938\u0915\u094b \u0906\u092a best fit line \u092c\u0942\u0932\u0924\u0947 \u0925\u0947 \u0914\u0930 best fit line \u0939\u0940 \u0906\u092a\u0915\u093e regression line \u0939\u094b\u0924\u093e \u0925\u093e \u0914\u0930 \u0907\u0938 line \u0915\u094b draw \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0906\u092a\u0915\u094b \u0907\u0938 line \u0915\u093e equation \u091a\u093e\u0939\u093f\u090f",
+      "explanation": null,
+      "rationale": null
+    }
+  ]
+}

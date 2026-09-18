@@ -1,0 +1,95 @@
+{
+  "course_id": "ml",
+  "heatmap": [
+    {
+      "concept": "equation mx+b",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "multiple linear regression",
+      "wrong": 1,
+      "attempts": 1,
+      "rate": 1.0
+    },
+    {
+      "concept": "simple linear regression concepts",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "simple linear regression",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "regression line",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    },
+    {
+      "concept": "best\u2011fit line",
+      "wrong": 0,
+      "attempts": 1,
+      "rate": 0.0
+    }
+  ],
+  "divergence": [
+    {
+      "concept": "best\u2011fit line",
+      "taught_idx": 1,
+      "learned_idx": 5,
+      "gap": 4
+    },
+    {
+      "concept": "simple linear regression concepts",
+      "taught_idx": 5,
+      "learned_idx": 1,
+      "gap": -4
+    },
+    {
+      "concept": "equation mx+b",
+      "taught_idx": 3,
+      "learned_idx": 0,
+      "gap": -3
+    },
+    {
+      "concept": "simple linear regression",
+      "taught_idx": 0,
+      "learned_idx": 2,
+      "gap": 2
+    },
+    {
+      "concept": "regression line",
+      "taught_idx": 2,
+      "learned_idx": 4,
+      "gap": 2
+    },
+    {
+      "concept": "multiple linear regression",
+      "taught_idx": 4,
+      "learned_idx": 3,
+      "gap": -1
+    }
+  ],
+  "taught_order": [
+    "simple linear regression",
+    "best\u2011fit line",
+    "regression line",
+    "equation mx+b",
+    "multiple linear regression",
+    "simple linear regression concepts"
+  ],
+  "learned_order": [
+    "equation mx+b",
+    "simple linear regression concepts",
+    "simple linear regression",
+    "multiple linear regression",
+    "regression line",
+    "best\u2011fit line"
+  ]
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "concept_name": "simple linear regression",
+    "start_s": 0.0,
+    "end_s": 29.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\simple linear regression__0-29.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 2,
+    "concept_name": "best\u2011fit line",
+    "start_s": 18.5,
+    "end_s": 29.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\best_fit line__18-29.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 3,
+    "concept_name": "regression line",
+    "start_s": 18.5,
+    "end_s": 29.1,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\regression line__18-29.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 4,
+    "concept_name": "equation mx+b",
+    "start_s": 29.1,
+    "end_s": 38.7,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\equation mx_b__29-39.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 5,
+    "concept_name": "multiple linear regression",
+    "start_s": 68.7,
+    "end_s": 115.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\multiple linear regression__69-115.mp4",
+    "ok": true,
+    "error": null
+  },
+  {
+    "id": 6,
+    "concept_name": "simple linear regression concepts",
+    "start_s": 68.7,
+    "end_s": 115.0,
+    "path": "C:\\Users\\hp\\Desktop\\lecture-comprehension-gap-detector\\data\\processed\\clips\\1\\simple linear regression concepts__69-115.mp4",
+    "ok": true,
+    "error": null
+  }
+]

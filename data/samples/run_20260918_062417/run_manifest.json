@@ -1,0 +1,46 @@
+{
+  "run_id": "run_20260918_062417",
+  "course": "ml",
+  "student": "sample-student",
+  "clip": "data\\raw\\lec1__smoketest_3min.mp4",
+  "started": "20260918_062417",
+  "steps": [
+    {
+      "stage": 0,
+      "name": "input",
+      "artifact": "00_input__lec1__smoketest_3min.mp4"
+    }
+  ],
+  "finished": "06:26:40",
+  "transcript_segments": 21,
+  "concepts": 6,
+  "graph": {
+    "nodes": 6,
+    "edges": 6,
+    "is_dag": true,
+    "order": [
+      "equation mx+b",
+      "simple linear regression concepts",
+      "simple linear regression",
+      "multiple linear regression",
+      "regression line",
+      "best\u2011fit line"
+    ]
+  },
+  "clips_ok": 6,
+  "quiz_questions": 6,
+  "score": "4/6",
+  "artifacts": [
+    "00_input__lec1__smoketest_3min.mp4",
+    "01_transcript.json",
+    "02_concepts.json",
+    "03_graph.json",
+    "04_clips.json",
+    "05_quiz.json",
+    "06_remediation.json",
+    "07_stats.json",
+    "lecgap.db",
+    "lecgap.db-shm",
+    "lecgap.db-wal"
+  ]
+}

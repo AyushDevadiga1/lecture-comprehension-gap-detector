@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "simple linear regression",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 0.0,
+    "end_s": 29.1
+  },
+  {
+    "id": 2,
+    "name": "best\u2011fit line",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 18.5,
+    "end_s": 29.1
+  },
+  {
+    "id": 3,
+    "name": "regression line",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 18.5,
+    "end_s": 29.1
+  },
+  {
+    "id": 4,
+    "name": "equation mx+b",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 29.1,
+    "end_s": 38.7
+  },
+  {
+    "id": 5,
+    "name": "multiple linear regression",
+    "source": "spoken",
+    "implicit": false,
+    "start_s": 68.7,
+    "end_s": 115.0
+  },
+  {
+    "id": 6,
+    "name": "simple linear regression concepts",
+    "source": "spoken",
+    "implicit": true,
+    "start_s": 68.7,
+    "end_s": 115.0
+  }
+]

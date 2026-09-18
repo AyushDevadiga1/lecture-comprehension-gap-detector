@@ -1,0 +1,66 @@
+{
+  "course_id": "ml",
+  "nodes": [
+    "best\u2011fit line",
+    "equation mx+b",
+    "multiple linear regression",
+    "regression line",
+    "simple linear regression",
+    "simple linear regression concepts"
+  ],
+  "edges": [
+    {
+      "source": "regression line",
+      "target": "best\u2011fit line",
+      "confidence": 0.5020644047748215,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "simple linear regression",
+      "target": "multiple linear regression",
+      "confidence": 0.9,
+      "source_method": "transcript",
+      "evidence": "so multiple linear regression is just an extension of simple linear regression"
+    },
+    {
+      "source": "simple linear regression",
+      "target": "regression line",
+      "confidence": 0.7032450665053804,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "simple linear regression concepts",
+      "target": "simple linear regression",
+      "confidence": 0.9279654045075291,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "simple linear regression concepts",
+      "target": "regression line",
+      "confidence": 0.6463097520772971,
+      "source_method": "classifier",
+      "evidence": null
+    },
+    {
+      "source": "simple linear regression concepts",
+      "target": "multiple linear regression",
+      "confidence": 0.8443804614394533,
+      "source_method": "classifier",
+      "evidence": null
+    }
+  ],
+  "node_count": 6,
+  "edge_count": 6,
+  "is_dag": true,
+  "topological_order": [
+    "equation mx+b",
+    "simple linear regression concepts",
+    "simple linear regression",
+    "multiple linear regression",
+    "regression line",
+    "best\u2011fit line"
+  ]
+}
