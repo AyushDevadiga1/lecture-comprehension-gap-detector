@@ -51,6 +51,6 @@ review_*.md
 #security audit-skill
 security-audit-skill
 
-# SQLite WAL sidecars produced next to data/lecgap.db by the live backend
-data/*.db-shm
-data/*.db-wal
+# SQLite WAL sidecars produced next to any lecgap.db (incl. data/samples runs)
+**/*.db-shm
+**/*.db-wal
