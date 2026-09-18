@@ -177,23 +177,16 @@ def generate_synthetic_students(
 
         completer = _default_completer
 
-    edges = _edges_of(hidden_graph)
-    deps = "\n".join(
-        f"- {e['target']} requires {e['source']}" for e in edges
-    ) or "(none)"
-
     students = []
     for i in range(n):
         k = rng.randint(max(1, len(all_concepts) // 2), len(all_concepts))
         taught = set(rng.sample(all_concepts, k))
         system = (
-            "You are a student taking a course. You were taught only a limited "
-            "set of topics, and you have NOT learned anything beyond that set.\n"
-            "The course material establishes these dependencies:\n"
-            f"{deps}\n"
-            "You reason carefully: if a topic requires a prerequisite that was "
-            "NOT in your taught set, you have not mastered that topic even if "
-            "you learned the prerequisite's name from reading the syllabus."
+            "You are a student taking a course. You have attended classes for a "
+            "specific set of topics, and have not yet studied material beyond that set.\n"
+            "Assess honestly whether you have mastered each tested topic given your current knowledge. "
+            "If a topic relies on concepts, mathematical foundations, or tools you have not learned, "
+            "or was not taught to you, you have not mastered it."
         )
         mastered, failed = [], []
         for concept in all_concepts:
