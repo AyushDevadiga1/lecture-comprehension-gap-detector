@@ -54,3 +54,6 @@ security-audit-skill
 # SQLite WAL sidecars produced next to any lecgap.db (incl. data/samples runs)
 **/*.db-shm
 **/*.db-wal
+
+# agent skills
+agent-skills
