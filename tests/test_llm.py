@@ -8,6 +8,7 @@ the real data/lecgap.db is never touched either.
 
 import os
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -120,3 +121,54 @@ def test_parse_reset_seconds_handles_all_units():
     assert _parse_reset_seconds("2h3m45s") == pytest.approx(7425.0)
     assert _parse_reset_seconds("60s") == pytest.approx(60.0)
     assert _parse_reset_seconds("") == 0.0
+
+
+def test_concurrent_same_key_calls_backend_once(monkeypatch):
+    """Single-flight: N threads missing the same key share ONE backend call."""
+    import threading
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    from backend.pipeline import llm
+
+    monkeypatch.setenv("GROQ_API_KEY", "fake-key-for-test")
+    call_guard = threading.Lock()
+    calls = []
+
+    def fake_groq(system, user, max_tokens, temperature):
+        with call_guard:
+            calls.append(user)
+        time.sleep(0.05)  # widen the window where a race would double-call
+        return llm.LLMResult("shared-answer", "groq", "model-x", False, 10, 5)
+
+    monkeypatch.setattr(llm, "_call_groq", fake_groq)
+
+    def worker():
+        return llm.complete("sys", "same user prompt")
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: worker(), range(8)))
+
+    assert len(calls) == 1  # the duplicate call is eliminated
+    assert all(r.text == "shared-answer" for r in results)
+    # the lock holder produces a fresh result; waiters are served from cache
+    assert sum(r.cached for r in results) == 7
+    assert sum(not r.cached for r in results) == 1
+
+
+def test_cache_put_uses_insert_not_ignore_idempotent(monkeypatch):
+    """A duplicate PK insert (cross-process race) must be a no-op, not raise."""
+    from backend.models import db as dbmod
+    from backend.pipeline import llm
+
+    monkeypatch.setenv("GROQ_API_KEY", "fake-key-for-test")
+    key = llm._cache_key(llm.GROQ_MODEL, "sys", "dup", 1000, 0.0)
+    res = llm.LLMResult("first", "groq", "model-x", False, 10, 5)
+
+    llm._cache_put(key, res)
+    llm._cache_put(key, res)  # second write for the same key: no IntegrityError
+
+    with dbmod.SessionLocal() as s:
+        row = s.get(dbmod.LLMCache, key)
+        assert row is not None
+        assert row.response_text == "first"

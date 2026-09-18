@@ -19,11 +19,14 @@ where the answer came from and what it cost.
 import hashlib
 import os
 import re
+import threading
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterator, Optional
 
 import requests
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from backend.models.db import LLMCache, SessionLocal
 
@@ -57,6 +60,17 @@ def _cache_key(model: str, system: str, user: str, max_tokens: int, temperature:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _from_cache(hit: LLMCache) -> LLMResult:
+    return LLMResult(
+        text=hit.response_text,
+        backend=hit.backend,
+        model=hit.model,
+        cached=True,
+        prompt_tokens=hit.prompt_tokens,
+        completion_tokens=hit.completion_tokens,
+    )
+
+
 def _cache_get(key: str) -> Optional[LLMCache]:
     with SessionLocal() as db:
         row = db.get(LLMCache, key)
@@ -71,8 +85,9 @@ def _cache_put(key: str, result: LLMResult) -> None:
         # every later run would replay the dead answer instead of retrying.
         return
     with SessionLocal() as db:
-        db.merge(
-            LLMCache(
+        db.execute(
+            sqlite_insert(LLMCache)
+            .values(
                 key=key,
                 backend=result.backend,
                 model=result.model,
@@ -80,6 +95,7 @@ def _cache_put(key: str, result: LLMResult) -> None:
                 prompt_tokens=result.prompt_tokens,
                 completion_tokens=result.completion_tokens,
             )
+            .on_conflict_do_nothing()
         )
         db.commit()
 
@@ -91,6 +107,44 @@ def _cache_del(key: str) -> None:
         if row is not None:
             db.delete(row)
             db.commit()
+
+
+class _KeyLockMap:
+    """Reference-counted per-key locks for single-flight completion.
+
+    Threads that MISS the same cache key serialize on one per-key lock so a
+    single backend call + cache insert serves them all (no double API billing
+    for identical prompts, no duplicate-PK insert race). Entries are dropped
+    when the last holder releases, so the map stays bounded over a long-lived
+    process.
+    """
+
+    def __init__(self) -> None:
+        self._guard = threading.Lock()
+        self._locks: dict[str, tuple[threading.Lock, int]] = {}
+
+    @contextmanager
+    def __call__(self, key: str) -> Iterator[None]:
+        with self._guard:
+            lock, n = self._locks.get(key, (None, 0))
+            if lock is None:
+                lock = threading.Lock()
+            self._locks[key] = (lock, n + 1)
+        lock.acquire()
+        try:
+            yield
+        finally:
+            with self._guard:
+                lock, n = self._locks[key]
+                n -= 1
+                if n <= 0:
+                    del self._locks[key]
+                else:
+                    self._locks[key] = (lock, n)
+            lock.release()
+
+
+_inflight = _KeyLockMap()
 
 
 def _call_groq(system: str, user: str, max_tokens: int, temperature: float) -> LLMResult:
@@ -183,42 +237,48 @@ def complete(
     max_tokens: int = 1000,
     temperature: float = 0.0,
 ) -> LLMResult:
-    """Cached, quota-aware completion. See module docstring for priority order."""
+    """Cached, quota-aware completion. See module docstring for priority order.
+
+    Concurrent threads that miss the same key are serialized by a per-key
+    single-flight lock: the winner makes the backend calls and fills the cache,
+    the waiters re-read the cache and reuse the result. Distinct prompts keep
+    their parallelism, so the 6-worker MCQ pool stays concurrent.
+    """
     resolved_model = model or GROQ_MODEL
     key = _cache_key(resolved_model, system, user, max_tokens, temperature)
 
     hit = _cache_get(key)
     if hit is not None:
         if hit.response_text and hit.response_text.strip():
-            return LLMResult(
-                text=hit.response_text,
-                backend=hit.backend,
-                model=hit.model,
-                cached=True,
-                prompt_tokens=hit.prompt_tokens,
-                completion_tokens=hit.completion_tokens,
-            )
+            return _from_cache(hit)
         # poisoned cache row (empty completion) — drop and regenerate live
         _cache_del(key)
 
-    errors = []
-    for attempt in range(3):  # a backend can return an empty completion; retry
-        for name, caller in (("groq", lambda: _call_groq(system, user, max_tokens, temperature)),
-                             ("ollama", lambda: _call_ollama(system, user, max_tokens, temperature))):
-            if name == "groq" and not os.getenv("GROQ_API_KEY"):
-                continue
-            if name == "ollama" and not _ollama_reachable():
-                errors.append("ollama: not reachable")
-                continue
-            try:
-                result = caller()
-                if not result.text or not result.text.strip():
-                    errors.append(f"{name}: empty completion")
+    with _inflight(key):
+        hit = _cache_get(key)
+        if hit is not None:
+            if hit.response_text and hit.response_text.strip():
+                return _from_cache(hit)
+            _cache_del(key)
+
+        errors = []
+        for attempt in range(3):  # a backend can return an empty completion; retry
+            for name, caller in (("groq", lambda: _call_groq(system, user, max_tokens, temperature)),
+                                 ("ollama", lambda: _call_ollama(system, user, max_tokens, temperature))):
+                if name == "groq" and not os.getenv("GROQ_API_KEY"):
                     continue
-                _cache_put(key, result)
-                return result
-            except Exception as exc:
-                errors.append(f"{name}: {exc}")
+                if name == "ollama" and not _ollama_reachable():
+                    errors.append("ollama: not reachable")
+                    continue
+                try:
+                    result = caller()
+                    if not result.text or not result.text.strip():
+                        errors.append(f"{name}: empty completion")
+                        continue
+                    _cache_put(key, result)
+                    return result
+                except Exception as exc:
+                    errors.append(f"{name}: {exc}")
 
     raise RuntimeError(
         "No LLM backend succeeded. " + ("; ".join(errors) if errors else "none configured")
