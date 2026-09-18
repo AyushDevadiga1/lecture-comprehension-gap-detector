@@ -196,25 +196,27 @@ def make_mcq(
 
     if evidence is not None:
         answer = evidence
-        distractors: List[str] = [e for _, e in pool if e and e != answer]
+        distractors: List[str] = [
+            e for _, e in pool if e and e != answer and len(e.strip()) >= 10
+        ]
         distractors = list(dict.fromkeys(distractors))[:3]
         if len(distractors) < 3:
             need = 3 - len(distractors)
             distractors += list(_DEFAULT_DISTRACTORS[:need])
         question = (
-            f"Which statement best describes the concept '{concept}' "
+            f"Which statement best describes the principle or role of '{concept}' "
             "as taught in the lecture?"
         )
     else:
         # no lecture evidence at all -> the question is a recognition check
         # among the concept names, so it stays a valid, graded MCQ.
         answer = concept
-        distractors = [n for n, _ in pool if n != concept]
+        distractors = [n for n, _ in pool if n != concept and len(str(n).strip()) > 0]
         distractors = list(dict.fromkeys(distractors))[:3]
         if len(distractors) < 3:
             need = 3 - len(distractors)
             distractors += list(_DEFAULT_DISTRACTORS[:need])
-        question = f"Which of these is the concept '{concept}'?"
+        question = f"Which of these identifies the concept '{concept}'?"
 
     options = [answer] + distractors
     rng.shuffle(options)
