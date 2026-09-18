@@ -28,11 +28,12 @@ routes/db/ui are unaware of which backend produced the transcript.
 """
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from backend.pipeline.llm import SLEEP_CAP_S, _parse_reset_seconds
 
@@ -140,19 +141,24 @@ def _detect_silence_offset(flac_path: str, target_s: float, window_s: float = 3.
 
 
 def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
-                duration: float = 0.0, snap_silence: bool = False) -> List[str]:
-    """Slice a FLAC into adjacent chunk_s-second pieces, returning sorted paths.
+                duration: float = 0.0, snap_silence: bool = False) -> List[Tuple[str, float]]:
+    """Slice a FLAC into adjacent chunk_s-second pieces, returning ``(path, start_offset)`` pairs.
 
     Each piece is a clean, freshly-encoded standalone FLAC (seek + re-encode),
     NOT an ffmpeg ``-f segment`` cut: segmentation leaves the trailing piece in
     a shape Groq's parser rejects with HTTP 500, even though the same audio
     passes when re-encoded (observed on a 21-min lecture). Per-piece encoding
     guarantees every chunk is a byte-valid FLAC document.
+
+    The second element of each pair is the chunk's real absolute start offset.
+    Callers must use it — not ``i * chunk_s`` — to place transcribed segments,
+    because snapping (``snap_silence`` / ``LECGAP_SNAP_SILENCE``) moves
+    boundaries to detected pauses, so chunk starts are not uniform.
     """
     if not duration:
         duration = _probe_duration(flac_path)
     snap = snap_silence or os.getenv("LECGAP_SNAP_SILENCE", "").strip().lower() in {"1", "true", "yes"}
-    chunks: List[str] = []
+    chunks: List[Tuple[str, float]] = []
     start = 0.0
     idx = 0
     while start < duration:
@@ -176,7 +182,7 @@ def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
         )
         if out.returncode != 0 or not os.path.exists(path):
             raise RuntimeError(f"ffmpeg chunking failed: {out.stderr.strip()}")
-        chunks.append(path)
+        chunks.append((path, start))
         start = split_point
         idx += 1
     if not chunks:
@@ -294,13 +300,12 @@ def _transcribe_groq(
                     f"Audio length: {duration:.0f}s. Slicing into clean {chunk_s}s chunks...",
                 )
             chunks = _split_flac(flac, tmp, chunk_s, duration)
-            offsets = [float(i * chunk_s) for i in range(len(chunks))]
         else:
-            chunks, offsets = [flac], [0.0]
+            chunks = [(flac, 0.0)]
 
         total_chunks = len(chunks)
         segments: List[Dict[str, float | str]] = []
-        for idx, (chunk, offset) in enumerate(zip(chunks, offsets)):
+        for idx, (chunk, offset) in enumerate(chunks):
             if progress_callback:
                 pct = 30 + int(60 * idx / total_chunks)
                 progress_callback(

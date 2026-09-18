@@ -251,7 +251,8 @@ def test_groq_splits_and_offsets_oversized_files(monkeypatch):
     monkeypatch.setattr(tr, "_probe_duration", lambda _: 60.0)
     monkeypatch.setattr(tr, "_chunk_seconds", lambda *a, **k: 30)
     monkeypatch.setattr(
-        tr, "_split_flac", lambda flac, d, s, duration=None: [Path(d, "chunk_000.flac"), Path(d, "chunk_001.flac")]
+        tr, "_split_flac",
+        lambda flac, d, s, duration=None: [(Path(d, "chunk_000.flac"), 0.0), (Path(d, "chunk_001.flac"), 30.0)]
     )
 
     def fake_transcribe_chunk(client, chunk, offset):
@@ -285,16 +286,98 @@ def test_split_flac_reencodes_each_chunk(monkeypatch, tmp_path):
 
     chunks = tr._split_flac(str(flac), str(tmp_path), 300, duration=650.0)
 
-    assert [Path(c).name for c in chunks] == [
+    assert [Path(c[0]).name for c in chunks] == [
         "chunk_000.flac",
         "chunk_001.flac",
         "chunk_002.flac",
     ]
+    assert [c[1] for c in chunks] == [0.0, 300.0, 600.0]  # real start offsets
     assert len(calls) == 3
     for cmd in calls:
         assert "-f" not in cmd and "segment" not in cmd  # not a `-f segment` cut
         assert "-ss" in cmd and "-t" in cmd
     assert calls[-1][calls[-1].index("-t") + 1] == "50.000"  # tail remainder, 650 - 600
+
+
+def _fake_run_with_stderr(stderr_text, returncode=0):
+    def fake_run(cmd, **kwargs):
+        return tr.subprocess.CompletedProcess(cmd, returncode, "", stderr_text)
+
+    return fake_run
+
+
+def test_detect_silence_offset_snaps_to_detected_pause(monkeypatch):
+    monkeypatch.setattr(
+        tr.subprocess, "run",
+        _fake_run_with_stderr("silence_start: 2.500\nsilence_end: 2.9 | silence_duration: 0.4"),
+    )
+    assert tr._detect_silence_offset("audio.flac", target_s=300.0) == 299.5  # 297.0 + 2.5
+
+
+def test_detect_silence_offset_returns_target_when_no_silence(monkeypatch):
+    monkeypatch.setattr(tr.subprocess, "run", _fake_run_with_stderr(""))
+    assert tr._detect_silence_offset("audio.flac", target_s=300.0) == 300.0
+
+
+def test_detect_silence_offset_returns_target_on_ffmpeg_error(monkeypatch):
+    monkeypatch.setattr(tr.subprocess, "run", _fake_run_with_stderr("boom", returncode=1))
+    assert tr._detect_silence_offset("audio.flac", target_s=300.0) == 300.0
+
+
+def test_detect_silence_offset_ignores_silence_outside_window(monkeypatch):
+    # silence is 8s away from the ±3s window -> treated as no usable boundary
+    monkeypatch.setattr(
+        tr.subprocess, "run",
+        _fake_run_with_stderr("silence_start: 8.000\nsilence_end: 8.5 | silence_duration: 0.5"),
+    )
+    assert tr._detect_silence_offset("audio.flac", target_s=300.0, window_s=3.0) == 300.0
+
+
+def test_split_flac_snap_silence_moves_boundaries_and_tracks_offsets(monkeypatch, tmp_path):
+    flac = tmp_path / "audio.flac"
+    flac.write_bytes(b"f")
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        Path(cmd[-1]).write_bytes(b"chunk")
+        return tr.subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(tr.subprocess, "run", fake_run)
+    # snap each boundary 2.5s late (into the silence after the nominal end)
+    monkeypatch.setattr(tr, "_detect_silence_offset", lambda path, t, window_s=3.0: t + 2.5)
+
+    chunks = tr._split_flac(str(flac), str(tmp_path), 300, duration=650.0, snap_silence=True)
+
+    assert [Path(c[0]).name for c in chunks] == [
+        "chunk_000.flac", "chunk_001.flac", "chunk_002.flac",
+    ]
+    assert [c[1] for c in chunks] == [0.0, 302.5, 605.0]  # uniform assumption would be [0, 300, 600]
+    # first chunk reaches 302.5, second chunk is 302.5 -> 605.0 (2.5s drift), last chunk tails
+    assert calls[0][calls[0].index("-t") + 1] == "302.500"
+    assert calls[1][calls[1].index("-t") + 1] == "302.500"
+    assert calls[2][calls[2].index("-t") + 1] == "45.000"
+
+
+def test_split_flac_snap_does_not_consult_silence_for_tiny_tail(monkeypatch, tmp_path):
+    flac = tmp_path / "audio.flac"
+    flac.write_bytes(b"f")
+
+    def fake_run(cmd, **kwargs):
+        Path(cmd[-1]).write_bytes(b"chunk")
+        return tr.subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(tr.subprocess, "run", fake_run)
+    calls = []
+    monkeypatch.setattr(
+        tr, "_detect_silence_offset",
+        lambda path, t, window_s=3.0: calls.append(t) or t,
+    )
+
+    # 310s file, 300s chunks: the trailing 10s tail is below the 15s guard,
+    # so snapping must never run (no wasted ffmpeg seek).
+    tr._split_flac(str(flac), str(tmp_path), 300, duration=310.0, snap_silence=True)
+    assert calls == []
 
 
 def test_groq_chunk_maps_segments_and_strips_text(tmp_path):
