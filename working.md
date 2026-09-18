@@ -14,7 +14,7 @@ flowchart LR
     subgraph EXT["External services & keys"]
         GK(("GROQ_API_KEY<br/>the only credential<br/>loaded from .env at startup"))
         GROQCHAT["Groq · chat completions<br/>openai/gpt-oss-20b<br/>30 req · 8K tok / min"]
-        GROQAUD["Groq · audio transcription<br/>whisper-large-v3-turbo<br/>≈216× real-time · $0.04/audio-hr"]
+        GROQAUD["Groq · audio transcription<br/>whisper-large-v3-turbo<br/>≈10× real-time (live-measured) · $0.04/audio-hr"]
         OLLAMA["Ollama · no key · fallback<br/>llama3.2 · localhost:11434"]
         FFMPEG["ffmpeg + ffprobe<br/>downmix · chunk · cut clips"]
     end
@@ -111,7 +111,7 @@ flowchart LR
    `data/raw/` and kicks off a background transcription task.
 2. **Transcribe (Stage 1)** — `transcribe.py` produces the same
    `[start, end, text]` segments from either the local Whisper engine or
-   Groq-hosted Whisper (≈216× real-time; mono 16 kHz FLAC, auto-chunked).
+   Groq-hosted Whisper (≈10× real-time, live-measured; mono 16 kHz FLAC, auto-chunked).
 3. **Extract concepts (Stage 2)** — the transcript is chunked and an LLM names
    explicit + implicit concepts; MiniLM merges near-duplicates.
 4. **Build the prerequisite graph (Stages 3-4)** — candidate concept pairs are

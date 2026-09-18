@@ -13,9 +13,10 @@ Two backends, chosen with the WHISPER_BACKEND env var:
             the network or burn quota.
 
     groq    hosted Whisper on Groq's LPU (GROQ_WHISPER_MODEL, default
-            "whisper-large-v3-turbo", $0.04/audio-hour). ~216x real-time, so
-            a 1-hour lecture transcribes in roughly a minute of wall-clock
-            (upload dominates). Audio is downmixed to mono 16 kHz FLAC and,
+            "whisper-large-v3-turbo", $0.04/audio-hour). Live-measured
+            ~10x real-time (130 s wall-clock for a 21-min lecture), so a
+            1-hour lecture runs in about six minutes (upload dominates).
+            Audio is downmixed to mono 16 kHz FLAC and,
             if needed, split into chunks that fit the API upload limit, so
             multi-hour files work too. Rate-limited (Developer plan: 20
             req/min, 2K req/day, 7.2K audio-sec/hr); HTTP 429s back off and

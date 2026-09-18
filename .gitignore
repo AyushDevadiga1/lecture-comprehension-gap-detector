@@ -42,6 +42,9 @@ Thumbs.db
 # Local working notes / progress tracker (never commit)
 WORKLOG.md
 
+# Local review scratch notes (never commit)
+review_*.md
+
 # pyvis bundled JS/CSS assets (recreated on every graph save)
 /lib/
 

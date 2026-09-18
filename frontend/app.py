@@ -188,8 +188,8 @@ with tab_student:
         backend = st.selectbox(
             "Transcription backend",
             ["auto", "local", "groq"],
-            help="auto: groq when GROQ_API_KEY + ffmpeg are available (≈200× "
-                 "real time), otherwise the bundled local Whisper.",
+            help="auto: groq when GROQ_API_KEY + ffmpeg are available (≈10× "
+                 "real-time live-measured), otherwise the bundled local Whisper.",
         )
         up = st.file_uploader("Lecture media (mp4/mp3/wav/m4a/mkv/mov/webm)")
         submit = st.form_submit_button("Upload + transcribe")

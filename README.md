@@ -164,7 +164,7 @@ flowchart LR
     subgraph EXT["External services & keys"]
         GK(("GROQ_API_KEY<br/>the only credential<br/>loaded from .env at startup"))
         GROQCHAT["Groq · chat completions<br/>openai/gpt-oss-20b<br/>30 req · 8K tok / min"]
-        GROQAUD["Groq · audio transcription<br/>whisper-large-v3-turbo<br/>≈216× real-time · $0.04/audio-hr"]
+        GROQAUD["Groq · audio transcription<br/>whisper-large-v3-turbo<br/>≈10× real-time (live-measured) · $0.04/audio-hr"]
         OLLAMA["Ollama · no key · fallback<br/>llama3.2 · localhost:11434"]
         FFMPEG["ffmpeg + ffprobe<br/>downmix · chunk · cut clips"]
     end
@@ -427,7 +427,7 @@ Configuration:
 | Variable | Default | Purpose |
 |---|---|---|
 | `GROQ_API_KEY` | *(required for LLM/transcription features)* | `.env`; Groq chat + Whisper models |
-| `WHISPER_BACKEND` | `local` | transcription engine: `local` (openai-whisper, offline) or `groq` (hosted, **~216× real-time**) |
+| `WHISPER_BACKEND` | `local` | transcription engine: `local` (openai-whisper, offline) or `groq` (hosted, **~10× real-time live-measured**) |
 | `WHISPER_MODEL` | `base` | local Whisper size (`tiny`…`large-v3`); ignored when `WHISPER_BACKEND=groq` |
 | `GROQ_WHISPER_MODEL` | `whisper-large-v3-turbo` | hosted model used by `WHISPER_BACKEND=groq` ($0.04/audio-hour) |
 | `GROQ_WHISPER_UPLOAD_LIMIT` | `25165824` | per-upload byte cap; audio is auto-chunked to fit |
