@@ -29,17 +29,16 @@ from typing import Dict, List, Optional
 # Clip cuts default to a hybrid. Re-encoding to H.264/AAC makes the video
 # start exactly on the requested frame; stream copy ("-c copy") is instant and
 # lossless but snaps back to the prior keyframe (2-6s typical GOP), freezing
-# the first visually decoded frame. Re-encoding is the expensive path on CPU,
-# so only spans at or above LECGAP_CLIP_REENCODE_THRESHOLD_S (default 60s)
-# re-encode — a few seconds of head-start matters less on long clips — while
-# shorter clips stream-copy. LECGAP_CLIP_STREAMCOPY=1 forces every clip into
-# the fast copy path.
+# the first visually decoded frame. For concept clips (typically 15-60s),
+# frame-accuracy is critical, so spans at or under LECGAP_CLIP_REENCODE_THRESHOLD_S
+# (default 120s) re-encode. Very long spans stream-copy to save CPU.
+# LECGAP_CLIP_STREAMCOPY=1 forces every clip into the fast copy path.
 _RENDER_ARGS = [
     "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
     "-c:a", "aac", "-b:a", "96k",
     "-movflags", "+faststart",
 ]
-_REENCODE_THRESHOLD_S = 60.0
+_REENCODE_THRESHOLD_S = 120.0
 
 
 def _codec_args(span_s=None) -> List[str]:
@@ -52,7 +51,7 @@ def _codec_args(span_s=None) -> List[str]:
             )
         except ValueError:
             threshold = _REENCODE_THRESHOLD_S
-        if span_s < threshold:
+        if span_s > threshold:
             return ["-c", "copy"]
     return _RENDER_ARGS
 

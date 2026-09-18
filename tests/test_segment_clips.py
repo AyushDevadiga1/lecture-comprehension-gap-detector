@@ -46,31 +46,31 @@ def test_cut_clip_ok(tmp_path, monkeypatch):
     assert out.parent.exists()  # out dir created
 
 
-def test_cut_clip_short_span_stream_copies(tmp_path, monkeypatch):
-    # spans below the hybrid threshold snap to the prior keyframe via -c copy
+def test_cut_clip_short_span_reencodes(tmp_path, monkeypatch):
+    # short concept spans re-encode for frame accuracy and zero keyframe freeze
     seg, calls = _true_ffmpeg(monkeypatch)
     res = seg.cut_clip("media.mp4", 1.5, 4.0, str(tmp_path / "c.mp4"))
     assert res["ok"] is True
-    assert "-c:v" not in calls[0]
-    assert calls[0][calls[0].index("-c") + 1] == "copy"
+    assert "-c:v" in calls[0] and "libx264" in calls[0]
 
 
-def test_cut_clip_streamcopy_env_forces_copy_for_long_spans(tmp_path, monkeypatch):
+def test_cut_clip_streamcopy_env_forces_copy_for_all_spans(tmp_path, monkeypatch):
     import backend.pipeline.segment_clips as seg_mod
 
     seg, calls = _true_ffmpeg(monkeypatch)
     monkeypatch.setenv("LECGAP_CLIP_STREAMCOPY", "1")
-    seg.cut_clip("media.mp4", 10.0, 110.0, str(tmp_path / "c.mp4"))
+    seg.cut_clip("media.mp4", 1.5, 4.0, str(tmp_path / "c.mp4"))
     assert calls[0][calls[0].index("-c") + 1] == "copy"
 
 
 def test_cut_clip_reencode_threshold_env(tmp_path, monkeypatch):
     seg, calls = _true_ffmpeg(monkeypatch)
     monkeypatch.setenv("LECGAP_CLIP_REENCODE_THRESHOLD_S", "5")
-    seg.cut_clip("media.mp4", 0.0, 3.0, str(tmp_path / "a.mp4"))  # 3s < 5 -> copy
-    assert "-c:v" not in calls[0]
-    seg.cut_clip("media.mp4", 0.0, 20.0, str(tmp_path / "b.mp4"))  # 20s >= 5 -> encode
-    assert "-c:v" in calls[1] and "libx264" in calls[1]
+    seg.cut_clip("media.mp4", 0.0, 3.0, str(tmp_path / "a.mp4"))  # 3s <= 5 -> re-encode
+    assert "-c:v" in calls[0] and "libx264" in calls[0]
+    seg.cut_clip("media.mp4", 0.0, 20.0, str(tmp_path / "b.mp4"))  # 20s > 5 -> stream copy
+    assert "-c:v" not in calls[1]
+    assert calls[1][calls[1].index("-c") + 1] == "copy"
 
 
 def test_cut_clip_reports_ffmpeg_error_without_raising(tmp_path, monkeypatch):
