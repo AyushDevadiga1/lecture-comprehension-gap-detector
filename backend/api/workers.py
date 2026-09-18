@@ -502,12 +502,27 @@ def _rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:
         confirmed = classify_course_pairs(concepts, encoder=clf._encoder)
     except ValueError:
         confirmed = []  # LectureBank absent on this deployment -> nodes-only
+
+    import os
+    use_llm_reasoning = os.getenv("LECGAP_LLM_REASONING", "").strip().lower() in {"1", "true", "yes"}
+    from backend.pipeline.classify_prerequisites import llm_reasoning_check
+
     for e in confirmed:
         a_res, b_res = graph._resolve(e["a"]), graph._resolve(e["b"])
         if g.has_edge(a_res, b_res):
             continue  # already grounded by the transcript — keep the spoken edge
+        method, reason = "classifier", None
+        if use_llm_reasoning:
+            try:
+                chk = llm_reasoning_check(e["a"], e["b"], prediction=1, confidence=e["confidence"])
+                if chk.get("prediction") is False:
+                    continue
+                reason = chk.get("reason")
+                method = "classifier+llm"
+            except Exception:
+                pass
         graph.add_edge(e["a"], e["b"], e["confidence"])
-        edge_meta[(a_res, b_res)] = ("classifier", None)
+        edge_meta[(a_res, b_res)] = (method, reason)
     graph.resolve_cycles()
 
     if lecture_id is not None:
