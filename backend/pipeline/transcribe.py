@@ -112,8 +112,35 @@ def _downmix_to_flac(src: str, dst_flac: str) -> str:
     return dst_flac
 
 
+def _detect_silence_offset(flac_path: str, target_s: float, window_s: float = 3.0) -> float:
+    """Detect a silence/pause boundary near target_s to avoid clipping spoken words."""
+    start_search = max(0.0, target_s - window_s)
+    dur_search = window_s * 2.0
+    try:
+        out = subprocess.run(
+            [
+                "ffmpeg", "-nostdin", "-v", "info",
+                "-ss", f"{start_search:.3f}", "-t", f"{dur_search:.3f}",
+                "-i", flac_path,
+                "-af", "silencedetect=noise=-30dB:d=0.3",
+                "-f", "null", "-",
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=10,
+        )
+        matches = re.findall(r"silence_start:\s*([\d\.]+)", out.stderr or "")
+        if matches:
+            best = min(float(m) for m in matches if abs(float(m) - window_s) <= window_s)
+            return start_search + best
+    except Exception:
+        pass
+    return target_s
+
+
 def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
-                duration: float = 0.0) -> List[str]:
+                duration: float = 0.0, snap_silence: bool = False) -> List[str]:
     """Slice a FLAC into adjacent chunk_s-second pieces, returning sorted paths.
 
     Each piece is a clean, freshly-encoded standalone FLAC (seek + re-encode),
@@ -124,11 +151,18 @@ def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
     """
     if not duration:
         duration = _probe_duration(flac_path)
+    snap = snap_silence or os.getenv("LECGAP_SNAP_SILENCE", "").strip().lower() in {"1", "true", "yes"}
     chunks: List[str] = []
     start = 0.0
     idx = 0
     while start < duration:
-        t = min(float(chunk_s), duration - start)
+        target_end = min(start + float(chunk_s), duration)
+        if snap and target_end < duration and (duration - target_end) > 15.0:
+            split_point = _detect_silence_offset(flac_path, target_end, window_s=3.0)
+            split_point = max(start + 30.0, min(start + float(chunk_s) + 5.0, split_point))
+        else:
+            split_point = target_end
+        t = split_point - start
         path = os.path.join(chunk_dir, f"chunk_{idx:03d}.flac")
         out = subprocess.run(
             [
@@ -143,7 +177,7 @@ def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
         if out.returncode != 0 or not os.path.exists(path):
             raise RuntimeError(f"ffmpeg chunking failed: {out.stderr.strip()}")
         chunks.append(path)
-        start += chunk_s
+        start = split_point
         idx += 1
     if not chunks:
         raise RuntimeError("ffmpeg chunking produced no files")
