@@ -95,19 +95,33 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
     # distractors) over the evidence sentence. Network calls happen outside any
     # DB session; any miss falls back to the pure evidence path, so LLM
     # generation can only upgrade a quiz, never break it.
-    plan: dict = {}
-    for name in names:
+    def _make_one(concept_name: str):
         q = None
-        ctx = passage_ctx.get(name) or local_context(segments, by_name.get(name))
+        ctx = passage_ctx.get(concept_name) or local_context(segments, by_name.get(concept_name))
         if ctx:
-            q = generate_mcq(name, ctx)
+            try:
+                q = generate_mcq(concept_name, ctx)
+            except Exception:
+                q = None
         if not q:
             q = make_mcq(
-                name,
-                evidence[name],
-                [(o, evidence[o]) for o in names if o != name],
+                concept_name,
+                evidence[concept_name],
+                [(o, evidence[o]) for o in names if o != concept_name],
             )
-        plan[name] = q
+        return concept_name, q
+
+    plan: dict = {}
+    if len(names) <= 1:
+        for name in names:
+            _, q = _make_one(name)
+            plan[name] = q
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+        workers_count = min(6, len(names))
+        with ThreadPoolExecutor(max_workers=workers_count) as pool:
+            for concept_name, q in pool.map(_make_one, names):
+                plan[concept_name] = q
 
     with SessionLocal() as db:
         db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
