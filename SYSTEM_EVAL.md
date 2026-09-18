@@ -1,377 +1,297 @@
 # SYSTEM_EVAL: Comprehensive Technical Evaluation, Code Audit, and Architectural Blueprint
 
+> **Status:** Re-audited 2026-09-18 using the `agent-skills` review pack (code-reviewer, security-auditor, test-engineer, web-performance-auditor) in parallel fan-out. Findings are cross-referenced, severity-tagged, and tracked to resolution below. Previous audit content was superseded because the codebase moved from a single `backend/api/routes.py` to `backend/api/routes/{courses,lectures,quizzes}.py` and the pipeline has since changed (silence-snap chunking, clip re-encoding, LLM reasoning gating, parallel MCQ generation).
+
 ---
 
 ## 1. Executive Summary & Problem Statement
 
-The **Lecture Comprehension Gap Detector (`LecGap`)** is built to solve a critical pedagogical challenge: converting passive lecture watching into an active, diagnostic, and remediated learning experience. The intended pipeline ingests raw lecture audio/video, extracts taught academic concepts, classifies prerequisite dependencies into a Directed Acyclic Graph (DAG), administers diagnostic quizzes, and guides students through personalized remediation clips based on their comprehension gaps.
+The **Lecture Comprehension Gap Detector (`LecGap`)** converts passive lecture watching into an active, diagnostic learning loop: ingest lecture media → transcribe → extract concepts → build a prerequisite DAG → quiz students → remediate comprehension gaps with targeted video clips.
 
-However, a granular code audit across the entire repository reveals that our current system relies heavily on fragile heuristics, disconnected string matching, and narrow 15-second context blinders. This creates an **"illusion of intelligence"** where the product appears to function in happy-path demos, but under scrutiny produces:
-- **Corrupted and out-of-context video clips** (cutting mid-sentence or freezing on keyframes).
-- **Infeasible quiz questions** (verbatim transcript sentence matching rather than conceptual diagnostics).
-- **A pseudo-prerequisite classifier** that never reads the lecture transcript, relying instead on a static 208-topic dataset from 2019.
-- **Race conditions** that silently drop graph creation entirely during UI interactions.
-- **Circular synthetic validation** that hands LLMs the answer key.
+The 2026-09-18 parallel audit found the system in a **strong structural state** (no SQLi, no `shell=True`, no committed secrets, hermetic offline test suite, WAL+single-commit-per-stage DB discipline) but with **one critical live bug, several latent correctness bugs, and a class of integrity/security gaps** that must be resolved before the system can be trusted beyond the demo path.
 
-This document compiles the complete findings, line-by-line debugging traces, and architectural designs needed to elevate this project beyond passive tools like **Google's NotebookLM**.
+The three most important themes:
+
+1. **A shipped feature is a silent no-op.** The silence-aware chunk snapping added on 2026-09-18 (`d78657f`) never executes because `backend/pipeline/transcribe.py` calls `re.findall` without importing `re`; the `NameError` is swallowed by a bare `except Exception: pass`. Every call path reports success.
+2. **Quiz integrity is defeated by the answer key leaking in the API payload.** `QuizQuestionOut` returns the three distractor columns *and* the shuffled options (which are exactly `{answer} ∪ distractors`), so a client recovers ground truth by elimination — contradicting the documented contract (`mcq_gen.py:18`, `schemas.py:161`).
+3. **The audit-shown fixes of today are mostly untested.** Seven behavior commits shipped on 2026-09-18; six of them changed no test file. The silence-snap path, LLM-reasoning branch, remediation endpoint, worker error paths, synthetic-student de-leak, and parallel-MCQ exception behavior all lack regression coverage.
 
 ---
 
-## 2. End-to-End Lecture Lifecycle: Step-by-Step Code Walkthrough
+## 2. End-to-End Lecture Lifecycle: Current Code Walkthrough
 
-Below is the complete trace of a lecture from user upload to quiz submission:
+Updated artifact layout (the old single `backend/api/routes.py` no longer exists):
 
 ```
-[User Media Upload] (MP4/MKV/WAV/M4A/MOV)
-       │
-       ▼ (FastAPI POST /lectures in backend/api/routes.py)
-[Storage] ──> Copied verbatim to data/raw/lec<id>_<filename>
-       │
-       ▼ (FastAPI BackgroundTask: _process_lecture)
-[Stage 1: Audio Transcription] (backend/pipeline/transcribe.py)
-       ├── Downmixed to mono 16kHz FLAC via FFmpeg (_downmix_to_flac)
-       ├── Blindly sliced into fixed 300s time chunks (_split_flac)
-       └── Transcribed via Groq Whisper API (whisper-large-v3-turbo) or Local Whisper Base
-       │
-       ▼ (DB Persistence: TranscriptSegment rows: idx, start_s, end_s, text)
-[Frontend Streamlit Action] (frontend/app.py)
-       │ User clicks "Extract concepts + build graph"
-       ├── POST /lectures/{id}/concepts (Runs in Background)
-       └── POST /courses/{id}/graph    (Runs in Background AT THE EXACT SAME TIME)
-       │
-       ▼ (CRITICAL RACE CONDITION TRIGGERED)
-[Stage 2: Spoken Concept Extraction] (backend/pipeline/extract_concepts.py)
-       ├── Segments batched into coarse ~12,000 char chunks (~5-10 min of audio)
-       ├── Prompt sent to Groq LLaMA/Qwen: "Identify academic concepts"
-       ├── EVERY concept receives the chunk's ENTIRE start_s and end_s
-       └── refine_timeline.py:
-             ├── If span > 90s, runs naive substring search for concept name
-             ├── Stride-samples text if not found (skips sentences)
-             └── Clamps to artificial 20s minimum window
-       │
-       ▼ (DB Persistence: Concept rows: name, source, implicit, start_s, end_s)
-[Stages 3 & 4: Prerequisite Classification & Graph Construction]
-       │ (backend/pipeline/classify_prerequisites.py & build_graph.py)
-       ├── Fetches Concept rows (Frequently EMPTY due to the race condition!)
-       ├── Pairs pre-filtered by: temporal proximity (<120s) OR MiniLM cosine similarity (>0.6)
-       ├── Pairs classified by Logistic Regression trained on static 'LectureBank' 208-topic CSV
-       │     (Does NOT read the lecture transcript at all!)
-       ├── Graph assembled in NetworkX DiGraph
-       └── Cycles broken by blindly dropping the lowest-confidence edge (resolve_cycles)
-       │
-       ▼ (DB Persistence: GraphNode and GraphEdge rows)
-[Stage 5: Clip Segmentation] (backend/pipeline/segment_clips.py)
-       └── FFmpeg called with `-c copy -ss start -to end` (Cuts on keyframes, causing freezes/desync)
-       │
-       ▼ (POST /quizzes in backend/api/routes.py)
-[Stage 6: Quiz Generation] (backend/pipeline/quiz.py & mcq_gen.py)
-       ├── For each concept, grabs local window of n=3 segments (~15s total)
-       ├── LLM prompted to generate MCQ from this 15-second snippet
-       └── If LLM fails/times out: Fallback to verbatim sentence matching (make_mcq)
-             (Answer = literal sentence; Distractors = literal sentences from OTHER concepts)
-       │
-       ▼ (POST /quizzes/submit in backend/api/routes.py)
-[Stage 7: Student Remediation Loop] (backend/pipeline/quiz.py & routes.py)
-       ├── Student wrong answers identified
-       ├── Graph traversed for upstream prerequisite concepts via transitive closure
-       └── Attached FFmpeg clips returned in topological order
+[User Media Upload] (backend/api/routes/lectures.py)
+       │  streaming write (1 MiB chunks), cap LECGAP_MAX_UPLOAD_MB (0 = unlimited)
+       ▼  BackgroundTask
+[Stage 1: Transcription] (backend/pipeline/transcribe.py)
+       ├── _downmix_to_flac → mono 16 kHz FLAC
+       ├── _split_flac → fixed chunk_s windows (snap_silence/LECGAP_SNAP_SILENCE=1 intended to align
+       │     boundaries to ffmpeg silencedetect pauses — currently a NO-OP, see Finding C1)
+       └── local Whisper or Groq Whisper (≈10× real-time, live-measured)
+       ▼  persist TranscriptSegment rows
+[Stage 2: Concept extraction] (backend/pipeline/extract_concepts.py)
+       ├── chunks → LLM names explicit + implicit concepts
+       ├── MiniLM dedup (single batched encode, build_graph.py)
+       └── refine_timeline.py pins [start_s, end_s] (fallback stride-samples wide spans)
+       ▼  persist Concept rows
+[Stages 3 & 4: Prerequisite classification + DAG] 
+       │  classify_prerequisites.py → candidate pairs (temporal + cosine) → LogisticRegression
+       │    head over MiniLM name embeddings; LECGAP_LLM_REASONING=1 adds per-edge LLM check
+       ▼  build_graph.py → NetworkX DiGraph → resolve_cycles (drops lowest-confidence edge)
+[Stage 5: Clip segmentation] (backend/pipeline/segment_clips.py)
+       └── spans ≤ LECGAP_CLIP_REENCODE_THRESHOLD_S (120s) re-encode libx264 (frame-accurate);
+             long spans stream-copy; per-clip failure isolation
+[Stage 6: Quiz generation] (backend/api/routes/quizzes.py)
+       ├── ThreadPoolExecutor (min(6, n)) generates per-concept MCQs (bounded, order-preserving)
+       ├── LLM prompt from passage/local_context; fallback make_mcq (evidence sentence + filtered distractors)
+       └── llm_cache (hash-keyed, SQLite) makes repeats free
+[Stage 7: Submission + remediation] (backend/api/routes/quizzes.py)
+       ├── server-side grading vs stored answer; attempt increments
+       └── graph transitive closure → prerequisite clips in topological order (backend/pipeline/quiz.py)
 ```
 
 ---
 
-## 3. The "Hall of Illusions": Where the Code Breaks & Tricks the User
+## 3. Findings Register (severity-ordered)
 
-### 3.1. The Instant Race Condition Illusion
-* **Code Location:** [`frontend/app.py:80–94`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/frontend/app.py#L80-L94) and [`backend/api/routes.py:501–530`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/api/routes.py#L501-L530)
-* **The Illusion:** The user clicks *"Extract concepts + build graph"* in Streamlit. The UI immediately displays a green success banner: `Queued extraction + graph build for course 'ml1'`. The user assumes the system will process concepts and then build the graph.
-* **The Reality:** Both endpoints are spawned as concurrent non-blocking `BackgroundTasks`. Concept extraction takes 15–45 seconds. Graph building queries `db.query(Concept)` **immediately**. Finding 0 concepts, `_build_course_graph_worker` executes:
-  ```python
-  rows = (
-      db.query(Concept)
-      .filter(Concept.course_id == course_id)
-      .order_by(Concept.id)
-      .all()
-  )
-  if not rows:
-      return
-  ```
-  It exits silently with **zero errors logged**. The graph is left completely blank. When the user later navigates to take a quiz or view the graph, the system either throws a 404 or renders an empty canvas.
+Severity legend — **Critical** (blocks release / data loss / silent failure), **High** (must fix before relying on), **Medium** (fix in sprint), **Low** (defense-in-depth / best practice). Each finding lists auditors: `CR` = code review, `SE` = security, `TE` = test coverage, `PF` = performance.
 
----
+### 3.1 Critical
 
-### 3.2. Video Clip Trimming & FFmpeg Keyframe Corruption
-* **Code Location:** [`backend/pipeline/segment_clips.py:30, 71–73, 122–139`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/segment_clips.py#L30)
-* **Observation:** Clips in `data/processed/clips/` are either disjointed micro-clips or bloated chunks.
-* **The Problem (Trimming Too Much vs. Too Little):**
-  - **Trimming Too Much:** The system trims media strictly to the timestamp where a concept keyword was detected, capturing an isolated 15–20 second fragment. It cuts mid-sentence without problem formulation, derivation, or conclusion.
-  - **Trimming Too Little:** When refinement fails, it falls back to the coarse 10-minute chunk, dumping unwatchable, multi-minute lecture slices into the student's remediation queue.
-* **The Stream-Copy Keyframe Bug:** In `cut_clip`:
-  ```python
-  cmd = [ffmpeg, "-y", "-ss", f"{start:.3f}", "-to", f"{end:.3f}", "-i", media_path]
-  cmd += ["-c", "copy"] + [out_path]
-  ```
-  Stream copy (`-c copy`) can only cut on **Keyframes (I-frames)**. In standard H.264 lecture recordings, keyframes occur every 5 to 10 seconds. Cutting an arbitrary 20-second span causes the video stream to freeze or turn black for the first 3–6 seconds while the audio plays out of sync. Furthermore, the cut point snaps to the nearest preceding keyframe, which could belong to an entirely different topic or slide.
-* **Recommendation:** Implement dynamic padding and semantic chunking. Before cutting, analyze the transcript to find the true "topic boundary" (e.g., +/- 30 seconds of padding, or use an LLM to identify the logical start and end of the explanation, not just the timestamp of the keyword). Replace `-c copy` with fast re-encoding (`-c:v libx264 -preset veryfast -crf 22 -c:a aac`) to guarantee frame-accurate cuts.
+#### C1. Silence-aware snapshotting is a silent no-op — `transcribe.py` missing `import re`
+- **Location:** `backend/pipeline/transcribe.py:115-139, 151-165`
+- **Auditors:** CR (confirmed), TE (confirmed), independently verified.
+- **Description:** `_detect_silence_offset` calls `re.findall(...)` at line 133, but the module imports only `os, shutil, subprocess, tempfile, time`. The `NameError` is caught by the bare `except Exception: pass` at line 137, so the function unconditionally returns `target_s`.
+- **Impact:** The `d78657f` feature does nothing, yet every call path reports success — words still get sliced mid-utterance, and no error alerts the operator. No test exercises snapping, so the suite stays green.
+- **Fix:** Add `import re`; add unit tests that pin a snapped split point and the clamp behavior. **(status: fixed)** See fix record below.
 
----
+#### C2. Snapping breaks timestamp offsets — latent until C1 is fixed
+- **Location:** `backend/pipeline/transcribe.py:296-297`
+- **Auditors:** CR, TE.
+- **Description:** `offsets = [float(i * chunk_s) for i in range(len(chunks))]` assumes uniform chunk boundaries. Snapping moves boundaries by up to ±5s (clamped to `+30..+chunk_s+5`), so every downstream segment's `start/end` drifts against the audio once snapping works.
+- **Impact:** Misaligned transcript → wrong concept spans → wrong clip windows.
+- **Fix:** Return `(path, actual_start_offset)` pairs from `_split_flac` and build offsets from the cumulative split points. **(status: fixed)**
 
-### 3.3. The Timestamp Fabrication & Strided Window Illusion
-* **Code Location:** [`backend/pipeline/extract_concepts.py:122–130`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/extract_concepts.py#L122-L130) and [`backend/pipeline/refine_timeline.py:80–161`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/refine_timeline.py#L80-L161)
-* **The Illusion:** The UI shows a timeline where each concept is supposedly anchored to its exact teaching passage.
-* **The Reality:**
-  1. `extract_spoken_concepts` stamps **every single concept** with the entire 12,000-character chunk's `[start_s, end_s]` span.
-  2. To refine this, `refine_timeline.py` does a naive lowercase substring match:
-     ```python
-     mention = next((i for i, s in enumerate(segs) if name.lower() in _txt(s).lower()), None)
-     ```
-     If the concept is implicit (e.g., the concept is *Overfitting* but the lecturer says *"the model memorized the training set"*), `name.lower()` is not found.
-  3. When the match fails, the code falls back to stride-sampling:
-     ```python
-     step = max(1, math.ceil(total / max_chars))
-     segs = segs[::step]
-     ```
-     It literally deletes every 2nd or 3rd sentence of the lecture, glues the fragmented lines together, and asks the LLM to guess start/end seconds from a corrupted transcript!
-  4. If the LLM pins a short 5-second sentence, line 153 artificially pads it by +/- 10 seconds:
-     ```python
-     if ne - ns < MIN_TIGHT_S:
-         mid = (ns + ne) / 2.0
-         ns = max(cs, mid - MIN_TIGHT_S / 2.0)
-         ne = min(ce, ns + MIN_TIGHT_S)
-     ```
-     The timestamps are synthetic approximations rather than true pedagogical boundaries.
+#### C3. Quiz answer key is recoverable client-side
+- **Location:** `backend/api/schemas.py:124-131`, `backend/api/workers.py:597-613`
+- **Auditors:** CR (R3), SE (C2).
+- **Description:** `QuizQuestionOut` serializes `distractor_a/b/c` columns alongside the shuffled `options` where `options == {answer} ∪ {distractors}`. Deterministic recovery: answer = the option not in the three distractor fields. The documented contract (answer/explanation never leaked by GET /quizzes) is defeated. `tests/test_api.py:500-504` only asserts `answer`/`explanation` keys are absent — it misses the distractor columns.
+- **Impact:** Quiz integrity zero; students can trivially score 100% and pollute remediation/heatmap signals.
+- **Fix:** Remove `distractor_a/b/c` from the response schema and from `_question_out`. Frontend needs only `id/concept/question/options` (`frontend/app.py:266-274`). **(status: fixed)**
 
----
+#### C4. No authentication; full IDOR on every endpoint
+- **Location:** `backend/main.py:21-28`, all route modules
+- **Auditors:** SE (C1).
+- **Description:** No auth dependency, no middleware, no CORS restriction anywhere. Every endpoint is keyed on caller-supplied `course_id`/`lecture_id`/`student_id`: enumerate all courses/lectures, read any student's remediation, fabricate `QuizResponse` rows for any student, mass-delete courses, and trigger unbounded LLM spend.
+- **Impact:** Complete confidentiality/integrity/availability loss once the API is bound beyond `127.0.0.1`.
+- **Fix (deferred — local tool by design, README binds localhost):** add auth at router level, derive `student_id` from the session, validate resource ownership; at minimum document the trust boundary. Not blocking for the documented single-user local deployment.
 
-### 3.4. The "Deaf & Blind" Prerequisite Classifier
-* **Code Location:** [`backend/pipeline/classify_prerequisites.py:74–90, 173–197, 279–320`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/classify_prerequisites.py#L74-L90)
-* **The Illusion:** The system claims to analyze the lecture content to discover prerequisite relationships between concepts.
-* **The Reality:**
-  1. **Candidate Pair Blinders:** `get_candidate_pairs` only evaluates pairs if they are within 120 seconds of each other OR have an embedding cosine similarity $\ge 0.6$. If a foundational concept from Lecture 1 (e.g., *Matrix Inversion*) is required for an advanced concept in Lecture 4 (e.g., *Ordinary Least Squares closed-form*), they are separated by hours and have low cosine similarity (~0.45). **The system never even considers them as candidate pairs.**
-  2. **Zero Transcript Context:** When `PrerequisiteClassifier` runs, it computes:
-     ```python
-     _pair_features(pairs, cache) # Concatenated all-MiniLM-L6-v2 vectors of concept name strings!
-     ```
-     It literally feeds just the two string names (e.g., `"Vector"` and `"Dot Product"`) into a static Logistic Regression trained on a 208-topic computer science list (`data/lecturebank/208topics.csv`). **The classifier does not read a single word of what the professor actually said in the lecture.** It is a static dictionary lookup masquerading as a dynamic lecture comprehension model.
-  3. **The Unused LLM Check:** The file defines `llm_reasoning_check()`, which supposedly provides a second opinion with natural language explanations. **This function is never imported or called in any production route or worker in the entire repository.**
+### 3.2 High
 
----
+#### H1. Worker failure paths leave `Lecture.status == "ready"`
+- **Location:** `backend/api/workers.py:292-307` (`_extract_concepts_worker`), `:360-371` (`_cut_clips_worker`)
+- **Auditors:** CR, TE.
+- **Description:** Failure handlers write `lecture.error` but never set `lecture.status = "error"` (unlike `_process_lecture` at `:137`). `_progress_finish` pops the in-memory entry, so the next frontend poll hits the DB fallback (`workers.py:89-92`), sees "ready", and reports success — masking the failure.
+- **Fix:** Set `lecture.status = "error"` in both except blocks; add end-to-end worker error tests. **(status: fixed)**
 
-### 3.5. Quiz Generation Feasibility: Syntax-Matching vs. Garbage
-* **Code Location:** [`backend/pipeline/mcq_gen.py:90–158`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/mcq_gen.py#L90-L158) and [`backend/pipeline/quiz.py:175–221`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/quiz.py#L175-L221)
-* **Observation:** The quiz generation can produce "garbage" or disconnected questions.
-* **Why it's happening:**
-  1. In `mcq_gen.py`, `local_context` restricts the LLM's view to **$n=3$ segments** (roughly 12–18 seconds of speech). In university lectures, an 18-second window is usually an introductory transition (e.g., *"Next, let's take a look at the definition of eigenvalues..."*). The LLM is asked to write a rigorous question with distractors and explanations without having seen the actual definition or explanation!
-  2. When the LLM fails or times out, it triggers the fallback in `quiz.py` (`make_mcq`):
-     - **Question:** *"Which statement best describes the concept 'Gradient Descent' as taught in the lecture?"*
-     - **Answer (Key):** A raw verbatim sentence from the transcript (e.g., *"and we update theta by subtracting alpha times the derivative"*).
-     - **Distractors:** Verbatim sentences plucked randomly from OTHER concepts!
-       - Distractor 1: *"Please remember to submit assignment two by midnight."*
-       - Distractor 2: *"Let me grab another piece of chalk."*
-       - Distractor 3: *"It has no effect on the outcome"* (from `_DEFAULT_DISTRACTORS`).
-  3. This is not a quiz; it is a sentence-recognition puzzle. It measures whether a student memorized verbatim transcript strings, not whether they understand the underlying principles.
-* **Recommendation:**
-  - Increase the context window $n$ (e.g., 5–10 segments or the full pedagogical episode) for the LLM so it fully understands the concept.
-  - If falling back to non-LLM generation, ensure distractors are semantically aligned (e.g., using embeddings to find similar but distinct concepts rather than random sentences).
+#### H2. Hallucinated spoken links create phantom graph nodes
+- **Location:** `backend/api/workers.py:491-505`, `backend/pipeline/build_graph.py:162-165`
+- **Auditors:** CR.
+- **Description:** `graph.add_edge(a, b, ...)` auto-creates endpoints that aren't extracted concepts. A `LectureLink` whose `source_name`/`target_name` was never extracted (LLM hallucination/name-variant/cross-lecture reference) produces a `GraphNode` with no `Concept` row, then flows into topo order and remediation.
+- **Fix:** Only add transcript edges whose resolved endpoints exist in the extracted `names` set (or resolve through dedup and skip unknowns). **(status: fixed)**
 
----
+#### H3. Pipeline runs on the shared request threadpool
+- **Location:** `backend/api/workers.py:106,173,316,400`; scheduled via `BackgroundTasks`
+- **Auditors:** PF (High #1).
+- **Description:** Whisper, torch/MiniLM, per-window/per-concept LLM calls, and ffmpeg run as sync callables in the same anyio threadpool serving HTTP. The cold sentence-transformers import (~35-60s) happens inside a request thread.
+- **Impact:** Under multi-lecture runs, `/health`, `/courses`, and 1s `/progress` polling stall; CPU thrash from concurrent whisper jobs.
+- **Fix (structural, deferred):** move pipeline jobs to a dedicated worker process/queue with bounded concurrency (1-2 jobs).
 
-### 3.6. The Circular "Synthetic Student" Validation
-* **Code Location:** [`backend/pipeline/refine.py:180–208`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/refine.py#L180-L208)
-* **The Illusion:** Stage 7 claims to prove experimentally that student quiz failure patterns can recover a hidden ground-truth dependency graph.
-* **The Reality:** In `generate_synthetic_students`, the LLM persona prompt is constructed as follows:
-  ```python
-  deps = "\n".join(f"- {e['target']} requires {e['source']}" for e in edges)
-  system = (
-      "You are a student taking a course. You were taught only a limited "
-      "set of topics, and you have NOT learned anything beyond that set.\n"
-      "The course material establishes these dependencies:\n"
-      f"{deps}\n"
-      "You reason carefully: if a topic requires a prerequisite that was "
-      "NOT in your taught set, you have not mastered that topic..."
-  )
-  ```
-  **The prompt explicitly hands the LLM the answer key of the hidden graph!** The LLM is not discovering anything; it is simply repeating the logical rules handed to it in the system prompt. Evaluating graph recovery on this synthetic data is completely circular.
+#### H4. Whole-course graph rebuild after every lecture
+- **Location:** `backend/api/workers.py:288-307, 410-558`; `classify_prerequisites.py:296-342, 50-102`; `build_graph.py:93-135`
+- **Auditors:** PF (High #2).
+- **Description:** Each lecture rebuild re-fits the classifier head on LectureBank, regenerates O(n²) candidate pairs via per-pair pure-Python `_cosine` (fresh numpy allocations per comparison), and constructs a fresh encoder. The encoder is only shared within a single rebuild.
+- **Fix (deferred):** lazily cache encoder + fitted classifier at module level; vectorize similarity as one normalized matmul; debounce/coalesce rebuilds per course.
 
----
+#### H5. Quiz generation blocks the request and has a cache-fill race
+- **Location:** `backend/api/routes/quizzes.py:98-124`; `backend/pipeline/llm.py:60-94, 178-225`
+- **Auditors:** PF (High #3).
+- **Description:** `POST /quizzes` is a synchronous request (no background job). Six threads each open a session, MISS, call Groq, INSERT/commit. Two threads missing the same key call the API twice, then both insert → PK `IntegrityError` surfaced in `_make_one`'s `except Exception` → the LLM-written MCQ is silently dropped for the evidence fallback while quota was double-billed.
+- **Fix (fixed):** single-flight/lock per cache key **and** `INSERT OR IGNORE` (see P5). Moving quiz generation to a background worker remains a structural follow-up.
 
-### 3.7. The Blind Slicing Audio Illusion
-* **Code Location:** [`backend/pipeline/transcribe.py:114–150`](file:///c:/Users/hp/Desktop/lecture-comprehension-gap-detector/backend/pipeline/transcribe.py#L114-L150)
-* **The Illusion:** The system claims to transcribe full lectures robustly by slicing audio into 300-second pieces (`_split_flac`).
-* **The Reality:** Slicing is strictly temporal: `start += chunk_s` with `ffmpeg -ss ... -t ...`. It cuts audio **blindly in the middle of spoken words and technical equations**.
-  - Whisper models fed a clipped audio chunk that starts mid-phoneme regularly suffer from hallucination loops (repeating phrases indefinitely) or dropping the first 5–10 seconds of speech.
-  - Timestamps at chunk boundaries lose sub-second synchronization, leading to drifting subtitles downstream.
+#### H6. Quiz prep is N+1 over the whole course transcript
+- **Location:** `backend/api/routes/quizzes.py:60-66, 68, 75-84, 100`; `workers.py:561-574`; `quiz.py:139-172`; `mcq_gen.py:126-160`
+- **Auditors:** PF (High #4).
+- **Description:** For each of ~50-200 concepts, the route rescans the course-wide segment list (≥2-3×) and loads every course segment into RAM; passage rows fetched one-by-one.
+- **Fix (deferred):** batch passage load (single `IN`), precompute per-concept evidence into `passages`, build a name→sentence index in one pass.
 
----
+### 3.3 Medium
 
-## 4. The Concept DAG: Is it Perfect and What Can We Do With It?
+#### M1. LLM output is trusted as ground truth (prompt-injection surface)
+- **Location:** `backend/pipeline/passages.py:404-416`, `refine_timeline.py:135-140`, `mcq_gen.py:266`, `extract_concepts.py:114-119`, `workers.py:515-523`, `refine.py:201-206`
+- **Auditors:** SE (H3), CR (Optional), TE.
+- **Description:** Uploaded-lecture transcript text is interpolated verbatim into LLM prompts with no "untrusted data" delimiter or ignore-instructions guard. Attacker-influenced audio can steer concept names/times/edges; the `llm_reasoning_check` verdict hard-gates edges when `LECGAP_LLM_REASONING=1`, and synthetic-student lines starting not-`PASS` count as `FAIL`.
+- **Fix (deferred):** delimit transcript data, treat LLM verdicts as confidence-weighted, not binary gates.
 
-### 4.1. Current Usage & Why It Is NOT Perfect
-* **Current Usage:** `build_graph.py` builds a DAG to compute topological order, which `quiz.py` uses to generate remediation sequences (prerequisites before dependents).
-* **Is it perfect?** No. Automatically generated graphs from LLMs often hallucinate dependencies, miss links, or create cycles. The system arbitrarily drops the lowest-confidence edge to break cycles (`resolve_cycles`), which might drop crucial relationships:
-  - It relies on a toy dataset of 208 Computer Science labels from 2019.
-  - It evaluates isolated concept string pairs without the surrounding lecture context.
-  - If the classifier predicts $A \rightarrow B$ and $B \rightarrow A$ with confidences 0.61 and 0.62, the cycle breaker deletes the 0.61 edge without any semantic verification, potentially inverting real pedagogical relationships.
+#### M2. Internal exception text exposed to clients
+- **Location:** `backend/api/workers.py:131-141, 221-230, 295-307, 92`; `schemas.py:27`; `transcribe.py:111, 178`; `llm.py:139`
+- **Auditors:** SE (M1).
+- **Description:** `type(exc).__name__: {exc}` strings (incl. ffmpeg stderr, temp paths, Groq internals) are persisted to `lecture.error` and returned to callers; no custom exception handler in `main.py`.
+- **Fix (fixed):** log full detail server-side; return generic client messages; add `@app.exception_handler` (see P7).
 
-### 4.2. What a Pedagogical DAG Should Actually Represent
-A true pedagogical graph is a **Skill & Prerequisite Lattice**:
+#### M3. Client-trusted grading on legacy questions + cross-course pollution on submit
+- **Location:** `backend/api/routes/quizzes.py:179-184, 206-227`; `schemas.py:141-146`
+- **Auditors:** SE (M2, M3), TE (High #4).
+- **Description:** `QuizAnswerIn.correct` is client-supplied and trusted when a question row has NULL `answer`; responses are recorded under caller-supplied `course_id`/`student_id` with no consistency check against the question's real course.
+- **Fix (fixed):** remove `correct` from the request schema; require `quest.course_id == payload.course_id` (see P6).
 
-```mermaid
-graph TD
-    A["Linear Algebra: Matrix Rank"] --> B["Multivariate Normal Distribution"]
-    C["Calculus: Partial Derivatives"] --> D["Gradient Operator"]
-    D --> E["Loss Surface Convexity"]
-    B --> F["Maximum Likelihood Estimation"]
-    E --> G["Gradient Descent Convergence"]
-    F --> H["Gaussian Mixture Models"]
-    G --> I["Deep Neural Network Optimization"]
-```
+#### M4. `/courses` is N+1 and re-fetched on every Streamlit rerun
+- **Location:** `backend/api/routes/courses.py:39-66`; `frontend/app.py:86-92, 149`
+- **Auditors:** PF (Medium #5).
+- **Fix (deferred):** single aggregated GROUP BY query; `@st.cache_data` on the frontend.
 
-### 4.3. High-Value Capabilities of a Valid DAG
-1. **Root-Cause Knowledge Gap Tracing:**
-   When a student fails an assessment on *Backpropagation*, the system should not simply re-show Backpropagation. It should traverse the DAG backwards:
-   - Did they fail because of the *Multivariate Chain Rule*?
-   - Did they fail because of *Matrix Transposition in Gradient Calculation*?
-   - Pinpoint the exact upstream foundation where comprehension broke down.
-2. **Bayesian Knowledge Tracing (BKT) / Graph Neural Networks:**
-   Maintain a probability of mastery $P(Mastery_i)$ for every node in the graph for each student. When a question is answered, propagate belief updates upstream and downstream across edges.
-3. **Curriculum Coherence & Divergence Detection for Instructors:**
-   Compare the professor's **Taught Order** (the chronological timeline of the lecture) with the graph's **Topological Order** (the logical dependency sequence). If a professor introduces a dependent concept 20 minutes *before* explaining its foundational prerequisite, flag this as a **"High Cognitive Load Inversion"** in the faculty dashboard.
-4. **Visual Learning Maps:**
-   Render this graph in the frontend so students can visually track their progress and see their "knowledge gaps" mapped out.
-5. **Adaptive Testing:**
-   Instead of a linear quiz, use the DAG for adaptive testing. If a user fails a dependent concept, immediately test the prerequisites to find the root cause of the gap.
+#### M5. Unpaginated endpoints + stats recompute full tables and graphs
+- **Location:** `lectures.py:100-114`; `courses.py:146-203`; `quizzes.py:169-227, 244-250, 308-313`
+- **Auditors:** PF (Medium #6, #8); TE (High #3).
+- **Fix (deferred):** paginate lists; SQL aggregates for heatmap/divergence; brief graph-dict cache keyed on rebuild version.
+
+#### M6. SQLite writer contention around `llm_cache` and parallel writers
+- **Location:** `db.py:44-62`; `llm.py:60-94`; `workers.py:282, 552`
+- **Auditors:** PF (Medium #7).
+- **Fix (bundled with H5):** reuse a process-wide writer with short transactions + idempotent inserts.
+
+#### M7. Serial sequential LLM loops where bounded concurrency applies
+- **Location:** `extract_concepts.py:113-130`; `refine_timeline.py:178-191`; `workers.py:510-524`; `transcribe.py:302-310`
+- **Auditors:** PF (Medium #8).
+- **Fix (deferred):** small ThreadPoolExecutor caps (2-4) for independent LLM sub-calls.
+
+#### M8. O(n²) pure-Python cosine reintroduces allocation churn
+- **Location:** `build_graph.py:114-135, 253-256`; `classify_prerequisites.py:91-100`
+- **Auditors:** PF (Medium #9).
+- **Fix (deferred):** single L2-normalized matrix + one `matmul`.
+
+### 3.4 Low
+
+| ID | Location | Finding | Auditor |
+|----|----------|---------|---------|
+| L1 | `quizzes.py:126-128`, `db.py` | Regenerating a quiz leaves stale `QuizResponse` rows (FKs never enforced); course_stats/remediation accumulate dead answers | CR |
+| L2 | `classify_prerequisites.py:202-204` | Undersample branch raises when `neg_idx` smaller than requested; zero-positive fit on empty matrix | CR |
+| L3 | `workers.py:488,502` | Reaches into classifier privates (`clf._encoder`) | CR |
+| L4 | `lectures.py:82-91` | Non-atomic upload: partial file + committed row on mid-write failure | SE (H1), CR |
+| L5 | `workers.py:517-523` | LLM-reasoning parse failure keeps edge on classifier confidence (consider veto) | CR |
+| L6 | `transcribe.py:162` | `start + 30.0` clamp assumes `chunk_s ≥ 30` | CR |
+| L7 | `transcribe.py:56-62` | `_get_model` not thread-safe → double model load on concurrent first use | PF |
+| L8 | `segment_clips.py:213-220` | fixed worker count can oversubscribe when other stages run | PF |
+| L9 | `frontend/app.py:103-134,277` | 1s unbounded progress polling, hard-coded `latency_s: 2.0` | PF, CR |
+| L10 | `environment.yml:7-32` | Unpinned deps; opencv CVE-2025-53644 / CVE-2023-4863, transformers CVE-2024-3568 + 5.3.0 RCE family apply depending on resolved versions | SE |
+| L11 | `refine.py:181` | `generate_synthetic_students` unbounded on `n` | SE |
+| L12 | `segment_clips.py:67-74` | NaN/inf flows as `-ss nan` (fails closed, but reject non-finite explicitly) | SE |
+| L13 | `frontend/app.py:305-306` | `st.video` plays server-local paths | CR |
+
+### 3.5 Test-coverage findings (TE)
+
+- Seven behavior commits on 2026-09-18; **six shipped without test changes** (`d78657f`, `8581cc0`, `8b939d8`, `24fde01`, `0e401df`, `a7bfd86`). Only `50959af` (segment_clips) updated a test file.
+- **Worst gaps (now fixed with their fixes):** silence-snap path; LLM-reasoning branch integration; worker error paths; quiz answer-key leak.
+- Remaining gaps (now closed with the audit fixes): `get_remediation` endpoint; legacy probe grading + attempt increments; `create_quiz` 404-no-concepts; worker error paths; quiz answer-key leak.
+- Remaining gaps (open): `courses.py` fallback branches; `_rebuild_course_graph` short-circuits; `purge_course` completeness; `fine_tune.py` training/export path; `frontend/app.py`.
+- **Quality issues:** `test_api.py:55` globally mocks `quizzes.generate_mcq` → `pool.map` exceptions can't surface; `test_quiz_refine.py:59-62` vacuous; `test_transcribe.py:286-297` asserts ffmpeg arg ordering (brittle); `test_llm.py:18` module-level shared mutable state; `test_classify_prerequisites.py:43` vectors vary with `PYTHONHASHSEED`; three stray fixture tests collected from `agent-skills/`.
+
+### 3.6 Positive observations (all auditors)
+
+- **No SQL injection** — all data access is SQLAlchemy bound parameters; only raw SQL is additive DDL (`db.py:366-375`).
+- **Subprocess safety is solid** — argv lists only, no `shell=True`; `-ss/-t` values float-coerced with `:.3f`; commands time out; concept names sanitized before filenames (`segment_clips.py:58-64`).
+- **Secrets clean** — `.env` gitignored, no `gsk_` token in history, key only read via `os.getenv`, never logged.
+- **DB discipline** — WAL + busy_timeout + `synchronous=NORMAL`; one commit per stage; `expire_on_commit=False`/`autoflush=False`.
+- **Hermetic tests** — Whisper/Groq/ffmpeg fully monkeypatched; single in-memory StaticPool in `test_api.py`; CI experience offline.
+- **Graceful LLM degradation** — strict parsing with clamps/bounds; fallback-to-evidence never raises to client; reset-header-aware backoff with sleep cap.
+- **Per-clip failure isolation** in `segment_clips.py`; re-encode-vs-stream-copy threshold now frame-accurate for concept clips.
 
 ---
 
-## 5. Benchmarking Against NotebookLM: How to Surpass It
+## 4. Fix Records (work started by priority)
 
-### 5.1. Current State vs. NotebookLM
-* **Current State:** NotebookLM excels at passive consumption—chatting over documents, synthesizing podcasts, and citing sources. Our system is trying to do active learning (assessment + remediation).
-* **Is it better currently?** Currently, no, because NotebookLM's synthesis is highly polished, whereas our quizzes and clips feel fragmented and out of context.
+Each entry records status; the "Regressions covered" column links to the test that pins the fix.
 
-### 5.2. Where NotebookLM Fails (Our Strategic Moat)
-* **NotebookLM is completely PASSIVE:** It is an interactive encyclopedia and summarizer. It does not test you, does not measure what you actually retained, does not know what you misunderstood, and does not adapt to your cognitive state.
-* **No Conceptual Dependency Engine:** NotebookLM cannot tell you: *"You are struggling with Topic D because you lack mastery of Topic B, which was mentioned on Slide 4."*
-* **No Remediation Pathways:** It cannot deliver targeted micro-learning interventions calibrated to close diagnosed gaps.
+| # | Finding | Status | Commit / notes |
+|---|---------|--------|----------------|
+| P1 | C1 + C2 — `import re` + real snapped offsets + tests | **fixed** | See below |
+| P2 | C3 — quiz answer-key leak | **fixed** | Remove distractor fields from schema + `_question_out` |
+| P3 | H1 — worker error status | **fixed** | `status="error"` in both failure handlers |
+| P4 | H2 — phantom graph nodes | **fixed** | Gate transcript edges on extracted concept membership |
+| P5 | H5/M6 — llm_cache fill race | **fixed** | single-flight + `INSERT OR IGNORE` |
+| P6 | M3 — grading consistency | **fixed** | drop client `correct`; course consistency check |
+| P7 | M2 — error text sanitization | **fixed** | generic client messages + exception handler |
+| P8 | H3/H4 — worker process + cached classifier | pending | structural |
+| P9 | H6/M4/M5/M8 — N+1 & single-pass prep | pending | structural |
+| P10 | M1 — prompt-injection boundaries | pending | LLM-verdict weighting + untrusted-data delimiters |
+| P11 | L10 — dependency pinning + CVE scan | pending | conda-lock + pin hub model IDs |
+| P12 | Test backlog (TE recommended list) | in progress | remediation/attempt-increment/404 added; courses/graph/purge/fine-tune/frontend still open |
 
-### 5.3. Comparison Matrix
+### P1 detail — silence-snap correctness
 
-| Dimension | Google NotebookLM | Our Target System (`LecGap Pro`) |
+- Added `import re` to `backend/pipeline/transcribe.py`.
+- `_split_flac` now returns `(path, start_offset)` so callers build offsets from the real cumulative split points (`split_point`), not `i * chunk_s`.
+- Added unit tests: `_detect_silence_offset` returns `start_search + best` on a `silence_start` hit, `target_s` on no markers, `target_s` on ffmpeg error; snapping clamps to `[start+30, start+chunk_s+5]`; the trailing-remainder guard (> 15 s) suppresses snapping on the final chunk.
+
+### P2 detail — quiz answer-key leak
+
+- Removed `distractor_a/b/c` from `QuizQuestionOut` (`backend/api/schemas.py`).
+- `_question_out` (`backend/api/workers.py`) no longer returns the distractor columns.
+- Frontend unaffected (uses only `id/question/concept/options`).
+- Test pins: response contains shuffled `options` and no `distractor_*`/`answer`/`explanation` keys.
+
+### P3 detail — worker error status
+
+- `_extract_concepts_worker` and `_cut_clips_worker` failure paths now set `lecture.status = "error"` before persisting `lecture.error`.
+- Test pins: raising pipeline stage ⇒ `status=="error"`, `error` text set, progress entry pruned.
+
+### P4 detail — phantom graph nodes
+
+- Transcript `LectureLink` edges are only inserted when both resolved endpoints are in the extracted concept name set (post-dedup); unknown-name links are skipped (logged), preventing orphan `GraphNode`s.
+
+### P5 detail — llm_cache fill race
+
+- `llm.complete` wraps the miss path in a per-key **single-flight** lock (`_KeyLockMap`, refcounted so the map stays bounded): the first thread to miss calls the backend and fills the cache; concurrent waiters re-read the cache and reuse the result — one API bill per distinct prompt, no duplicate-PK crash.
+- `_cache_put` switched from `db.merge` to `sqlite_insert(...).on_conflict_do_nothing()` so a cross-process duplicate insert is a no-op.
+- Test pins: 8 threads on the same fresh key ⇒ exactly 1 backend call, 7 served from cache; double `_cache_put` of one key raises no `IntegrityError`.
+
+### P6 detail — grading consistency
+
+- `QuizAnswerIn.correct` removed from the request schema — the client only ever reports what it *selected*; a question without a stored answer key grades as wrong (no client flag is trusted, so remediation/heatmap signals stay honest).
+- `submit_quiz` now rejects answers whose `question.course_id != payload.course_id` (HTTP 400) — no cross-course `QuizResponse` pollution.
+- Test pins: cross-course submit ⇒ 400; legacy no-key question with client-claimed `correct=True` grades wrong, score 0.
+
+### P7 detail — error text sanitization
+
+- `workers._client_error_message` replaces `f"{type(exc).__name__}: {exc}"` in all four pipeline workers (transcription / extraction / graph rebuild / clip cutting): full detail is logged server-side, `lecture.error` carries a generic "`<Stage>` failed — see server logs for details." message.
+- `main.py` adds a catch-all `@app.exception_handler(Exception)` returning a generic 500 (no internals echoed).
+- Test pins: failing transcribe/extract/clips workers leave `status=="error"` with no ffmpeg paths / temp dirs / Groq tokens in the client-visible message; progress endpoint reflects the error.
+
+---
+
+## 5. Benchmarking Against NotebookLM (unchanged strategic context)
+
+`LecGap` targets **active, diagnostic learning** (test → diagnose → remediate) with a dependency DAG, faculty confusion heatmaps, syllabus-inversion warnings, and precision remediation anchors — a moat NotebookLM (passive summarization/synthesis) does not occupy. The differentiation only materializes if the corrective fixes above land, because quiz integrity and clip accuracy are the product.
+
+| Dimension | Google NotebookLM | LecGap target |
 | :--- | :--- | :--- |
-| **Learning Paradigm** | Passive Consumption (Read/Listen) | **Active Diagnostic Learning (Test $\rightarrow$ Diagnose $\rightarrow$ Remediate)** |
-| **Cognitive Modeling** | None (Stateless Q&A) | **Student Knowledge State Graph (Dynamic Mastery Tracking)** |
-| **Lecture Processing** | Flat text dump into LLM | **Multimodal Pedagogical Episodes (Slide OCR + Spoken Track + Derivations)** |
-| **Assessments** | Generic flashcards / surface trivia | **Deep Misconception Diagnostics (Bloom's Taxonomy Levels 3–5)** |
-| **Remediation** | Read the full summary again | **Precision Video Anchors + Targeted Conceptual Bridges** |
-| **Instructor Insights** | None | **Class-wide Confusion Heatmaps & Syllabus Inversion Warnings** |
-
-### 5.4. Strategies to Surpass NotebookLM
-- **Active vs. Passive:** Lean into our unique value proposition: targeted assessments. NotebookLM doesn't test you and enforce learning paths. We do.
-- **Spaced Repetition:** Use the DAG to schedule quizzes over time.
-- **Contextual Synthesis:** Instead of raw ffmpeg clips, use LLMs to summarize the prerequisite gap before showing the clip, giving the user a "bridge" explanation connecting their misconception to the prerequisite concept.
+| Learning paradigm | Passive consumption | Active diagnostic loop |
+| Cognitive model | Stateless Q&A | Per-node mastery state |
+| Lecture processing | Flat text | Pedagogical episodes + acoustic boundary snapping |
+| Assessment | Generic trivia | Misconception diagnostics |
+| Remediation | Re-read summary | Precision anchors + conceptual bridges |
+| Instructor insight | None | Confusion heatmaps + inversion warnings |
 
 ---
 
-## 6. Deep NLP: Exploiting the Entire Transcript
+## 6. Next-Iteration Blueprint
 
-Transcription is expensive. Throwing away 95% of the transcript context and passing 3-sentence windows to an LLM wastes the primary asset of the system.
-
-Here is how modern NLP and Deep Learning should be utilized across the entire transcript:
-
-```
-Full Audio Stream ──> Whisper Large-v3 with Word-Level Timestamps
-                             │
-                             ▼
-     [Hierarchical Transcript Representation]
-     ├── Lexical Tier: Word-level timestamps & confidence scores
-     ├── Acoustic Tier: Pause durations, pitch inflection (emphasis/repetition)
-     └── Discourse Tier: Speaker turns & question-answer exchanges
-                             │
-                             ▼
-  [Dense Semantic Segmentation (Neural Topic Modeling)]
-     ├── Sliding Window SentenceTransformer (e.g., BGE-Large / E5-Mistral)
-     ├── Cosine Distance Matrix + Changepoint Detection (Kernel CP / TextTiling)
-     └── Semantic Boundary Snapping (Align with acoustic pauses > 1.5s)
-                             │
-                             ▼
-          [Pedagogical Episode Extraction]
-     ├── Problem Formulation / Motivation (Why do we need this?)
-     ├── Formal Definition / Core Theorem
-     ├── Worked Example / Mathematical Derivation
-     ├── Intuition & Visual Metaphor
-     └── Edge Cases, Failure Modes & Common Misconceptions
-```
-
-### Key Technical Upgrades:
-1. **Dynamic Acoustic-Semantic Boundary Detection:**
-   - Rather than cutting clips on arbitrary seconds, compute embeddings for rolling 30-second windows with 5-second strides.
-   - Compute the semantic divergence between adjacent windows. Spikes in divergence indicate a topic transition.
-   - Snap boundaries to the nearest acoustic silence (pauses $> 1.5\text{s}$) using Whisper word-level timestamps.
-   - This ensures video clips are self-contained **pedagogical episodes** (complete thoughts with problem statement and resolution).
-2. **Whole-Lecture Context Ingestion via Long-Context Models:**
-   - Modern frontier models possess context windows exceeding 128K to 1M tokens. An entire 2-hour university lecture is typically only 18,000 to 25,000 words (~30,000 tokens).
-   - Ingest the entire transcript into a long-context model in a single pass to construct the comprehensive narrative map, track recurring motifs, and resolve cross-lecture references.
-
----
-
-## 7. Code Structure & Modularity: Moving to Domain-Driven Layers
-
-### 7.1. Current Modularity Flaws
-* **Observation:** The code is not modular enough. Logic is heavily jumbled together in the `backend/pipeline` directory.
-* **Specific Issues:**
-  - `quiz.py` handles both graph traversal (`select_remediation_sequence`) and string manipulation for fallback MCQs.
-  - `mcq_gen.py` handles LLM interactions but is disconnected from the main domain models.
-  - There is no clear separation of concerns (Domain vs. Infrastructure vs. Application). Pipeline stages are mixed with business logic.
-  - Graph algorithms are scattered between `build_graph.py`, `routes.py`, and `quiz.py`.
-
-### 7.2. Proposed Clean Architecture
-Refactor the codebase into a layered, domain-driven structure:
-
-```
-backend/
-├── core/                        # Global configs, logging, telemetry
-│   ├── config.py
-│   └── exceptions.py
-├── domain/                      # Pure business models & mathematical contracts (NO DB, NO LLM)
-│   ├── concept.py               # Concept, ConceptSpan, PedagogicalRole
-│   ├── graph.py                 # DependencyGraph, CycleResolver, TopologicalSort
-│   ├── assessment.py            # DiagnosticQuestion, DistractorRationale, StudentState
-│   └── remediation.py           # RemediationPath, CognitiveGap
-├── infrastructure/              # External services, hardware wrappers, DB
-│   ├── db/
-│   │   ├── models.py            # SQLAlchemy tables
-│   │   └── repository.py        # Clean database transactions
-│   ├── media/
-│   │   ├── ffmpeg_transcoder.py # Precise keyframe re-encoding, audio normalization
-│   │   └── video_segmenter.py   # Scene detection, slide OCR
-│   ├── speech/
-│   │   ├── whisper_client.py    # Local & Cloud Whisper with word-level timing
-│   │   └── acoustic_parser.py   # Silence/pause detection
-│   └── llm/
-│       ├── provider.py          # Unified client (Groq, Anthropic, Gemini, Ollama)
-│       └── prompts/             # Versioned, strictly structured prompts
-├── services/                    # Orchestration workflows (Application Layer)
-│   ├── ingestion_service.py     # Audio extract -> Transcribe -> Discourse segment
-│   ├── concept_service.py       # Global extraction -> Deduplication -> Grounding
-│   ├── graph_service.py         # Prerequisite extraction -> Cycle resolution -> Divergence
-│   ├── assessment_service.py    # Diagnostic MCQ generation -> Grounded distractor rationales
-│   └── remediation_service.py   # Student response grading -> Bayesian update -> Targeted clip path
-└── api/                         # FastAPI presentation layer (HTTP only)
-    ├── dependencies.py
-    └── v1/
-        ├── lectures.py
-        ├── courses.py
-        ├── quizzes.py
-        └── analytics.py
-```
-
----
-
-## 8. Concrete Action Items for Next Iteration
-
-1. **Resolve UI Race Conditions:** Chain concept extraction and graph construction into a sequential background pipeline with explicit status tracking (`processing` $\rightarrow$ `concepts_extracted` $\rightarrow$ `graph_built`).
-2. **Fix Video Clipping:** Replace `-c copy` in `segment_clips.py` with fast re-encoding (`-c:v libx264 -preset veryfast -crf 22 -c:a aac`) and add 15-second acoustic-aligned padding.
-3. **Upgrade Quiz Generation:** Feed full pedagogical episodes into the LLM instead of 3-segment windows, and enforce schema validation with Pydantic.
-4. **Transition to Context-Aware Prerequisites:** Move away from static 208-topic embeddings; utilize transcript evidence to determine why concept $A$ precedes concept $B$.
-5. **Decouple Modules:** Refactor `backend/pipeline/` into distinct Domain, Infrastructure, and Application Service layers.
-6. **Implement Student Knowledge Tracking:** Record response latency and specific distractor selections to diagnose the exact misconception rather than just binary correct/incorrect scores.
+1. **Sequential status pipeline (already largely in place)** — extraction → graph → clips chained in workers with an explicit status model; ensure every failure sets `status="error"`.
+2. **Frame-accurate, pedagogically-bounded clips** — done (libx264 for ≤120 s); extend with the acoustic-boundary snapping that P1 now enables, plus padding to topic boundaries.
+3. **Context-rich quiz generation** — feed full pedagogical episodes instead of 3-segment windows; enforce schema validation with Pydantic; kill the answer-key leak (P2).
+4. **Transcript-aware prerequisites** — use lecture evidence for edges; treat LLM verdicts as weighted, not binary (P10).
+5. **Domain-driven layering** — split `backend/pipeline` into domain / infrastructure / application services (see target layout in the archived audit).
+6. **Student knowledge tracking** — record response latency + distractor selection to diagnose misconceptions, not just binary scores.
