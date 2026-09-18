@@ -266,3 +266,48 @@ def test_classify_course_pairs_filters_below_threshold(monkeypatch):
         threshold=0.5, lecturebank_dir="d",
     )
     assert out == [{"a": "A", "b": "B", "confidence": 0.95}]
+
+
+def test_classify_course_pairs_reuses_fitted_classifier(monkeypatch):
+    """H4: repeated course bridges with the SAME LectureBank list + encoder
+    reuse the cached fit — the logistic head is NOT re-fit per call."""
+    fit_calls = {"n": 0}
+
+    class _SpyClf:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def fit(self, pairs, labels, **k):
+            fit_calls["n"] += 1
+            return self
+
+        def predict_proba(self, pairs):
+            return [0.9] * len(pairs)
+
+    # a NEW list per call must NOT hit the cache (no cross-test bleeding);
+    # the SAME list object + encoder MUST hit it (one fit total).
+    shared_encoder = object()
+    shared_lib = [("X", "Y", 1)]
+
+    def lib_for(d):
+        if d == "shared":
+            return shared_lib
+        return [("A", "B", 1)]
+
+    monkeypatch.setattr(CP, "_st", _stub_st)
+    monkeypatch.setattr(CP, "PrerequisiteClassifier", _SpyClf)
+    monkeypatch.setattr(CP, "_load_lecturebank", lib_for)
+    monkeypatch.setattr(CP, "get_candidate_pairs", lambda concepts, **kw: [("A", "B")])
+
+    concepts = [{"name": "A"}, {"name": "B"}]
+    # first call fits; second call with the identical (lib, encoder) reuses it
+    CP.classify_course_pairs(concepts, threshold=0.5, lecturebank_dir="shared",
+                             encoder=shared_encoder)
+    CP.classify_course_pairs(concepts, threshold=0.5, lecturebank_dir="shared",
+                             encoder=shared_encoder)
+    assert fit_calls["n"] == 1, "identical (lib, encoder) must share one fit"
+
+    # two separate fresh lib objects each fit fresh
+    CP.classify_course_pairs(concepts, threshold=0.5, lecturebank_dir="a")
+    CP.classify_course_pairs(concepts, threshold=0.5, lecturebank_dir="b")
+    assert fit_calls["n"] == 3

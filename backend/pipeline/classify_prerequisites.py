@@ -26,6 +26,7 @@ Design notes (see EVALUATION.md):
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import os
+import threading
 
 import numpy as np
 
@@ -38,13 +39,6 @@ def _st():
     from sentence_transformers import SentenceTransformer, util
 
     return SentenceTransformer, util
-
-
-def _cosine(a, b) -> float:
-    a = np.asarray(a, dtype=float).ravel()
-    b = np.asarray(b, dtype=float).ravel()
-    denom = float(np.linalg.norm(a) * np.linalg.norm(b))
-    return float(a @ b / max(denom, 1e-8))
 
 
 def get_candidate_pairs(
@@ -84,16 +78,22 @@ def get_candidate_pairs(
                     candidates.append((a["name"], b["name"]))
 
     # 2. Embedding similarity (across everything, incl. far-apart concepts).
+    #    Vectorized (M8): L2-normalise once and take one pairwise matmul
+    #    instead of O(n^2) fresh numpy allocations, so the threshold test is a
+    #    plain matrix lookup per pair.
     if encoder is None:
         SentenceTransformer, _ = _st()
         encoder = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     names = [c["name"] for c in concepts]
-    vecs = encoder.encode(names, convert_to_tensor=False)
+    mat = np.asarray(encoder.encode(names, convert_to_tensor=False), dtype=np.float32)
+    row_norms = np.linalg.norm(mat, axis=1, keepdims=True)
+    mat_n = mat / np.maximum(row_norms, 1e-8)
+    sim = mat_n @ mat_n.T
     for i in range(len(names)):
         for j in range(len(names)):
             if i == j:
                 continue
-            if _cosine(vecs[i], vecs[j]) >= sim_threshold:
+            if sim[i, j] >= sim_threshold:
                 key = (names[i], names[j])
                 if key not in seen:
                     seen.add(key)
@@ -271,8 +271,37 @@ def llm_reasoning_check(
     }
 
 
+_lecturebank_lock = threading.Lock()
+_lecturebank_cache: Dict[str, List[Tuple[str, str, int]]] = {}
+_fitted_cache_lock = threading.Lock()
+_fitted_cache: Dict[tuple, "_CachedFit"] = {}
+
+
+class _CachedFit:
+    """Cache entry that ALSO pins strong refs to ``lib``/``encoder`` so an
+    ``id()`` can never be silently recycled by a different object (which would
+    make the cache return a stale fit to an unrelated caller)."""
+
+    __slots__ = ("lib", "encoder", "clf")
+
+    def __init__(self, lib, encoder, clf):
+        self.lib = lib
+        self.encoder = encoder
+        self.clf = clf
+
+
 def _load_lecturebank(lecturebank_dir) -> List[Tuple[str, str, int]]:
-    """(name_a, name_b, label) triples from data/lecturebank (see evaluate_classifier)."""
+    """(name_a, name_b, label) triples from data/lecturebank (see evaluate_classifier).
+
+    Memoized per directory (H4): the CSVs are static for the process, so every
+    course-graph rebuild reusing the same directory skips the file read. Tests
+    monkeypatch this function directly, which bypasses the memo entirely.
+    """
+    key = os.path.abspath(lecturebank_dir)
+    with _lecturebank_lock:
+        if key in _lecturebank_cache:
+            return _lecturebank_cache[key]
+
     import csv
 
     name_of = {}
@@ -290,7 +319,40 @@ def _load_lecturebank(lecturebank_dir) -> List[Tuple[str, str, int]]:
             for src, tgt, label in csv.reader(f):
                 if src in name_of and tgt in name_of:
                     pairs.append((name_of[src], name_of[tgt], int(label)))
+    with _lecturebank_lock:
+        _lecturebank_cache[key] = pairs
     return pairs
+
+
+def _fitted_classifier(
+    lib: Sequence[Tuple[str, str, int]],
+    *,
+    encoder=None,
+) -> "PrerequisiteClassifier":
+    """Return a LectureBank-fitted classifier, cached across calls (H4).
+
+    Course-graph rebuilds no longer re-fit the logistic head on the full
+    LectureBank per lecture. The cache key is the *identity* of the loaded
+    training-trip list and the encoder object, and each entry pins strong refs
+    to both so an ``id()`` cannot be recycled by an unrelated object:
+      - production: `_load_lecturebank` returns one memoized list object and
+        the shared encoder is stable -> one fit per process, reused forever;
+      - tests: monkeypatched loads/fakes produce fresh objects per call -> no
+        cross-test cache bleeding.
+    """
+    key = (id(lib), id(encoder))
+    with _fitted_cache_lock:
+        entry = _fitted_cache.get(key)
+        if entry is not None and entry.lib is lib and entry.encoder is encoder:
+            return entry.clf
+        clf = PrerequisiteClassifier(encoder=encoder).fit(
+            [(a, b) for a, b, _ in lib],
+            [lbl for _, _, lbl in lib],
+            balance="undersample",
+            max_neg_ratio=16,
+        )
+        _fitted_cache[key] = _CachedFit(lib, encoder, clf)
+        return clf
 
 
 def classify_course_pairs(
@@ -328,12 +390,7 @@ def classify_course_pairs(
     if not candidates:
         return []
 
-    clf = PrerequisiteClassifier(encoder=encoder).fit(
-        [(a, b) for a, b, _ in lib],
-        [lbl for _, _, lbl in lib],
-        balance="undersample",
-        max_neg_ratio=16,
-    )
+    clf = _fitted_classifier(lib, encoder=encoder)
     probs = clf.predict_proba(candidates)
     return [
         {"a": a, "b": b, "confidence": float(p)}
