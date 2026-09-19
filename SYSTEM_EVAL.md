@@ -128,7 +128,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 - **Location:** `backend/api/routes/quizzes.py:60-66, 68, 75-84, 100`; `workers.py:561-574`; `quiz.py:139-172`; `mcq_gen.py:126-160`
 - **Auditors:** PF (High #4).
 - **Description:** For each of ~50-200 concepts, the route rescans the course-wide segment list (≥2-3×) and loads every course segment into RAM; passage rows fetched one-by-one.
-- **Fix (deferred):** batch passage load (single `IN`), precompute per-concept evidence into `passages`, build a name→sentence index in one pass.
+- **Fix: (status: fixed)** passage rows are batched into a single `IN` query (`quizzes.py:60-67`); the evidence loop's `_in_range`-equivalent is a bisect window over the time-sorted segment list (`quizzes.py:78-95`, exact same membership, O(log n + window) instead of O(course)); `local_context`'s anchor search is now a bisect `_anchor_index` (`mcq_gen.py:90-190`) that reproduces the historic linear scan exactly (differential-pinned in `test_mcq_gen.py`), including overlapping/gapped/nearest-tie cases and a linear-scan fallback for non-monotonic ends. Tests: `test_create_quiz_batch_loads_passages` (counts passage SELECTs during create_quiz ⇒ 1), `test_anchor_index_matches_historic_scan`, `test_local_context_uses_nearest_segment_for_interpolation_points`, `test_local_context_overlapping_segments_uses_containing_window`.
 
 ### 3.3 Medium
 
@@ -227,7 +227,7 @@ Each entry records status; the "Regressions covered" column links to the test th
 | P6 | M3 — grading consistency | **fixed** | drop client `correct`; course consistency check |
 | P7 | M2 — error text sanitization | **fixed** | generic client messages + exception handler |
 | P8 | H3/H4 — worker process + cached classifier | **fixed (H4)** / H3 open | cached classifier + vectorized cosine landed (`edc85cc`, `ae0c3b2`); dedicated worker process still structural |
-| P9 | H6/M4/M5/M8 — N+1 & single-pass prep | **in progress** | M4 + M8 fixed (see below); H6 quiz-prep N+1 and M5 pagination/stats still open |
+| P9 | H6/M4/M5/M8 — N+1 & single-pass prep | **H6 + M4 + M8 fixed** / M5 open | M4 (frontend+backend), M8, and H6 all closed (see finding entries); M5 pagination/stats still open |
 | P10 | M1 — prompt-injection boundaries | pending | LLM-verdict weighting + untrusted-data delimiters |
 | P11 | L10 — dependency pinning + CVE scan | pending | conda-lock + pin hub model IDs |
 | P12 | Test backlog (TE recommended list) | **closed** | all listed TE gaps covered; quality issues list remains (see §3.5) |
@@ -284,7 +284,8 @@ Each entry records status; the "Regressions covered" column links to the test th
 
 - **M4 (fixed):** `/courses` uses four grouped `COUNT ... GROUP BY` queries (`c143daa`) instead of a per-course N+1 loop — lecture/concept/node/edge counts now come from dict lookups. Frontend `@st.cache_data` half now also fixed (`_course_summaries` + refresh clear, `test_frontend_app.py`).
 - **M8 (fixed):** vectorized pair cosine — see P8 detail.
-- **Still open:** H6 (quiz prep rescans/loads course-wide segments repeatedly, per-concept passage `db.get`); M5 (unpaginated lists; `course_stats` full-table heatmap/`get_course_graph` recompute per poll).
+- **H6 (fixed):** quiz prep no longer rescans the full segment list per concept or fetches passages one-by-one — see H6 finding; verified by `test_create_quiz_batch_loads_passages` (1 passage SELECT) and the mcq_gen differential tests.
+- **Still open:** M5 (unpaginated lists; `course_stats` full-table heatmap/`get_course_graph` recompute per poll).
 
 ### P12 detail — TE backlog closure
 

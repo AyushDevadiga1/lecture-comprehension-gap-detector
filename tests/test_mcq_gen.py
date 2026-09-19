@@ -54,6 +54,51 @@ def test_local_context_none_without_anchor_or_mention():
     assert mcq_gen.local_context(segs, None) is None
 
 
+def _historic_anchor(starts, ends, start):
+    """The pre-bisect linear scan local_context used (reference impl)."""
+    for i, (st, en) in enumerate(zip(starts, ends)):
+        if st is not None and en is not None and st <= start < en:
+            return i
+    best = None
+    for i, st in enumerate(starts):
+        if st is None:
+            continue
+        if best is None or abs(st - start) < abs(starts[best] - start):
+            best = i
+    return best
+
+
+def test_anchor_index_matches_historic_scan():
+    """Differential pin: the bisect _anchor_index returns exactly what the
+    old full scan did for contiguous, overlapping, gapped and tie cases."""
+    cases = [
+        ([0.0, 2.0, 4.0, 6.0], [2.0, 4.0, 6.0, 8.0]),          # contiguous
+        ([0.0, 1.9, 3.8], [2.1, 4.0, 6.0]),                     # overlapping
+        ([0.0, 5.0, 10.0], [1.0, 6.0, 11.0]),                   # gapped
+        ([4.0, 2.0, 0.0], [6.0, 4.0, 2.0]),                     # reverse-order ends
+        ([10.0], [11.0]),                                       # single
+    ]
+    for starts, ends in cases:
+        for t in [0.0, 0.5, 1.0, 1.5, 1.95, 2.0, 3.8, 4.5, 6.2, 9.9, 10.5, 12.0, 100.0]:
+            assert mcq_gen._anchor_index(starts, ends, t) == _historic_anchor(starts, ends, t), (
+                f"mismatch on starts={starts} ends={ends} t={t}"
+            )
+
+
+def test_local_context_uses_nearest_segment_for_interpolation_points():
+    segs = [_seg(0, 2, "intro filler"), _seg(10, 12, "attention falls here"),
+            _seg(20, 22, "the next topic")]
+    c = SimpleNamespace(name="attention", start_s=9.3, end_s=11.0)
+    ctx = mcq_gen.local_context(segs, c)
+    assert "attention falls here" in ctx
+
+
+def test_local_context_overlapping_segments_uses_containing_window():
+    segs = [_seg(0, 3, "tokens flow in"), _seg(2, 6, "attention mixing heads")]
+    assert "attention mixing heads" in mcq_gen.local_context(
+        segs, SimpleNamespace(name="attention", start_s=2.5, end_s=5.0))
+
+
 # ------------------------------------------------------------------ parsing
 
 def test_parse_good_json():

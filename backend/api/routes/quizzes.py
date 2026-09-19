@@ -2,6 +2,8 @@
 sequence (Stage 6/7). Note: /students paths live here too because remediation
 is computed from quiz responses."""
 
+from bisect import bisect_left
+
 from fastapi import APIRouter, Body, HTTPException
 
 from backend.api import workers
@@ -57,15 +59,40 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
         # extracted by the Lecture-Structure pass its full teaching passage is
         # persisted — the MCQ writer reads that text, not a re-scanned window.
         # Concepts without a passage keep the old local_context fallback.
-        passage_ctx: dict = {}
-        for name, c in by_name.items():
-            if c.passage_id is None:
-                continue
-            p = db.get(Passage, c.passage_id)
-            if p is not None and p.text:
-                passage_ctx[name] = p.text
+        # Batch load all passages in one IN query (H6: was one db.get per concept).
+        pids = {c.passage_id for c in concepts if c.passage_id is not None}
+        passage_text = {
+            p.id: p.text
+            for p in db.query(Passage).filter(Passage.id.in_(pids)).all()
+            if p.text
+        }
+        passage_ctx = {
+            name: passage_text[c.passage_id]
+            for name, c in by_name.items()
+            if c.passage_id in passage_text
+        }
 
         segments = workers._lecture_segments(db, course_id)
+        # H6: the evidence loop below scans the course-wide segment list per
+        # concept. Time-sorted segments + a bisect window recreate `_in_range`
+        # exactly in O(log n + window) instead of O(course).
+        starts = [s.start_s for s in segments]
+
+        def _window(concept, margin_s=0.5):
+            """_in_range-equivalent via bisect (same membership as the original
+            linear filter: start_s >= lo and end_s <= hi)."""
+            if concept.start_s is None:
+                return segments
+            lo = concept.start_s - margin_s
+            hi = concept.end_s + margin_s
+            i = bisect_left(starts, lo)
+            out = []
+            while i < len(segments) and starts[i] <= hi:
+                if segments[i].end_s <= hi:
+                    out.append(segments[i])
+                i += 1
+            return out
+
         # one distinct evidence sentence per concept: once a sentence is used
         # as one concept's answer it is skipped for the rest, so concepts whose
         # names never appear verbatim don't all collapse onto one "longest"
@@ -74,8 +101,7 @@ def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> Quiz
         evidence: dict = {}
         for name in names:
             ev = supporting_sentence(
-                name, workers._in_range(segments, by_name[name], margin_s=0.5),
-                skip=used,
+                name, _window(by_name[name]), skip=used,
             )
             if ev is None:
                 ev = supporting_sentence(name, segments, skip=used)

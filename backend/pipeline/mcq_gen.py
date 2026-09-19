@@ -25,6 +25,7 @@ result. Any parse/network failure returns None so the caller falls back to the
 pure evidence path: LLM generation can only upgrade a quiz, never break it.
 """
 
+import bisect
 import json
 import random
 import re
@@ -105,7 +106,9 @@ def local_context(
     teach-in passage plus a few following segments, not just the anchor.
 
     Items may be dicts ({text, start_s, end_s}) or ORM objects exposing the
-    same attributes.
+    same attributes. Segments are expected time-sorted (as persisted); when
+    they are, the anchor search is a bisect (O(log n)) that reproduces the
+    historical full scan exactly.
     """
     if concept is None:
         return None
@@ -126,20 +129,9 @@ def local_context(
     segs = list(segments)
     idx = None
     if start is not None:
-        for i, s in enumerate(segs):
-            st, en = start_of(s), end_of(s)
-            if st is not None and en is not None and st <= start < en:
-                idx = i
-                break
-        if idx is None:
-            best = None
-            for i, s in enumerate(segs):
-                st = start_of(s)
-                if st is None:
-                    continue
-                if best is None or abs(st - start) < abs(start_of(segs[best]) - start):
-                    best = i
-            idx = best
+        idx = _anchor_index(
+            [start_of(s) for s in segs], [end_of(s) for s in segs], start
+        )
     if idx is None and name:
         for i, s in enumerate(segs):
             if name.lower() in txt(s).lower():
@@ -158,6 +150,57 @@ def local_context(
         parts.append(t)
         total += len(t)
     return " ... ".join(parts) if parts else None
+
+
+def _anchor_index(
+    starts: Iterable[Optional[float]],
+    ends: Iterable[Optional[float]],
+    start: float,
+) -> Optional[int]:
+    """Index of `start`'s segment, exactly as local_context's historic scan.
+
+    Returns the *first* segment whose [start_s, end_s) window contains
+    ``start``; when none contains it, the segment whose start_s is nearest
+    (ties resolve to the earlier index). ``starts``/``ends`` are expected to
+    be non-decreasing (segments are persisted time-ordered), which turns each
+    search into a bisect; if ``ends`` is not monotonic it falls back to the
+    exact linear scans so behaviour never diverges from the historic code.
+    """
+    starts = list(starts)
+    ends = list(ends)
+    n = len(starts)
+    if n == 0:
+        return None
+    monotonic = n == 1 or all(b >= a for a, b in zip(ends, ends[1:]))
+
+    # first segment whose end_s is strictly past `start`; its window contains
+    # `start` iff its start_s is not after it (bisect needs monotonic ends).
+    if monotonic:
+        k = bisect.bisect_right(starts, start)
+        j = bisect.bisect_right(ends, start)
+        if j < n and j < k and starts[j] is not None and starts[j] <= start:
+            return j
+    else:
+        for i, (st, en) in enumerate(zip(starts, ends)):
+            if st is not None and en is not None and st <= start < en:
+                return i
+
+    # nearest start_s on the (sorted) starts: exactly one of k-1/k is nearest;
+    # the strict-< scan in the original kept the earlier index on ties.
+    if monotonic:
+        if n == 1:
+            return 0
+        k = bisect.bisect_right(starts, start)
+        if k == 0:
+            return 0
+        if k >= n:
+            return n - 1
+        return k - 1 if (start - starts[k - 1]) <= (starts[k] - start) else k
+    best = 0
+    for i in range(1, n):
+        if starts[i] is not None and abs(starts[i] - start) < abs(starts[best] - start):
+            best = i
+    return best
 
 
 def _json_payload(text: str) -> Optional[str]:

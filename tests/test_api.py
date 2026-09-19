@@ -601,6 +601,51 @@ def test_create_quiz_uses_passage_context(api, monkeypatch):
     assert "VERBATIM" not in (seen.get("ctx") or "")
 
 
+def test_create_quiz_batch_loads_passages(api, monkeypatch):
+    """H6: passage rows are fetched with a single IN query, not one db.get per
+    concept — provable by counting passage SELECTs during quiz creation."""
+    from sqlalchemy import event
+
+    client, Session = api
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    lid = _add_lecture(Session, course_id="ml9", status="ready")
+    engine = Session.kw["bind"]
+    counts = {"passage_selects": 0}
+
+    def _count(conn, cur, stmt, params, context, executemany):
+        sql = str(stmt)
+        if sql.lstrip().upper().startswith("SELECT") and "FROM passages" in sql:
+            counts["passage_selects"] += 1
+
+    event.listen(engine, "after_cursor_execute", _count)
+    try:
+        with Session() as s:
+            for i in range(4):
+                p = models.Passage(lecture_id=lid, idx=i, title=f"p{i}",
+                                   kind="explain", start_s=float(i),
+                                   end_s=float(i + 1), summary="s",
+                                   text=f"the teaching passage for c{i}")
+                s.add(p)
+                s.flush()
+                s.add(models.Concept(course_id="ml9", lecture_id=lid,
+                                     passage_id=p.id, name=f"C{i}",
+                                     source="spoken", start_s=float(i),
+                                     end_s=float(i + 1)))
+                s.add(models.TranscriptSegment(lecture_id=lid, idx=i,
+                                               start_s=float(i) + 0.1,
+                                               end_s=float(i) + 0.9,
+                                               text=f"the c{i} concept is taught"))
+            s.commit()
+
+        r = client.post("/quizzes", json={"course_id": "ml9", "student_id": "s"})
+        assert r.status_code == 201
+        assert len(r.json()["questions"]) == 4
+        # one batched passage fetch for all four concepts (was 4x db.get)
+        assert counts["passage_selects"] == 1
+    finally:
+        event.remove(engine, "after_cursor_execute", _count)
+
+
 def test_quiz_submit_unknown_question_404(api):
     client, _ = api
     r = client.post(
