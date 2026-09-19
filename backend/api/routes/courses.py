@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
+from sqlalchemy import func
 
 from backend.api import workers
 from backend.api.schemas import (
@@ -35,34 +36,45 @@ CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
 @router.get("", response_model=List[CourseSummaryOut])
 def list_courses() -> List[CourseSummaryOut]:
     """Teacher-dashboard course list (review_1 C2): one row per course with
-    lecture/concept/graph counts so stale junk courses are obvious."""
+    lecture/concept/graph counts so stale junk courses are obvious.
+
+    M4 / P9: counts are aggregated in four grouped queries instead of the
+    prior per-course N+1 loop (one COUNT per table per course was O(lectures)
+    round-trips even for a single course).
+    """
     with SessionLocal() as db:
         lectures = db.query(Lecture).order_by(Lecture.id).all()
+        concept_counts = dict(
+            db.query(Concept.course_id, func.count(Concept.id))
+            .group_by(Concept.course_id)
+            .all()
+        )
+        node_counts = dict(
+            db.query(GraphNode.course_id, func.count(GraphNode.id))
+            .group_by(GraphNode.course_id)
+            .all()
+        )
+        edge_counts = dict(
+            db.query(GraphEdge.course_id, func.count(GraphEdge.id))
+            .group_by(GraphEdge.course_id)
+            .all()
+        )
     course_ids = sorted({lec.course_id for lec in lectures})
     summaries: List[CourseSummaryOut] = []
-    with SessionLocal() as db:
-        for cid in course_ids:
-            lecs = [lec for lec in lectures if lec.course_id == cid]
-            summaries.append(
-                CourseSummaryOut(
-                    course_id=cid,
-                    total_lectures=len(lecs),
-                    ready_lectures=sum(1 for lec in lecs if lec.status == "ready"),
-                    total_concepts=(
-                        db.query(Concept).filter(Concept.course_id == cid).count()
-                    ),
-                    node_count=(
-                        db.query(GraphNode).filter(GraphNode.course_id == cid).count()
-                    ),
-                    edge_count=(
-                        db.query(GraphEdge).filter(GraphEdge.course_id == cid).count()
-                    ),
-                    has_graph=(
-                        db.query(GraphNode).filter(GraphNode.course_id == cid).count()
-                        > 0
-                    ),
-                )
+    for cid in course_ids:
+        lecs = [lec for lec in lectures if lec.course_id == cid]
+        node_count = node_counts.get(cid, 0)
+        summaries.append(
+            CourseSummaryOut(
+                course_id=cid,
+                total_lectures=len(lecs),
+                ready_lectures=sum(1 for lec in lecs if lec.status == "ready"),
+                total_concepts=concept_counts.get(cid, 0),
+                node_count=node_count,
+                edge_count=edge_counts.get(cid, 0),
+                has_graph=node_count > 0,
             )
+        )
     return summaries
 
 
