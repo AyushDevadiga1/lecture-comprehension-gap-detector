@@ -986,6 +986,7 @@ def test_course_list_summaries(api):
     assert by_id["ml1"]["total_concepts"] == 1
     assert by_id["ml1"]["has_graph"] is True
     assert by_id["ml1"]["node_count"] == 1
+    assert by_id["ml1"]["edge_count"] == 1
     assert by_id["ml2"]["has_graph"] is False
 
 
@@ -1000,7 +1001,17 @@ def test_delete_course_purges_everything(api, monkeypatch, tmp_path):
         lid = s.query(models.Lecture).one().id
         s.add(models.Concept(course_id="ml1", lecture_id=lid, name="A",
                              source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.0,
+                                       end_s=1.0, text="intro"))
+        s.add(models.Passage(lecture_id=lid, idx=0, title="main", kind="explain",
+                             start_s=0.0, end_s=1.0, text="passage text"))
+        s.add(models.LectureLink(lecture_id=lid, source_name="B", target_name="A",
+                                 confidence=0.9, evidence="we use B to get A"))
+        s.add(models.Clip(lecture_id=lid, concept_name="A", start_s=0.0,
+                          end_s=1.0, path=str(tmp_path / "clip.mp4"), ok=1))
         s.add(models.GraphNode(course_id="ml1", name="A"))
+        s.add(models.GraphEdge(course_id="ml1", source="B", target="A",
+                               confidence=0.9))
         qa = models.ConceptItem(course_id="ml1", concept="A", question="q", order=0)
         s.add(qa)
         s.commit()
@@ -1017,9 +1028,42 @@ def test_delete_course_purges_everything(api, monkeypatch, tmp_path):
     with Session() as s:
         assert s.query(models.Lecture).count() == 0
         assert s.query(models.Concept).count() == 0
+        assert s.query(models.TranscriptSegment).count() == 0
+        assert s.query(models.Passage).count() == 0
+        assert s.query(models.LectureLink).count() == 0
+        assert s.query(models.Clip).count() == 0
         assert s.query(models.GraphNode).count() == 0
+        assert s.query(models.GraphEdge).count() == 0
         assert s.query(models.ConceptItem).count() == 0
         assert s.query(models.QuizResponse).count() == 0
 
     assert client.delete("/courses/ml1").status_code == 404
     assert client.delete("/courses/nope").status_code == 404
+
+
+def test_course_stats_falls_back_to_taught_order_without_graph(api):
+    """The stats view must not 500 when a course has quiz responses but no
+    built graph — learned_order falls back to taught_order (M5/P12 fallback
+    branch)."""
+    client, Session = api
+    with Session() as s:
+        lec = models.Lecture(course_id="ml1", title="t", status="ready")
+        s.add(lec)
+        s.commit()
+        s.add(models.Concept(course_id="ml1", lecture_id=lec.id, name="B",
+                             source="spoken", start_s=1.0, end_s=2.0))
+        s.add(models.Concept(course_id="ml1", lecture_id=lec.id, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        qa = models.ConceptItem(course_id="ml1", concept="A", question="qA", order=0)
+        s.add(qa)
+        s.commit()
+        s.add(models.QuizResponse(course_id="ml1", student_id="p",
+                                  question_id=qa.id, concept="A",
+                                  correct=1, latency_s=1.0))
+        s.commit()
+
+    stats = client.get("/courses/ml1/stats").json()
+    assert stats["taught_order"] == ["A", "B"]  # earliest mention first
+    assert stats["learned_order"] == ["A", "B"]  # no graph -> taught fallback
+    # identical orders -> every concept has a zero gap (no divergence)
+    assert all(d["gap"] == 0 for d in stats["divergence"])

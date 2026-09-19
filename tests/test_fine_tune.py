@@ -1,13 +1,15 @@
 """Unit tests for backend/pipeline/fine_tune.py (Phase 3 fine-tuning helpers).
 
-Only pure/cheap logic is tested here — build_train_triples (undersampling).
+Covers the pure/cheap logic (build_train_triples undersampling) and the
+model-IO boundary (pair formatting, export/load round-trip, prediction shape)
+against fakes — no weights are downloaded and no real training loops run here.
 The actual transformer fine-tuning is exercised by scripts/kaggle_fine_tune.py
 on GPU/CV and by smoke tests, not in this unit suite (too slow for CI).
 """
 
 import numpy as np
 
-from backend.pipeline.fine_tune import build_train_triples
+from backend.pipeline.fine_tune import _pair_text, build_train_triples
 
 
 def test_build_train_triples_undersamples_negatives():
@@ -42,3 +44,106 @@ def test_build_train_triples_empty_negative_only():
     triples = build_train_triples(pairs, labels, max_neg_ratio=1, random_state=0)
     assert sum(l for _, _, l in triples) == 0
     assert len([t for t in triples if t[2] == 0]) == 0
+
+
+# ------------------------------------------------------------ model IO boundary
+
+def test_pair_text_keeps_order_meaningful():
+    assert _pair_text("Gradient Descent", "Loss Function") == (
+        "Gradient Descent [SEP] Loss Function"
+    )
+    assert _pair_text("A", "B") != _pair_text("B", "A")
+
+
+def test_export_model_saves_both_and_returns_dir(tmp_path):
+    saved = []
+
+    class FakeSaver:
+        def save_pretrained(self, out_dir):
+            saved.append((out_dir, type(self).__name__))
+
+    out = tmp_path / "ckpt"
+    from backend.pipeline import fine_tune as ft
+
+    result = ft.export_model(FakeSaver(), FakeSaver(), str(out))
+    assert result == str(out)
+    assert saved == [(str(out), "FakeSaver"), (str(out), "FakeSaver")]
+
+
+def test_load_model_reinstates_classifier_and_tokenizer(monkeypatch, tmp_path):
+    from backend.pipeline import fine_tune as ft
+
+    created = []
+
+    class FakeModel:
+        def __init__(self):
+            self._device = None
+            self._eval = False
+
+        def to(self, device):
+            self._device = device
+            return self
+
+        def eval(self):
+            self._eval = True
+            return self
+
+    class FakeTokenizer:
+        pass
+
+    import transformers
+
+    monkeypatch.setattr(
+        transformers,
+        "AutoModelForSequenceClassification",
+        type("AM", (), {"from_pretrained": lambda *a, **k: FakeModel()}),
+    )
+    monkeypatch.setattr(
+        transformers,
+        "AutoTokenizer",
+        type("AT", (), {"from_pretrained": lambda *a, **k: FakeTokenizer()}),
+    )
+    import torch
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    model, tok = ft.load_model(str(tmp_path))
+    assert isinstance(model, FakeModel) and model._eval is True
+    assert model._device == "cpu"
+    assert isinstance(tok, FakeTokenizer)
+
+
+def test_predict_pairs_returns_one_logit_per_pair(monkeypatch):
+    import torch
+
+    class FakeModel:
+        def __init__(self):
+            self._device = torch.device("cpu")
+            self._calls = []
+
+        def parameters(self):
+            return iter([torch.nn.Parameter(torch.ones(1))])
+
+        def __call__(self, **enc):
+            self._calls.append(enc)
+
+            class _Out:
+                logits = torch.tensor([[0.5], [-1.0]])
+
+            return _Out()
+
+    class FakeTokenizer:
+        def __call__(self, texts, **kw):
+            n = len(texts)
+            return {
+                "input_ids": torch.zeros(n, 4, dtype=torch.long),
+                "attention_mask": torch.ones(n, 4, dtype=torch.long),
+            }
+
+    from backend.pipeline import fine_tune as ft
+
+    model = FakeModel()
+    out = ft.predict_pairs(
+        model, FakeTokenizer(), [("A", "B"), ("Gradient Descent", "Loss")]
+    )
+    assert out.shape == (2,)
+    np.testing.assert_allclose(out, [0.5, -1.0], atol=1e-6)
