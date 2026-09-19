@@ -83,9 +83,16 @@ def _delete(path: str):
     return r.json()
 
 
+@st.cache_data(ttl=60)
+def _course_summaries():
+    """GET /courses summaries, memoized so sidebar reruns don't re-hit the API
+    (M4). Call `.clear()` after an upload/delete that changes the course list."""
+    return _get("/courses", silent=True)
+
+
 def _course_options():
     """Active courses from GET /courses summaries; /lectures as a fallback."""
-    summaries = _get("/courses", silent=True)
+    summaries = _course_summaries()
     if summaries:
         return sorted({c["course_id"] for c in summaries})
     lectures = _get("/lectures", silent=True) or []
@@ -146,7 +153,7 @@ with st.sidebar:
             "Active course", courses, key="nav_course",
             help="All tabs operate on this course.",
         )
-        summary = {c["course_id"]: c for c in (_get("/courses", silent=True) or [])}
+        summary = {c["course_id"]: c for c in (_course_summaries() or [])}
         row = summary.get(nav_course)
         if row:
             st.caption(
@@ -155,6 +162,7 @@ with st.sidebar:
                 f"{'graph ✓' if row['has_graph'] else 'no graph yet'}"
             )
         if st.button("Refresh course list"):
+            _course_summaries.clear()
             try:
                 st.rerun()
             except AttributeError:

@@ -1,6 +1,8 @@
 # SYSTEM_EVAL: Comprehensive Technical Evaluation, Code Audit, and Architectural Blueprint
 
 > **Status:** Re-audited 2026-09-18 using the `agent-skills` review pack (code-reviewer, security-auditor, test-engineer, web-performance-auditor) in parallel fan-out. Findings are cross-referenced, severity-tagged, and tracked to resolution below. Previous audit content was superseded because the codebase moved from a single `backend/api/routes.py` to `backend/api/routes/{courses,lectures,quizzes}.py` and the pipeline has since changed (silence-snap chunking, clip re-encoding, LLM reasoning gating, parallel MCQ generation).
+>
+> **Update 2026-09-19:** reconciled the fix register with the tree (`209 passed`). P9's M4 (`/courses` N+1 → grouped aggregates, `c143daa`) and the entire P12 test backlog (`53d8ae8`) are closed. H4's cached classifier + M8's vectorized cosine actually landed earlier (`edc85cc`, `ae0c3b2`) but were still marked deferred here — corrected below. Still open: H3 (dedicated worker process), H6 (quiz-prep N+1 remainder), M5, M1, L10.
 
 ---
 
@@ -114,7 +116,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 - **Location:** `backend/api/workers.py:288-307, 410-558`; `classify_prerequisites.py:296-342, 50-102`; `build_graph.py:93-135`
 - **Auditors:** PF (High #2).
 - **Description:** Each lecture rebuild re-fits the classifier head on LectureBank, regenerates O(n²) candidate pairs via per-pair pure-Python `_cosine` (fresh numpy allocations per comparison), and constructs a fresh encoder. The encoder is only shared within a single rebuild.
-- **Fix (deferred):** lazily cache encoder + fitted classifier at module level; vectorize similarity as one normalized matmul; debounce/coalesce rebuilds per course.
+- **Fix:** lazily cache encoder + fitted classifier at module level; vectorize similarity as one normalized matmul; debounce/coalesce rebuilds per course. **(status: fixed, except debounce/coalesce)** — `_get_shared_classifier` (`workers.py:43-66`) and `_fitted_classifier` (`classify_prerequisites.py:276-357`) now hold a process-wide encoder + one fitted LectureBank head reused by every rebuild; candidate-pair cosine is a single batched L2-normalized matmul (`classify_prerequisites.py:81-100`). See `edc85cc`, `ae0c3b2`. Debounce/coalesce of concurrent rebuilds per course remains open.
 
 #### H5. Quiz generation blocks the request and has a cache-fill race
 - **Location:** `backend/api/routes/quizzes.py:98-124`; `backend/pipeline/llm.py:60-94, 178-225`
@@ -151,7 +153,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 #### M4. `/courses` is N+1 and re-fetched on every Streamlit rerun
 - **Location:** `backend/api/routes/courses.py:39-66`; `frontend/app.py:86-92, 149`
 - **Auditors:** PF (Medium #5).
-- **Fix (deferred):** single aggregated GROUP BY query; `@st.cache_data` on the frontend.
+- **Fix:** single aggregated GROUP BY query; `@st.cache_data` on the frontend. **(status: fixed)** — `/courses` computes lecture/concept/node/edge counts via four grouped queries (`courses.py:36-78`, `c143daa`), killing the per-course round-trip loop; the frontend now memoizes the summaries through `_course_summaries` (`@st.cache_data(ttl=60)`) and the sidebar "Refresh course list" button calls `.clear()` so uploads/deletes still surface (`app.py:86-98,153-161`). Frontend regression tests in `test_frontend_app.py` (cache passthrough stub + clear wiring).
 
 #### M5. Unpaginated endpoints + stats recompute full tables and graphs
 - **Location:** `lectures.py:100-114`; `courses.py:146-203`; `quizzes.py:169-227, 244-250, 308-313`
@@ -171,7 +173,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 #### M8. O(n²) pure-Python cosine reintroduces allocation churn
 - **Location:** `build_graph.py:114-135, 253-256`; `classify_prerequisites.py:91-100`
 - **Auditors:** PF (Medium #9).
-- **Fix (deferred):** single L2-normalized matrix + one `matmul`.
+- **Fix:** single L2-normalized matrix + one `matmul`. **(status: fixed)** — `_fitted_classifier`-path candidate scoring is `sim = mat_n @ mat_n.T` and `_pair_features` assembles via vector indexing (`classify_prerequisites.py:81-128`). `build_graph._cosine` remains only for the small per-node dedup scan against the shared `_vec_cache` (`build_graph.py:123-130, 253-256`).
 
 ### 3.4 Low
 
@@ -196,8 +198,8 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 - Seven behavior commits on 2026-09-18; **six shipped without test changes** (`d78657f`, `8581cc0`, `8b939d8`, `24fde01`, `0e401df`, `a7bfd86`). Only `50959af` (segment_clips) updated a test file.
 - **Worst gaps (now fixed with their fixes):** silence-snap path; LLM-reasoning branch integration; worker error paths; quiz answer-key leak.
 - Remaining gaps (now closed with the audit fixes): `get_remediation` endpoint; legacy probe grading + attempt increments; `create_quiz` 404-no-concepts; worker error paths; quiz answer-key leak.
-- Remaining gaps (open): `courses.py` fallback branches; `_rebuild_course_graph` short-circuits; `purge_course` completeness; `fine_tune.py` training/export path; `frontend/app.py`.
-- **Quality issues:** `test_api.py:55` globally mocks `quizzes.generate_mcq` → `pool.map` exceptions can't surface; `test_quiz_refine.py:59-62` vacuous; `test_transcribe.py:286-297` asserts ffmpeg arg ordering (brittle); `test_llm.py:18` module-level shared mutable state; `test_classify_prerequisites.py:43` vectors vary with `PYTHONHASHSEED`; three stray fixture tests collected from `agent-skills/`.
+- Remaining gaps (now also closed): `courses.py` fallback branches (`test_course_stats_falls_back_to_taught_order_without_graph`); `_rebuild_course_graph` short-circuits (`test_rebuild_graph_shortcircuits_without_concepts`); `purge_course` completeness (`test_delete_course_purges_everything` now asserts TranscriptSegment/Passage/LectureLink/Clip/GraphEdge); `fine_tune.py` training/export path (`test_fine_tune.py` export/load/predict + `_pair_text`); `frontend/app.py` (new `test_frontend_app.py` hermetic stubs for `_get/_post/_delete`, `_wrap_progress`, `_wait_progress`, `_course_options`). All landed in `53d8ae8` (+`6dd749a`).
+- **Quality issues (open):** `test_api.py:55` globally mocks `quizzes.generate_mcq` → `pool.map` exceptions can't surface; `test_quiz_refine.py:59-62` vacuous; `test_transcribe.py:286-297` asserts ffmpeg arg ordering (brittle); `test_llm.py:19` module-level env mutation; `test_classify_prerequisites.py:43` vectors vary with `PYTHONHASHSEED`; three stray fixture tests under `agent-skills/` still collected by a bare `pytest` from repo root (safe when scoping to `pytest tests` — dir now gitignored via `ab30c0c`).
 
 ### 3.6 Positive observations (all auditors)
 
@@ -224,11 +226,11 @@ Each entry records status; the "Regressions covered" column links to the test th
 | P5 | H5/M6 — llm_cache fill race | **fixed** | single-flight + `INSERT OR IGNORE` |
 | P6 | M3 — grading consistency | **fixed** | drop client `correct`; course consistency check |
 | P7 | M2 — error text sanitization | **fixed** | generic client messages + exception handler |
-| P8 | H3/H4 — worker process + cached classifier | pending | structural |
-| P9 | H6/M4/M5/M8 — N+1 & single-pass prep | pending | structural |
+| P8 | H3/H4 — worker process + cached classifier | **fixed (H4)** / H3 open | cached classifier + vectorized cosine landed (`edc85cc`, `ae0c3b2`); dedicated worker process still structural |
+| P9 | H6/M4/M5/M8 — N+1 & single-pass prep | **in progress** | M4 + M8 fixed (see below); H6 quiz-prep N+1 and M5 pagination/stats still open |
 | P10 | M1 — prompt-injection boundaries | pending | LLM-verdict weighting + untrusted-data delimiters |
 | P11 | L10 — dependency pinning + CVE scan | pending | conda-lock + pin hub model IDs |
-| P12 | Test backlog (TE recommended list) | in progress | remediation/attempt-increment/404 added; courses/graph/purge/fine-tune/frontend still open |
+| P12 | Test backlog (TE recommended list) | **closed** | all listed TE gaps covered; quality issues list remains (see §3.5) |
 
 ### P1 detail — silence-snap correctness
 
@@ -269,6 +271,32 @@ Each entry records status; the "Regressions covered" column links to the test th
 - `workers._client_error_message` replaces `f"{type(exc).__name__}: {exc}"` in all four pipeline workers (transcription / extraction / graph rebuild / clip cutting): full detail is logged server-side, `lecture.error` carries a generic "`<Stage>` failed — see server logs for details." message.
 - `main.py` adds a catch-all `@app.exception_handler(Exception)` returning a generic 500 (no internals echoed).
 - Test pins: failing transcribe/extract/clips workers leave `status=="error"` with no ffmpeg paths / temp dirs / Groq tokens in the client-visible message; progress endpoint reflects the error.
+
+### P8 detail — cached classifier & vectorized cosine
+
+- `workers._get_shared_classifier` (`edc85cc` + `ae0c3b2`): one MiniLM encoder + one LectureBank-fitted logistic head live for the process lifetime and are reused by every course-graph rebuild — previously each rebuild re-loaded the encoder and re-fit the head on the full LectureBank.
+- `classify_prerequisites._fitted_classifier` + `_load_lecturebank` memo (`edc85cc`): fit is cached keyed on `(id(lib), id(encoder))` with strong-ref pinning so an `id()` cannot be recycled; lecturebank CSVs are read once per process.
+- Candidate-pair cosine is a single L2-normalized `mat_n @ mat_n.T` (M8) instead of O(n²) fresh numpy allocations.
+- Test pins: `test_classify_course_pairs_reuses_fitted_classifier` (identical lib+encoder ⇒ 1 fit total; fresh lib objects ⇒ fresh fits).
+- **Still open (H3):** pipeline still runs on the anyio request threadpool via `BackgroundTasks` — moving to a dedicated worker process/queue with bounded concurrency remains the structural follow-up. Debounce/coalesce of rebuilds per course also open.
+
+### P9 detail — N+1 & single-pass prep
+
+- **M4 (fixed):** `/courses` uses four grouped `COUNT ... GROUP BY` queries (`c143daa`) instead of a per-course N+1 loop — lecture/concept/node/edge counts now come from dict lookups. Frontend `@st.cache_data` half now also fixed (`_course_summaries` + refresh clear, `test_frontend_app.py`).
+- **M8 (fixed):** vectorized pair cosine — see P8 detail.
+- **Still open:** H6 (quiz prep rescans/loads course-wide segments repeatedly, per-concept passage `db.get`); M5 (unpaginated lists; `course_stats` full-table heatmap/`get_course_graph` recompute per poll).
+
+### P12 detail — TE backlog closure
+
+- `get_remediation` endpoint: `test_get_remediation_returns_latest_sequence`, `test_get_remediation_404_without_responses`.
+- Legacy probe grading + attempt increments + cross-course/legacy behavior: covered in `test_api.py` (phase6 block) incl. client `correct=True` on a no-key question grading wrong.
+- `create_quiz` 404-no-concepts: `test_create_quiz_404_without_concepts`.
+- Worker error paths (all four stages): `test_transcription_worker_error_is_sanitized_and_sets_status`, `test_extraction_worker_total_failure_is_sanitized`, `test_clips_worker_error_is_sanitized_and_sets_status`.
+- `purge_course` completeness: `test_delete_course_purges_everything` now asserts TranscriptSegment/Passage/LectureLink/Clip/GraphEdge rows are gone alongside lectures/concepts/nodes.
+- `courses.py` fallback branches: `test_course_stats_falls_back_to_taught_order_without_graph` (stats falls back to taught order when no graph).
+- `fine_tune.py`: `test_pair_text_keeps_order_meaningful`, `test_export_model_saves_both_and_returns_dir`, `test_load_model_reinstates_classifier_and_tokenizer`, `test_predict_pairs_returns_one_logit_per_pair`.
+- `frontend/app.py`: new hermetic `test_frontend_app.py` (streamlit/requests stubbed in `sys.modules`) covering `_get/_post/_delete` error handling, `_wrap_progress` clamp + legacy fallback, `_wait_progress` ready/error/timeout, `_course_options` summaries + lectures fallback.
+- **Remaining:** the §3.5 quality issues list (none blocking).
 
 ---
 

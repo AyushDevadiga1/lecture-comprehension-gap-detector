@@ -67,9 +67,32 @@ class _StreamlitStub(types.ModuleType):
     def __init__(self):
         super().__init__("streamlit")
         self._any = _Any()
+        self.cache_data = _cache_stub()
 
     def __getattr__(self, name):
         return self._any
+
+
+def _cache_stub():
+    """Pass-through stand-in for st.cache_data used by @-decoration in app.py.
+
+    The real TTL/hash caching is Streamlit's job (exercised live by
+    scripts/smoke_drive.py); here the decorator must simply keep the wrapped
+    function callable and expose `.clear()` for the refresh-button wiring.
+    """
+
+    def dec(func):
+        def wrapper(*a, **kw):
+            return func(*a, **kw)
+
+        wrapper.clear = lambda *a, **kw: None
+        wrapper.clear_all = lambda *a, **kw: None
+        return wrapper
+
+    def cache_data(func=None, **kw):
+        return dec(func) if func is not None else dec
+
+    return cache_data
 
 
 class _ReqError(Exception):
@@ -273,11 +296,25 @@ def test_wait_progress_times_out_with_non_terminal_status(app_module):
 
 # ------------------------------------------------------------- course options
 
+def test_course_summaries_passes_through_get(app_module):
+    summaries = [{"course_id": "ml1", "total_lectures": 2}]
+    app_module._get = lambda *a, **kw: summaries
+    assert app_module._course_summaries() == summaries
+
+
+def test_course_summaries_expose_clear_for_refresh_button(app_module):
+    app_module._get = lambda *a, **kw: None
+    app_module._course_summaries()  # must not raise
+    app_module._course_summaries.clear()
+    app_module._course_summaries.clear_all()
+
+
 def test_course_options_from_summaries(app_module):
-    app_module._get = lambda *a, **kw: [
+    summaries = [
         {"course_id": "ml2", "total_lectures": 1},
         {"course_id": "ml1", "total_lectures": 3},
     ]
+    app_module._course_summaries = lambda: summaries
     assert app_module._course_options() == ["ml1", "ml2"]
 
 
@@ -288,4 +325,5 @@ def test_course_options_falls_back_to_lectures(app_module):
         return [{"course_id": "b"}, {"course_id": "a"}, {"course_id": "b"}]
 
     app_module._get = fake_get
+    app_module._course_summaries = lambda: app_module._get("/courses", silent=True)
     assert app_module._course_options() == ["a", "b"]
