@@ -158,7 +158,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 #### M5. Unpaginated endpoints + stats recompute full tables and graphs
 - **Location:** `lectures.py:100-114`; `courses.py:146-203`; `quizzes.py:169-227, 244-250, 308-313`
 - **Auditors:** PF (Medium #6, #8); TE (High #3).
-- **Fix (deferred):** paginate lists; SQL aggregates for heatmap/divergence; brief graph-dict cache keyed on rebuild version.
+- **Fix: (status: fixed)** `GET /lectures` accepts `limit`/`offset` (defaults stay backward compatible, bounds validated, `lectures.py:100-115`); `course_stats` heatmap is now one `GROUP BY` aggregate over `quiz_responses` instead of hydrating every response row (`courses.py:205-225`); `get_course_graph` memoizes the graph dict per `(sessionmaker, course_id)` validated against a cheap row signature (counts + max id) so every poll after the first skips ORM hydration + cycle resolution until a rebuild/purge actually changes rows (`courses.py:36-60, 120-160`). Tests: `test_course_stats_aggregates_in_sql` (no bare full-table SELECT), `test_course_graph_cache_self_heals_on_row_writes` (2nd poll = 0 rebuilds, row write = rebuild), `test_list_lectures_respects_limit_offset`.
 
 #### M6. SQLite writer contention around `llm_cache` and parallel writers
 - **Location:** `db.py:44-62`; `llm.py:60-94`; `workers.py:282, 552`
@@ -285,7 +285,8 @@ Each entry records status; the "Regressions covered" column links to the test th
 - **M4 (fixed):** `/courses` uses four grouped `COUNT ... GROUP BY` queries (`c143daa`) instead of a per-course N+1 loop — lecture/concept/node/edge counts now come from dict lookups. Frontend `@st.cache_data` half now also fixed (`_course_summaries` + refresh clear, `test_frontend_app.py`).
 - **M8 (fixed):** vectorized pair cosine — see P8 detail.
 - **H6 (fixed):** quiz prep no longer rescans the full segment list per concept or fetches passages one-by-one — see H6 finding; verified by `test_create_quiz_batch_loads_passages` (1 passage SELECT) and the mcq_gen differential tests.
-- **Still open:** M5 (unpaginated lists; `course_stats` full-table heatmap/`get_course_graph` recompute per poll).
+- **M5 (fixed):** `/lectures` paginated (`limit`/`offset`); `course_stats` heatmap aggregated in SQL; `get_course_graph` memoized per session scope + self-healing row signature — see M5 finding + `test_course_stats_aggregates_in_sql`, `test_course_graph_cache_self_heals_on_row_writes`, `test_list_lectures_respects_limit_offset`.
+- **P9 now closed.**
 
 ### P12 detail — TE backlog closure
 

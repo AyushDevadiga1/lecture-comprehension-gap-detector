@@ -98,9 +98,21 @@ async def upload_lecture(
 
 
 @router.get("", response_model=List[LectureOut])
-def list_lectures() -> List[Lecture]:
+def list_lectures(limit: int = 500, offset: int = 0) -> List[Lecture]:
+    """Lecture list, paginated (M5) — the sidebar/frontend fetches this per
+    rerun, so bound the rows returned; defaults stay backward compatible."""
+    if limit < 1:
+        raise HTTPException(status_code=400, detail="limit must be >= 1")
+    if offset < 0:
+        raise HTTPException(status_code=400, detail="offset must be >= 0")
     with SessionLocal() as db:
-        return db.query(Lecture).order_by(Lecture.id).all()
+        return (
+            db.query(Lecture)
+            .order_by(Lecture.id)
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
 
 @router.get("/{lecture_id}", response_model=LectureDetailOut)

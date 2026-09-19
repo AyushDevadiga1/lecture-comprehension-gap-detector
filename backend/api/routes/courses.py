@@ -4,6 +4,7 @@ stats view (Stage 8), course listing and course cleanup. All paths live under
 
 import os
 import shutil
+import threading
 from pathlib import Path
 from typing import List
 
@@ -31,6 +32,40 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
+
+# M5: brief graph-dict memo. Keyed by (sessionmaker, course_id) so each DB
+# scope (per-test in-memory DBs included) gets its own entry, and verified
+# against a cheap row signature so any direct row write (workers' rebuild,
+# purge_course, tests) self-heals the entry. The strong sessionmaker key keeps
+# the object alive, so its id() can never be recycled into a stale collision.
+_GRAPH_CACHE: dict = {}
+_GRAPH_LOCK = threading.Lock()
+
+
+def _graph_signature(db, course_id: str) -> tuple:
+    """Cheap fingerprint of a course's persisted graph rows (counts + max id).
+    Any rebuild/delete changes at least one field, forcing a cache rebuild."""
+    node_count = (
+        db.query(func.count(GraphNode.id))
+        .filter(GraphNode.course_id == course_id)
+        .scalar()
+    )
+    edge_count = (
+        db.query(func.count(GraphEdge.id))
+        .filter(GraphEdge.course_id == course_id)
+        .scalar()
+    )
+    max_node = (
+        db.query(func.max(GraphNode.id))
+        .filter(GraphNode.course_id == course_id)
+        .scalar()
+    )
+    max_edge = (
+        db.query(func.max(GraphEdge.id))
+        .filter(GraphEdge.course_id == course_id)
+        .scalar()
+    )
+    return (node_count or 0, edge_count or 0, max_node or 0, max_edge or 0)
 
 
 @router.get("", response_model=List[CourseSummaryOut])
@@ -84,9 +119,19 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
 
     The stored edges/nodes are already acyclic (cycles were broken at build
     time by dropping lowest-confidence edges), so this recomputes the
-    topological order from the persisted rows.
+    topological order from the persisted rows. The graph dict is memoized per
+    (sessionmaker, course_id) and validated against a row signature (M5), so
+    frequent polls skip the ORM hydration + cycle resolution until the graph
+    actually changes.
     """
     with SessionLocal() as db:
+        signature = _graph_signature(db, course_id)
+        key = (SessionLocal, course_id)
+        with _GRAPH_LOCK:
+            cached = _GRAPH_CACHE.get(key)
+            if cached is not None and cached[0] == signature:
+                return CourseGraphOut(course_id=course_id, **cached[1])
+
         node_rows = (
             db.query(GraphNode)
             .filter(GraphNode.course_id == course_id)
@@ -114,6 +159,8 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
         ed["source_method"], ed["evidence"] = edge_info.get(
             (ed["source"], ed["target"]), ("classifier", None)
         )
+    with _GRAPH_LOCK:
+        _GRAPH_CACHE[key] = (signature, result)
     return CourseGraphOut(course_id=course_id, **result)
 
 
@@ -156,24 +203,27 @@ def course_stats(course_id: str) -> dict:
     divergence view.
     """
     with SessionLocal() as db:
-        rows = (
-            db.query(QuizResponse)
+        # M5: aggregate the heatmap in SQL instead of hydrating every
+        # QuizResponse row into Python (previously all course responses were
+        # loaded, then tallied per concept).
+        per_concept = {}
+        for concept, attempts, correct_sum in (
+            db.query(QuizResponse.concept,
+                     func.count(QuizResponse.id),
+                     func.sum(QuizResponse.correct))
             .filter(QuizResponse.course_id == course_id)
+            .group_by(QuizResponse.concept)
             .all()
-        )
+        ):
+            correct = correct_sum or 0
+            per_concept[concept] = [attempts - correct, attempts]
+
         concepts = (
             db.query(Concept)
             .filter(Concept.course_id == course_id)
             .order_by(Concept.start_s)
             .all()
         )
-
-    per_concept: dict = {}
-    for r in rows:
-        per_concept.setdefault(r.concept, [0, 0])
-        per_concept[r.concept][1] += 1
-        if not r.correct:
-            per_concept[r.concept][0] += 1
 
     # order taught = earliest mention (start_s) of each concept in lectures
     taught_order = []

@@ -1112,3 +1112,112 @@ def test_course_stats_falls_back_to_taught_order_without_graph(api):
     assert stats["learned_order"] == ["A", "B"]  # no graph -> taught fallback
     # identical orders -> every concept has a zero gap (no divergence)
     assert all(d["gap"] == 0 for d in stats["divergence"])
+
+
+def test_course_stats_aggregates_in_sql(api):
+    """M5: the heatmap comes from a GROUP BY aggregate, not a full-table
+    hydration — pin correctness across many responses."""
+    from backend.api.routes import courses as courses_mod
+
+    client, Session = api
+    with Session() as s:
+        lec = models.Lecture(course_id="ml1", title="t", status="ready")
+        s.add(lec)
+        s.commit()
+        s.add(models.Concept(course_id="ml1", lecture_id=lec.id, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.Concept(course_id="ml1", lecture_id=lec.id, name="B",
+                             source="spoken", start_s=1.0, end_s=2.0))
+        qa = models.ConceptItem(course_id="ml1", concept="A", question="qA", order=0)
+        qb = models.ConceptItem(course_id="ml1", concept="B", question="qB", order=1)
+        s.add_all([qa, qb])
+        s.commit()
+        for _ in range(20):  # 20 attempts on A, 5 wrong
+            s.add(models.QuizResponse(course_id="ml1", student_id="p",
+                                      question_id=qa.id, concept="A",
+                                      correct=1, latency_s=1.0))
+        for _ in range(5):
+            s.add(models.QuizResponse(course_id="ml1", student_id="q",
+                                      question_id=qa.id, concept="A",
+                                      correct=0, latency_s=1.0))
+        s.add(models.QuizResponse(course_id="ml1", student_id="r",
+                                  question_id=qb.id, concept="B",
+                                  correct=1, latency_s=1.0))
+        s.commit()
+
+    heat = {h["concept"]: h for h in client.get("/courses/ml1/stats").json()["heatmap"]}
+    assert heat["A"] == {"concept": "A", "wrong": 5, "attempts": 25, "rate": 0.2}
+    assert heat["B"]["wrong"] == 0 and heat["B"]["attempts"] == 1
+    # the aggregate path must not hydrate QuizResponse rows: every statement
+    # touching quiz_responses is an aggregate (contains GROUP BY), never a
+    # bare SELECT of the full table.
+    from sqlalchemy import event
+
+    full_table_selects = []
+
+    def _catch(conn, cur, stmt, params, context, executemany):
+        sql = str(stmt)
+        if "quiz_responses" in sql and sql.upper().startswith("SELECT") \
+                and "GROUP BY" not in sql.upper():
+            full_table_selects.append(sql)
+
+    engine = Session.kw["bind"]
+    event.listen(engine, "after_cursor_execute", _catch)
+    try:
+        client.get("/courses/ml1/stats")
+    finally:
+        event.remove(engine, "after_cursor_execute", _catch)
+    assert full_table_selects == []
+
+
+def test_course_graph_cache_self_heals_on_row_writes(api, monkeypatch):
+    """M5: the graph-dict memo is served while the persisted graph is
+    unchanged and rebuilds the moment a row write changes the signature."""
+    from backend.pipeline.build_graph import ConceptGraph as RealConceptGraph
+    from backend.api.routes import courses as courses_mod
+
+    client, Session = api
+    builds = []
+
+    class Counting(RealConceptGraph):
+        def __init__(self, *a, **kw):
+            builds.append(1)
+            super().__init__(*a, **kw)
+
+    monkeypatch.setattr(courses_mod, "ConceptGraph", Counting)
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add(models.GraphNode(course_id="ml1", name="A"))
+        s.add(models.GraphNode(course_id="ml1", name="B"))
+        s.add(models.GraphEdge(course_id="ml1", source="A", target="B",
+                               confidence=0.9))
+        s.commit()
+
+    r1 = client.get("/courses/ml1/graph").json()
+    r2 = client.get("/courses/ml1/graph").json()
+    assert r1["node_count"] == 2 and r1["edge_count"] == 1
+    assert r2 == r1
+    assert len(builds) == 1  # memoized: second poll skips the graph build
+
+    with Session() as s:
+        s.add(models.GraphNode(course_id="ml1", name="C"))
+        s.commit()
+
+    r3 = client.get("/courses/ml1/graph").json()
+    assert r3["node_count"] == 3
+    assert len(builds) == 2  # signature changed -> rebuilt, not stale
+
+
+def test_list_lectures_respects_limit_offset(api):
+    """M5: GET /lectures is paginated (limit/offset) with backward-compatible
+    defaults."""
+    client, Session = api
+    for _ in range(5):
+        _add_lecture(Session, course_id="ml1", status="ready")
+
+    all_rows = client.get("/lectures").json()
+    assert len(all_rows) == 5
+    page = client.get("/lectures", params={"limit": 2, "offset": 1}).json()
+    assert [l["id"] for l in page] == [l["id"] for l in all_rows][1:3]
+    assert client.get("/lectures", params={"limit": 0}).status_code == 400
+    assert client.get("/lectures", params={"offset": -1}).status_code == 400
