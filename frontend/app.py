@@ -44,11 +44,12 @@ def _get(path: str, params=None, timeout: int = 30, silent: bool = False):
     return None
 
 
-def _post(path: str, json=None, files=None, data=None, timeout: int = 600):
+def _post(path: str, json=None, files=None, data=None, params=None, timeout: int = 600):
     """Error-safe POST; 4xx/5xx bodies show the backend's `detail` text."""
     try:
         r = requests.post(
-            f"{API}{path}", json=json, files=files, data=data, timeout=timeout
+            f"{API}{path}", json=json, files=files, data=data,
+            params=params, timeout=timeout,
         )
     except requests.Timeout:
         st.error(f"Request to {path} timed out after {timeout}s — "
@@ -88,6 +89,34 @@ def _course_summaries():
     """GET /courses summaries, memoized so sidebar reruns don't re-hit the API
     (M4). Call `.clear()` after an upload/delete that changes the course list."""
     return _get("/courses", silent=True)
+
+
+@st.cache_data(ttl=60)
+def _list_lectures():
+    """GET /lectures, memoized like the course summaries. The student tab
+    re-reads the lecture list on EVERY streamlit rerun (it renders the
+    selectboxes + ready-lecture filters), so this was the single biggest
+    repeat HTTP cost. Cleared whenever lecture/status data can change:
+    upload, job completion, delete, refresh button."""
+    return _get("/lectures", silent=True) or []
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def _lecture_detail(lecture_id: int):
+    """GET /lectures/{id} (segments + concepts) for the faculty timeline.
+    Cached because Streamlit executes EVERY tab body on every rerun, so an
+    uncached detail fetch would re-parse the whole transcript each interaction
+    even while the user is on the Student tab."""
+    return _get(f"/lectures/{lecture_id}", silent=True)
+
+
+def _invalidate_data_caches():
+    """Drop the course/lecture caches after any action that can change them."""
+    for fn in (_course_summaries, _list_lectures, _lecture_detail):
+        try:
+            fn.clear()
+        except AttributeError:
+            pass
 
 
 def _course_options():
@@ -141,6 +170,127 @@ def _wait_progress(lecture_id: int, timeout: int = 6 * 60 * 60):
         time.sleep(1.0)
 
 
+# Stage -> guidance shown under the live progress bar. Long stages that cannot
+# report finer granularity (local Whisper decode, parallel clip cutting) get an
+# honest "the bar sits here until this finishes" hint instead of a false sense
+# of progress.
+_STAGE_HINTS = {
+    "initializing": "Starting the background job…",
+    "probing": "Probing audio duration with ffprobe…",
+    "downmixing": "Normalizing audio to 16 kHz mono FLAC…",
+    "loading_model": "Whisper model loading (one-time, ~1 min on CPU)…",
+    "chunking": "Slicing audio into API-sized chunks…",
+    "transcribing": "Hosted Whisper is transcribing — usually a few minutes "
+                    "for a full lecture.",
+    "local_transcribing": "CPU Whisper decodes at roughly real-time: a 1-hour "
+                          "lecture takes ~45–90 min and this bar stays put "
+                          "until it finishes. Leave the page open; you can "
+                          "refresh anytime to re-attach.",
+    "finalizing": "Finalizing timestamps…",
+    "saving_segments": "Saving transcript segments to the database…",
+    "extracting": "Reading the lecture structure (passages, concepts, spoken "
+                  "prerequisite links)…",
+    "building_graph": "Deduplicating concepts and scoring prerequisite edges…",
+    "clips": "Cutting concept clips with ffmpeg (re-encoded, several minutes "
+             "for many clips)…",
+    "saving_clips": "Saving clip rows…",
+}
+
+_LONG_STAGES = {
+    "local_transcribing", "building_graph", "clips", "saving_clips", "extracting",
+}
+
+
+def _job_guidance(stage: str, elapsed_s: float) -> str:
+    """One-line explanation of what the current stage is doing + elapsed time."""
+    hint = _STAGE_HINTS.get(stage, f"Currently: {stage or 'working'}.")
+    mm, ss = divmod(int(elapsed_s or 0), 60)
+    return f"{hint}  Elapsed: {mm}m {ss:02d}s"
+
+
+def _monitor_progress():
+    """Live, self-refreshing progress card for the most recent background job.
+
+    Unlike the old blocking `_wait_progress` (whose `st.progress` loop froze
+    the whole Streamlit session for the entire transcribe/extract), this runs
+    ONE poll per rerun, re-renders the card, then `st.rerun()`s with an
+    adaptive back-off: fast during short stages, slower during long ones.
+
+    Poll cadence is never hardcoded to 1s (L9): long stages that can't advance
+    (local Whisper decode, clip re-encode, graph build) back off to ~2s so a
+    single open tab doesn't hammer /lectures/{id}/progress.
+    """
+    job = st.session_state.get("lecgap_job")
+    if not job:
+        return
+    lecture_id = job.get("lecture_id")
+    data = _get(f"/lectures/{lecture_id}/progress", silent=True)
+    if not data:
+        st.warning("Job queued — waiting for the worker to report progress... "
+                   "You can refresh the page to re-attach.")
+        return
+
+    status = data.get("status", "")
+    stage = data.get("stage", "working")
+    pct = data.get("progress_pct", 0)
+    detail = data.get("detail", "")
+    elapsed = data.get("elapsed_s", 0)
+
+    if status == "ready":
+        st.progress(100)
+        st.success(detail or "Done.")
+        _invalidate_data_caches()
+        after = job.get("after")
+        lecture_id_for_clips = lecture_id
+        st.session_state.pop("lecgap_job", None)
+        if after == "clips_list":
+            batch = _get(f"/lectures/{lecture_id_for_clips}/clips", silent=True) or {}
+            ok = [c for c in batch.get("clips", []) if c.get("ok")]
+            st.write(f"{len(ok)} clips cut under "
+                     f"data/processed/clips/{lecture_id_for_clips}/")
+            if ok:
+                with st.expander("Clip file paths"):
+                    for c in ok:
+                        st.code(c.get("path", ""))
+        return
+    if status in ("error", "not_found"):
+        st.error(detail or f"Job ended with status '{status}'.")
+        _invalidate_data_caches()
+        st.session_state.pop("lecgap_job", None)
+        return
+
+    st.progress(min(int(pct), 100), text=detail or stage)
+    st.caption(_job_guidance(stage, elapsed))
+
+    deadline = job.get("deadline", time.monotonic() + 6 * 60 * 60)
+    if time.monotonic() > deadline:
+        st.warning("Timed out waiting; the job still runs in the background — "
+                   "you can reload the page to re-attach.")
+        st.session_state.pop("lecgap_job", None)
+        return
+
+    # Short stages tick quickly; poll cadence adapts to what is running.
+    # Long stages that can't advance (local Whisper decode, clip re-encode,
+    # graph build, extraction) back off so one open tab doesn't hammer the API.
+    time.sleep(1.5 if stage in _LONG_STAGES else 0.5)
+    try:
+        st.rerun()
+    except AttributeError:
+        pass  # older streamlit (<1.28): no st.rerun, one poll per user action
+
+
+def _start_job(lecture_id: int, title: str, after: str = None) -> None:
+    """Remember a background job so `_monitor_progress` renders its card on the
+    next rerun (upload/extract/graph/clips kickoffs). `after` runs a follow-up
+    once the job lands on `ready` (e.g. listing freshly cut clips)."""
+    st.session_state["lecgap_job"] = {
+        "lecture_id": lecture_id,
+        "title": title,
+        "after": after,
+        "deadline": time.monotonic() + 6 * 60 * 60,
+    }
+
+
 # ------------------------------------------------------------------- sidebar
 
 with st.sidebar:
@@ -190,6 +340,8 @@ tab_student, tab_faculty = st.tabs(["Student", "Faculty"])
 
 with tab_student:
     st.subheader("Ingest a lecture")
+    _monitor_progress()
+
     with st.form("upload_form"):
         course_id = st.text_input("Course ID", value=nav_course)
         title = st.text_input("Title (optional)", value="", placeholder="Auto = filename")
@@ -213,14 +365,16 @@ with tab_student:
             data=data,
         )
         if resp:
-            st.success(f"Uploaded lecture #{resp['id']} — transcribing now.")
-            _wait_progress(resp["id"])
+            _invalidate_data_caches()
+            st.success(f"Uploaded lecture #{resp['id']} — transcribing now "
+                       "(see the progress card below).")
+            _start_job(resp["id"], "Transcription")
 
     st.divider()
     st.subheader("Process a lecture")
     st.caption("Extract concepts → auto-rebuild the course graph → cut clips.")
 
-    lectures = _get("/lectures", silent=True) or []
+    lectures = _list_lectures()
     ready = [
         l for l in lectures
         if l.get("course_id") == nav_course and l.get("status") == "ready"
@@ -237,26 +391,22 @@ with tab_student:
             resp = _post(f"/lectures/{chosen['id']}/concepts")
             if resp:
                 st.success(f"Extraction queued for #{chosen['id']} — the course "
-                           "graph rebuilds automatically once concepts land.")
-                _wait_progress(chosen["id"])
+                           "graph rebuilds automatically once concepts land "
+                           "(see the progress card below).")
+                _start_job(chosen["id"], "Concept extraction + graph")
         if st.button("Rebuild graph only (after edits/reruns)"):
-            resp = _post(f"/courses/{nav_course}/graph")
+            resp = _post(f"/courses/{nav_course}/graph",
+                         params={"lecture_id": chosen["id"]})
             if resp:
-                st.success(f"Graph build queued for '{nav_course}'.")
-                _wait_progress(chosen["id"])
+                st.success(f"Graph build queued for '{nav_course}' "
+                           "(see the progress card below).")
+                _start_job(chosen["id"], "Course-graph rebuild")
         if st.button("Cut concept clips"):
             resp = _post(f"/lectures/{chosen['id']}/clips")
             if resp:
-                st.success(f"Clip cutting queued for #{chosen['id']}.")
-                _wait_progress(chosen["id"])
-                batch = _get(f"/lectures/{chosen['id']}/clips", silent=True) or {}
-                ok = [c for c in batch.get("clips", []) if c.get("ok")]
-                st.write(f"{len(ok)} clips cut under "
-                         f"data/processed/clips/{chosen['id']}/")
-                if ok:
-                    with st.expander("Clip file paths"):
-                        for c in ok:
-                            st.code(c.get("path", ""))
+                st.success(f"Clip cutting queued for #{chosen['id']} "
+                           "(see the progress card below).")
+                _start_job(chosen["id"], "Clip cutting", after="clips_list")
 
     st.divider()
     st.subheader("Take the quiz")
@@ -265,6 +415,7 @@ with tab_student:
         student_id = st.text_input("Student ID", value="demo-student")
         take = st.form_submit_button("Generate quiz")
     if take:
+        st.session_state["quiz_render_t"] = time.time()
         quiz = _post("/quizzes", json={"course_id": nav_course,
                                        "student_id": student_id})
     else:
@@ -274,7 +425,7 @@ with tab_student:
         with st.form("answers_form"):
             answers = []
             for q in quiz["questions"]:
-                options = q.get("options") or ["correct", "incorrect"]
+                options = q.get("options") or ["correct", "incorrect", "wrong"]
                 ans = st.radio(
                     f"{q['question']}",
                     options=options,
@@ -282,10 +433,17 @@ with tab_student:
                 )
                 answers.append(
                     {"question_id": q["id"], "selected": ans,
-                     "latency_s": 2.0}
+                     "latency_s": None}
                 )
             done = st.form_submit_button("Submit answers")
         if done:
+            render_t = st.session_state.pop("quiz_render_t", None)
+            if render_t is not None:
+                # Real per-question attempt time (seconds), proxied as the
+                # wall time from quiz render to submit / question count.
+                per_q = round((time.time() - render_t) / max(len(answers), 1), 2)
+                for a in answers:
+                    a["latency_s"] = per_q
             result = _post(
                 "/quizzes/submit",
                 json={"course_id": nav_course, "student_id": student_id,
@@ -369,7 +527,7 @@ with tab_faculty:
     else:
         tl_pick = st.selectbox("Lecture", ready_tl, format_func=_label,
                                key="tl_lecture")
-        detail = _get(f"/lectures/{tl_pick['id']}", silent=True)
+        detail = _lecture_detail(tl_pick["id"])
         if detail:
             components.html(
                 lecture_html(
