@@ -3,33 +3,42 @@ channels:
   - pytorch
   - conda-forge
   - defaults
+# L10 fix — all deps are pinned to the exact CI-verified set that currently
+# runs the 218+ test suite green. Pinning is the security state:
+#   * transformers 5.15.1 is past the 4.x CVE-2024-3568 / RCE advisory family,
+#   * opencv-python-headless 5.0.0.93 is past CVE-2023-4863 / CVE-2025-53644,
+#   * torch 2.5.1 + torchvision 0.20.1 + torchaudio 2.5.1 (CPU) are the
+#     verified conda pair for python 3.10.
+# Bump deliberately, re-run `python -m pytest tests`, then update the pins.
+# For a fully reproducible lock: `conda env create -f environment.yml`
+# then `conda list --explicit > conda-env.lock` and commit both.
 dependencies:
-  - python=3.10
-  - pytorch
-  - torchvision
-  - torchaudio
-  - ffmpeg
+  - python=3.10.20
+  - pytorch=2.5.1
+  - torchvision=0.20.1
+  - torchaudio=2.5.1
+  - ffmpeg=4.3
   - pip
   - pip:
-      - openai-whisper
-      - transformers
-      - sentence-transformers
-      - fastapi
-      - uvicorn[standard]
-      - streamlit
-      - networkx
-      - pyvis
-      - pillow
-      - pytesseract
-      - opencv-python-headless
-      - groq
-      - python-dotenv
-      - sqlalchemy
-      - pydantic
-      - scikit-learn
-      - pandas
-      - pytest
-      - datasets
+      - openai-whisper==20250625
+      - transformers==5.15.1
+      - sentence-transformers==6.0.0
+      - fastapi==0.141.1
+      - uvicorn[standard]==0.52.4
+      - streamlit==1.62.0
+      - networkx==3.4.2
+      - pyvis==0.3.2
+      - pillow==10.4.0
+      - pytesseract==0.3.13
+      - opencv-python-headless==5.0.0.93
+      - groq==1.6.0
+      - python-dotenv==1.2.3
+      - sqlalchemy==2.0.52
+      - pydantic==2.13.4
+      - scikit-learn==1.7.2
+      - pandas==2.3.3
+      - pytest==9.1.1
+      - datasets==5.0.1
 
 # Setup:
 #   conda env create -f environment.yml

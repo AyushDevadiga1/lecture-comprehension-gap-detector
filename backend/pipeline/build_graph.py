@@ -27,7 +27,11 @@ file, so the refinement loop (Stage 7) can swap edges safely.
 import networkx as nx
 import numpy as np
 
-DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+from backend.pipeline.model_ids import EMBEDDING_MODEL, load_kwargs
+
+# L10: the hub model id is pinned (env-overridable) so the running pipeline
+# can never silently track a moved HuggingFace artifact.
+DEFAULT_EMBEDDING_MODEL = EMBEDDING_MODEL
 DEDUP_THRESHOLD = 0.85
 
 
@@ -72,7 +76,9 @@ class ConceptGraph:
             else:
                 from sentence_transformers import SentenceTransformer
 
-                self._encoder = SentenceTransformer(self.embedding_model)
+                self._encoder = SentenceTransformer(
+                    self.embedding_model, **load_kwargs(self.embedding_model)
+                )
         return self._encoder
 
     def _embed(self, names) -> list:

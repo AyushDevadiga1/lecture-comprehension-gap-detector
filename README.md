@@ -437,6 +437,8 @@ Configuration:
 | `LECGAP_STRUCTURE_WINDOW_CHARS` | `8000` | sliding-window size for the Lecture-Structure pass |
 | `LECGAP_STRUCTURE_OVERLAP_FRAC` | `0.25` | window overlap for the structure pass |
 | `LECGAP_CLIP_STREAMCOPY` | `0` | `1` = stream-copy ffmpeg cuts (fast, frame-drift risk); default re-encodes for frame-accurate clip starts |
+| `LECGAP_EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | pinned hub encoder id used by dedup / prerequisite-classifier loads (P11/L10) |
+| `LECGAP_EMBEDDING_REVISION` | *(empty)* | HF hub commit sha; set to freeze the exact snapshot the pipeline loads |
 
 Groq rate limits — **Developer plan, live-verified on this key**:
 

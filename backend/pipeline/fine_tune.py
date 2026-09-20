@@ -20,6 +20,8 @@ from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
 
+from backend.pipeline.model_ids import EMBEDDING_MODEL, load_kwargs
+
 # Keep the transformers LOAD REPORT (UNEXPECTED / MISSING keys emitted when loading
 # a sentence-encoder checkpoint into a sequence-classification head) out of the log.
 # The MISSING classifier weights are intentionally freshly-initialized head params
@@ -30,7 +32,8 @@ import transformers as _transformers
 _transformers.logging.set_verbosity_error()
 _logging.getLogger("transformers").setLevel(_logging.ERROR)
 
-_DEF_BASE = "sentence-transformers/all-MiniLM-L6-v2"
+# L10: the fine-tune base mirrors the pinned runtime encoder (env-overridable).
+_DEF_BASE = EMBEDDING_MODEL
 
 
 def build_train_triples(
@@ -64,12 +67,12 @@ def _build_model(base_model: str, device: str):
     import torch
     from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(base_model)
+    tokenizer = AutoTokenizer.from_pretrained(base_model, **load_kwargs(base_model))
     # Convert the ST/MPNet checkpoint into a binary sequence-classification
     # head, keeping its pretrained weights (they are loaded as the base).
     config = AutoConfig.from_pretrained(base_model, num_labels=1)
     model = AutoModelForSequenceClassification.from_pretrained(
-        base_model, config=config, ignore_mismatched_sizes=True
+        base_model, config=config, ignore_mismatched_sizes=True, **load_kwargs(base_model)
     )
     model.to(device)
     return model, tokenizer
