@@ -439,14 +439,44 @@ def _cut_clips_worker(lecture_id: int) -> None:
     _progress_finish(lecture_id)
 
 
-def _build_course_graph_worker(course_id: str) -> None:
+def _build_course_graph_worker(course_id: str, lecture_id: int = None) -> None:
     """Background worker: dedup concept names, score edges, persist per-course.
 
     No-op when the course has no concept rows yet — the concept-extraction
     worker rebuilds the graph itself once its new concepts are persisted, so a
     caller that fires this before extraction finishes still ends up correct.
+
+    ``lecture_id`` (optional, forwarded from POST /courses/{id}/graph) ties the
+    rebuild's progress updates to one lecture so the Streamlit monitor sees the
+    job move and settle on a `ready` status instead of polling an untouched
+    lecture row forever.
     """
-    _rebuild_course_graph(course_id.strip())
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "building_graph", 55,
+            "Loading shared concept encoder...", status="building_graph",
+        )
+    try:
+        _rebuild_course_graph(course_id.strip(), lecture_id=lecture_id)
+    except Exception as exc:  # noqa: BLE001
+        if lecture_id is not None:
+            err_msg = _client_error_message(exc, "Course-graph rebuild")
+            update_lecture_progress(
+                lecture_id, "error", 0, err_msg, status="error",
+            )
+            with SessionLocal() as db:
+                lecture = db.get(Lecture, lecture_id)
+                if lecture is not None:
+                    lecture.status = "error"
+                    lecture.error = err_msg
+                    db.commit()
+            _progress_finish(lecture_id)
+        return
+    if lecture_id is not None:
+        update_lecture_progress(
+            lecture_id, "ready", 100, "Course graph rebuilt.", status="building_graph",
+        )
+        _progress_finish(lecture_id)
 
 
 def _rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:

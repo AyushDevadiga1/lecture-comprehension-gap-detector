@@ -328,6 +328,112 @@ lambda concepts, **kw: [{"a": "Gradient Descent", "b": "Loss Function",
     assert g["is_dag"] is True
 
 
+def test_graph_route_and_worker_track_lecture_progress(api, monkeypatch):
+    """A POST /courses/{id}/graph with a lecture_id query param ties the
+    rebuild's progress updates to that lecture, so the Streamlit monitor has a
+    row to watch; on success the job settles on a 'ready' progress payload.
+    """
+    client, Session = api
+    from backend.pipeline import classify_prerequisites as CP
+
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(
+        CP,
+        "classify_course_pairs",
+        lambda concepts, **kw: [{"a": "Gradient Descent", "b": "Loss Function",
+                                 "confidence": 0.8}],
+    )
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add_all([
+            models.Concept(course_id="ml1", lecture_id=lid,
+                           name="Gradient Descent", source="spoken"),
+            models.Concept(course_id="ml1", lecture_id=lid,
+                           name="Loss Function", source="spoken"),
+        ])
+        s.commit()
+
+    # TestClient runs BackgroundTasks synchronously, so the 202 response is
+    # only returned once the worker has finished.
+    r = client.post(f"/courses/ml1/graph?lecture_id={lid}")
+    assert r.status_code == 202
+
+    prog = workers.get_lecture_progress(lid)
+    assert prog["status"] == "ready"
+    assert prog["progress_pct"] == 100
+    assert prog["stage"] == "ready"  # in-memory entry pruned -> DB fallback
+
+    g = client.get("/courses/ml1/graph").json()
+    assert set(g["nodes"]) == {"Gradient Descent", "Loss Function"}
+
+
+def test_graph_worker_without_lecture_leaves_progress_untouched(api, monkeypatch):
+    """The lecture_id arg is opt-in: the plain worker (no lecture) must not
+    publish any progress rows for any lecture."""
+    client, Session = api
+    from backend.pipeline import classify_prerequisites as CP
+
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    monkeypatch.setattr(CP, "classify_course_pairs", lambda concepts, **kw: [])
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml1", lecture_id=lid,
+                             name="SVD", source="spoken"))
+        s.commit()
+
+    calls = []
+
+    def spy(*a, **kw):
+        calls.append(a)
+
+    monkeypatch.setattr(workers, "update_lecture_progress", spy)
+    workers._build_course_graph_worker("ml1")
+
+    assert calls == []  # lecture-less rebuild publishes no progress at all
+    g = client.get("/courses/ml1/graph").json()
+    assert g["node_count"] == 1  # ...but the graph itself still built
+
+
+def test_graph_worker_shortcircuit_settles_on_ready(api, monkeypatch):
+    """When a course has no concepts the rebuild short-circuits, but the
+    'ready' terminal state must still reach the monitored lecture (the caller
+    re-publishes it after the no-op, and the DB fallback agrees)."""
+    client, Session = api
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+
+    workers._build_course_graph_worker("ml1", lecture_id=lid)
+
+    prog = workers.get_lecture_progress(lid)
+    assert prog["status"] == "ready"
+    assert client.get("/courses/ml1/graph").status_code == 404
+
+
+def test_graph_worker_error_sets_lecture_error_and_progress(api, monkeypatch):
+    """A failed rebuild tied to a lecture must mark the lecture status=error
+    with the sanitized message and settle the progress store on an error
+    payload (the UI monitor shows it without leaking internals)."""
+    client, Session = api
+
+    def boom(course_id, lecture_id=None):
+        raise RuntimeError("secret traceback: /tmp/evil path")
+
+    monkeypatch.setattr(workers, "_rebuild_course_graph", boom)
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+
+    workers._build_course_graph_worker("ml1", lecture_id=lid)
+
+    prog = workers.get_lecture_progress(lid)
+    assert prog["status"] == "error"
+    assert "secret traceback" not in prog["detail"]
+
+    with Session() as s:
+        lec = s.get(models.Lecture, lid)
+        assert lec.status == "error"
+        assert "secret traceback" not in (lec.error or "")
+        assert "server logs" in (lec.error or "")
+
+
 def test_course_graph_404_without_rows(api, monkeypatch):
     client, _ = api
     monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)

@@ -6,7 +6,7 @@ import os
 import shutil
 import threading
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlalchemy import func
@@ -178,7 +178,9 @@ def _course_graph_dict(course_id: str) -> dict:
 
 @router.post("/{course_id}/graph", response_model=CourseBuildOut, status_code=202)
 def build_course_graph(
-    course_id: str, background_tasks: BackgroundTasks
+    course_id: str,
+    background_tasks: BackgroundTasks,
+    lecture_id: Optional[int] = None,
 ) -> CourseBuildOut:
     """Build (or rebuild) the prerequisite graph for a course in the background.
 
@@ -186,8 +188,14 @@ def build_course_graph(
     LectureBank-trained classifier (Stage 3), and persists the deduplicated
     nodes + acyclic edges (Stage 4). Rows are replaced per course on re-run,
     so the Stage 7 refinement loop can update the graph safely.
+
+    ``lecture_id`` optionally links the rebuild's progress updates to one
+    lecture (the UI's selected one) so the Streamlit progress monitor has a
+    row to watch and a `ready` terminal state.
     """
-    background_tasks.add_task(workers._build_course_graph_worker, course_id.strip())
+    background_tasks.add_task(
+        workers._build_course_graph_worker, course_id.strip(), lecture_id
+    )
     return CourseBuildOut(status="queued", course_id=course_id.strip())
 
 
