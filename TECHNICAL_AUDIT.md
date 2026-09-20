@@ -1,10 +1,12 @@
-# SYSTEM_EVAL: Comprehensive Technical Evaluation, Code Audit, and Architectural Blueprint
+# TECHNICAL_AUDIT: Comprehensive Technical Evaluation, Code Audit, and Architectural Blueprint
 
 > **Status:** Re-audited 2026-09-18 using the `agent-skills` review pack (code-reviewer, security-auditor, test-engineer, web-performance-auditor) in parallel fan-out. Findings are cross-referenced, severity-tagged, and tracked to resolution below. Previous audit content was superseded because the codebase moved from a single `backend/api/routes.py` to `backend/api/routes/{courses,lectures,quizzes}.py` and the pipeline has since changed (silence-snap chunking, clip re-encoding, LLM reasoning gating, parallel MCQ generation).
 >
 > **Update 2026-09-19:** reconciled the fix register with the tree (`209 passed`). P9's M4 (`/courses` N+1 → grouped aggregates, `c143daa`) and the entire P12 test backlog (`53d8ae8`) are closed. H4's cached classifier + M8's vectorized cosine actually landed earlier (`edc85cc`, `ae0c3b2`) but were still marked deferred here — corrected below.
 >
 > **Update 2026-09-20:** **P10 (M1 — prompt-injection boundaries) and P11 (L10 — dependency pinning + CVE scan) are closed** (`232 passed`). M1's fix lands `backend/pipeline/prompt_guard.py` — `<lecture_data>` DATA delimiters + a system-prompt `DATA_GUARD` applied to every untrusted prompt site (concept extraction, lecture-structure passages, MCQ writer, timeline refinement, synthetic-student personas, LLM prerequisite reasoning) — and converts the `llm_reasoning_check` verdict from a binary edge-gate into a confidence demotion (`VETO_CONFIDENCE_FACTOR` → `adjusted_confidence`). L10's fix pins every conda/pip dependency to the exact verified set and routes every runtime `SentenceTransformer` load through `model_ids.py` (env-overridable `LECGAP_EMBEDDING_MODEL` + `LECGAP_EMBEDDING_REVISION`). **Still open:** H3 (dedicated worker process/queue), rebuild debounce/coalesce per course, M7 (bounded LLM concurrency), plus the L-register low items (L4 upload atomicity, L12 non-finite clamp, L13 client-side clip paths, …).
+>
+> **Update 2026-09-20 (part 2):** **L9 (frontend job monitor + latency) is fixed** (`248 passed`). See the L9 row — the frontend progress loop and quiz latency were reworked alongside the graph-rebuild progress tie-in (`_build_course_graph_worker` now accepts `lecture_id` from `POST /courses/{id}/graph?lecture_id=N` so a rebuild publishes progress on the monitored lecture's row and settles on `ready`/`error`). This file was renamed from `SYSTEM_EVAL.md` to `TECHNICAL_AUDIT.md`; `plan/LECTURE_STRUCTURE.md` reference updated.
 
 ---
 
@@ -189,7 +191,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 | L6 | `transcribe.py:162` | `start + 30.0` clamp assumes `chunk_s ≥ 30` | CR |
 | L7 | `transcribe.py:56-62` | `_get_model` not thread-safe → double model load on concurrent first use | PF |
 | L8 | `segment_clips.py:213-220` | fixed worker count can oversubscribe when other stages run | PF |
-| L9 | `frontend/app.py:103-134,277` | 1s unbounded progress polling, hard-coded `latency_s: 2.0` | PF, CR |
+| L9 | `frontend/app.py:103-134,277` | 1s unbounded progress polling, hard-coded `latency_s: 2.0` — **(status: fixed)** the blocking `_wait_progress` loop is replaced by `_monitor_progress`/`_start_job`: one poll per rerun + `st.rerun()` re-attach with adaptive backoff (0.5 s short stages, 1.5 s long unadvancing stages — local Whisper decode, clips, graph, extraction — never a hardcoded 1 s hammer), per-stage guidance hints, and `after="clips_list"` follow-up; quiz `latency_s` is now a real render→submit/N proxy instead of a constant. Lecture list + detail fetches are `st.cache_data`-memoized (`_list_lectures`, `_lecture_detail`) and invalidated after upload/job-completion/delete. Tests in `test_frontend_app.py` (monitor ready/error/backoff/deadline + cache passthrough/clear + `_post` params). | PF, CR |
 | L10 | `environment.yml:7-32` | Unpinned deps; opencv CVE-2025-53644 / CVE-2023-4863, transformers CVE-2024-3568 + 5.3.0 RCE family apply depending on resolved versions — **(status: fixed)** every dep pinned to the verified set; hub model IDs routed through `model_ids.py` (see P11) | SE |
 | L11 | `refine.py:181` | `generate_synthetic_students` unbounded on `n` | SE |
 | L12 | `segment_clips.py:67-74` | NaN/inf flows as `-ss nan` (fails closed, but reject non-finite explicitly) | SE |

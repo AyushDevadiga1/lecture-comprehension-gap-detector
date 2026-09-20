@@ -1,7 +1,7 @@
 # Lecture Structure Pass — root-cause redesign of Stages 2, 3, 5, 6
 
 > **Status: APPROVED (2026-09-15) — design signed off; implementation phase B.
-> Trigger: the `SYSTEM_EVAL.md` audit (2026-09-15) verified ~8 real defects and
+> Trigger: the `TECHNICAL_AUDIT.md` audit (2026-09-15) verified ~8 real defects and
 > traced them to ONE root cause. This doc is the fix for that root cause. The
 > decisions below are now Confirmed in `plan/DECISIONS.md`.
 
