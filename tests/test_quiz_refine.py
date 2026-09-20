@@ -186,11 +186,22 @@ def test_run_refinement_round_no_failures_is_neutral():
 
 # ------------------------------------------------------- synthetic personas (Claim 2)
 
+def _concept_in_user(user: str) -> str:
+    """Extract the concept name from the delimited `Topic under test:` block:
+    the line following the enclosing <lecture_data> tag that comes after the
+    label."""
+    rest = user[user.rfind("Topic under test:"):]
+    start_marker = rest.find("<lecture_data")
+    close_bracket = rest.find(">", start_marker)
+    end = rest.find("</lecture_data>")
+    if close_bracket == -1 or end == -1:
+        return ""
+    return rest[close_bracket + 1:end].strip()
+
+
 def _fake_completer(pass_set):
     def fake(system, user, *, temperature=0.0):
-        topic = [l for l in user.splitlines() if l.startswith("Topic under test:")]
-        concept = topic[0].split(":", 1)[1].strip() if topic else ""
-        return type("R", (), {"text": "PASS" if concept in pass_set else "FAIL"})()
+        return type("R", (), {"text": "PASS" if _concept_in_user(user) in pass_set else "FAIL"})()
     return fake
 
 
@@ -220,6 +231,31 @@ def test_generate_synthetic_students_empty_graph():
     from backend.pipeline.refine import generate_synthetic_students
 
     assert generate_synthetic_students({"edges": []}, n=4, completer=_fake_completer(set())) == []
+
+
+def test_generate_synthetic_students_guard_and_delimit():
+    """M1: persona prompts carry the DATA_GUARD and delimit BOTH the taught
+    topic set and the concept-under-test block (lecture-derived names are
+    untrusted data), while keeping `Topic under test:` parseable."""
+    from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
+    from backend.pipeline.refine import generate_synthetic_students
+
+    seen = {"system": None, "user": None}
+
+    def spy(system, user, *, temperature=0.0):
+        seen["system"] = system
+        seen["user"] = user
+        return type("R", (), {"text": "PASS" if _concept_in_user(user) in {"A", "B"} else "FAIL"})()
+
+    out = generate_synthetic_students(
+        {"edges": [{"source": "A", "target": "B", "confidence": 1.0}],
+         "topological_order": ["A", "B"]},
+        n=1, seed=1, completer=spy,
+    )
+    assert out and len(out[0]["mastered"]) == 2
+    assert DATA_GUARD in seen["system"]
+    assert OPEN_TAG in seen["user"] and CLOSE_TAG in seen["user"]
+    assert "Topic under test:" in seen["user"]
 
 
 def test_concepts_of_includes_sources_and_targets():

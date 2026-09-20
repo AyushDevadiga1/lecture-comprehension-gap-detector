@@ -381,6 +381,48 @@ def test_rebuild_graph_drops_phantom_link_endpoints(api, monkeypatch):
     ]
 
 
+def test_rebuild_graph_llm_veto_demotes_not_drops_edge(api, monkeypatch):
+    """M1: with LECGAP_LLM_REASONING=1, an LLM 'not a prerequisite' verdict
+    must demote the classifier edge's confidence (weighted), never delete it —
+    the verdict is one fallible signal, not a binary gate."""
+    client, Session = api
+    from backend.pipeline import classify_prerequisites as CP
+
+    monkeypatch.setattr(workers, "ConceptGraph", DummyGraph)
+    monkeypatch.setenv("LECGAP_LLM_REASONING", "1")
+    confirmed = [{"a": "Fourier Transform", "b": "Convolution", "confidence": 0.8}]
+    monkeypatch.setattr(CP, "classify_course_pairs", lambda concepts, **kw: confirmed)
+
+    def llm_veto(a, b, prediction=None, confidence=None):
+        return {
+            "prediction": False,
+            "adjusted_confidence": confidence * 0.4,
+            "reason": "no spoken link",
+            "backend": "fake",
+            "cached": True,
+        }
+
+    monkeypatch.setattr(CP, "llm_reasoning_check", llm_veto)
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="Fourier Transform",
+                             source="spoken", start_s=0.0, end_s=10.0))
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="Convolution",
+                             source="spoken", start_s=5.0, end_s=15.0))
+        s.commit()
+
+    workers._rebuild_course_graph("ml1")
+
+    g = client.get("/courses/ml1/graph").json()
+    assert len(g["edges"]) == 1
+    edge = g["edges"][0]
+    assert edge["source"] == "Fourier Transform"
+    assert edge["target"] == "Convolution"
+    assert edge["confidence"] == pytest.approx(0.8 * 0.4)
+    assert edge["source_method"] == "classifier+llm"
+    assert edge["evidence"] == "no spoken link"
+
+
 # --------------------------------------------------------------------- clips
 
 def test_clips_guards(api):

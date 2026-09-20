@@ -26,6 +26,8 @@ import re
 from typing import Dict, List
 
 from backend.pipeline.llm import complete
+from backend.pipeline.model_ids import EMBEDDING_MODEL, load_kwargs
+from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 
 # ~12K chars ≈ ~3K tokens per chunk (plus <500 output each) — well inside
 # the Developer-plan 8K tokens/min window even during a burst of extractions.
@@ -37,7 +39,7 @@ SYSTEM_PROMPT = (
     f'{{"concepts":[{{"name":"...","implicit":true|false}}, ...]}}. '
     "Rules: (1) each entry is one concept; (2) include concepts that are "
     "implicitly referenced even if never named aloud; (3) return ONLY the JSON; "
-    "no markdown, no commentary."
+    "no markdown, no commentary. " + DATA_GUARD
 )
 
 
@@ -113,7 +115,7 @@ def extract_spoken_concepts(docs: List[Dict]) -> List[Dict]:
     for chunk in _chunks(docs, MAX_CHARS_PER_CHUNK):
         result = complete(
             SYSTEM_PROMPT,
-            chunk["text"],
+            delimit_untrusted(chunk["text"]),
             max_tokens=500,
             temperature=0.0,
         )
@@ -142,7 +144,7 @@ def merge_concepts(
     lists: List[List[Dict]],
     *,
     threshold: float = 0.85,
-    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+    embedding_model: str = EMBEDDING_MODEL,
 ) -> List[Dict]:
     """
     Merge concept lists, collapsing near-duplicate names into one entry
@@ -158,7 +160,7 @@ def merge_concepts(
 
     from sentence_transformers import SentenceTransformer, util
 
-    model = SentenceTransformer(embedding_model)
+    model = SentenceTransformer(embedding_model, **load_kwargs(embedding_model))
 
     for lst in lists:
         for c in lst:

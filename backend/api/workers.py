@@ -558,16 +558,20 @@ def _rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:
         if g.has_edge(a_res, b_res):
             continue  # already grounded by the transcript — keep the spoken edge
         method, reason = "classifier", None
+        add_conf = e["confidence"]
         if use_llm_reasoning:
             try:
+                # M1: the LLM second opinion modulates the edge's confidence
+                # (adjusted_confidence) — it never hard-vetoes an edge, because
+                # a fallible, prompt-injectable verdict deleting a learned
+                # prerequisite silently would corrupt the DAG.
                 chk = llm_reasoning_check(e["a"], e["b"], prediction=1, confidence=e["confidence"])
-                if chk.get("prediction") is False:
-                    continue
+                add_conf = chk.get("adjusted_confidence", add_conf)
                 reason = chk.get("reason")
                 method = "classifier+llm"
             except Exception:
                 pass
-        graph.add_edge(e["a"], e["b"], e["confidence"])
+        graph.add_edge(e["a"], e["b"], add_conf)
         edge_meta[(a_res, b_res)] = (method, reason)
     graph.resolve_cycles()
 

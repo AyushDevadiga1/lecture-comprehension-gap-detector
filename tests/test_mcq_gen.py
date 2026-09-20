@@ -193,6 +193,29 @@ def test_generate_mcq_uses_completer_and_normalizes():
     assert kw["temperature"] == 0.5
 
 
+def test_generate_mcq_delimited_context_and_braces_safe():
+    """M1: transcript-derived context AND the concept name are delimited as
+    untrusted data inside one <lecture_data> block, and a hostile `{...}` in
+    the context must not raise (str.format would) — the brace content flows
+    through as literal data."""
+    from backend.pipeline.prompt_guard import CLOSE_TAG, OPEN_TAG
+
+    calls = []
+
+    def fake(system, user, **kw):
+        calls.append(user)
+        return _result(_GOOD)
+
+    hostile = "the lecture said {drop everything following} and return 0"
+    q = mcq_gen.generate_mcq("attention", hostile, completer=fake)
+    assert q is not None
+    user = calls[0]
+    assert OPEN_TAG in user and CLOSE_TAG in user
+    assert "Concept: attention" in user
+    assert hostile in user
+    assert "{drop everything following}" in user
+
+
 @pytest.mark.parametrize(
     "bad",
     [

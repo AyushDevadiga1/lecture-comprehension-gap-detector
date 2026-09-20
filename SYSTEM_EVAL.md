@@ -2,7 +2,9 @@
 
 > **Status:** Re-audited 2026-09-18 using the `agent-skills` review pack (code-reviewer, security-auditor, test-engineer, web-performance-auditor) in parallel fan-out. Findings are cross-referenced, severity-tagged, and tracked to resolution below. Previous audit content was superseded because the codebase moved from a single `backend/api/routes.py` to `backend/api/routes/{courses,lectures,quizzes}.py` and the pipeline has since changed (silence-snap chunking, clip re-encoding, LLM reasoning gating, parallel MCQ generation).
 >
-> **Update 2026-09-19:** reconciled the fix register with the tree (`209 passed`). P9's M4 (`/courses` N+1 → grouped aggregates, `c143daa`) and the entire P12 test backlog (`53d8ae8`) are closed. H4's cached classifier + M8's vectorized cosine actually landed earlier (`edc85cc`, `ae0c3b2`) but were still marked deferred here — corrected below. Still open: H3 (dedicated worker process), H6 (quiz-prep N+1 remainder), M5, M1, L10.
+> **Update 2026-09-19:** reconciled the fix register with the tree (`209 passed`). P9's M4 (`/courses` N+1 → grouped aggregates, `c143daa`) and the entire P12 test backlog (`53d8ae8`) are closed. H4's cached classifier + M8's vectorized cosine actually landed earlier (`edc85cc`, `ae0c3b2`) but were still marked deferred here — corrected below.
+>
+> **Update 2026-09-20:** **P10 (M1 — prompt-injection boundaries) and P11 (L10 — dependency pinning + CVE scan) are closed** (`232 passed`). M1's fix lands `backend/pipeline/prompt_guard.py` — `<lecture_data>` DATA delimiters + a system-prompt `DATA_GUARD` applied to every untrusted prompt site (concept extraction, lecture-structure passages, MCQ writer, timeline refinement, synthetic-student personas, LLM prerequisite reasoning) — and converts the `llm_reasoning_check` verdict from a binary edge-gate into a confidence demotion (`VETO_CONFIDENCE_FACTOR` → `adjusted_confidence`). L10's fix pins every conda/pip dependency to the exact verified set and routes every runtime `SentenceTransformer` load through `model_ids.py` (env-overridable `LECGAP_EMBEDDING_MODEL` + `LECGAP_EMBEDDING_REVISION`). **Still open:** H3 (dedicated worker process/queue), rebuild debounce/coalesce per course, M7 (bounded LLM concurrency), plus the L-register low items (L4 upload atomicity, L12 non-finite clamp, L13 client-side clip paths, …).
 
 ---
 
@@ -136,7 +138,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 - **Location:** `backend/pipeline/passages.py:404-416`, `refine_timeline.py:135-140`, `mcq_gen.py:266`, `extract_concepts.py:114-119`, `workers.py:515-523`, `refine.py:201-206`
 - **Auditors:** SE (H3), CR (Optional), TE.
 - **Description:** Uploaded-lecture transcript text is interpolated verbatim into LLM prompts with no "untrusted data" delimiter or ignore-instructions guard. Attacker-influenced audio can steer concept names/times/edges; the `llm_reasoning_check` verdict hard-gates edges when `LECGAP_LLM_REASONING=1`, and synthetic-student lines starting not-`PASS` count as `FAIL`.
-- **Fix (deferred):** delimit transcript data, treat LLM verdicts as confidence-weighted, not binary gates.
+- **Fix (fixed):** `backend/pipeline/prompt_guard.py` wraps every untrusted prompt site in `<lecture_data>` delimiters under a system-prompt `DATA_GUARD`; the `llm_reasoning_check` verdict now demotes edge confidence (`VETO_CONFIDENCE_FACTOR`, `adjusted_confidence`) instead of hard-gating edges when `LECGAP_LLM_REASONING=1` (see P10).
 
 #### M2. Internal exception text exposed to clients
 - **Location:** `backend/api/workers.py:131-141, 221-230, 295-307, 92`; `schemas.py:27`; `transcribe.py:111, 178`; `llm.py:139`
@@ -188,7 +190,7 @@ Severity legend — **Critical** (blocks release / data loss / silent failure), 
 | L7 | `transcribe.py:56-62` | `_get_model` not thread-safe → double model load on concurrent first use | PF |
 | L8 | `segment_clips.py:213-220` | fixed worker count can oversubscribe when other stages run | PF |
 | L9 | `frontend/app.py:103-134,277` | 1s unbounded progress polling, hard-coded `latency_s: 2.0` | PF, CR |
-| L10 | `environment.yml:7-32` | Unpinned deps; opencv CVE-2025-53644 / CVE-2023-4863, transformers CVE-2024-3568 + 5.3.0 RCE family apply depending on resolved versions | SE |
+| L10 | `environment.yml:7-32` | Unpinned deps; opencv CVE-2025-53644 / CVE-2023-4863, transformers CVE-2024-3568 + 5.3.0 RCE family apply depending on resolved versions — **(status: fixed)** every dep pinned to the verified set; hub model IDs routed through `model_ids.py` (see P11) | SE |
 | L11 | `refine.py:181` | `generate_synthetic_students` unbounded on `n` | SE |
 | L12 | `segment_clips.py:67-74` | NaN/inf flows as `-ss nan` (fails closed, but reject non-finite explicitly) | SE |
 | L13 | `frontend/app.py:305-306` | `st.video` plays server-local paths | CR |
@@ -228,8 +230,8 @@ Each entry records status; the "Regressions covered" column links to the test th
 | P7 | M2 — error text sanitization | **fixed** | generic client messages + exception handler |
 | P8 | H3/H4 — worker process + cached classifier | **fixed (H4)** / H3 open | cached classifier + vectorized cosine landed (`edc85cc`, `ae0c3b2`); dedicated worker process still structural |
 | P9 | H6/M4/M5/M8 — N+1 & single-pass prep | **H6 + M4 + M8 fixed** / M5 open | M4 (frontend+backend), M8, and H6 all closed (see finding entries); M5 pagination/stats still open |
-| P10 | M1 — prompt-injection boundaries | pending | LLM-verdict weighting + untrusted-data delimiters |
-| P11 | L10 — dependency pinning + CVE scan | pending | conda-lock + pin hub model IDs |
+| P10 | M1 — prompt-injection boundaries | **fixed** | `prompt_guard.py` DATA delimiters + system `DATA_GUARD` on every untrusted prompt site; LLM-verdict demotion (weighted, not binary gate) |
+| P11 | L10 — dependency pinning + CVE scan | **fixed** | full conda/pip pin set (verified vs live env) + `model_ids.py` hub ID/revision pinning routed through every load site |
 | P12 | Test backlog (TE recommended list) | **closed** | all listed TE gaps covered; quality issues list remains (see §3.5) |
 
 ### P1 detail — silence-snap correctness
@@ -298,7 +300,28 @@ Each entry records status; the "Regressions covered" column links to the test th
 - `courses.py` fallback branches: `test_course_stats_falls_back_to_taught_order_without_graph` (stats falls back to taught order when no graph).
 - `fine_tune.py`: `test_pair_text_keeps_order_meaningful`, `test_export_model_saves_both_and_returns_dir`, `test_load_model_reinstates_classifier_and_tokenizer`, `test_predict_pairs_returns_one_logit_per_pair`.
 - `frontend/app.py`: new hermetic `test_frontend_app.py` (streamlit/requests stubbed in `sys.modules`) covering `_get/_post/_delete` error handling, `_wrap_progress` clamp + legacy fallback, `_wait_progress` ready/error/timeout, `_course_options` summaries + lectures fallback.
+- **P10/P11 coverage (closed with their fixes):** per-site delimiter/guard tests (`test_extract_concepts`, `test_passages`, `test_mcq_gen`, `test_refine_timeline`, `test_quiz_refine` persona, `test_classify_prerequisites` LLM-guard), the `LECGAP_LLM_REASONING=1` verdict-demote-not-drop integration test (`test_api.py`), and a new `test_model_ids.py` (pinned-id defaults agree across load sites + `load_kwargs` revision scoping + a routed `SentenceTransformer` spy in `get_candidate_pairs`).
 - **Remaining:** the §3.5 quality issues list (none blocking).
+
+### P10 detail — prompt-injection boundaries (M1, closed)
+
+- New `backend/pipeline/prompt_guard.py`: `delimit_untrusted(text)` wraps untrusted lecture-derived content in `<lecture_data> … </lecture_data>`; `DATA_GUARD` (appended to every *system* prompt, which is always under our control) instructs the model that those blocks are data to read — never instructions — including attempts to change the task, leak information, or alter the output format.
+- Delimiters applied at **every** untrusted prompt site flagged in M1:
+  - `extract_concepts.py` — each transcript chunk is delimited before extraction.
+  - `passages.py` — the sliding-window transcript excerpt AND the rolled-over passage header are delimited; `SYSTEM_PROMPT` carries `DATA_GUARD`.
+  - `mcq_gen.py` — the MCQ prompt was rebuilt around a single `__DATA__` sentinel: concept name + transcript excerpt both live inside one `<lecture_data>` block, and the JSON contract references "the data block" generically. Sentinel (not `str.format`) insertion keeps hostile `{…}` in the transcript from raising (which previously silently forfeited the LLM MCQ to the evidence fallback).
+  - `refine_timeline.py` — concept name + bounded excerpt delimited in one data block.
+  - `refine.py` — synthetic-student personas delimit the taught-topic set AND the concept-under-test block.
+  - `classify_prerequisites.py` — `llm_reasoning_check` delimiters both concept names and appends `DATA_GUARD`.
+- **LLM verdicts are now confidence-weighted, not binary gates** (`workers.py`): `llm_reasoning_check` returns `adjusted_confidence` — a "not a prerequisite" verdict demotes the classifier edge's weight by `VETO_CONFIDENCE_FACTOR=0.4` (survives `resolve_cycles`/learner ordering at lower rank); an affirmation or unparseable verdict leaves the prior confidence untouched. `_rebuild_course_graph` no longer `continue`s on a `False` verdict, so a fallible, prompt-injectable model can never silently delete a learned edge.
+- Tests: per-site delimiter+guard pins listed in §3.5; API-level `test_rebuild_graph_llm_veto_demotes_not_drops_edge`; `test_classify_prerequisites.py` verdict-true/false/unparseable/delimiter cases.
+
+### P11 detail — dependency pinning & CVE scan (L10, closed)
+
+- `environment.yml` fully pinned to the exact verified set currently running the 232-test suite (verified against the live `lecgap` env): `python=3.10.20`, `pytorch=2.5.1`/`torchvision=0.20.1`/`torchaudio=2.5.1` (CPU), `ffmpeg=4.3`; pip pins include `transformers==5.15.1` (past the 4.x CVE-2024-3568 / RCE advisory family) and `opencv-python-headless==5.0.0.93` (past CVE-2023-4863 / CVE-2025-53644), `openai-whisper==20250625`, `sentence-transformers==6.0.0`, `fastapi==0.141.1`, `uvicorn[standard]==0.52.4`, `streamlit==1.62.0`, `sqlalchemy==2.0.52`, `pydantic==2.13.4`, `scikit-learn==1.7.2`, `pandas==2.3.3`, `pytest==9.1.1`, `datasets==5.0.1`. A comment documents the bump/re-verify loop and the `conda list --explicit > conda-env.lock` path to a fully reproducible lock.
+- New `backend/pipeline/model_ids.py`: single source of truth for the hub encoder — `LECGAP_EMBEDDING_MODEL` (default `sentence-transformers/all-MiniLM-L6-v2`) and `LECGAP_EMBEDDING_REVISION` (hub commit sha, empty by default). `load_kwargs(model)` forwards the pinned revision only when the loaded model IS the pinned one (an explicit override keeps control of its own revision). Wired into every runtime load site: `build_graph.ConceptGraph`, `classify_prerequisites.get_candidate_pairs` + `PrerequisiteClassifier`, `extract_concepts.merge_concepts`, and `fine_tune._DEF_BASE` (+ tokenizer/config/model `from_pretrained` loads).
+- `.env.example` and the README config table document the two new variables.
+- Tests: `tests/test_model_ids.py` (defaults agree across load sites, revision scoping, routed-load spy).
 
 ---
 
@@ -322,6 +345,6 @@ Each entry records status; the "Regressions covered" column links to the test th
 1. **Sequential status pipeline (already largely in place)** — extraction → graph → clips chained in workers with an explicit status model; ensure every failure sets `status="error"`.
 2. **Frame-accurate, pedagogically-bounded clips** — done (libx264 for ≤120 s); extend with the acoustic-boundary snapping that P1 now enables, plus padding to topic boundaries.
 3. **Context-rich quiz generation** — feed full pedagogical episodes instead of 3-segment windows; enforce schema validation with Pydantic; kill the answer-key leak (P2).
-4. **Transcript-aware prerequisites** — use lecture evidence for edges; treat LLM verdicts as weighted, not binary (P10).
+4. **Transcript-aware prerequisites** — use lecture evidence for edges; LLM verdicts are now weighted, not binary (done — see P10); the remaining refinement is feeding full pedagogical passages rather than name/pair stubs.
 5. **Domain-driven layering** — split `backend/pipeline` into domain / infrastructure / application services (see target layout in the archived audit).
 6. **Student knowledge tracking** — record response latency + distractor selection to diagnose misconceptions, not just binary scores.

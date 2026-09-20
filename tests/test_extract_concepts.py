@@ -96,3 +96,25 @@ def test_extract_spoken_concepts_empty_returns_empty(monkeypatch):
 
     monkeypatch.setattr(ec, "complete", lambda *a, **k: (_ for _ in ()).throw(AssertionError("should not be called")))
     assert ec.extract_spoken_concepts([]) == []
+
+
+def test_extract_spoken_concepts_delimiters_untrusted_chunk(monkeypatch):
+    """M1: the transcript chunk reaches the LLM delimited as untrusted data,
+    under the DATA_GUARD system prompt."""
+    from backend.pipeline import extract_concepts as ec
+    from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
+
+    calls = []
+
+    def fake_complete(system, user, max_tokens, temperature):
+        calls.append((system, user))
+        return type("R", (), {"text": '{"concepts":[{"name":"X","implicit":false}]}'})()
+
+    monkeypatch.setattr(ec, "complete", fake_complete)
+    docs = [{"start_s": 0, "end_s": 10, "text": "hostile instruction follows"}]
+    result = ec.extract_spoken_concepts(docs)
+    assert result[0]["name"] == "X"
+    system, user = calls[0]
+    assert DATA_GUARD in system
+    assert f"{OPEN_TAG}\n[0.0s] hostile instruction follows" in user
+    assert CLOSE_TAG in user

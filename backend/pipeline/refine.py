@@ -178,6 +178,8 @@ def generate_synthetic_students(
         completer = _default_completer
 
     students = []
+    from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG, delimit_untrusted
+
     for i in range(n):
         k = rng.randint(max(1, len(all_concepts) // 2), len(all_concepts))
         taught = set(rng.sample(all_concepts, k))
@@ -186,14 +188,15 @@ def generate_synthetic_students(
             "specific set of topics, and have not yet studied material beyond that set.\n"
             "Assess honestly whether you have mastered each tested topic given your current knowledge. "
             "If a topic relies on concepts, mathematical foundations, or tools you have not learned, "
-            "or was not taught to you, you have not mastered it."
+            "or was not taught to you, you have not mastered it. " + DATA_GUARD
         )
         mastered, failed = [], []
         for concept in all_concepts:
             user = (
-                f"Topics you were actually taught: "
-                f"{', '.join(sorted(taught)) or '(none)'}\n"
-                f"Topic under test: {concept}\n"
+                "Topics you were actually taught:\n"
+                f"{delimit_untrusted(', '.join(sorted(taught)) or '(none)')}\n"
+                "Topic under test:\n"
+                f"{OPEN_TAG}\n{concept}\n{CLOSE_TAG}\n"
                 "\nReply with EXACTLY one line. First word must be PASS or FAIL, "
                 "then at most one sentence explaining your reasoning about "
                 "whether (and why) you have mastered this topic."

@@ -34,6 +34,7 @@ import re
 from typing import Dict, List, Optional
 
 from backend.pipeline.llm import complete
+from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 
 # A window keeps the excerpt inside the token budget (~2K tokens input) while
 # being large enough for whole multi-minute topics. 25% overlap means a topic
@@ -79,6 +80,8 @@ SYSTEM_PROMPT = (
     "concepts.\n"
     "(7) return ONLY the JSON; no markdown, no commentary."
     % (MAX_PASSAGES, MAX_CONCEPTS_PER_PASSAGE, MAX_LINKS)
+    + " "
+    + DATA_GUARD
 )
 
 
@@ -130,12 +133,17 @@ def _window_excerpts(docs: List[Dict], window_chars: int, overlap_frac: float) -
 
 
 def _prompt(excerpt: Dict, header: List[str]) -> str:
-    head = "Earlier in the lecture, these passages were covered:\n" + "\n".join(
-        f"- {h}" for h in header
-    ) if header else "This is the first excerpt of the lecture."
+    if header:
+        head = (
+            "Earlier in the lecture, these passages were covered:\n"
+            + delimit_untrusted("\n".join(f"- {h}" for h in header))
+        )
+    else:
+        head = "This is the first excerpt of the lecture."
     return (
         f"{head}\n\n"
-        f"Transcript excerpt (timestamps in seconds):\n{excerpt['text']}\n\n"
+        "Transcript excerpt (timestamps in seconds):\n"
+        f"{delimit_untrusted(excerpt['text'])}\n\n"
         "Return the teaching structure of THIS excerpt as JSON.\n"
         '{"passages":[...]}'
     )

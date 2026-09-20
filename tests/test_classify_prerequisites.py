@@ -223,6 +223,64 @@ def test_llm_reasoning_check_handles_invalid_json(monkeypatch):
     assert "not json" in out["reason"]
 
 
+def test_llm_reasoning_check_true_keeps_prior_confidence(monkeypatch):
+    """M1: an agreeing verdict leaves the classifier confidence untouched."""
+    from backend.pipeline import llm
+    monkeypatch.setattr(
+        llm, "complete",
+        _fake_complete_returning(
+            '{"prerequisite": true, "reason": "B builds on A", "confidence": 0.9}'
+        ),
+    )
+    out = CP.llm_reasoning_check("A", "B", prediction=1, confidence=0.72)
+    assert out["prediction"] is True
+    assert out["confidence"] == 0.9
+    assert out["adjusted_confidence"] == 0.72
+
+
+def test_llm_reasoning_check_false_demotes_but_never_drops(monkeypatch):
+    """M1: a 'no' verdict scales the edge down (weighted), not to zero."""
+    from backend.pipeline import llm
+    monkeypatch.setattr(
+        llm, "complete",
+        _fake_complete_returning('{"prerequisite": false, "reason": "no link"}'),
+    )
+    out = CP.llm_reasoning_check("A", "B", prediction=1, confidence=0.8)
+    assert out["prediction"] is False
+    assert out["adjusted_confidence"] == pytest.approx(
+        0.8 * CP.VETO_CONFIDENCE_FACTOR
+    )
+    assert 0.0 < out["adjusted_confidence"] < 0.8
+
+
+def test_llm_reasoning_check_unparseable_keeps_prior_confidence(monkeypatch):
+    from backend.pipeline import llm
+    monkeypatch.setattr(llm, "complete", _fake_complete_returning("nonsense"))
+    out = CP.llm_reasoning_check("A", "B", prediction=1, confidence=0.61)
+    assert out["prediction"] is None
+    assert out["adjusted_confidence"] == 0.61
+
+
+def test_llm_reasoning_check_delimiters_untrusted_names_and_guards(monkeypatch):
+    """M1: concept names are untrusted data — delimited + DATA_GUARD in system."""
+    from backend.pipeline import llm
+    from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
+
+    seen = {}
+
+    def fake(system, user, max_tokens, temperature):
+        seen["system"] = system
+        seen["user"] = user
+        return type("R", (), {"text": '{"prerequisite": true, "reason": "ok"}',
+                              "backend": "groq", "cached": False})()
+
+    monkeypatch.setattr(llm, "complete", fake)
+    CP.llm_reasoning_check("A", "B")
+    assert DATA_GUARD in seen["system"]
+    assert f"{OPEN_TAG}\nA\n{CLOSE_TAG}" in seen["user"]
+    assert f"{OPEN_TAG}\nB\n{CLOSE_TAG}" in seen["user"]
+
+
 # ---------------------------------------------------------------------------
 # classify_course_pairs — the Stage 4 bridge
 # ---------------------------------------------------------------------------

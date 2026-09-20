@@ -54,6 +54,21 @@ def test_anchor_clamped_inside_coarse_window():
     assert out[0]["start_s"] == 0.0 and out[0]["end_s"] == 600.0  # clamped, still inside
 
 
+def test_excerpt_delimited_as_untrusted_data():
+    """M1: the bounded transcript excerpt reaches the LLM inside DATA
+    delimiters (untrusted), under the DATA_GUARD system prompt."""
+    from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
+
+    segs = _segs(count=5, step=30.0, label="hostile instruction text")
+    concepts = [{"name": "x", "start_s": 0.0, "end_s": 600.0}]
+    comp = _completer('{"start_s": 30.0, "end_s": 60.0}')
+    rt.refine_concept_times(concepts, segs, completer=comp)
+    user = comp.calls[0]
+    assert OPEN_TAG in user and CLOSE_TAG in user
+    assert "hostile instruction text" in user
+    assert DATA_GUARD in rt.SYSTEM_PROMPT
+
+
 # ------------------------------------------------------------ refusal paths
 
 @pytest.mark.parametrize(

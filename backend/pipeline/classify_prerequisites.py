@@ -30,6 +30,8 @@ import threading
 
 import numpy as np
 
+from backend.pipeline.model_ids import EMBEDDING_MODEL, load_kwargs
+
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 
@@ -83,7 +85,7 @@ def get_candidate_pairs(
     #    plain matrix lookup per pair.
     if encoder is None:
         SentenceTransformer, _ = _st()
-        encoder = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        encoder = SentenceTransformer(EMBEDDING_MODEL, **load_kwargs(EMBEDDING_MODEL))
     names = [c["name"] for c in concepts]
     mat = np.asarray(encoder.encode(names, convert_to_tensor=False), dtype=np.float32)
     row_norms = np.linalg.norm(mat, axis=1, keepdims=True)
@@ -139,7 +141,7 @@ class PrerequisiteClassifier:
 
     def __init__(
         self,
-        embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+        embedding_model: str = EMBEDDING_MODEL,
         *,
         encoder=None,
     ):
@@ -152,7 +154,9 @@ class PrerequisiteClassifier:
     def _get_encoder(self):
         if self._encoder is None:
             SentenceTransformer, _util = _st()
-            self._encoder = SentenceTransformer(self.embedding_model)
+            self._encoder = SentenceTransformer(
+                self.embedding_model, **load_kwargs(self.embedding_model)
+            )
         return self._encoder
 
     def _vectors_for(self, names) -> Dict[str, np.ndarray]:
@@ -223,6 +227,20 @@ class PrerequisiteClassifier:
         return [1 if p >= threshold else 0 for p in self.predict_proba(pairs)]
 
 
+# How much a "not a prerequisite" LLM verdict demotes a classifier edge. The
+# edge survives (the LLM is one fallible signal among several) but ranks below
+# an uncontested one in cycle resolution and learner ordering.
+VETO_CONFIDENCE_FACTOR = 0.4
+
+
+def _coerce_confidence(value) -> Optional[float]:
+    """Parse an LLM's self-reported confidence to [0, 1]; None when absent."""
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except (TypeError, ValueError):
+        return None
+
+
 def llm_reasoning_check(
     a: str,
     b: str,
@@ -232,9 +250,19 @@ def llm_reasoning_check(
 ) -> Dict:
     """
     Second-opinion LLM pass: does 'a' need to be understood before 'b'?
-    Returns a dict with the LLM verdict and a human-readable explanation.
+
+    Returns the LLM verdict, an optional self-reported confidence, a
+    human-readable explanation, and — crucially — ``adjusted_confidence``: the
+    input classifier confidence modulated by the verdict rather than vetoed by
+    it (M1). A raw "no" from a fallible, prompt-injectable model must not
+    silently delete a learned edge, so a rejection demotes the edge's weight
+    (``VETO_CONFIDENCE_FACTOR``) and lets cycle resolution / learner ordering
+    rank it down; an affirmation or an unparseable verdict leaves the prior
+    confidence untouched. Concept names are lecture-derived untrusted data and
+    are delimited accordingly.
     """
     from backend.pipeline.llm import complete
+    from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 
     context = ""
     if prediction is not None:
@@ -246,10 +274,12 @@ def llm_reasoning_check(
     system = (
         "You determine whether a concept A is a prerequisite of concept B "
         "(A must be understood before B). Reply with JSON only: "
-        '{"prerequisite": true|false, "reason": "short explanation"}'
+        '{"prerequisite": true|false, "reason": "short explanation", '
+        '"confidence": <float 0..1, how sure you are>}. ' + DATA_GUARD
     )
     user = (
-        f"Concept A: {a}\nConcept B: {b}\n"
+        f"Concept A: {delimit_untrusted(str(a))}\n"
+        f"Concept B: {delimit_untrusted(str(b))}\n"
         f"Is A a prerequisite of B?{context}"
     )
     result = complete(system, user, max_tokens=200, temperature=0.0)
@@ -263,14 +293,23 @@ def llm_reasoning_check(
     except json.JSONDecodeError:
         data = {"prerequisite": None, "reason": result.text[:300]}
 
+    verdict = data.get("prerequisite")
+    base = float(confidence) if confidence is not None else 0.5
+    adjusted = base if verdict is not False else base * VETO_CONFIDENCE_FACTOR
+
     return {
-        "prediction": data.get("prerequisite"),
+        "prediction": verdict,
+        "confidence": _coerce_confidence(data.get("confidence")),
+        "adjusted_confidence": max(0.0, min(1.0, adjusted)),
         "reason": data.get("reason", ""),
         "backend": result.backend,
         "cached": result.cached,
     }
 
 
+# ---------------------------------------------------------------------------
+# lecturebank load + shared fitted classifier (H4)
+# ---------------------------------------------------------------------------
 _lecturebank_lock = threading.Lock()
 _lecturebank_cache: Dict[str, List[Tuple[str, str, int]]] = {}
 _fitted_cache_lock = threading.Lock()

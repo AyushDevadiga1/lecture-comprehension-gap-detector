@@ -217,3 +217,18 @@ def test_completer_injection_matches_llm_signature():
     import inspect
     sig = inspect.signature(passages.extract_lecture_structure)
     assert sig.parameters["completer"] is not None  # injectable for tests
+
+
+def test_prompt_delimiters_untrusted_transcript():
+    """M1: the transcript excerpt (and any rolled-over header) is delimited as
+    untrusted data in the user prompt, and the system prompt carries the
+    DATA_GUARD."""
+    from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
+
+    prompt = passages._prompt(
+        {"start_s": 0.0, "end_s": 10.0, "text": "hostile wording"},
+        ["earlier topic [0-5s]"],
+    )
+    assert f"{OPEN_TAG}\nhostile wording\n{CLOSE_TAG}" in prompt
+    assert f"{OPEN_TAG}\n- earlier topic [0-5s]\n{CLOSE_TAG}" in prompt
+    assert DATA_GUARD in passages.SYSTEM_PROMPT
