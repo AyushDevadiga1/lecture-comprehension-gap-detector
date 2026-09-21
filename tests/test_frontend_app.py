@@ -328,7 +328,7 @@ def test_monitor_no_job_is_noop(app_module):
     app_module._monitor_progress()  # must not raise
 
 
-def test_monitor_queued_shows_warning_without_rerun(app_module):
+def test_monitor_queued_retries_then_gives_up(app_module, monkeypatch):
     app_module.st.session_state = _SessionState()
     app_module.st.session_state["lecgap_job"] = {
         "lecture_id": 4, "title": "t", "after": None, "deadline": 1e18
@@ -338,9 +338,14 @@ def test_monitor_queued_shows_warning_without_rerun(app_module):
     app_module.st.warning = warned.append
     app_module.st.rerun = lambda *a, **kw: reruns.append(True)
     app_module._get = lambda *a, **kw: None  # no progress yet
-    app_module._monitor_progress()
+    monkeypatch.setattr(app_module.time, "sleep", lambda *a, **kw: None)
+
+    for _ in range(app_module._MAX_POLL_FAILS - 1):
+        app_module._monitor_progress()
+    assert reruns and not warned  # transient blips retry the poll
+    app_module._monitor_progress()  # final consecutive failure gives up
     assert warned and "queued" in warned[0].lower()
-    assert reruns == []
+    assert app_module.st.session_state.get("lecgap_job") is None
 
 
 def test_monitor_ready_pops_job_and_invalidates_caches(app_module):
@@ -548,3 +553,12 @@ def test_course_options_falls_back_to_lectures(app_module):
     app_module._get = fake_get
     app_module._course_summaries = lambda: app_module._get("/courses", silent=True)
     assert app_module._course_options() == ["a", "b"]
+
+
+def test_validated_api_url_rejects_non_http(app_module):
+    """SECURITY_AUDIT #25: only http(s) URLs with a host are accepted."""
+    for bad in ("ftp://host", "file:///etc/passwd", "127.0.0.1:8000", "", "http://"):
+        with pytest.raises(ValueError):
+            app_module._validated_api_url(bad)
+    assert app_module._validated_api_url("https://api.example.com/") == \
+        "https://api.example.com"

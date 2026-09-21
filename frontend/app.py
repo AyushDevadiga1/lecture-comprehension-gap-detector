@@ -10,6 +10,7 @@ Run locally with:
 
 import os
 import time
+from urllib.parse import urlparse
 
 import requests
 import streamlit as st
@@ -17,7 +18,28 @@ import streamlit.components.v1 as components
 
 from frontend.render import dag_html, lecture_html
 
-API = os.getenv("LECGAP_API_URL", "http://127.0.0.1:8000")
+_DEFAULT_API = "http://127.0.0.1:8000"
+# Consecutive failed progress polls tolerated before a job is considered
+# unreachable and polling stops (SECURITY_AUDIT #29).
+_MAX_POLL_FAILS = 5
+
+
+def _validated_api_url(raw: str) -> str:
+    """Validate the backend base URL (SECURITY_AUDIT #25).
+
+    Only http/https URLs with a host are accepted: a file:///ftp:// or host-less
+    value could otherwise redirect backend calls at a local resource.
+    """
+    url = (raw or "").strip().rstrip("/")
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise ValueError(
+            f"LECGAP_API_URL must be an http(s) URL with a host, got {raw!r}"
+        )
+    return url
+
+
+API = _validated_api_url(os.getenv("LECGAP_API_URL", _DEFAULT_API))
 
 st.set_page_config(page_title="LecGap", layout="wide")
 
@@ -226,9 +248,22 @@ def _monitor_progress():
     lecture_id = job.get("lecture_id")
     data = _get(f"/lectures/{lecture_id}/progress", silent=True)
     if not data:
+        # Tolerate a few transient blips before giving up, so a momentary
+        # backend hiccup doesn't strand the monitor (SECURITY_AUDIT #29).
+        fails = int(job.get("fail_count", 0)) + 1
+        job["fail_count"] = fails
+        if fails < _MAX_POLL_FAILS:
+            time.sleep(1.0)
+            try:
+                st.rerun()
+            except AttributeError:
+                pass
+            return
         st.warning("Job queued — waiting for the worker to report progress... "
                    "You can refresh the page to re-attach.")
+        st.session_state.pop("lecgap_job", None)
         return
+    job["fail_count"] = 0
 
     status = data.get("status", "")
     stage = data.get("stage", "working")
