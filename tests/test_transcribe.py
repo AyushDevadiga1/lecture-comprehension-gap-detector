@@ -582,3 +582,34 @@ def test_groq_chunk_500_exhaustion_raises(monkeypatch, tmp_path):
 
     assert always.attempts == 3  # exhausted after the retry budget
     assert sleeps == [tr.TRANSCRIBE_500_BACKOFF_S] * 2  # last attempt raises, no sleep
+
+
+def test_validate_media_path_rejects_flag_injection():
+    """SECURITY_AUDIT #5: a path starting with '-' would be parsed as an
+    ffmpeg flag and must be rejected."""
+    with pytest.raises(ValueError):
+        tr._validate_media_path("-i")
+    with pytest.raises(ValueError):
+        tr._validate_media_path("  -y")
+    with pytest.raises(ValueError):
+        tr._validate_media_path("")
+    with pytest.raises(ValueError):
+        tr._validate_media_path("a\x00b")
+
+
+def test_validate_media_path_bounds_existing_files(tmp_path):
+    """A real file outside the repo data/ tree is refused; paths inside (or
+    non-existent stubs used by tests) pass through."""
+    outside = tmp_path / "evil.mp4"
+    outside.write_bytes(b"x")
+    with pytest.raises(ValueError):
+        tr._validate_media_path(str(outside))
+
+    # non-existent relative/absolute stubs are allowed (unit-test paths)
+    assert tr._validate_media_path("some/media.mp4") == "some/media.mp4"
+    assert tr._validate_media_path("/abs/path/lec.mp4") == "/abs/path/lec.mp4"
+
+
+def test_transcribe_rejects_unsafe_media_path():
+    with pytest.raises(ValueError):
+        tr.transcribe("--version", backend="local")

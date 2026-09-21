@@ -33,11 +33,16 @@ import shutil
 import subprocess
 import tempfile
 import time
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 from backend.pipeline.llm import SLEEP_CAP_S, _parse_reset_seconds
 
 BACKEND = os.getenv("WHISPER_BACKEND", "local")
+
+# All real media is uploaded under <repo>/data/raw; anything outside that tree
+# is not something this pipeline should hand to ffmpeg/Whisper.
+MEDIA_ROOT = (Path(__file__).resolve().parents[2] / "data").resolve()
 MODEL_SIZE = os.getenv("WHISPER_MODEL", "base")
 GROQ_WHISPER_MODEL = os.getenv("GROQ_WHISPER_MODEL", "whisper-large-v3-turbo")
 GROQ_UPLOAD_LIMIT = int(
@@ -65,6 +70,33 @@ def _get_model():
 
 def _ffmpeg_available() -> bool:
     return all(shutil.which(tool) for tool in ("ffmpeg", "ffprobe"))
+
+
+def _validate_media_path(media_path: str) -> str:
+    """Reject unsafe media paths before they reach ffmpeg or Whisper.
+
+    Two vectors are guarded (SECURITY_AUDIT #5):
+    - a value beginning with ``-`` would be parsed by ffmpeg as a flag;
+    - a real file that resolves outside the repo ``data/`` tree (symlink or
+      traversal) must not be processed.
+
+    Non-existent paths are returned unchanged so unit tests can pass stubs;
+    the upload endpoint already bounds the on-disk destination under
+    ``data/raw``.
+    """
+    if not isinstance(media_path, (str, os.PathLike)):
+        raise ValueError("media_path must be a filesystem path")
+    path = str(media_path).strip()
+    if not path or "\x00" in path or path.startswith("-"):
+        raise ValueError(f"unsafe media path: {media_path!r}")
+    p = Path(path)
+    if p.exists():
+        resolved = p.resolve()
+        try:
+            resolved.relative_to(MEDIA_ROOT)
+        except ValueError:
+            raise ValueError(f"media path outside data/: {media_path!r}")
+    return path
 
 
 def _probe_duration(media_path: str) -> float:
@@ -335,6 +367,7 @@ def transcribe(
     real-time); otherwise the offline Whisper path is used.
     """
     selected_backend = backend or BACKEND
+    media_path = _validate_media_path(media_path)
     if not backend and not os.getenv("WHISPER_BACKEND") and os.getenv("GROQ_API_KEY"):
         if _ffmpeg_available():
             selected_backend = "groq"
