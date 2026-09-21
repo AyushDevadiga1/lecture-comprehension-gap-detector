@@ -87,3 +87,24 @@ def test_lecture_html_escapes_names():
         concepts=[{"name": "RNN <b>& friends", "start_s": 0.0, "end_s": 10.0}],
     )
     assert "RNN &lt;b&gt;" in html and "<b>& friends" not in html
+
+
+def test_dag_html_escapes_tooltip_source_method_and_evidence():
+    """SECURITY_AUDIT #24: pyvis renders tooltips as HTML, so attacker-written
+    source_method/evidence must not inject markup."""
+    graph = {
+        "course_id": "ml1",
+        "nodes": ["A", "B"],
+        "edges": [{
+            "source": "A", "target": "B", "confidence": 0.9,
+            "source_method": "<img src=x onerror=alert(1)>",
+            "evidence": "</title><script>alert(1)</script>",
+        }],
+        "node_count": 2, "edge_count": 1, "is_dag": True,
+        "topological_order": ["A", "B"],
+    }
+    html = dag_html(graph)
+    assert "<img src=x onerror=alert(1)>" not in html
+    assert "<script>alert(1)</script>" not in html
+    # pyvis JSON-escapes the '&' of the HTML entities as \u0026
+    assert "u0026lt;img" in html and "u0026lt;script" in html

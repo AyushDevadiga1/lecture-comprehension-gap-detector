@@ -266,12 +266,14 @@ var options = {
         net.add_node(
             name,
             label=name,
-            title="%s<br/>learner order #%d/%d" % (name, pos + 1, n),
+            title="%s<br/>learner order #%d/%d" % (_html.escape(str(name)), pos + 1, n),
             color={"background": color, "border": "#334155"},
         )
     for edge in graph.get("edges") or []:
         conf = edge.get("confidence", 1.0)
-        method = edge.get("source_method", "classifier")
+        # SECURITY_AUDIT #24: tooltips are rendered as HTML by pyvis, so every
+        # attacker-influenced string must be escaped.
+        method = _html.escape(str(edge.get("source_method", "classifier")))
         tip = "edge confidence %.2f · source: %s" % (conf, method)
         evidence = (edge.get("evidence") or "").strip()
         if evidence:
