@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -74,13 +75,22 @@ def _validate_times(start_s, end_s) -> List[float]:
     return [start, end]
 
 
+def _resolve_ffmpeg() -> str:
+    """Resolve the ffmpeg executable strictly from PATH.
+
+    SECURITY_AUDIT #6: never let a caller pass an arbitrary executable path —
+    an internal caller forwarding user input could otherwise execute any
+    binary. Falls back to the bare name so the FileNotFoundError path still
+    reports a useful error.
+    """
+    return shutil.which("ffmpeg") or "ffmpeg"
+
+
 def cut_clip(
     media_path: str,
     start_s,
     end_s,
     out_path: str,
-    *,
-    ffmpeg: str = "ffmpeg",
 ) -> Dict:
     """Cut a single [start_s, end_s) segment from media_path into out_path.
 
@@ -97,6 +107,7 @@ def cut_clip(
     out_path = str(out_path)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
 
+    ffmpeg = _resolve_ffmpeg()
     cmd = [ffmpeg, "-y", "-ss", f"{start:.3f}", "-to", f"{end:.3f}", "-i", media_path]
     cmd += _codec_args(end - start) + [out_path]
     cmd_str = " ".join(cmd)
@@ -145,7 +156,6 @@ def cut_concept_clips(
     concepts: List[Dict],
     out_dir: str,
     *,
-    ffmpeg: str = "ffmpeg",
     max_workers: Optional[int] = None,
     on_done=None,
 ) -> List[Dict]:
@@ -169,6 +179,7 @@ def cut_concept_clips(
     """
     out_dir = str(out_dir)
     Path(out_dir).mkdir(parents=True, exist_ok=True)
+    out_root = Path(out_dir).resolve()
     results: List[Dict] = [None] * len(concepts)
     jobs: List[tuple] = []  # (index_in_concepts, concept, out_path)
 
@@ -187,6 +198,18 @@ def cut_concept_clips(
             continue
         start, end = float(start_s), float(end_s)
         out_path = str(Path(out_dir) / f"{name}__{start:.0f}-{end:.0f}.mp4")
+        # SECURITY_AUDIT #6: never let a crafted concept name escape out_dir.
+        try:
+            Path(out_path).resolve().relative_to(out_root)
+        except ValueError:
+            results[i] = {
+                "name": concept.get("name"),
+                "start_s": start, "end_s": end, "path": None,
+                "ok": False, "error": "unsafe clip output path",
+            }
+            if on_done:
+                on_done(1, len(concepts))
+            continue
         jobs.append((i, concept, out_path))
 
     if not jobs:
@@ -198,7 +221,7 @@ def cut_concept_clips(
 
     def run_cut(args: tuple) -> tuple:
         i, concept, out_path = args
-        res = cut_clip(media_path, concept["start_s"], concept["end_s"], out_path, ffmpeg=ffmpeg)
+        res = cut_clip(media_path, concept["start_s"], concept["end_s"], out_path)
         res["name"] = concept.get("name")
         res["path"] = out_path if res["ok"] else None
         return i, res

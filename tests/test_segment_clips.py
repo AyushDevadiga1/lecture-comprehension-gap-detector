@@ -28,6 +28,8 @@ def _true_ffmpeg(monkeypatch, returncode=0):
         return type("R", (), {"returncode": returncode, "stderr": "", "stdout": ""})()
 
     monkeypatch.setattr(subprocess, "run", fake_run)
+    # keep the command hermetic: ffmpeg is resolved from PATH in prod
+    monkeypatch.setattr(segment_clips, "_resolve_ffmpeg", lambda: "ffmpeg")
     return segment_clips, calls
 
 
@@ -91,15 +93,27 @@ def test_cut_clip_reports_ffmpeg_error_without_raising(tmp_path, monkeypatch):
 def test_cut_clip_missing_ffmpeg_reports_error(tmp_path, monkeypatch):
     import subprocess
 
-    from backend.pipeline.segment_clips import cut_clip
+    import backend.pipeline.segment_clips as seg
 
+    # SECURITY_AUDIT #6: ffmpeg is resolved from PATH, never caller-supplied.
+    monkeypatch.setattr(seg.shutil, "which", lambda _: None)
     monkeypatch.setattr(
         subprocess, "run",
         lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError()),
     )
-    res = cut_clip("m.mp4", 0.0, 2.0, str(tmp_path / "c.mp4"), ffmpeg="no-such-ffmpeg")
+    res = seg.cut_clip("m.mp4", 0.0, 2.0, str(tmp_path / "c.mp4"))
     assert res["ok"] is False
-    assert "no-such-ffmpeg" in res["error"]
+    assert "ffmpeg executable not found" in res["error"]
+
+
+def test_cut_clip_ignores_caller_ffmpeg_argument(tmp_path):
+    """The public signature no longer accepts an executable override."""
+    from backend.pipeline.segment_clips import cut_clip
+    import inspect
+
+    assert "ffmpeg" not in inspect.signature(cut_clip).parameters
+    from backend.pipeline.segment_clips import cut_concept_clips
+    assert "ffmpeg" not in inspect.signature(cut_concept_clips).parameters
 
 
 def test_cut_clip_timeout(tmp_path, monkeypatch):
