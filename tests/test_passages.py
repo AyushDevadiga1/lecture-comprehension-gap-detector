@@ -232,3 +232,24 @@ def test_prompt_delimiters_untrusted_transcript():
     assert f"{OPEN_TAG}\nhostile wording\n{CLOSE_TAG}" in prompt
     assert f"{OPEN_TAG}\n- earlier topic [0-5s]\n{CLOSE_TAG}" in prompt
     assert DATA_GUARD in passages.SYSTEM_PROMPT
+
+
+def test_parse_passages_caps_string_lengths():
+    """SECURITY_AUDIT #17: every LLM-supplied string is bounded before the DB."""
+    import json
+
+    ex = {"start_s": 0.0, "end_s": 100.0, "text": ""}
+    canned = json.dumps({"passages": [{
+        "title": "T" * 500, "kind": "explain", "start_s": 0.0, "end_s": 10.0,
+        "summary": "s" * 999,
+        "concepts": [{"name": "c" * 500, "implicit": False,
+                      "teach_start_s": 1.0, "teach_end_s": 9.0}],
+        "links": [{"from": "a" * 500, "to": "b" * 500, "evidence": "e" * 999}],
+    }]})
+    p = passages._parse_passages(canned, ex)[0]
+    assert len(p["title"]) == passages.MAX_TITLE_CHARS
+    assert len(p["summary"]) == 240
+    assert len(p["concepts"][0]["name"]) == passages.MAX_NAME_CHARS
+    assert len(p["links"][0]["from"]) == passages.MAX_NAME_CHARS
+    assert len(p["links"][0]["to"]) == passages.MAX_NAME_CHARS
+    assert len(p["links"][0]["evidence"]) == 300

@@ -48,6 +48,9 @@ MAX_PASSAGES = 4
 MAX_CONCEPTS_PER_PASSAGE = 6
 MAX_LINKS = 8
 MAX_TOKENS = int(os.getenv("LECGAP_STRUCTURE_MAX_TOKENS", "3000"))
+# LLM output is untrusted: bound every string that reaches the DB/UI (#17).
+MAX_TITLE_CHARS = 200
+MAX_NAME_CHARS = 120
 _HEADER_BUDGET = 8  # how many prior passage titles the rolling header carries
 
 _KINDS = {"define", "explain", "worked_example", "review", "transition"}
@@ -275,7 +278,7 @@ def _parse_passages(text: str, excerpt: Dict) -> List[Dict]:
             if ce <= cs:
                 cs, ce = ps, pe
             concepts.append({
-                "name": str(c["name"]).strip(),
+                "name": str(c["name"]).strip()[:MAX_NAME_CHARS],
                 "implicit": bool(c.get("implicit", False)),
                 "teach_start_s": round(cs, 1),
                 "teach_end_s": round(ce, 1),
@@ -285,12 +288,12 @@ def _parse_passages(text: str, excerpt: Dict) -> List[Dict]:
             if not isinstance(l, dict) or not l.get("from") or not l.get("to"):
                 continue
             links.append({
-                "from": str(l["from"]).strip(),
-                "to": str(l["to"]).strip(),
+                "from": str(l["from"]).strip()[:MAX_NAME_CHARS],
+                "to": str(l["to"]).strip()[:MAX_NAME_CHARS],
                 "evidence": str(l.get("evidence") or "").strip()[:300],
             })
         out.append({
-            "title": str(p["title"]).strip(),
+            "title": str(p["title"]).strip()[:MAX_TITLE_CHARS],
             "kind": kind,
             "start_s": round(ps, 1),
             "end_s": round(pe, 1),

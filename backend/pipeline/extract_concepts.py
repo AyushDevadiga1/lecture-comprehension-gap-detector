@@ -32,6 +32,9 @@ from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 # ~12K chars ≈ ~3K tokens per chunk (plus <500 output each) — well inside
 # the Developer-plan 8K tokens/min window even during a burst of extractions.
 MAX_CHARS_PER_CHUNK = int(12000)
+# LLM-derived concept names are untrusted: bound them before they reach the
+# DB/UI (SECURITY_AUDIT #17).
+MAX_NAME_CHARS = 120
 
 SYSTEM_PROMPT = (
     "You analyze a lecture transcript segment and identify the academic "
@@ -62,7 +65,7 @@ def _parse_concepts(text: str) -> List[Dict]:
     concepts = data.get("concepts", [])
     out: List[Dict] = []
     for c in concepts:
-        name = str(c.get("name", "")).strip()
+        name = str(c.get("name", "")).strip()[:MAX_NAME_CHARS]
         if not name:
             continue
         out.append({"name": name, "implicit": bool(c.get("implicit", False))})

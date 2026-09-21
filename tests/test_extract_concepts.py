@@ -118,3 +118,13 @@ def test_extract_spoken_concepts_delimiters_untrusted_chunk(monkeypatch):
     assert DATA_GUARD in system
     assert f"{OPEN_TAG}\n[0.0s] hostile instruction follows" in user
     assert CLOSE_TAG in user
+
+
+def test_parse_concepts_caps_name_length():
+    """SECURITY_AUDIT #17: LLM-derived names are bounded before persistence."""
+    import json
+
+    from backend.pipeline.extract_concepts import MAX_NAME_CHARS, _parse_concepts
+
+    out = _parse_concepts(json.dumps({"concepts": [{"name": "x" * 500, "implicit": False}]}))
+    assert len(out[0]["name"]) == MAX_NAME_CHARS
