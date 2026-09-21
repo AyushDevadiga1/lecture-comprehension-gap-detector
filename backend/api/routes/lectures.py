@@ -33,9 +33,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_RAW_DIR = REPO_ROOT / "data" / "raw"
 CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
 ALLOWED_EXTENSIONS = {".mp4", ".mp3", ".wav", ".m4a", ".mkv", ".mov", ".webm"}
-# Optional upload cap (MiB); 0 = unlimited (local tool, big lecture videos).
-# Guards the pathological case, not normal use.
-MAX_UPLOAD_MB = int(os.getenv("LECGAP_MAX_UPLOAD_MB", "0"))
+# Optional upload cap (MiB). Default 2048 MiB to prevent disk-fill DoS.
+# Override via LECGAP_MAX_UPLOAD_MB=0 to restore unlimited for local use.
+MAX_UPLOAD_MB = int(os.getenv("LECGAP_MAX_UPLOAD_MB", "2048"))
 
 
 def _safe_filename(name: str) -> str:
