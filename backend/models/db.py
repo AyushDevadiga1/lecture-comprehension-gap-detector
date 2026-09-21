@@ -367,9 +367,13 @@ def _migrate_schema() -> None:
     with engine.begin() as conn:
         for table, cols in additions.items():
             existing = table_cols.get(table) or set()
+            allowed_tables = {"quiz_questions", "concepts", "graph_edges"}
+            allowed_types = {"TEXT", "VARCHAR", "INTEGER", "FLOAT"}
             for name, coltype, kwargs, ddl_type, ddl_default in cols:
                 if existing and name in existing:
                     continue
+                if table not in allowed_tables or ddl_type not in allowed_types:
+                    raise ValueError(f"Disallowed migration target: {table}.{name} {ddl_type}")
                 ddl = f"ALTER TABLE {table} ADD COLUMN {name} {ddl_type}"
                 if ddl_default is not None:
                     ddl += f" DEFAULT {ddl_default}"
