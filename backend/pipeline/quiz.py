@@ -192,7 +192,7 @@ def make_mcq(
         option is always `answer`; fallback mode (no evidence anywhere) tests
         concept-name recognition so every question stays gradable.
     """
-    rng = rng or random.Random(concept)
+    rng = rng or random.SystemRandom()
 
     if evidence is not None:
         answer = evidence
