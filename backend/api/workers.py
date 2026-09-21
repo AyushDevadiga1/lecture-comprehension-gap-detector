@@ -696,7 +696,7 @@ def _question_out(item) -> QuizQuestionOut:
         for d in (item.distractor_a, item.distractor_b, item.distractor_c)
         if d and d != item.answer
     ]
-    rnd = random.Random(f"{item.id}:{item.concept}")
+    rnd = random.SystemRandom()
     rnd.shuffle(options)
     return QuizQuestionOut(
         id=item.id,

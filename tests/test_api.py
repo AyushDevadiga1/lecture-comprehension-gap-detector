@@ -1411,3 +1411,21 @@ def test_quiz_input_bounds_are_enforced(api):
         "course_id": "ml1", "student_id": "a b"}).status_code == 422
     assert client.get("/students/s1/remediation",
                       params={"course_id": "../etc"}).status_code == 422
+
+
+def test_question_out_shuffles_options_per_call():
+    """SECURITY_AUDIT #7: options are no longer seeded by question id/concept,
+    so the answer position varies across presentations."""
+    from backend.api.workers import _question_out
+
+    item = models.ConceptItem(
+        course_id="ml1", concept="A", question="q", answer="right",
+        distractor_a="w1", distractor_b="w2", distractor_c="w3", order=0,
+    )
+    item.id = 1
+    positions = set()
+    for _ in range(80):
+        out = _question_out(item)
+        assert set(out.options) == {"right", "w1", "w2", "w3"}
+        positions.add(out.options.index("right"))
+    assert len(positions) > 1
