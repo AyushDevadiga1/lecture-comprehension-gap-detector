@@ -39,7 +39,16 @@ MAX_UPLOAD_MB = int(os.getenv("LECGAP_MAX_UPLOAD_MB", "0"))
 
 
 def _safe_filename(name: str) -> str:
-    return re.sub(r"[^\w.\- ]", "_", name).strip()
+    """Sanitize a filename, preventing path traversal attacks.
+
+    - Dots are stripped from the stem (no `../../` traversal).
+    - Only the suffix is preserved, normalized to lowercase.
+    - After construction the caller must verify the resolved destination
+      stays strictly inside DATA_RAW_DIR (see upload_lecture).
+    """
+    stem = re.sub(r"[^\w\- ]", "_", Path(name).stem).strip() or "upload"
+    ext = Path(name).suffix.lower()
+    return f"{stem}{ext}"
 
 
 @router.post("", response_model=LectureOut, status_code=201)
@@ -75,6 +84,21 @@ async def upload_lecture(
         db.refresh(lecture)
 
         dest = DATA_RAW_DIR / _safe_filename(f"lec{lecture.id}_{file.filename}")
+        # Path traversal guard: verify resolved path stays inside DATA_RAW_DIR
+        try:
+            resolved = dest.resolve()
+            allowed = DATA_RAW_DIR.resolve()
+            if not str(resolved).startswith(str(allowed)):
+                db.delete(lecture)
+                db.commit()
+                raise HTTPException(status_code=400, detail="Invalid filename")
+        except HTTPException:
+            raise
+        except Exception:
+            db.delete(lecture)
+            db.commit()
+            raise HTTPException(status_code=400, detail="Invalid filename")
+
         written = 0
         with dest.open("wb") as out:
             while chunk := file.file.read(1024 * 1024):
