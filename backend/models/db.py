@@ -56,6 +56,7 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):  # noqa: ARG001
         cursor.execute("PRAGMA journal_mode=WAL")
         cursor.execute("PRAGMA busy_timeout=30000")
         cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
     except Exception:  # noqa: BLE001 — a pragma failure must not kill boot
         pass
