@@ -57,3 +57,5 @@ security-audit-skill
 
 # agent skills
 agent-skills
+# Security audit run artifacts (never commit)
+security-audits/
