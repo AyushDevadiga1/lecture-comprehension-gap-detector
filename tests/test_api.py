@@ -917,6 +917,9 @@ def test_get_remediation_returns_latest_sequence(api, monkeypatch):
     assert watch == [("A", False), ("B", True)]
     # clips are attached for playback where they exist
     assert body["remediation"][0]["clip"] == "clips/a.mp4"
+    # the remediation endpoint never discloses the answer key or per-question
+    # feedback — that stays on the post-submit response only (SECURITY_AUDIT #22)
+    assert body["feedback"] == []
 
 
 def test_get_remediation_404_without_responses(api):
