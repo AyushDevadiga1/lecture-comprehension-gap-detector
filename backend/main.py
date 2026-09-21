@@ -6,7 +6,9 @@ Run locally with:
 """
 
 import logging
+import os
 from pathlib import Path
+import secrets
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -21,6 +23,30 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 init_db()
 
 app = FastAPI(title="LecGap API")
+
+
+@app.middleware("http")
+async def api_key_guard(request: Request, call_next):
+    """API key verification when LECGAP_API_KEY is configured.
+
+    When unset, requests pass through unhindered for seamless local development
+    and test runs. When set, verifies X-API-Key or Bearer token against the
+    configured secret using constant-time comparison.
+    """
+    api_key = os.getenv("LECGAP_API_KEY", "").strip()
+    if api_key:
+        exempt_paths = {"/health", "/docs", "/openapi.json", "/redoc"}
+        if request.url.path not in exempt_paths:
+            client_key = request.headers.get("X-API-Key")
+            if not client_key:
+                auth_header = request.headers.get("Authorization", "")
+                if auth_header.startswith("Bearer "):
+                    client_key = auth_header[7:].strip()
+            if not client_key or not secrets.compare_digest(client_key, api_key):
+                return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+    return await call_next(request)
+
+
 app.include_router(routes.router)
 
 _LOGGER = logging.getLogger("lecgap.main")
