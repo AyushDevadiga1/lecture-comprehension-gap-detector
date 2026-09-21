@@ -32,7 +32,7 @@ router = APIRouter(prefix="/lectures", tags=["lectures"])
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_RAW_DIR = REPO_ROOT / "data" / "raw"
 CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
-ALLOWED_EXTENSIONS = {".mp4", ".mp3", ".wav", ".m4a", ".mkv", ".mov", ".webm"}
+ALLOWED_EXTENSIONS = {".mp4", ".mp3", ".wav", ".m4a", ".mkv", ".mov", ".webm", ".flac"}
 # Optional upload cap (MiB). Default 2048 MiB to prevent disk-fill DoS.
 # Override via LECGAP_MAX_UPLOAD_MB=0 to restore unlimited for local use.
 MAX_UPLOAD_MB = int(os.getenv("LECGAP_MAX_UPLOAD_MB", "2048"))
