@@ -33,6 +33,7 @@ from backend.pipeline.segment_clips import cut_concept_clips
 from backend.pipeline.transcribe import transcribe
 from backend.api.schemas import QuizQuestionOut
 
+import os
 import threading
 import time
 
@@ -47,6 +48,14 @@ _LOGGER = logging.getLogger("lecgap.workers")
 # the encoder per stage.
 _shared_clf_guard = threading.Lock()
 _shared_clf = None
+
+# Concurrency throttle: limits the number of simultaneously executing heavy
+# pipeline jobs (transcription, concept extraction, clip cutting, graph build).
+# Prevents OOM / CPU exhaustion when many uploads arrive in quick succession.
+# Override with LECGAP_MAX_PIPELINE_JOBS (min 1, default 3).
+_MAX_PIPELINE_JOBS = max(1, int(os.getenv("LECGAP_MAX_PIPELINE_JOBS", "3")))
+_PIPELINE_SEMAPHORE = threading.BoundedSemaphore(_MAX_PIPELINE_JOBS)
+
 
 
 def _get_shared_classifier():
@@ -147,7 +156,14 @@ def _process_lecture(lecture_id: int, backend: str = None) -> None:
 
     ``backend`` ("groq"/"local"/None) maps onto transcribe()'s override — the
     upload endpoint surfaces whatever the user picked in the UI.
+
+    Concurrency-throttled by _PIPELINE_SEMAPHORE to prevent OOM/CPU exhaustion.
     """
+    with _PIPELINE_SEMAPHORE:
+        _process_lecture_inner(lecture_id, backend)
+
+
+def _process_lecture_inner(lecture_id: int, backend: str = None) -> None:
     update_lecture_progress(
         lecture_id, "initializing", 2, "Starting transcription job...",
         status="transcribing",
