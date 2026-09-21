@@ -8,6 +8,7 @@ on GPU/CV and by smoke tests, not in this unit suite (too slow for CI).
 """
 
 import numpy as np
+import pytest
 
 from backend.pipeline.fine_tune import _pair_text, build_train_triples
 
@@ -147,3 +148,67 @@ def test_predict_pairs_returns_one_logit_per_pair(monkeypatch):
     )
     assert out.shape == (2,)
     np.testing.assert_allclose(out, [0.5, -1.0], atol=1e-6)
+
+
+def test_predict_pairs_single_pair_keeps_batch_dim():
+    """SECURITY_AUDIT #20: a one-pair batch must not be double-unsqueezed.
+    The tokenizer already returns a [1, seq] batch, so predict_pairs must pass
+    it through unchanged (shape contract: one logit per pair)."""
+    import torch
+
+    class FakeModel:
+        def __init__(self):
+            self._calls = []
+
+        def parameters(self):
+            return iter([torch.nn.Parameter(torch.ones(1))])
+
+        def __call__(self, **enc):
+            self._calls.append(enc)
+
+            class _Out:
+                logits = torch.tensor([[0.7]])
+
+            return _Out()
+
+    class FakeTokenizer:
+        def __call__(self, texts, **kw):
+            return {
+                "input_ids": torch.zeros(len(texts), 4, dtype=torch.long),
+                "attention_mask": torch.ones(len(texts), 4, dtype=torch.long),
+            }
+
+    from backend.pipeline import fine_tune as ft
+
+    model = FakeModel()
+    out = ft.predict_pairs(model, FakeTokenizer(), [("A", "B")])
+    assert out.shape == (1,)
+    np.testing.assert_allclose(out, [0.7], atol=1e-6)
+    assert model._calls[0]["input_ids"].shape == (1, 4)  # batch dim untouched
+
+
+def test_validate_model_dir_rejects_unsafe_paths(tmp_path, monkeypatch):
+    """SECURITY_AUDIT #21: traversal and non-directories are refused, and an
+    optional trusted-roots allowlist is enforced."""
+    from backend.pipeline import fine_tune as ft
+
+    good = tmp_path / "ckpt"
+    good.mkdir()
+    assert ft._validate_model_dir(str(good)) == str(good.resolve())
+
+    file_path = tmp_path / "file.txt"
+    file_path.write_text("x")
+    with pytest.raises(ValueError):
+        ft._validate_model_dir(str(file_path))  # not a directory
+    with pytest.raises(ValueError):
+        ft._validate_model_dir(str(tmp_path / ".." / "escape"))
+    with pytest.raises(ValueError):
+        ft._validate_model_dir("")
+
+    # trusted-roots allowlist
+    other = tmp_path / "other"
+    other.mkdir()
+    monkeypatch.setenv("LECGAP_MODEL_ROOTS", str(good))
+    with pytest.raises(ValueError):
+        ft._validate_model_dir(str(other))
+    assert ft._validate_model_dir(str(good))

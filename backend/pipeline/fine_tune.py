@@ -18,6 +18,9 @@ Design:
 
 from typing import List, Optional, Sequence, Tuple
 
+import os
+from pathlib import Path
+
 import numpy as np
 
 from backend.pipeline.model_ids import EMBEDDING_MODEL, load_kwargs
@@ -164,10 +167,35 @@ def export_model(model, tokenizer, output_dir: str) -> str:
     return output_dir
 
 
+def _validate_model_dir(model_dir: str) -> str:
+    """Validate a model directory before handing it to transformers (#21).
+
+    Rejects NUL bytes and ``..`` traversal, requires an existing directory, and
+    — when ``LECGAP_MODEL_ROOTS`` is set (os.pathsep-separated) — requires the
+    resolved directory to live under one of those trusted roots.
+    """
+    raw = str(model_dir).strip()
+    if not raw or "\x00" in raw:
+        raise ValueError("model_dir must be a non-empty path")
+    p = Path(raw)
+    if ".." in p.parts:
+        raise ValueError(f"model_dir must not contain '..': {model_dir!r}")
+    resolved = p.resolve()
+    if not resolved.is_dir():
+        raise ValueError(f"model_dir is not a directory: {model_dir!r}")
+    roots = os.getenv("LECGAP_MODEL_ROOTS", "").strip()
+    if roots:
+        allowed = [Path(r).resolve() for r in roots.split(os.pathsep) if r.strip()]
+        if not any(resolved == root or root in resolved.parents for root in allowed):
+            raise ValueError(f"model_dir outside LECGAP_MODEL_ROOTS: {model_dir!r}")
+    return str(resolved)
+
+
 def load_model(model_dir: str, device: str = None):
     import torch
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+    model_dir = _validate_model_dir(model_dir)
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
     model = AutoModelForSequenceClassification.from_pretrained(model_dir)
@@ -185,9 +213,6 @@ def predict_pairs(model, tokenizer, pairs: Sequence[Tuple[str, str]]) -> np.ndar
     enc = tokenizer(texts, padding=True, truncation=True, max_length=128, return_tensors="pt")
     device = next(model.parameters()).device
     enc = {k: v.to(device) for k, v in enc.items()}
-    if len(texts) == 1:
-        for k in enc:
-            enc[k] = enc[k].unsqueeze(0)
     with torch.no_grad():
         logits = model(**enc).logits
     return logits.squeeze(-1).detach().cpu().numpy()
