@@ -40,6 +40,7 @@ CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
 # the object alive, so its id() can never be recycled into a stale collision.
 _GRAPH_CACHE: dict = {}
 _GRAPH_LOCK = threading.Lock()
+_GRAPH_CACHE_MAX = 128  # prevent unbounded memory growth
 
 
 def _validate_course_id(course_id: str) -> str:
@@ -175,6 +176,10 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
             (ed["source"], ed["target"]), ("classifier", None)
         )
     with _GRAPH_LOCK:
+        # Evict oldest entries when cache is full
+        if len(_GRAPH_CACHE) >= _GRAPH_CACHE_MAX:
+            oldest_key = next(iter(_GRAPH_CACHE))
+            _GRAPH_CACHE.pop(oldest_key, None)
         _GRAPH_CACHE[key] = (signature, result)
     return CourseGraphOut(course_id=course_id, **result)
 
