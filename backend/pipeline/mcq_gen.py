@@ -32,7 +32,13 @@ import re
 from typing import Dict, Iterable, Optional
 
 from backend.pipeline.llm import LLMResult, complete
-from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG, delimit_untrusted
+from backend.pipeline.prompt_guard import (
+    CLOSE_TAG,
+    DATA_GUARD,
+    OPEN_TAG,
+    delimit_untrusted,
+    neutralize_delimiters,
+)
 
 _SYSTEM = (
     "You are an expert educational-assessment writer. "
@@ -96,8 +102,8 @@ def _user_message(concept: str, context: str) -> str:
     """
     block = (
         f"{OPEN_TAG}\n"
-        f"Concept: {concept}\n"
-        f"Transcript excerpt:\n{context}\n"
+        f"Concept: {neutralize_delimiters(concept)}\n"
+        f"Transcript excerpt:\n{neutralize_delimiters(context)}\n"
         f"{CLOSE_TAG}"
     )
     return PROMPT.replace("__DATA__", block)

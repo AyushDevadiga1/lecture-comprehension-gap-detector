@@ -26,7 +26,12 @@ import re
 from typing import Dict, List, Optional
 
 from backend.pipeline.llm import complete
-from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
+from backend.pipeline.prompt_guard import (
+    CLOSE_TAG,
+    DATA_GUARD,
+    OPEN_TAG,
+    neutralize_delimiters,
+)
 
 # Only refine windows wider than this — a 90s window is already tight enough
 # to play and doesn't need a paid/rate-limited LLM call.
@@ -138,8 +143,9 @@ def _refine_one(name: str, cs: float, ce: float, segs: List, completer) -> Optio
     try:
         block = (
             f"{OPEN_TAG}\n"
-            f"Concept: {name}\n"
-            f"Transcript excerpt:\n{_bounded_excerpt(segs, name, MAX_EXCERPT_CHARS)}\n"
+            f"Concept: {neutralize_delimiters(name)}\n"
+            f"Transcript excerpt:\n"
+            f"{neutralize_delimiters(_bounded_excerpt(segs, name, MAX_EXCERPT_CHARS))}\n"
             f"{CLOSE_TAG}"
         )
         result = completer(
