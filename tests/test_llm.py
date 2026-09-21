@@ -184,3 +184,30 @@ def test_cache_put_uses_insert_not_ignore_idempotent(monkeypatch):
         row = s.get(dbmod.LLMCache, key)
         assert row is not None
         assert row.response_text == "first"
+
+
+def test_cache_get_expires_rows_past_ttl(monkeypatch):
+    """SECURITY_AUDIT #16: cached completions expire and are purged once they
+    exceed the configured TTL."""
+    from datetime import datetime, timedelta, timezone
+
+    from backend.models import db as dbmod
+    from backend.pipeline import llm
+
+    key_fresh = llm._cache_key(llm.GROQ_MODEL, "sys", "fresh", 100, 0.0)
+    key_stale = llm._cache_key(llm.GROQ_MODEL, "sys", "stale", 100, 0.0)
+    fresh = llm.LLMResult("keep", "groq", "model-x", False, 1, 1)
+    stale = llm.LLMResult("drop", "groq", "model-x", False, 1, 1)
+    llm._cache_put(key_fresh, fresh)
+    llm._cache_put(key_stale, stale)
+
+    with dbmod.SessionLocal() as s:
+        s.get(dbmod.LLMCache, key_stale).created_at = (
+            datetime.now(timezone.utc) - timedelta(seconds=llm.LLM_CACHE_TTL_S + 60)
+        )
+        s.commit()
+
+    assert llm._cache_get(key_fresh) is not None
+    assert llm._cache_get(key_stale) is None
+    with dbmod.SessionLocal() as s:  # stale row is purged from the table
+        assert s.get(dbmod.LLMCache, key_stale) is None

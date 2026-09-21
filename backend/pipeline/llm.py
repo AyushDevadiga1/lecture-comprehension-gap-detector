@@ -23,6 +23,7 @@ import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Iterator, Optional
 
 import requests
@@ -35,6 +36,9 @@ OLLAMA_MODEL = os.getenv("LECGAP_OLLAMA_MODEL", "llama3.2")
 OLLAMA_BASE_URL = os.getenv("LECGAP_OLLAMA_URL", "http://127.0.0.1:11434")
 MAX_RETRIES = int(os.getenv("LECGAP_LLM_RETRIES", "2"))
 SLEEP_CAP_S = float(os.getenv("LECGAP_LLM_SLEEP_CAP_S", "120"))
+# Cached completions may embed lecture content (potentially student-identifying
+# in refine runs), so rows expire after this many seconds (default 30 days).
+LLM_CACHE_TTL_S = float(os.getenv("LECGAP_LLM_CACHE_TTL_S", str(30 * 24 * 3600)))
 
 
 @dataclass
@@ -71,11 +75,34 @@ def _from_cache(hit: LLMCache) -> LLMResult:
     )
 
 
+def _cache_age_s(row: LLMCache) -> Optional[float]:
+    """Seconds since the row was written (None when it has no timestamp).
+
+    SQLite returns naive datetimes even for timezone-aware columns, so both
+    sides are normalised to naive UTC before subtracting.
+    """
+    then = row.created_at
+    if then is None:
+        return None
+    if then.tzinfo is not None:
+        then = then.astimezone(timezone.utc).replace(tzinfo=None)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    return (now - then).total_seconds()
+
+
 def _cache_get(key: str) -> Optional[LLMCache]:
     with SessionLocal() as db:
         row = db.get(LLMCache, key)
-        if row is not None:
-            db.expunge(row)
+        if row is None:
+            return None
+        # Expire stale rows instead of replaying (possibly sensitive) content
+        # forever (SECURITY_AUDIT #16).
+        age = _cache_age_s(row)
+        if age is not None and age > LLM_CACHE_TTL_S:
+            db.delete(row)
+            db.commit()
+            return None
+        db.expunge(row)
         return row
 
 
