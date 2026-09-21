@@ -5,7 +5,7 @@ the route module stays thin. Pure declarations; no imports from routes/workers.
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SegmentOut(BaseModel):
@@ -144,13 +144,13 @@ class QuizAnswerIn(BaseModel):
     only what it *selected* — the `correct` flag is deliberately not accepted
     for input (a client-reported key would defeat the quiz)."""
     question_id: int
-    selected: Optional[str] = None
-    latency_s: Optional[float] = None
+    selected: Optional[str] = Field(None, max_length=1000)
+    latency_s: Optional[float] = Field(None, ge=0.0, le=86400.0)
 
 
 class QuizSubmitIn(BaseModel):
-    course_id: str
-    student_id: str
+    course_id: str = Field(..., max_length=128, pattern=r"^[\w\-]+$")
+    student_id: str = Field(..., max_length=128, pattern=r"^[\w\-@.]+$")
     answers: List[QuizAnswerIn]
 
 

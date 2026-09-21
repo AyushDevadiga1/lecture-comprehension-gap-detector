@@ -1372,3 +1372,42 @@ def test_list_lectures_respects_limit_offset(api):
     assert [l["id"] for l in page] == [l["id"] for l in all_rows][1:3]
     assert client.get("/lectures", params={"limit": 0}).status_code == 400
     assert client.get("/lectures", params={"offset": -1}).status_code == 400
+
+
+# ------------------------------------------------------- input bounds (schemas)
+
+def test_quiz_input_bounds_are_enforced(api):
+    """Schema/query bounds reject oversized and out-of-range input
+    (SECURITY_AUDIT #23)."""
+    client, Session = api
+    lid = _add_lecture(Session, course_id="ml1", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.2,
+                                       end_s=0.8, text="the A concept is alpha"))
+        s.commit()
+    quiz = client.post("/quizzes", json={"course_id": "ml1", "student_id": "s1"})
+    assert quiz.status_code == 201
+    qid = quiz.json()["questions"][0]["id"]
+
+    # oversized selected option
+    r = client.post("/quizzes/submit", json={
+        "course_id": "ml1", "student_id": "s1",
+        "answers": [{"question_id": qid, "selected": "x" * 1001}]})
+    assert r.status_code == 422
+
+    # negative / absurd latency
+    for bad in (-1.0, 90000.0):
+        r = client.post("/quizzes/submit", json={
+            "course_id": "ml1", "student_id": "s1",
+            "answers": [{"question_id": qid, "selected": "opt", "latency_s": bad}]})
+        assert r.status_code == 422
+
+    # invalid course/student id patterns
+    assert client.post("/quizzes", json={
+        "course_id": "../etc", "student_id": "s1"}).status_code == 422
+    assert client.post("/quizzes", json={
+        "course_id": "ml1", "student_id": "a b"}).status_code == 422
+    assert client.get("/students/s1/remediation",
+                      params={"course_id": "../etc"}).status_code == 422

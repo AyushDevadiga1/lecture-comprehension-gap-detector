@@ -4,7 +4,7 @@ is computed from quiz responses."""
 
 from bisect import bisect_left
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Path, Query
 
 from backend.api import workers
 from backend.api.routes.courses import _course_graph_dict, get_course_graph
@@ -32,7 +32,10 @@ router = APIRouter(tags=["quizzes"])
 
 
 @router.post("/quizzes", response_model=QuizOut, status_code=201)
-def create_quiz(course_id: str = Body(...), student_id: str = Body(...)) -> QuizOut:
+def create_quiz(
+    course_id: str = Body(..., max_length=128, pattern=r"^[\w\-]+$"),
+    student_id: str = Body(..., max_length=128, pattern=r"^[\w\-@.]+$"),
+) -> QuizOut:
     """Build a graded MCQ quiz from a course's extracted concepts.
 
     Each question (Stage 6b/6c) is written by the cached LLM from the
@@ -301,7 +304,10 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
 
 
 @router.get("/students/{student_id}/remediation", response_model=QuizSubmitOut)
-def get_remediation(student_id: str, course_id: str) -> QuizSubmitOut:
+def get_remediation(
+    student_id: str = Path(..., max_length=128, pattern=r"^[\w\-@.]+$"),
+    course_id: str = Query(..., max_length=128, pattern=r"^[\w\-]+$"),
+) -> QuizSubmitOut:
     """Dependency-ordered remediation for a student's latest quiz on a course.
 
     Failed concepts (= wrong answers) are lifted with everything upstream of
