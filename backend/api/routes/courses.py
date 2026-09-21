@@ -42,6 +42,20 @@ _GRAPH_CACHE: dict = {}
 _GRAPH_LOCK = threading.Lock()
 
 
+def _validate_course_id(course_id: str) -> str:
+    """Reject course_id values that could produce SQL/path injection vectors.
+
+    Allows alphanumeric characters, hyphens, and underscores only.
+    Raises HTTP 422 for anything that doesn't match.
+    """
+    import re as _re
+    if not _re.fullmatch(r"[\w\-]{1,128}", course_id):
+        raise HTTPException(
+            status_code=422, detail="course_id must be 1-128 alphanumeric/hyphen/underscore chars"
+        )
+    return course_id
+
+
 def _graph_signature(db, course_id: str) -> tuple:
     """Cheap fingerprint of a course's persisted graph rows (counts + max id).
     Any rebuild/delete changes at least one field, forcing a cache rebuild."""
@@ -124,6 +138,7 @@ def get_course_graph(course_id: str) -> CourseGraphOut:
     frequent polls skip the ORM hydration + cycle resolution until the graph
     actually changes.
     """
+    course_id = _validate_course_id(course_id)
     with SessionLocal() as db:
         signature = _graph_signature(db, course_id)
         key = (SessionLocal, course_id)
@@ -193,6 +208,7 @@ def build_course_graph(
     lecture (the UI's selected one) so the Streamlit progress monitor has a
     row to watch and a `ready` terminal state.
     """
+    course_id = _validate_course_id(course_id)
     background_tasks.add_task(
         workers._build_course_graph_worker, course_id.strip(), lecture_id
     )
@@ -210,6 +226,7 @@ def course_stats(course_id: str) -> dict:
     should be LEARNED (topological). Concepts with a big gap are the
     divergence view.
     """
+    course_id = _validate_course_id(course_id)
     with SessionLocal() as db:
         # M5: aggregate the heatmap in SQL instead of hydrating every
         # QuizResponse row into Python (previously all course responses were
@@ -277,7 +294,7 @@ def course_stats(course_id: str) -> dict:
 def delete_course(course_id: str) -> CourseDeleteOut:
     """Nuke a course: every DB row (lectures + course-scoped graph/questions/
     responses via workers.purge_course) plus raw media and cut clips on disk."""
-    course_id = course_id.strip()
+    course_id = _validate_course_id(course_id.strip())
 
     with SessionLocal() as db:
         lecs = (
