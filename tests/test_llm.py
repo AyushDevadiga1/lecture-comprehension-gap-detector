@@ -103,13 +103,25 @@ def test_complete_calls_groq_then_falls_back_to_ollama(monkeypatch):
     assert result.text == "ollama-answer"
 
 
-def test_backend_status_reports_configured_flags():
+def test_backend_status_detailed_reports_configured_flags():
     from backend.pipeline import llm
 
-    st = llm.backend_status()
+    st = llm.backend_status_detailed()
     assert "groq_configured" in st
     assert "ollama_reachable" in st
     assert isinstance(st["groq_configured"], bool)
+
+
+def test_public_backend_status_hides_provider_configuration():
+    """SECURITY_AUDIT #15: the public probe must not disclose provider/model
+    names or whether a given secret is configured."""
+    from backend.pipeline import llm
+
+    public = llm.backend_status()
+    assert set(public) == {"any_backend_available"}
+    assert isinstance(public["any_backend_available"], bool)
+    for leaked in ("groq_configured", "groq_model", "ollama_model", "ollama_reachable"):
+        assert leaked not in public
 
 
 def test_parse_reset_seconds_handles_all_units():

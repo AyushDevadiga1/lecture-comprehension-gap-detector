@@ -285,11 +285,29 @@ def complete(
     )
 
 
-def backend_status() -> dict:
-    """Cheap availability probe for /health and the frontend."""
+def backend_status_detailed() -> dict:
+    """Detailed availability probe — internal/admin use only.
+
+    Discloses which providers/models are configured, so it must not be served
+    from the public /health endpoint (SECURITY_AUDIT #15).
+    """
     return {
         "groq_configured": bool(os.getenv("GROQ_API_KEY")),
         "ollama_reachable": _ollama_reachable(),
         "groq_model": GROQ_MODEL,
         "ollama_model": OLLAMA_MODEL,
+    }
+
+
+def backend_status() -> dict:
+    """Public, sanitized availability probe for /health.
+
+    Reports only whether some LLM backend is usable right now; it never leaks
+    provider names, model names, or whether a particular secret is set.
+    """
+    detailed = backend_status_detailed()
+    return {
+        "any_backend_available": bool(
+            detailed["groq_configured"] or detailed["ollama_reachable"]
+        )
     }

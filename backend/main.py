@@ -16,7 +16,7 @@ from starlette.responses import JSONResponse
 
 from backend.api import routes
 from backend.models.db import init_db
-from backend.pipeline.llm import backend_status
+from backend.pipeline.llm import backend_status, backend_status_detailed
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
@@ -62,9 +62,17 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 @app.get("/health")
 def health():
-    """Basic liveness check + which LLM backends are usable right now."""
+    """Basic liveness check. Public: reports only aggregate LLM availability,
+    never provider/model names or which secrets are configured (#15)."""
     return {
         "status": "ok",
         "service": "lecgap-backend",
         "llm_backends": backend_status(),
     }
+
+
+@app.get("/llm/backends")
+def llm_backends():
+    """Detailed backend/config probe. Kept off the public /health payload and,
+    when LECGAP_API_KEY is set, guarded by the auth middleware (#15)."""
+    return {"llm_backends": backend_status_detailed()}

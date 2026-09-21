@@ -1429,3 +1429,21 @@ def test_question_out_shuffles_options_per_call():
         assert set(out.options) == {"right", "w1", "w2", "w3"}
         positions.add(out.options.index("right"))
     assert len(positions) > 1
+
+
+def test_health_does_not_leak_backend_configuration(api, monkeypatch):
+    """SECURITY_AUDIT #15: /health is public and must stay aggregate-only;
+    detailed provider/model info lives on the guarded /llm/backends route."""
+    client, _ = api
+    monkeypatch.setenv("GROQ_API_KEY", "secret-value")
+    health = client.get("/health").json()
+    assert health["llm_backends"] == {
+        "any_backend_available": health["llm_backends"]["any_backend_available"]
+    }
+    body = str(health)
+    assert "groq" not in body.lower()
+    assert "secret-value" not in body
+    assert "llama" not in body.lower()
+
+    detailed = client.get("/llm/backends").json()["llm_backends"]
+    assert detailed["groq_configured"] is True
