@@ -174,7 +174,7 @@ flowchart LR
 
     %% -------------------- API surface --------------------
     API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health"]
-    R["backend/api/routes/ · HTTP endpoints<br/>upload · concepts · clips · graph · quiz · stats<br/>background workers in api/workers.py"]
+    R["backend/api/routes/ · HTTP endpoints<br/>upload · concepts · clips · graph · quiz · stats<br/>background jobs in api/jobs/"]
 
     %% -------------------- Storage --------------------
     DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache · concepts<br/>passages · lecture_links · graph · clips · quiz · responses")]
@@ -196,7 +196,7 @@ flowchart LR
     BG["build_graph.py · Stage 4<br/>prerequisite DAG · cycle fix · learning order"]
     SC["segment_clips.py · Stage 5<br/>one video clip per concept teach-span"]
     QZ["quiz.py · Stage 6<br/>passage-grounded words · remediation watch-list"]
-    RF["refine.py · Stage 7<br/>LLM personas · recovery-metric validation"]
+    RF["experiments/refine.py · Stage 7<br/>LLM personas · recovery-metric validation"]
 
     %% -------------------- Flow --------------------
     GK --> GROQCHAT
