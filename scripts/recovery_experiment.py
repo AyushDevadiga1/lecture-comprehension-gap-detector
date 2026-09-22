@@ -13,7 +13,7 @@ Flow:
      persona is prompted to roleplay a student taught a randomized subset of
      the hidden graph's concepts, then genuinely attempts a knowledge-check
      for every concept given that taught set — producing realistic, patterned
-     errors driven by its gaps (see backend/pipeline/refine.py
+     errors driven by its gaps (see experiments/refine.py
      generate_synthetic_students).
   3. A noisy "guessed" graph (the pipeline-like guess, imperfect).
   4. run_refinement_round improves guessed edge confidences from the
@@ -41,7 +41,7 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(REPO / ".env")
 
-from backend.pipeline.refine import (  # noqa: E402
+from experiments.refine import (  # noqa: E402
     generate_synthetic_students,
     run_refinement_round,
     score_recovery,

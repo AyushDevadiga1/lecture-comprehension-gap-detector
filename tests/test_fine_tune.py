@@ -1,4 +1,4 @@
-"""Unit tests for backend/pipeline/fine_tune.py (Phase 3 fine-tuning helpers).
+"""Unit tests for experiments/fine_tune.py (Phase 3 fine-tuning helpers).
 
 Covers the pure/cheap logic (build_train_triples undersampling) and the
 model-IO boundary (pair formatting, export/load round-trip, prediction shape)
@@ -10,7 +10,7 @@ on GPU/CV and by smoke tests, not in this unit suite (too slow for CI).
 import numpy as np
 import pytest
 
-from backend.pipeline.fine_tune import _pair_text, build_train_triples
+from experiments.fine_tune import _pair_text, build_train_triples
 
 
 def test_build_train_triples_undersamples_negatives():
@@ -64,7 +64,7 @@ def test_export_model_saves_both_and_returns_dir(tmp_path):
             saved.append((out_dir, type(self).__name__))
 
     out = tmp_path / "ckpt"
-    from backend.pipeline import fine_tune as ft
+    from experiments import fine_tune as ft
 
     result = ft.export_model(FakeSaver(), FakeSaver(), str(out))
     assert result == str(out)
@@ -72,7 +72,7 @@ def test_export_model_saves_both_and_returns_dir(tmp_path):
 
 
 def test_load_model_reinstates_classifier_and_tokenizer(monkeypatch, tmp_path):
-    from backend.pipeline import fine_tune as ft
+    from experiments import fine_tune as ft
 
     created = []
 
@@ -140,7 +140,7 @@ def test_predict_pairs_returns_one_logit_per_pair(monkeypatch):
                 "attention_mask": torch.ones(n, 4, dtype=torch.long),
             }
 
-    from backend.pipeline import fine_tune as ft
+    from experiments import fine_tune as ft
 
     model = FakeModel()
     out = ft.predict_pairs(
@@ -178,7 +178,7 @@ def test_predict_pairs_single_pair_keeps_batch_dim():
                 "attention_mask": torch.ones(len(texts), 4, dtype=torch.long),
             }
 
-    from backend.pipeline import fine_tune as ft
+    from experiments import fine_tune as ft
 
     model = FakeModel()
     out = ft.predict_pairs(model, FakeTokenizer(), [("A", "B")])
@@ -190,7 +190,7 @@ def test_predict_pairs_single_pair_keeps_batch_dim():
 def test_validate_model_dir_rejects_unsafe_paths(tmp_path, monkeypatch):
     """SECURITY_AUDIT #21: traversal and non-directories are refused, and an
     optional trusted-roots allowlist is enforced."""
-    from backend.pipeline import fine_tune as ft
+    from experiments import fine_tune as ft
 
     good = tmp_path / "ckpt"
     good.mkdir()

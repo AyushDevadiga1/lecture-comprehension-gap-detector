@@ -56,12 +56,6 @@ def test_select_remediation_sequence_empty_failed():
     assert select_remediation_sequence(graph, failed=[]) == []
 
 
-def test_order_quiz_passthrough():
-    from backend.pipeline.quiz import order_quiz
-
-    assert order_quiz(["A", "B", "C"]) == ["A", "B", "C"]
-
-
 # ---------------------------------------------------- MCQ generation (Stage 6b)
 
 def test_make_mcq_uses_lecture_evidence_as_answer():
@@ -146,7 +140,7 @@ def test_make_mcq_fallback_uses_concept_names_as_options():
 # --------------------------------------------------------- refinement (Stage 7)
 
 def test_run_refinement_round_reinforces_co_failures():
-    from backend.pipeline.refine import run_refinement_round
+    from experiments.refine import run_refinement_round
 
     graph = {
         "edges": [{"source": "A", "target": "B", "confidence": 0.5}],
@@ -160,7 +154,7 @@ def test_run_refinement_round_reinforces_co_failures():
 
 
 def test_run_refinement_round_sinks_spurious_edge():
-    from backend.pipeline.refine import run_refinement_round
+    from experiments.refine import run_refinement_round
 
     graph = {
         "edges": [{"source": "A", "target": "B", "confidence": 0.7}],
@@ -173,7 +167,7 @@ def test_run_refinement_round_sinks_spurious_edge():
 
 
 def test_run_refinement_round_no_failures_is_neutral():
-    from backend.pipeline.refine import run_refinement_round
+    from experiments.refine import run_refinement_round
 
     graph = {
         "edges": [{"source": "A", "target": "B", "confidence": 0.6}],
@@ -206,7 +200,7 @@ def _fake_completer(pass_set):
 
 
 def test_generate_synthetic_students_collects_passes_fails():
-    from backend.pipeline.refine import generate_synthetic_students
+    from experiments.refine import generate_synthetic_students
 
     hidden = {
         "edges": [
@@ -228,7 +222,7 @@ def test_generate_synthetic_students_collects_passes_fails():
 
 
 def test_generate_synthetic_students_empty_graph():
-    from backend.pipeline.refine import generate_synthetic_students
+    from experiments.refine import generate_synthetic_students
 
     assert generate_synthetic_students({"edges": []}, n=4, completer=_fake_completer(set())) == []
 
@@ -238,7 +232,7 @@ def test_generate_synthetic_students_guard_and_delimit():
     topic set and the concept-under-test block (lecture-derived names are
     untrusted data), while keeping `Topic under test:` parseable."""
     from backend.pipeline.prompt_guard import CLOSE_TAG, DATA_GUARD, OPEN_TAG
-    from backend.pipeline.refine import generate_synthetic_students
+    from experiments.refine import generate_synthetic_students
 
     seen = {"system": None, "user": None}
 
@@ -259,7 +253,7 @@ def test_generate_synthetic_students_guard_and_delimit():
 
 
 def test_concepts_of_includes_sources_and_targets():
-    from backend.pipeline.refine import _concepts_of
+    from experiments.refine import _concepts_of
 
     g = {"edges": [{"source": "A", "target": "B", "confidence": 1.0},
                    {"source": "B", "target": "C", "confidence": 1.0}]}
@@ -269,7 +263,7 @@ def test_concepts_of_includes_sources_and_targets():
 # ----------------------------------------------------------- scoring (Claim 2)
 
 def test_score_recovery_edge_accuracy():
-    from backend.pipeline.refine import score_recovery
+    from experiments.refine import score_recovery
 
     guessed = {
         "edges": [

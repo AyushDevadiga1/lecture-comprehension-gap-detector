@@ -24,8 +24,17 @@ OUT = REPO / "plan" / "FUNCTION_MAP.md"
 
 MODULES = [
     "backend/main.py",
+    "backend/config.py",
     "backend/api/schemas.py",
-    "backend/api/workers.py",
+    "backend/api/queries.py",
+    "backend/api/graphs.py",
+    "backend/api/jobs/common.py",
+    "backend/api/jobs/progress.py",
+    "backend/api/jobs/transcribe.py",
+    "backend/api/jobs/extract.py",
+    "backend/api/jobs/clips.py",
+    "backend/api/jobs/graph.py",
+    "backend/api/jobs/purge.py",
     "backend/api/routes/__init__.py",
     "backend/api/routes/lectures.py",
     "backend/api/routes/courses.py",
@@ -36,10 +45,10 @@ MODULES = [
     "backend/pipeline/extract_concepts.py",
     "backend/pipeline/passages.py",
     "backend/pipeline/classify_prerequisites.py",
-    "backend/pipeline/fine_tune.py",
     "backend/pipeline/build_graph.py",
     "backend/pipeline/segment_clips.py",
-    "backend/pipeline/refine.py",
+    "experiments/fine_tune.py",
+    "experiments/refine.py",
     "frontend/app.py",
 ]
 

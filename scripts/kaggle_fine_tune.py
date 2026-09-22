@@ -36,7 +36,7 @@ from sklearn.model_selection import StratifiedKFold
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from backend.pipeline.fine_tune import (
+from experiments.fine_tune import (
     build_train_triples,
     export_model,
     fine_tune_cross_encoder,
@@ -243,7 +243,7 @@ def main():
 
     base_model = args.base_model
     if base_model is None:
-        from backend.pipeline.fine_tune import _DEF_BASE
+        from experiments.fine_tune import _DEF_BASE
         base_model = _DEF_BASE
     print(f"Backbone: {base_model}", flush=True)
 

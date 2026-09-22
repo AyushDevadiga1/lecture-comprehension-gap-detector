@@ -27,12 +27,12 @@ MODULES = {
     "backend.pipeline.llm": ("LLM access layer", "#ff9800"),
     "backend.pipeline.transcribe": ("Phase 1", "#4caf50"),
     "backend.pipeline.extract_concepts": ("Phase 2 (+2b)", "#2196f3"),
-    "backend.pipeline.fine_tune": ("Phase 3 infra", "#795548"),
+    "experiments.fine_tune": ("Phase 3 infra", "#795548"),
     "backend.pipeline.classify_prerequisites": ("Phase 3", "#8bc34a"),
     "backend.pipeline.build_graph": ("Phase 4", "#8bc34a"),
     "backend.pipeline.segment_clips": ("Phase 5", "#8bc34a"),
     "backend.pipeline.quiz": ("Phase 6", "#8bc34a"),
-    "backend.pipeline.refine": ("Phase 7", "#8bc34a"),
+    "experiments.refine": ("Phase 7", "#8bc34a"),
     "frontend.app": ("Frontend shell", "#3f51b5"),
 }
 

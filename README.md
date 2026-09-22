@@ -112,7 +112,7 @@ this infrastructure is stable.
   question, the API returns the *correct learning order* built from the
   prerequisite graph:
   - `backend/pipeline/quiz.py` — `select_remediation_sequence` (transitive
-    upstream closure, ordered by learner order) + `order_quiz`.
+    upstream closure, ordered by learner order).
   - DB: `quiz_questions` + `quiz_responses` tables.
   - MCQ writers are grounded on the concept's **teaching passage** (the
     structure pass's joined excerpt) with the old `local_context` window as
@@ -122,7 +122,7 @@ this infrastructure is stable.
     `GET /courses/{id}/stats`.
 - **Phase 7 — Refinement loop + synthetic-student validation (core claim): done.**
   The learned graph improves from *real* quiz performance signals —
-  `backend/pipeline/refine.py`. `run_refinement_round` applies the plan's
+  `experiments/refine.py`. `run_refinement_round` applies the plan's
   directional **co-failure** rule: if students consistently *fail* concept B
   right after also struggling with concept A, that edge A→B is reinforced;
   if they fail A but are fine with B, the edge is sunk. `generate_synthetic_students`
