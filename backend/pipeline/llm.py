@@ -17,7 +17,6 @@ where the answer came from and what it cost.
 """
 
 import hashlib
-import os
 import re
 import threading
 import time
@@ -31,14 +30,18 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from backend.models.db import LLMCache, SessionLocal
 
-GROQ_MODEL = os.getenv("LECGAP_GROQ_MODEL", "openai/gpt-oss-20b")
-OLLAMA_MODEL = os.getenv("LECGAP_OLLAMA_MODEL", "llama3.2")
-OLLAMA_BASE_URL = os.getenv("LECGAP_OLLAMA_URL", "http://127.0.0.1:11434")
-MAX_RETRIES = int(os.getenv("LECGAP_LLM_RETRIES", "2"))
-SLEEP_CAP_S = float(os.getenv("LECGAP_LLM_SLEEP_CAP_S", "120"))
+from backend.config import (
+    GROQ_MODEL,
+    LLM_CACHE_TTL_S,
+    LLM_MAX_RETRIES as MAX_RETRIES,
+    LLM_SLEEP_CAP_S as SLEEP_CAP_S,
+    OLLAMA_BASE_URL,
+    OLLAMA_MODEL,
+    groq_api_key,
+)
+
 # Cached completions may embed lecture content (potentially student-identifying
 # in refine runs), so rows expire after this many seconds (default 30 days).
-LLM_CACHE_TTL_S = float(os.getenv("LECGAP_LLM_CACHE_TTL_S", str(30 * 24 * 3600)))
 
 
 @dataclass
@@ -292,7 +295,7 @@ def complete(
         for attempt in range(3):  # a backend can return an empty completion; retry
             for name, caller in (("groq", lambda: _call_groq(system, user, max_tokens, temperature)),
                                  ("ollama", lambda: _call_ollama(system, user, max_tokens, temperature))):
-                if name == "groq" and not os.getenv("GROQ_API_KEY"):
+                if name == "groq" and not groq_api_key():
                     continue
                 if name == "ollama" and not _ollama_reachable():
                     errors.append("ollama: not reachable")
@@ -319,7 +322,7 @@ def backend_status_detailed() -> dict:
     from the public /health endpoint (SECURITY_AUDIT #15).
     """
     return {
-        "groq_configured": bool(os.getenv("GROQ_API_KEY")),
+        "groq_configured": bool(groq_api_key()),
         "ollama_reachable": _ollama_reachable(),
         "groq_model": GROQ_MODEL,
         "ollama_model": OLLAMA_MODEL,

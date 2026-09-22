@@ -39,21 +39,19 @@ _RENDER_ARGS = [
     "-c:a", "aac", "-b:a", "96k",
     "-movflags", "+faststart",
 ]
-_REENCODE_THRESHOLD_S = 120.0
+
+from backend.config import (
+    clip_reencode_threshold_s,
+    clip_streamcopy_enabled,
+    clip_workers,
+)
 
 
 def _codec_args(span_s=None) -> List[str]:
-    if os.getenv("LECGAP_CLIP_STREAMCOPY", "").strip().lower() in {"1", "true", "yes"}:
+    if clip_streamcopy_enabled():
         return ["-c", "copy"]
-    if span_s is not None:
-        try:
-            threshold = float(
-                os.getenv("LECGAP_CLIP_REENCODE_THRESHOLD_S", _REENCODE_THRESHOLD_S)
-            )
-        except ValueError:
-            threshold = _REENCODE_THRESHOLD_S
-        if span_s > threshold:
-            return ["-c", "copy"]
+    if span_s is not None and span_s > clip_reencode_threshold_s():
+        return ["-c", "copy"]
     return _RENDER_ARGS
 
 _INVALID_CHARS = re.compile(r"[^\w\- .]")
@@ -142,12 +140,9 @@ def _default_workers() -> int:
     """Concurrent clip cuts. Each ffmpeg process is its own CPU-bound decode
     + libx264 encode, so tiling them across cores is a near-linear wall-clock
     win. LECGAP_CLIP_WORKERS overrides; default = min(4, logical cores)."""
-    env = os.getenv("LECGAP_CLIP_WORKERS", "").strip()
-    if env:
-        try:
-            return max(1, int(env))
-        except ValueError:
-            pass
+    env = clip_workers()
+    if env is not None:
+        return env
     return max(1, min(4, (os.cpu_count() or 1)))
 
 

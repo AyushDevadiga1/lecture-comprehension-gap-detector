@@ -16,12 +16,7 @@ values (see ``load_kwargs``), so the running pipeline never silently switches
 to a moved hub artifact.
 """
 
-import os
-
-EMBEDDING_MODEL = os.getenv(
-    "LECGAP_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
-)
-EMBEDDING_REVISION = os.getenv("LECGAP_EMBEDDING_REVISION", "") or None
+from backend.config import EMBEDDING_MODEL, EMBEDDING_REVISION
 
 
 def load_kwargs(model: str = None) -> dict:

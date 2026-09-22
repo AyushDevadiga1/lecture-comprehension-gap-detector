@@ -29,10 +29,14 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import re
 from typing import Dict, List, Optional
 
+from backend.config import (
+    STRUCTURE_MAX_TOKENS as MAX_TOKENS,
+    STRUCTURE_OVERLAP_FRAC as OVERLAP_FRAC,
+    STRUCTURE_WINDOW_CHARS as WINDOW_CHARS,
+)
 from backend.pipeline.llm import complete
 from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 
@@ -41,13 +45,10 @@ from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 # straddling a boundary is visible in both windows (merge collapses the copy).
 # Both are overridable from the environment so a deployment can trade context
 # for call count without code changes.
-WINDOW_CHARS = int(os.getenv("LECGAP_STRUCTURE_WINDOW_CHARS", "8000"))
-OVERLAP_FRAC = float(os.getenv("LECGAP_STRUCTURE_OVERLAP_FRAC", "0.25"))
 # Output bounds keep each completion small and deterministic.
 MAX_PASSAGES = 4
 MAX_CONCEPTS_PER_PASSAGE = 6
 MAX_LINKS = 8
-MAX_TOKENS = int(os.getenv("LECGAP_STRUCTURE_MAX_TOKENS", "3000"))
 # LLM output is untrusted: bound every string that reaches the DB/UI (#17).
 MAX_TITLE_CHARS = 200
 MAX_NAME_CHARS = 120

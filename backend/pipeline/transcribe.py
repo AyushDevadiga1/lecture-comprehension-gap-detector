@@ -36,25 +36,24 @@ import time
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+from backend.config import (
+    GROQ_WHISPER_MAX_CHUNK_S as GROQ_MAX_CHUNK_S,
+    GROQ_WHISPER_MODEL,
+    GROQ_WHISPER_UPLOAD_LIMIT as GROQ_UPLOAD_LIMIT,
+    MEDIA_ROOT_DIR,
+    WHISPER_BACKEND as BACKEND,
+    WHISPER_MODEL as MODEL_SIZE,
+    WHISPER_MAX_RETRIES as MAX_TRANSCRIBE_RETRIES,
+    WHISPER_500_BACKOFF_S as TRANSCRIBE_500_BACKOFF_S,
+    groq_api_key,
+    snap_silence_enabled,
+    whisper_backend_override,
+)
 from backend.pipeline.llm import SLEEP_CAP_S, _parse_reset_seconds
-
-BACKEND = os.getenv("WHISPER_BACKEND", "local")
 
 # All real media is uploaded under <repo>/data/raw; anything outside that tree
 # is not something this pipeline should hand to ffmpeg/Whisper.
-MEDIA_ROOT = (Path(__file__).resolve().parents[2] / "data").resolve()
-MODEL_SIZE = os.getenv("WHISPER_MODEL", "base")
-GROQ_WHISPER_MODEL = os.getenv("GROQ_WHISPER_MODEL", "whisper-large-v3-turbo")
-GROQ_UPLOAD_LIMIT = int(
-    os.getenv("GROQ_WHISPER_UPLOAD_LIMIT", str(24 * 1024 * 1024))  # 24 MiB — conservative, auto-chunked anyway
-)
-# Hard per-request duration cap. Groq's Whisper can return HTTP 500 on some
-# longer single chunks (observed at ~560 s on a 21-min lecture), even though
-# shorter slices of the same audio pass — so split unconditionally to a
-# proven-safe length. Tune with GROQ_WHISPER_MAX_CHUNK_S.
-GROQ_MAX_CHUNK_S = int(os.getenv("GROQ_WHISPER_MAX_CHUNK_S", "300"))
-MAX_TRANSCRIBE_RETRIES = int(os.getenv("LECGAP_WHISPER_RETRIES", "2"))
-TRANSCRIBE_500_BACKOFF_S = float(os.getenv("LECGAP_WHISPER_500_BACKOFF", "5"))
+MEDIA_ROOT = MEDIA_ROOT_DIR.resolve()
 
 _model_cache: Dict[str, object] = {}
 
@@ -189,7 +188,7 @@ def _split_flac(flac_path: str, chunk_dir: str, chunk_s: int,
     """
     if not duration:
         duration = _probe_duration(flac_path)
-    snap = snap_silence or os.getenv("LECGAP_SNAP_SILENCE", "").strip().lower() in {"1", "true", "yes"}
+    snap = snap_silence or snap_silence_enabled()
     chunks: List[Tuple[str, float]] = []
     start = 0.0
     idx = 0
@@ -299,7 +298,7 @@ def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, 
 def _transcribe_groq(
     media_path: str, progress_callback=None
 ) -> List[Dict[str, float | str]]:
-    if not os.getenv("GROQ_API_KEY"):
+    if not groq_api_key():
         raise RuntimeError(
             "WHISPER_BACKEND=groq needs GROQ_API_KEY set (see .env). "
             "Set WHISPER_BACKEND=local to use the offline backend."
@@ -368,7 +367,7 @@ def transcribe(
     """
     selected_backend = backend or BACKEND
     media_path = _validate_media_path(media_path)
-    if not backend and not os.getenv("WHISPER_BACKEND") and os.getenv("GROQ_API_KEY"):
+    if not backend and not whisper_backend_override() and groq_api_key():
         if _ffmpeg_available():
             selected_backend = "groq"
         elif progress_callback:

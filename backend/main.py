@@ -6,7 +6,6 @@ Run locally with:
 """
 
 import logging
-import os
 from pathlib import Path
 import secrets
 
@@ -14,6 +13,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse
 
+from backend import config
 from backend.api import routes
 from backend.models.db import init_db
 from backend.pipeline.llm import backend_status, backend_status_detailed
@@ -33,7 +33,7 @@ async def api_key_guard(request: Request, call_next):
     and test runs. When set, verifies X-API-Key or Bearer token against the
     configured secret using constant-time comparison.
     """
-    api_key = os.getenv("LECGAP_API_KEY", "").strip()
+    api_key = config.api_key()
     if api_key:
         exempt_paths = {"/health", "/docs", "/openapi.json", "/redoc"}
         if request.url.path not in exempt_paths:
