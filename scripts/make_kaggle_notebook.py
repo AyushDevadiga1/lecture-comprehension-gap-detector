@@ -1,6 +1,6 @@
 """Regenerates the Kaggle fine-tune notebooks by embedding the actual
-backend/pipeline/fine_tune.py and scripts/kaggle_fine_tune.py sources directly
-into notebook cells.
+experiments/fine_tune.py, backend/pipeline/model_ids.py and
+scripts/kaggle_fine_tune.py sources directly into notebook cells.
 
 The notebooks are fully self-contained (no GitHub fetch) so they work even when
 run without network access to the repo. Re-run this any time those source files
@@ -15,7 +15,9 @@ import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FINE_TUNE = os.path.join(ROOT, "backend", "pipeline", "fine_tune.py")
+FINE_TUNE = os.path.join(ROOT, "experiments", "fine_tune.py")
+MODEL_IDS = os.path.join(ROOT, "backend", "pipeline", "model_ids.py")
+CONFIG = os.path.join(ROOT, "backend", "config.py")
 KAGGLE = os.path.join(ROOT, "scripts", "kaggle_fine_tune.py")
 
 # Backbone presets: <backbone> -> notebook filename, HF model id, and a tuning
@@ -68,6 +70,10 @@ def _code(text):
 def build_notebook(preset):
     with open(FINE_TUNE, encoding="utf-8") as f:
         fine_tune_src = f.read()
+    with open(MODEL_IDS, encoding="utf-8") as f:
+        model_ids_src = f.read()
+    with open(CONFIG, encoding="utf-8") as f:
+        config_src = f.read()
     with open(KAGGLE, encoding="utf-8") as f:
         kaggle_src = f.read()
 
@@ -114,15 +120,25 @@ def build_notebook(preset):
         _md(
             "### 1. Core module — training/export helpers\n"
             "\n"
-            "This cell writes `backend/pipeline/fine_tune.py` to disk (so the subprocess can import it) and loads it."
+            "This cell writes `experiments/fine_tune.py` + its `backend.pipeline.model_ids`\n"
+            "and `backend.config` dependencies to disk (so the subprocess can import them)\n"
+            "and loads the module."
         ),
         _code(
             f"import os\n"
+            f"os.makedirs('/kaggle/working/experiments', exist_ok=True)\n"
             f"os.makedirs('/kaggle/working/backend/pipeline', exist_ok=True)\n"
+            f"open('/kaggle/working/experiments/__init__.py', 'w').close()\n"
             f"fine_tune_src = (r'''{fine_tune_src}''')\n"
-            f"with open('/kaggle/working/backend/pipeline/fine_tune.py', 'w') as _f:\n"
+            f"with open('/kaggle/working/experiments/fine_tune.py', 'w') as _f:\n"
             f"    _f.write(fine_tune_src)\n"
-            f"print('wrote backend/pipeline/fine_tune.py')\n"
+            f"model_ids_src = (r'''{model_ids_src}''')\n"
+            f"with open('/kaggle/working/backend/pipeline/model_ids.py', 'w') as _f:\n"
+            f"    _f.write(model_ids_src)\n"
+            f"config_src = (r'''{config_src}''')\n"
+            f"with open('/kaggle/working/backend/config.py', 'w') as _f:\n"
+            f"    _f.write(config_src)\n"
+            f"print('wrote experiments/fine_tune.py + backend/pipeline/model_ids.py + backend/config.py')\n"
         ),
         _md(
             "### 2. Training + evaluation script\n"

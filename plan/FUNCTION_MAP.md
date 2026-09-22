@@ -7,12 +7,35 @@ each module defines and which backend symbols it consumes. Not a call graph.
 ## backend.main.py
 
 Defines:
-- `health` — line 26
+- `api_key_guard` — line 29
+- `unhandled_exception_handler` — line 56
+- `health` — line 64
+- `llm_backends` — line 75
 
 Consumes from `backend.*`:
 - `backend.api.routes`
+- `backend.config`
 - `backend.models.db.init_db`
 - `backend.pipeline.llm.backend_status`
+- `backend.pipeline.llm.backend_status_detailed`
+
+## backend.config.py
+
+Defines:
+- `get_str` — line 31
+- `get_int` — line 35
+- `get_float` — line 45
+- `get_bool` — line 55
+- `api_key` — line 61
+- `groq_api_key` — line 66
+- `llm_reasoning_enabled` — line 70
+- `snap_silence_enabled` — line 74
+- `clip_streamcopy_enabled` — line 78
+- `clip_reencode_threshold_s` — line 82
+- `clip_workers` — line 86
+- `whisper_backend_override` — line 97
+
+Consumes from `backend.*`: *(none)*
 
 ## backend.api.schemas.py
 
@@ -20,37 +43,143 @@ Defines: *(none — script/module)*
 
 Consumes from `backend.*`: *(none)*
 
-## backend.api.workers.py
+## backend.api.queries.py
 
 Defines:
-- `_process_lecture` — line 36
-- `_extract_concepts_worker` — line 77
-- `_cut_clips_worker` — line 173
-- `_build_course_graph_worker` — line 211
-- `_rebuild_course_graph` — line 221
-- `_lecture_segments` — line 314
-- `_in_range` — line 330
-- `_question_out` — line 346
-- `_clips_by_concept` — line 369
+- `lecture_segments` — line 12
+- `question_out` — line 28
+- `clips_by_concept` — line 48
 
 Consumes from `backend.*`:
 - `backend.api.schemas.QuizQuestionOut`
 - `backend.models.db.Clip`
+- `backend.models.db.Lecture`
+- `backend.models.db.SessionLocal`
+- `backend.models.db.TranscriptSegment`
+
+## backend.api.graphs.py
+
+Defines:
+- `graph_signature` — line 27
+- `course_graph` — line 53
+
+Consumes from `backend.*`:
+- `backend.models.db.GraphEdge`
+- `backend.models.db.GraphNode`
+- `backend.models.db.SessionLocal`
+- `backend.pipeline.build_graph.ConceptGraph`
+
+## backend.api.jobs.common.py
+
+Defines:
+- `get_shared_classifier` — line 34
+- `client_error_message` — line 51
+
+Consumes from `backend.*`:
+- `backend.config.MAX_PIPELINE_JOBS`
+- `backend.pipeline.classify_prerequisites.PrerequisiteClassifier`
+
+## backend.api.jobs.progress.py
+
+Defines:
+- `update_lecture_progress` — line 18
+- `_finish` — line 32
+- `get_lecture_progress` — line 38
+
+Consumes from `backend.*`:
+- `backend.models.db.Lecture`
+- `backend.models.db.SessionLocal`
+
+## backend.api.jobs.transcribe.py
+
+Defines:
+- `process_lecture` — line 11
+- `_process_lecture_inner` — line 23
+
+Consumes from `backend.*`:
+- `backend.api.jobs.common.PIPELINE_SEMAPHORE`
+- `backend.api.jobs.common.client_error_message`
+- `backend.api.jobs.progress._finish`
+- `backend.api.jobs.progress.update_lecture_progress`
+- `backend.models.db.Lecture`
+- `backend.models.db.SessionLocal`
+- `backend.models.db.TranscriptSegment`
+- `backend.pipeline.transcribe.transcribe`
+
+## backend.api.jobs.extract.py
+
+Defines:
+- `extract_concepts_worker` — line 23
+
+Consumes from `backend.*`:
+- `backend.api.jobs.common.client_error_message`
+- `backend.api.jobs.graph.rebuild_course_graph`
+- `backend.api.jobs.progress._finish`
+- `backend.api.jobs.progress.update_lecture_progress`
+- `backend.models.db.Concept`
+- `backend.models.db.Lecture`
+- `backend.models.db.LectureLink`
+- `backend.models.db.Passage`
+- `backend.models.db.SessionLocal`
+- `backend.pipeline.extract_concepts.extract_spoken_concepts`
+- `backend.pipeline.passages.extract_lecture_structure`
+- `backend.pipeline.refine_timeline.refine_concept_times`
+
+## backend.api.jobs.clips.py
+
+Defines:
+- `cut_clips_worker` — line 10
+
+Consumes from `backend.*`:
+- `backend.api.jobs.common.REPO_ROOT`
+- `backend.api.jobs.common.client_error_message`
+- `backend.api.jobs.progress._finish`
+- `backend.api.jobs.progress.update_lecture_progress`
+- `backend.config.CLIPS_BASE_DIR`
+- `backend.models.db.Clip`
+- `backend.models.db.Lecture`
+- `backend.models.db.SessionLocal`
+- `backend.pipeline.segment_clips.cut_concept_clips`
+
+## backend.api.jobs.graph.py
+
+Defines:
+- `build_course_graph_worker` — line 10
+- `rebuild_course_graph` — line 50
+
+Consumes from `backend.*`:
+- `backend.api.jobs.common.client_error_message`
+- `backend.api.jobs.common.get_shared_classifier`
+- `backend.api.jobs.progress._finish`
+- `backend.api.jobs.progress.update_lecture_progress`
+- `backend.config.llm_reasoning_enabled`
 - `backend.models.db.Concept`
 - `backend.models.db.GraphEdge`
 - `backend.models.db.GraphNode`
 - `backend.models.db.Lecture`
 - `backend.models.db.LectureLink`
+- `backend.models.db.SessionLocal`
+- `backend.pipeline.build_graph.ConceptGraph`
+- `backend.pipeline.classify_prerequisites.classify_course_pairs`
+- `backend.pipeline.classify_prerequisites.llm_reasoning_check`
+
+## backend.api.jobs.purge.py
+
+Defines:
+- `purge_course` — line 21
+
+Consumes from `backend.*`:
+- `backend.models.db.Clip`
+- `backend.models.db.Concept`
+- `backend.models.db.ConceptItem`
+- `backend.models.db.GraphEdge`
+- `backend.models.db.GraphNode`
+- `backend.models.db.Lecture`
+- `backend.models.db.LectureLink`
 - `backend.models.db.Passage`
+- `backend.models.db.QuizResponse`
 - `backend.models.db.SessionLocal`
 - `backend.models.db.TranscriptSegment`
-- `backend.pipeline.build_graph.ConceptGraph`
-- `backend.pipeline.classify_prerequisites`
-- `backend.pipeline.extract_concepts.extract_spoken_concepts`
-- `backend.pipeline.passages.extract_lecture_structure`
-- `backend.pipeline.refine_timeline.refine_concept_times`
-- `backend.pipeline.segment_clips.cut_concept_clips`
-- `backend.pipeline.transcribe.transcribe`
 
 ## backend.api.routes.__init__.py
 
@@ -64,20 +193,28 @@ Consumes from `backend.*`:
 ## backend.api.routes.lectures.py
 
 Defines:
-- `_safe_filename` — line 34
-- `upload_lecture` — line 39
-- `list_lectures` — line 76
-- `get_lecture` — line 82
-- `run_concept_extraction` — line 93
-- `cut_lecture_clips` — line 119
-- `list_lecture_clips` — line 155
+- `_safe_filename` — line 40
+- `upload_lecture` — line 54
+- `list_lectures` — line 124
+- `get_lecture` — line 142
+- `get_lecture_progress` — line 153
+- `delete_lecture` — line 160
+- `rerun_lecture` — line 196
+- `run_concept_extraction` — line 222
+- `cut_lecture_clips` — line 248
+- `list_lecture_clips` — line 284
 
 Consumes from `backend.*`:
+- `backend.api.jobs`
 - `backend.api.schemas.ClipBatchOut`
 - `backend.api.schemas.ClipOut`
+- `backend.api.schemas.LectureDeleteOut`
 - `backend.api.schemas.LectureDetailOut`
 - `backend.api.schemas.LectureOut`
-- `backend.api.workers`
+- `backend.api.schemas.LectureProgressOut`
+- `backend.config.CLIPS_BASE_DIR`
+- `backend.config.MAX_UPLOAD_MB`
+- `backend.config.MEDIA_ROOT_DIR`
 - `backend.models.db.Clip`
 - `backend.models.db.Concept`
 - `backend.models.db.Lecture`
@@ -86,37 +223,43 @@ Consumes from `backend.*`:
 ## backend.api.routes.courses.py
 
 Defines:
-- `get_course_graph` — line 21
-- `_course_graph_dict` — line 59
-- `build_course_graph` — line 72
-- `course_stats` — line 87
+- `_validate_course_id` — line 34
+- `list_courses` — line 49
+- `get_course_graph` — line 94
+- `build_course_graph` — line 110
+- `course_stats` — line 134
+- `delete_course` — line 207
 
 Consumes from `backend.*`:
+- `backend.api.graphs`
+- `backend.api.jobs`
 - `backend.api.schemas.CourseBuildOut`
+- `backend.api.schemas.CourseDeleteOut`
 - `backend.api.schemas.CourseGraphOut`
-- `backend.api.workers`
+- `backend.api.schemas.CourseSummaryOut`
+- `backend.config.CLIPS_BASE_DIR`
 - `backend.models.db.Concept`
 - `backend.models.db.GraphEdge`
 - `backend.models.db.GraphNode`
+- `backend.models.db.Lecture`
 - `backend.models.db.QuizResponse`
 - `backend.models.db.SessionLocal`
-- `backend.pipeline.build_graph.ConceptGraph`
 
 ## backend.api.routes.quizzes.py
 
 Defines:
-- `create_quiz` — line 33
-- `submit_quiz` — line 148
-- `get_remediation` — line 258
+- `_watch_entry` — line 33
+- `create_quiz` — line 43
+- `submit_quiz` — line 197
+- `get_remediation` — line 306
 
 Consumes from `backend.*`:
-- `backend.api.routes.courses._course_graph_dict`
-- `backend.api.routes.courses.get_course_graph`
+- `backend.api.graphs`
+- `backend.api.queries`
 - `backend.api.schemas.QuestionFeedbackOut`
 - `backend.api.schemas.QuizOut`
 - `backend.api.schemas.QuizSubmitIn`
 - `backend.api.schemas.QuizSubmitOut`
-- `backend.api.workers`
 - `backend.models.db.Concept`
 - `backend.models.db.ConceptItem`
 - `backend.models.db.Passage`
@@ -131,147 +274,195 @@ Consumes from `backend.*`:
 ## backend.models.db.py
 
 Defines:
-- `utcnow` — line 45
-- `_migrate_schema` — line 303
-- `init_db` — line 355
+- `_set_sqlite_pragma` — line 52
+- `utcnow` — line 68
+- `_migrate_schema` — line 329
+- `init_db` — line 388
 
-Consumes from `backend.*`: *(none)*
+Consumes from `backend.*`:
+- `backend.config.DATABASE_URL`
 
 ## backend.pipeline.llm.py
 
 Defines:
-- `_parse_reset_seconds` — line 47
-- `_cache_key` — line 55
-- `_cache_get` — line 60
-- `_cache_put` — line 68
-- `_cache_del` — line 87
-- `_call_groq` — line 96
-- `_ollama_reachable` — line 143
-- `_call_ollama` — line 152
-- `complete` — line 178
-- `backend_status` — line 228
+- `_parse_reset_seconds` — line 57
+- `_cache_key` — line 65
+- `_from_cache` — line 70
+- `_cache_age_s` — line 81
+- `_cache_get` — line 96
+- `_cache_put` — line 112
+- `_cache_del` — line 133
+- `_KeyLockMap.__init__` — line 152  *(class method)*
+- `_KeyLockMap.__call__` — line 157  *(class method)*
+- `_call_groq` — line 180
+- `_ollama_reachable` — line 227
+- `_call_ollama` — line 236
+- `complete` — line 262
+- `backend_status_detailed` — line 318
+- `backend_status` — line 332
 
 Consumes from `backend.*`:
+- `backend.config.GROQ_MODEL`
+- `backend.config.LLM_CACHE_TTL_S`
+- `backend.config.LLM_MAX_RETRIES`
+- `backend.config.LLM_SLEEP_CAP_S`
+- `backend.config.OLLAMA_BASE_URL`
+- `backend.config.OLLAMA_MODEL`
+- `backend.config.groq_api_key`
 - `backend.models.db.LLMCache`
 - `backend.models.db.SessionLocal`
 
 ## backend.pipeline.transcribe.py
 
 Defines:
-- `_get_model` — line 55
-- `_ffmpeg_available` — line 64
-- `_probe_duration` — line 68
-- `_chunk_seconds` — line 84
-- `_downmix_to_flac` — line 98
-- `_split_flac` — line 114
-- `_seg_bounds` — line 152
-- `_transcribe_chunk` — line 160
-- `_transcribe_groq` — line 226
-- `transcribe` — line 260
+- `_get_model` — line 61
+- `_ffmpeg_available` — line 70
+- `_validate_media_path` — line 74
+- `_probe_duration` — line 101
+- `_chunk_seconds` — line 117
+- `_downmix_to_flac` — line 131
+- `_detect_silence_offset` — line 147
+- `_split_flac` — line 174
+- `_seg_bounds` — line 224
+- `_transcribe_chunk` — line 232
+- `_transcribe_groq` — line 298
+- `transcribe` — line 354
 
 Consumes from `backend.*`:
+- `backend.config.GROQ_WHISPER_MAX_CHUNK_S`
+- `backend.config.GROQ_WHISPER_MODEL`
+- `backend.config.GROQ_WHISPER_UPLOAD_LIMIT`
+- `backend.config.MEDIA_ROOT_DIR`
+- `backend.config.WHISPER_500_BACKOFF_S`
+- `backend.config.WHISPER_BACKEND`
+- `backend.config.WHISPER_MAX_RETRIES`
+- `backend.config.WHISPER_MODEL`
+- `backend.config.groq_api_key`
+- `backend.config.snap_silence_enabled`
+- `backend.config.whisper_backend_override`
 - `backend.pipeline.llm.SLEEP_CAP_S`
 - `backend.pipeline.llm._parse_reset_seconds`
 
 ## backend.pipeline.extract_concepts.py
 
 Defines:
-- `_strip_code_fence` — line 44
-- `_parse_concepts` — line 50
-- `_chunks` — line 70
-- `extract_spoken_concepts` — line 100
-- `extract_visual_concepts` — line 137
-- `merge_concepts` — line 141
+- `_strip_code_fence` — line 43
+- `_parse_concepts` — line 49
+- `_chunks` — line 69
+- `extract_spoken_concepts` — line 99
 
 Consumes from `backend.*`:
 - `backend.pipeline.llm.complete`
+- `backend.pipeline.prompt_guard.DATA_GUARD`
+- `backend.pipeline.prompt_guard.delimit_untrusted`
 
 ## backend.pipeline.passages.py
 
 Defines:
-- `_seg_fmt` — line 85
-- `_window_excerpts` — line 91
-- `_prompt` — line 132
-- `_parse_json` — line 144
-- `_clamp` — line 158
-- `_parse_passages` — line 162
-- `_span_overlap` — line 221
-- `_title_sim` — line 230
-- `_join_text` — line 240
-- `_assemble` — line 248
-- `extract_lecture_structure` — line 307
+- `_seg_fmt` — line 92
+- `_window_excerpts` — line 98
+- `_prompt` — line 139
+- `_parse_json` — line 156
+- `_clamp` — line 246
+- `_parse_passages` — line 250
+- `_span_overlap` — line 309
+- `_title_sim` — line 318
+- `_join_text` — line 328
+- `_assemble` — line 336
+- `extract_lecture_structure` — line 395
 
 Consumes from `backend.*`:
+- `backend.config.STRUCTURE_MAX_TOKENS`
+- `backend.config.STRUCTURE_OVERLAP_FRAC`
+- `backend.config.STRUCTURE_WINDOW_CHARS`
 - `backend.pipeline.llm.complete`
+- `backend.pipeline.prompt_guard.DATA_GUARD`
+- `backend.pipeline.prompt_guard.delimit_untrusted`
 
 ## backend.pipeline.classify_prerequisites.py
 
 Defines:
-- `_st` — line 35
-- `get_candidate_pairs` — line 43
-- `_pair_features` — line 93
-- `PrerequisiteClassifier.__init__` — line 128  *(class method)*
-- `PrerequisiteClassifier._get_encoder` — line 135  *(class method)*
-- `PrerequisiteClassifier._vectors_for` — line 141  *(class method)*
-- `PrerequisiteClassifier.fit` — line 152  *(class method)*
-- `PrerequisiteClassifier.predict_proba` — line 199  *(class method)*
-- `PrerequisiteClassifier.predict` — line 205  *(class method)*
-- `llm_reasoning_check` — line 209
-- `_load_lecturebank` — line 257
-- `classify_course_pairs` — line 279
+- `_st` — line 38
+- `get_candidate_pairs` — line 46
+- `_pair_features` — line 107
+- `PrerequisiteClassifier.__init__` — line 142  *(class method)*
+- `PrerequisiteClassifier._get_encoder` — line 154  *(class method)*
+- `PrerequisiteClassifier._vectors_for` — line 162  *(class method)*
+- `PrerequisiteClassifier.fit` — line 173  *(class method)*
+- `PrerequisiteClassifier.predict_proba` — line 220  *(class method)*
+- `_coerce_confidence` — line 233
+- `llm_reasoning_check` — line 241
+- `_CachedFit.__init__` — line 323  *(class method)*
+- `_load_lecturebank` — line 329
+- `_fitted_classifier` — line 363
+- `classify_course_pairs` — line 394
 
 Consumes from `backend.*`:
 - `backend.pipeline.llm.complete`
-
-## backend.pipeline.fine_tune.py
-
-Defines:
-- `build_train_triples` — line 36
-- `_pair_text` — line 58
-- `_build_model` — line 63
-- `fine_tune_cross_encoder` — line 78
-- `export_model` — line 157
-- `load_model` — line 164
-- `predict_pairs` — line 177
-
-Consumes from `backend.*`: *(none)*
+- `backend.pipeline.model_ids.EMBEDDING_MODEL`
+- `backend.pipeline.model_ids.load_kwargs`
+- `backend.pipeline.prompt_guard.DATA_GUARD`
+- `backend.pipeline.prompt_guard.delimit_untrusted`
 
 ## backend.pipeline.build_graph.py
 
 Defines:
-- `ConceptGraph.__init__` — line 43  *(class method)*
-- `ConceptGraph._get_encoder` — line 58  *(class method)*
-- `ConceptGraph._vec` — line 65  *(class method)*
-- `ConceptGraph.add_concepts` — line 72  *(class method)*
-- `ConceptGraph.nodes` — line 104  *(class method)*
-- `ConceptGraph.node_count` — line 108  *(class method)*
-- `ConceptGraph._resolve` — line 113  *(class method)*
-- `ConceptGraph.add_edge` — line 117  *(class method)*
-- `ConceptGraph.edges` — line 141  *(class method)*
-- `ConceptGraph.edge_count` — line 148  *(class method)*
-- `ConceptGraph.is_dag` — line 154  *(class method)*
-- `ConceptGraph.add_concepts_verbatim` — line 157  *(class method)*
-- `ConceptGraph.resolve_cycles` — line 175  *(class method)*
-- `ConceptGraph.topological_order` — line 197  *(class method)*
-- `ConceptGraph.to_networkx` — line 205  *(class method)*
-- `ConceptGraph.to_dict` — line 208  *(class method)*
-- `_cosine` — line 220
-- `build_graph_from_pairs` — line 226
+- `ConceptGraph.__init__` — line 47  *(class method)*
+- `ConceptGraph._get_encoder` — line 72  *(class method)*
+- `ConceptGraph._embed` — line 84  *(class method)*
+- `ConceptGraph._vec` — line 92  *(class method)*
+- `ConceptGraph.add_concepts` — line 99  *(class method)*
+- `ConceptGraph.nodes` — line 143  *(class method)*
+- `ConceptGraph.node_count` — line 147  *(class method)*
+- `ConceptGraph._resolve` — line 152  *(class method)*
+- `ConceptGraph.add_edge` — line 156  *(class method)*
+- `ConceptGraph.edges` — line 180  *(class method)*
+- `ConceptGraph.edge_count` — line 187  *(class method)*
+- `ConceptGraph.is_dag` — line 193  *(class method)*
+- `ConceptGraph.add_concepts_verbatim` — line 196  *(class method)*
+- `ConceptGraph.resolve_cycles` — line 214  *(class method)*
+- `ConceptGraph.topological_order` — line 236  *(class method)*
+- `ConceptGraph.to_networkx` — line 244  *(class method)*
+- `ConceptGraph.to_dict` — line 247  *(class method)*
+- `_cosine` — line 259
 
-Consumes from `backend.*`: *(none)*
+Consumes from `backend.*`:
+- `backend.pipeline.model_ids.EMBEDDING_MODEL`
+- `backend.pipeline.model_ids.load_kwargs`
 
 ## backend.pipeline.segment_clips.py
 
 Defines:
-- `_codec_args` — line 39
-- `_safe_name` — line 47
-- `_validate_times` — line 53
-- `cut_clip` — line 63
-- `cut_concept_clips` — line 113
+- `_codec_args` — line 50
+- `_safe_name` — line 60
+- `_validate_times` — line 66
+- `_resolve_ffmpeg` — line 76
+- `cut_clip` — line 87
+- `_default_workers` — line 139
+- `cut_concept_clips` — line 149
 
-Consumes from `backend.*`: *(none)*
+Consumes from `backend.*`:
+- `backend.config.clip_reencode_threshold_s`
+- `backend.config.clip_streamcopy_enabled`
+- `backend.config.clip_workers`
 
-## backend.pipeline.refine.py
+## experiments.fine_tune.py
+
+Defines:
+- `build_train_triples` — line 42
+- `_pair_text` — line 64
+- `_build_model` — line 69
+- `fine_tune_cross_encoder` — line 84
+- `export_model` — line 163
+- `_validate_model_dir` — line 170
+- `load_model` — line 194
+- `predict_pairs` — line 208
+
+Consumes from `backend.*`:
+- `backend.pipeline.model_ids.EMBEDDING_MODEL`
+- `backend.pipeline.model_ids.load_kwargs`
+
+## experiments.refine.py
 
 Defines:
 - `_edges_of` — line 35
@@ -282,12 +473,28 @@ Defines:
 
 Consumes from `backend.*`:
 - `backend.pipeline.llm`
+- `backend.pipeline.prompt_guard.CLOSE_TAG`
+- `backend.pipeline.prompt_guard.DATA_GUARD`
+- `backend.pipeline.prompt_guard.OPEN_TAG`
+- `backend.pipeline.prompt_guard.delimit_untrusted`
 
 ## frontend.app.py
 
 Defines:
-- `_get` — line 25
-- `_post` — line 31
-- `_pick_course` — line 46
+- `_validated_api_url` — line 27
+- `_get` — line 50
+- `_post` — line 69
+- `_delete` — line 93
+- `_course_summaries` — line 110
+- `_list_lectures` — line 117
+- `_lecture_detail` — line 127
+- `_invalidate_data_caches` — line 135
+- `_course_options` — line 144
+- `_job_guidance` — line 184
+- `_monitor_progress` — line 191
+- `_start_job` — line 275
+- `_lecture_label` — line 332
+- `render_student_tab` — line 336
+- `render_faculty_tab` — line 468
 
 Consumes from `backend.*`: *(none)*
