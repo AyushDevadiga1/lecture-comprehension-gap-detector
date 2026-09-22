@@ -4,8 +4,8 @@ Importing app.py executes its top-level UI script (st.set_page_config, the
 sidebar block, tab contexts), so this module installs neutral `streamlit` +
 `requests` stubs in sys.modules *before* importing the app and then drives the
 pure-ish helper functions directly: the error-safe HTTP wrappers (_get/_post/
-_delete), progress clamping (_wrap_progress), the course-option fallback
-(_course_options) and the background-job poll loop (_wait_progress).
+_delete), the course-option fallback (_course_options) and the background-job
+monitor loop (_monitor_progress).
 
 The real Streamlit runtime wiring is exercised end-to-end by
 scripts/smoke_drive.py against a live backend — not duplicable here.
@@ -250,48 +250,6 @@ def test_delete_success_and_404(app_module):
 
 
 # ------------------------------------------------------------------ progress
-
-def test_wrap_progress_clamps_to_100(app_module):
-    calls = []
-
-    class PBar:
-        def progress(self, pct, text=None):
-            calls.append((pct, text))
-
-    app_module._wrap_progress(PBar(), 150, "done")
-    assert calls == [(100, "done")]
-
-
-def test_wrap_progress_legacy_streamlit_fallback(app_module):
-    captured = []
-
-    class OldBar:
-        def progress(self, pct, text=None):
-            if text is not None:
-                raise TypeError("no text kwarg")
-            captured.append(pct)
-
-    app_module.st.caption = captured.append
-    app_module._wrap_progress(OldBar(), 50, "halfway")
-    assert captured == [50, "halfway"]
-
-
-def test_wait_progress_returns_when_ready(app_module):
-    payload = {"status": "ready", "progress_pct": 100, "detail": "Done."}
-    app_module._get = lambda *a, **kw: payload
-    assert app_module._wait_progress(1) == payload
-
-
-def test_wait_progress_surfaces_error_status(app_module):
-    app_module._get = lambda *a, **kw: {"status": "error", "detail": "boom"}
-    out = app_module._wait_progress(1)
-    assert out["status"] == "error" and out["detail"] == "boom"
-
-
-def test_wait_progress_times_out_with_non_terminal_status(app_module):
-    app_module._get = lambda *a, **kw: {"status": "extracting",
-                                        "progress_pct": 42, "detail": "running"}
-    assert app_module._wait_progress(1, timeout=0) is None
 
 
 class _SessionState:

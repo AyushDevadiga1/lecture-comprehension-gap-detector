@@ -150,48 +150,6 @@ def _course_options():
     return sorted({l["course_id"] for l in lectures})
 
 
-def _wrap_progress(pbar, pct, text):
-    try:
-        pbar.progress(min(int(pct), 100), text=text)
-    except TypeError:  # older streamlit: no `text` kwarg
-        pbar.progress(min(int(pct), 100))
-        st.caption(text)
-
-
-def _wait_progress(lecture_id: int, timeout: int = 6 * 60 * 60):
-    """Poll GET /lectures/{id}/progress until a background job settles.
-
-    Returns the final payload (status ready/error) or None on timeout. Shows a
-    live progress bar + stage message while it spins (the F-4/C-1 wiring).
-    """
-    pbar = st.progress(0)
-    box = st.empty()
-    started = time.monotonic()
-    seen = set()
-    while True:
-        data = _get(f"/lectures/{lecture_id}/progress", silent=True)
-        if data:
-            status = data.get("status", "")
-            pct = data.get("progress_pct", 0)
-            detail = data.get("detail", "")
-            if status == "ready":
-                pbar.progress(100)
-                box.success(detail or "Done.")
-                return data
-            if status in ("error", "not_found"):
-                pbar.progress(0)
-                box.error(detail or f"Job ended with status '{status}'.")
-                return data
-            _wrap_progress(pbar, pct, detail or status)
-        else:
-            box.warning("Job queued — waiting for the worker to report progress...")
-        if time.monotonic() - started > timeout:
-            box.warning("Timed out waiting; the job is still running in the "
-                        "background — you can reload the page to check.")
-            return None
-        time.sleep(1.0)
-
-
 # Stage -> guidance shown under the live progress bar. Long stages that cannot
 # report finer granularity (local Whisper decode, parallel clip cutting) get an
 # honest "the bar sits here until this finishes" hint instead of a false sense
@@ -233,10 +191,10 @@ def _job_guidance(stage: str, elapsed_s: float) -> str:
 def _monitor_progress():
     """Live, self-refreshing progress card for the most recent background job.
 
-    Unlike the old blocking `_wait_progress` (whose `st.progress` loop froze
-    the whole Streamlit session for the entire transcribe/extract), this runs
-    ONE poll per rerun, re-renders the card, then `st.rerun()`s with an
+    One poll per rerun, re-render the card, then `st.rerun()` with an
     adaptive back-off: fast during short stages, slower during long ones.
+    (Replaces the old blocking poll loop, whose `st.progress` spin froze the
+    whole Streamlit session for the entire transcribe/extract.)
 
     Poll cadence is never hardcoded to 1s (L9): long stages that can't advance
     (local Whisper decode, clip re-encode, graph build) back off to ~2s so a
@@ -369,11 +327,13 @@ with st.sidebar:
         st.caption("No courses yet — upload a lecture to begin.")
 
 
-tab_student, tab_faculty = st.tabs(["Student", "Faculty"])
+# ------------------------------------------------------- page render functions
 
-# --------------------------------------------------------------- student tab
+def _lecture_label(l):
+    return f"#{l['id']} — {l.get('title', l.get('course_id'))}"
 
-with tab_student:
+
+def render_student_tab(nav_course):
     st.subheader("Ingest a lecture")
     _monitor_progress()
 
@@ -415,13 +375,10 @@ with tab_student:
         if l.get("course_id") == nav_course and l.get("status") == "ready"
     ]
 
-    def _label(l):
-        return f"#{l['id']} — {l.get('title', l.get('course_id'))}"
-
     if not ready:
         st.warning(f"No ready lecture in course '{nav_course}' — upload one above.")
     else:
-        chosen = st.selectbox("Lecture to process", ready, format_func=_label)
+        chosen = st.selectbox("Lecture to process", ready, format_func=_lecture_label)
         if st.button("Extract concepts + build graph"):
             resp = _post(f"/lectures/{chosen['id']}/concepts")
             if resp:
@@ -508,7 +465,7 @@ with tab_student:
 
 # --------------------------------------------------------------- faculty tab
 
-with tab_faculty:
+def render_faculty_tab(nav_course):
     st.subheader("Confusion heatmap + taught-vs-learned divergence")
 
     with st.form("stats_form"):
@@ -553,6 +510,7 @@ with tab_faculty:
     st.caption("How much of the spoken lecture the extracted concepts actually pin "
                "down (green = covered window), with each concept's quiz-answer "
                "evidence sentence. Pick any ready lecture in the course.")
+    lectures = _list_lectures()
     ready_tl = [
         l for l in lectures
         if l.get("course_id") == nav_course and l.get("status") == "ready"
@@ -560,7 +518,7 @@ with tab_faculty:
     if not ready_tl:
         st.info(f"No ready lecture in course '{nav_course}' yet.")
     else:
-        tl_pick = st.selectbox("Lecture", ready_tl, format_func=_label,
+        tl_pick = st.selectbox("Lecture", ready_tl, format_func=_lecture_label,
                                key="tl_lecture")
         detail = _lecture_detail(tl_pick["id"])
         if detail:
@@ -573,3 +531,12 @@ with tab_faculty:
                 height=520 + 24 * len(detail.get("concepts", [])),
                 scrolling=True,
             )
+
+
+tab_student, tab_faculty = st.tabs(["Student", "Faculty"])
+
+with tab_student:
+    render_student_tab(nav_course)
+
+with tab_faculty:
+    render_faculty_tab(nav_course)
