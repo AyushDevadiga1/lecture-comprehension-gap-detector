@@ -17,7 +17,6 @@ something — not speculatively:
 Lecture.status lifecycle: uploaded -> transcribing -> ready | error
 """
 
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,9 +33,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DB_PATH = REPO_ROOT / "data" / "lecgap.db"
-DATABASE_URL = os.getenv("LECGAP_DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
+from backend.config import DATABASE_URL
+
+# Locally owned copy of the DB location — used only to create the parent dir
+# at boot; the URL itself comes from backend/config.py (LECGAP_DATABASE_URL).
+DEFAULT_DB_PATH = Path(__file__).resolve().parents[2] / "data" / "lecgap.db"
 
 # Background workers + API threads write concurrently; WAL + a busy timeout
 # keep "database is locked" out of the picture (long jobs no longer block
@@ -322,61 +323,65 @@ class QuizResponse(Base):
     question = relationship("ConceptItem")
 
 
+_ADDABLE_SQLITE_TYPES = {"INTEGER", "FLOAT", "TEXT", "VARCHAR", "DATETIME", "BOOLEAN"}
+
+
 def _migrate_schema() -> None:
-    """Lightweight additive migrations for DBs created by older code.
+    r"""Lightweight additive migrations for DBs created by older code.
 
     create_all() does not alter existing tables, so columns added to the
-    models need an explicit ALTER TABLE on live databases. Idempotent.
-    Runs AFTER create_all() in init_db so fresh databases (no tables yet)
-    are created with the current model and every ALTER here becomes a no-op.
-    `passages` / `lecture_links` are NEW tables, so create_all() covers them;
-    only the extra COLUMNS on existing tables are touched here.
+    models need an explicit ALTER TABLE on live databases. Migrations are
+    DERIVED from Base.metadata (single schema truth — the models), not from a
+    second hand-written column list that had to be edited in lockstep with
+    them: any model column missing from the live table is appended.
+
+    Guardrails (preserve the DDL whitelist intent of the security audit):
+      * only tables that already exist are touched — brand-new tables were
+        just created by create_all()
+      * identifiers and type names come ONLY from the code's own models and
+        are re-validated (^\w+$ names, an allowlist of additive-safe SQLite
+        types) before interpolation
+      * a column is skipped when SQLite cannot add it safely to a live table:
+        primary keys, and NOT NULL columns without a server default (there is
+        no backfill). Foreign-key columns ARE appended but WITHOUT the
+        REFERENCES clause — SQLite cannot alter in a constraint, and old DBs
+        never had it enforced for that column anyway.
+
+    Idempotent. Runs AFTER create_all() so fresh databases (no tables yet) are
+    no-ops and never double-declare a column.
     """
+    import re as _re
+
     from sqlalchemy import inspect, text
 
-    # (column, SQLAlchemy type, kwargs, SQLite DDL type, SQL DEFAULT literal)
-    additions = {
-        "quiz_questions": [
-            ("answer", Text, dict(nullable=True), "TEXT", None),
-            ("explanation", Text, dict(nullable=True), "TEXT", None),
-            ("rationale_a", String, dict(nullable=True), "VARCHAR", None),
-            ("rationale_b", String, dict(nullable=True), "VARCHAR", None),
-            ("rationale_c", String, dict(nullable=True), "VARCHAR", None),
-        ],
-        "concepts": [
-            ("passage_id", Integer, dict(nullable=True), "INTEGER", None),
-        ],
-        "graph_edges": [
-            ("source_method", String,
-             dict(nullable=False, default="classifier", server_default="classifier"),
-             "VARCHAR", "'classifier'"),
-            ("evidence", Text, dict(nullable=True), "TEXT", None),
-        ],
-    }
-
-    try:
-        insp = inspect(engine)
-        table_cols = {
-            table: {c["name"] for c in insp.get_columns(table)}
-            for table in additions
-            if insp.has_table(table)
-        }
-    except Exception:
-        table_cols = {}
-
+    insp = inspect(engine)
     with engine.begin() as conn:
-        for table, cols in additions.items():
-            existing = table_cols.get(table) or set()
-            allowed_tables = {"quiz_questions", "concepts", "graph_edges"}
-            allowed_types = {"TEXT", "VARCHAR", "INTEGER", "FLOAT"}
-            for name, coltype, kwargs, ddl_type, ddl_default in cols:
-                if existing and name in existing:
+        for table in Base.metadata.sorted_tables:
+            if not insp.has_table(table.name):
+                continue  # brand-new table — create_all() already made it
+            existing = {c["name"] for c in insp.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in existing or column.primary_key:
                     continue
-                if table not in allowed_tables or ddl_type not in allowed_types:
-                    raise ValueError(f"Disallowed migration target: {table}.{name} {ddl_type}")
-                ddl = f"ALTER TABLE {table} ADD COLUMN {name} {ddl_type}"
-                if ddl_default is not None:
-                    ddl += f" DEFAULT {ddl_default}"
+                if column.nullable is False and column.server_default is None:
+                    continue  # cannot ADD COLUMN NOT NULL without a default
+                ddl_type = str(column.type.compile(engine.dialect)).upper()
+                if ddl_type not in _ADDABLE_SQLITE_TYPES:
+                    raise ValueError(
+                        f"Unsupported additive column type: {table.name}.{column.name} {ddl_type}"
+                    )
+                if not _re.fullmatch(r"\w+", column.name) or not _re.fullmatch(r"\w+", table.name):
+                    raise ValueError(
+                        f"Unsafe migration identifier: {table.name}.{column.name}"
+                    )
+                ddl = f"ALTER TABLE {table.name} ADD COLUMN {column.name} {ddl_type}"
+                if column.server_default is not None:
+                    arg = column.server_default.arg
+                    if isinstance(arg, str) and ddl_type in {"TEXT", "VARCHAR"}:
+                        default = "'" + arg.replace("'", "''") + "'"
+                    else:
+                        default = str(arg)
+                    ddl += f" DEFAULT {default}"
                 conn.execute(text(ddl))
 
 
