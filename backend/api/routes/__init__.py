@@ -3,8 +3,8 @@ API routes, grouped by resource domain.
 
 The Streamlit frontend talks to the pipeline only through these, never by
 importing backend/pipeline/* directly. Endpoint modules hold request->schema->
-worker glue only; the long-running jobs, shared DB helpers, and Pydantic
-models live in workers.py / schemas.py.
+job glue only; the long-running jobs, shared DB helpers, and Pydantic models
+live in backend/api/jobs/* + backend/api/queries.py / schemas.py.
 
 Endpoints:
     lectures.py   — upload/media lifecycle, concept extraction, clips

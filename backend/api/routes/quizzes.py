@@ -6,8 +6,7 @@ from bisect import bisect_left
 
 from fastapi import APIRouter, Body, HTTPException, Path, Query
 
-from backend.api import workers
-from backend.api.routes.courses import _course_graph_dict, get_course_graph
+from backend.api import graphs, queries
 from backend.api.schemas import (
     QuestionFeedbackOut,
     QuizOut,
@@ -29,6 +28,15 @@ from backend.pipeline.quiz import (
 )
 
 router = APIRouter(tags=["quizzes"])
+
+
+def _watch_entry(item, clips):
+    """Serialize one remediation item with its clip path attached."""
+    return {
+        "concept": item["concept"],
+        "failed": item["failed"],
+        "clip": clips.get(item["concept"]),
+    }
 
 
 @router.post("/quizzes", response_model=QuizOut, status_code=201)
@@ -75,15 +83,15 @@ def create_quiz(
             if c.passage_id in passage_text
         }
 
-        segments = workers._lecture_segments(db, course_id)
+        segments = queries.lecture_segments(db, course_id)
         # H6: the evidence loop below scans the course-wide segment list per
-        # concept. Time-sorted segments + a bisect window recreate `_in_range`
-        # exactly in O(log n + window) instead of O(course).
+        # concept. Time-sorted segments + a bisect window answer "segments in
+        # the concept's window" in O(log n + window) instead of O(course).
         starts = [s.start_s for s in segments]
 
         def _window(concept, margin_s=0.5):
-            """_in_range-equivalent via bisect (same membership as the original
-            linear filter: start_s >= lo and end_s <= hi)."""
+            """Segments whose span fits inside the concept's window (+ margin),
+            found via bisect: start_s >= lo and end_s <= hi."""
             if concept.start_s is None:
                 return segments
             lo = concept.start_s - margin_s
@@ -113,12 +121,10 @@ def create_quiz(
             evidence[name] = ev
 
     # learner order from the graph if present, else alphabetic
-    try:
-        graph = get_course_graph(course_id)
-        order = graph.topological_order
+    data = graphs.course_graph(course_id)
+    if data is not None:
+        order = data["topological_order"]
         names = [n for n in order if n in set(names)] or names
-    except HTTPException:
-        pass
 
     # Stage 6c: prefer a cached LLM-written MCQ (real definitions + plausible
     # distractors) over the evidence sentence. Network calls happen outside any
@@ -183,7 +189,7 @@ def create_quiz(
         quiz_id=rows[0].id if rows else 0,
         course_id=course_id,
         student_id=student_id,
-        questions=[workers._question_out(r) for r in rows],
+        questions=[queries.question_out(r) for r in rows],
     )
 
 
@@ -276,22 +282,15 @@ def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
         total = len(responses)
         failed = sorted({r.concept for r in responses if not r.correct})
 
-    try:
-        graph_dict = _course_graph_dict(payload.course_id)
-    except HTTPException:
-        graph_dict = {"edges": [], "topological_order": sorted(
-            {c.concept for c in responses})}
+    data = graphs.course_graph(payload.course_id)
+    graph_dict = data if data is not None else {
+        "edges": [], "topological_order": sorted({c.concept for c in responses})}
 
-    clips = workers._clips_by_concept(payload.course_id)
+    clips = queries.clips_by_concept(payload.course_id)
     seq = select_remediation_sequence(graph_dict, failed)
-    watch = [
-        {
-            "concept": item["concept"],
-            "failed": item["failed"],
-            "clip": clips.get(item["concept"]),
-        }
-        for item in seq
-    ]
+    # submit echoes the full dependency chain (every item in learner order);
+    # the /students remediation endpoint prunes to what is actually watchable.
+    watch = [_watch_entry(item, clips) for item in seq]
 
     return QuizSubmitOut(
         quiz_id=payload.answers[0].question_id if payload.answers else 0,
@@ -342,22 +341,19 @@ def get_remediation(
         total = len(responses)
         failed = sorted({r.concept for r in responses if not r.correct})
 
-    try:
-        graph_dict = _course_graph_dict(course_id)
-    except HTTPException:
-        graph_dict = {"edges": [], "topological_order": sorted(
-            {r.concept for r in responses})}
+    data = graphs.course_graph(course_id)
+    graph_dict = data if data is not None else {
+        "edges": [], "topological_order": sorted({r.concept for r in responses})}
 
-    clips = workers._clips_by_concept(course_id)
+    clips = queries.clips_by_concept(course_id)
     seq = select_remediation_sequence(graph_dict, failed)
-    watch = []
-    for item in seq:
-        if item["failed"] or item["concept"] in clips:
-            watch.append({
-                "concept": item["concept"],
-                "failed": item["failed"],
-                "clip": clips.get(item["concept"]),
-            })
+    # remediation is a *watch* list: only concepts the student actually failed
+    # plus anything upstream that has a clip to watch — unlike the post-submit
+    # echo, which returns the whole learner chain.
+    watch = [
+        _watch_entry(item, clips) for item in seq
+        if item["failed"] or item["concept"] in clips
+    ]
 
     return QuizSubmitOut(
         quiz_id=question_id,

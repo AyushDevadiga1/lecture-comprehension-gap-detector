@@ -16,7 +16,7 @@ from fastapi import (
     UploadFile,
 )
 
-from backend.api import workers
+from backend.api import jobs
 from backend.api.schemas import (
     ClipBatchOut,
     ClipOut,
@@ -25,17 +25,16 @@ from backend.api.schemas import (
     LectureOut,
     LectureProgressOut,
 )
+from backend.config import CLIPS_BASE_DIR, MAX_UPLOAD_MB, MEDIA_ROOT_DIR
 from backend.models.db import Clip, Concept, Lecture, SessionLocal
 
 router = APIRouter(prefix="/lectures", tags=["lectures"])
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_RAW_DIR = REPO_ROOT / "data" / "raw"
-CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
+DATA_RAW_DIR = MEDIA_ROOT_DIR
+CLIPS_DIR = CLIPS_BASE_DIR
 ALLOWED_EXTENSIONS = {".mp4", ".mp3", ".wav", ".m4a", ".mkv", ".mov", ".webm", ".flac"}
 # Optional upload cap (MiB). Default 2048 MiB to prevent disk-fill DoS.
 # Override via LECGAP_MAX_UPLOAD_MB=0 to restore unlimited for local use.
-MAX_UPLOAD_MB = int(os.getenv("LECGAP_MAX_UPLOAD_MB", "2048"))
 
 
 def _safe_filename(name: str) -> str:
@@ -117,7 +116,7 @@ async def upload_lecture(
         lecture.source_path = str(dest)
         db.commit()
 
-    background_tasks.add_task(workers._process_lecture, lecture.id, whisper_backend)
+    background_tasks.add_task(jobs.process_lecture, lecture.id, whisper_backend)
     return lecture
 
 
@@ -154,7 +153,7 @@ def get_lecture(lecture_id: int) -> Lecture:
 def get_lecture_progress(lecture_id: int) -> LectureProgressOut:
     """Live job progress — the streamlit progress bars poll this while a
     background worker (transcribe / extract / clips) is running."""
-    return LectureProgressOut(**workers.get_lecture_progress(lecture_id))
+    return LectureProgressOut(**jobs.get_lecture_progress(lecture_id))
 
 
 @router.delete("/{lecture_id}", response_model=LectureDeleteOut)
@@ -183,7 +182,7 @@ def delete_lecture(lecture_id: int) -> LectureDeleteOut:
     shutil.rmtree(CLIPS_DIR / str(lecture_id), ignore_errors=True)
 
     if orphaned:
-        workers.purge_course(course_id)
+        jobs.purge_course(course_id)
 
     return LectureDeleteOut(
         deleted=True,
@@ -215,7 +214,7 @@ def rerun_lecture(
         db.refresh(lecture)
         delivered = lecture
 
-    background_tasks.add_task(workers._process_lecture, lecture_id, whisper_backend)
+    background_tasks.add_task(jobs.process_lecture, lecture_id, whisper_backend)
     return delivered
 
 
@@ -237,7 +236,7 @@ def run_concept_extraction(
             )
         lecture_id_out = lecture.id
 
-    background_tasks.add_task(workers._extract_concepts_worker, lecture_id_out)
+    background_tasks.add_task(jobs.extract_concepts_worker, lecture_id_out)
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id_out)
         _ = lecture.segments  # force-load before session closes
@@ -277,7 +276,7 @@ def cut_lecture_clips(
             )
         lecture_id_out = lecture.id
 
-    background_tasks.add_task(workers._cut_clips_worker, lecture_id_out)
+    background_tasks.add_task(jobs.cut_clips_worker, lecture_id_out)
     return ClipBatchOut(lecture_id=lecture_id_out, status="queued")
 
 

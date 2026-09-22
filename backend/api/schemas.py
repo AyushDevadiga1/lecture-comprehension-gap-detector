@@ -1,5 +1,5 @@
 """API schemas (Pydantic response/request models) — moved out of routes.py so
-the route module stays thin. Pure declarations; no imports from routes/workers.
+the route module stays thin. Pure declarations; no imports from routes/jobs.
 """
 
 from datetime import datetime

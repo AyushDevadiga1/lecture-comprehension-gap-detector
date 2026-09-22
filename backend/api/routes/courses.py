@@ -4,20 +4,19 @@ stats view (Stage 8), course listing and course cleanup. All paths live under
 
 import os
 import shutil
-import threading
-from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlalchemy import func
 
-from backend.api import workers
+from backend.api import graphs, jobs
 from backend.api.schemas import (
     CourseBuildOut,
     CourseDeleteOut,
     CourseGraphOut,
     CourseSummaryOut,
 )
+from backend.config import CLIPS_BASE_DIR
 from backend.models.db import (
     Concept,
     GraphEdge,
@@ -26,21 +25,10 @@ from backend.models.db import (
     QuizResponse,
     SessionLocal,
 )
-from backend.pipeline.build_graph import ConceptGraph
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-CLIPS_DIR = REPO_ROOT / "data" / "processed" / "clips"
-
-# M5: brief graph-dict memo. Keyed by (sessionmaker, course_id) so each DB
-# scope (per-test in-memory DBs included) gets its own entry, and verified
-# against a cheap row signature so any direct row write (workers' rebuild,
-# purge_course, tests) self-heals the entry. The strong sessionmaker key keeps
-# the object alive, so its id() can never be recycled into a stale collision.
-_GRAPH_CACHE: dict = {}
-_GRAPH_LOCK = threading.Lock()
-_GRAPH_CACHE_MAX = 128  # prevent unbounded memory growth
+CLIPS_DIR = CLIPS_BASE_DIR
 
 
 def _validate_course_id(course_id: str) -> str:
@@ -55,32 +43,6 @@ def _validate_course_id(course_id: str) -> str:
             status_code=422, detail="course_id must be 1-128 alphanumeric/hyphen/underscore chars"
         )
     return course_id
-
-
-def _graph_signature(db, course_id: str) -> tuple:
-    """Cheap fingerprint of a course's persisted graph rows (counts + max id).
-    Any rebuild/delete changes at least one field, forcing a cache rebuild."""
-    node_count = (
-        db.query(func.count(GraphNode.id))
-        .filter(GraphNode.course_id == course_id)
-        .scalar()
-    )
-    edge_count = (
-        db.query(func.count(GraphEdge.id))
-        .filter(GraphEdge.course_id == course_id)
-        .scalar()
-    )
-    max_node = (
-        db.query(func.max(GraphNode.id))
-        .filter(GraphNode.course_id == course_id)
-        .scalar()
-    )
-    max_edge = (
-        db.query(func.max(GraphEdge.id))
-        .filter(GraphEdge.course_id == course_id)
-        .scalar()
-    )
-    return (node_count or 0, edge_count or 0, max_node or 0, max_edge or 0)
 
 
 @router.get("", response_model=List[CourseSummaryOut])
@@ -132,68 +94,16 @@ def list_courses() -> List[CourseSummaryOut]:
 def get_course_graph(course_id: str) -> CourseGraphOut:
     """Fetch a course's persisted prerequisite graph and learner order.
 
-    The stored edges/nodes are already acyclic (cycles were broken at build
-    time by dropping lowest-confidence edges), so this recomputes the
-    topological order from the persisted rows. The graph dict is memoized per
-    (sessionmaker, course_id) and validated against a row signature (M5), so
-    frequent polls skip the ORM hydration + cycle resolution until the graph
-    actually changes.
+    The read, cycle resolution, and M5 memoization live in the shared
+    backend/api/graphs.py module (the quiz endpoints consume the same dict);
+    this route only validates the id, turns "no rows" into a 404, and shapes
+    the response.
     """
     course_id = _validate_course_id(course_id)
-    with SessionLocal() as db:
-        signature = _graph_signature(db, course_id)
-        key = (SessionLocal, course_id)
-        with _GRAPH_LOCK:
-            cached = _GRAPH_CACHE.get(key)
-            if cached is not None and cached[0] == signature:
-                return CourseGraphOut(course_id=course_id, **cached[1])
-
-        node_rows = (
-            db.query(GraphNode)
-            .filter(GraphNode.course_id == course_id)
-            .order_by(GraphNode.id)
-            .all()
-        )
-        if not node_rows:
-            raise HTTPException(status_code=404, detail="No graph for this course")
-        edge_rows = db.query(GraphEdge).filter(GraphEdge.course_id == course_id).all()
-
-    graph = ConceptGraph()
-    graph.add_concepts_verbatim([n.name for n in node_rows])  # stored names are canonical
-    for e in edge_rows:
-        graph.add_edge(e.source, e.target, e.confidence)
-    graph.resolve_cycles()
-    result = graph.to_dict()
-    # re-attach the persisted provenance the graph object itself doesn't carry
-    # (transcript|classifier source + verbatim evidence) so the DAG view can
-    # render WHY an edge exists (Stage 8).
-    edge_info = {
-        (e.source, e.target): (e.source_method or "classifier", e.evidence or None)
-        for e in edge_rows
-    }
-    for ed in result["edges"]:
-        ed["source_method"], ed["evidence"] = edge_info.get(
-            (ed["source"], ed["target"]), ("classifier", None)
-        )
-    with _GRAPH_LOCK:
-        # Evict oldest entries when cache is full
-        if len(_GRAPH_CACHE) >= _GRAPH_CACHE_MAX:
-            oldest_key = next(iter(_GRAPH_CACHE))
-            _GRAPH_CACHE.pop(oldest_key, None)
-        _GRAPH_CACHE[key] = (signature, result)
-    return CourseGraphOut(course_id=course_id, **result)
-
-
-def _course_graph_dict(course_id: str) -> dict:
-    """Course graph as plain dict {edges, topological_order} for pipeline helpers."""
-    out = get_course_graph(course_id)
-    return {
-        "edges": [{"source": e.source, "target": e.target,
-                   "confidence": e.confidence,
-                   "source_method": e.source_method,
-                   "evidence": e.evidence} for e in out.edges],
-        "topological_order": out.topological_order,
-    }
+    data = graphs.course_graph(course_id)
+    if data is None:
+        raise HTTPException(status_code=404, detail="No graph for this course")
+    return CourseGraphOut(course_id=course_id, **data)
 
 
 @router.post("/{course_id}/graph", response_model=CourseBuildOut, status_code=202)
@@ -215,7 +125,7 @@ def build_course_graph(
     """
     course_id = _validate_course_id(course_id)
     background_tasks.add_task(
-        workers._build_course_graph_worker, course_id.strip(), lecture_id
+        jobs.build_course_graph_worker, course_id.strip(), lecture_id
     )
     return CourseBuildOut(status="queued", course_id=course_id.strip())
 
@@ -263,10 +173,8 @@ def course_stats(course_id: str) -> dict:
             seen.add(c.name)
             taught_order.append(c.name)
 
-    try:
-        learned_order = get_course_graph(course_id).topological_order
-    except HTTPException:
-        learned_order = taught_order
+    data = graphs.course_graph(course_id)
+    learned_order = data["topological_order"] if data else taught_order
 
     heatmap = [
         {"concept": name, "wrong": wrong, "attempts": total,
@@ -298,7 +206,7 @@ def course_stats(course_id: str) -> dict:
 @router.delete("/{course_id}", response_model=CourseDeleteOut)
 def delete_course(course_id: str) -> CourseDeleteOut:
     """Nuke a course: every DB row (lectures + course-scoped graph/questions/
-    responses via workers.purge_course) plus raw media and cut clips on disk."""
+    responses via jobs.purge_course) plus raw media and cut clips on disk."""
     course_id = _validate_course_id(course_id.strip())
 
     with SessionLocal() as db:
@@ -315,7 +223,7 @@ def delete_course(course_id: str) -> CourseDeleteOut:
             status_code=404, detail=f"Course '{course_id}' not found"
         )
 
-    n_removed = workers.purge_course(course_id)
+    n_removed = jobs.purge_course(course_id)
 
     for lec in lecs:
         if lec.source_path:
