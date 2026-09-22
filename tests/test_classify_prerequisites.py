@@ -135,7 +135,7 @@ def test_pair_features_vector_order_tracks_pairs():
 
 
 # ---------------------------------------------------------------------------
-# PrerequisiteClassifier — fit / predict_proba / predict
+# PrerequisiteClassifier — fit / predict_proba
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -151,7 +151,6 @@ def test_clf_fit_and_predict_roundtrip(clf):
     probs = clf.predict_proba([("A", "B"), ("B", "C")])
     assert len(probs) == 2
     assert all(0.0 <= p <= 1.0 for p in probs)
-    assert clf.predict([("A", "B")], threshold=0.5) in ([0], [1])
 
 
 def test_clf_fit_undersample_keeps_classifier_usable(clf):

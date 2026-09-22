@@ -77,8 +77,8 @@ def test_add_concepts_blank_names_skipped():
     assert g.node_count == 1
 
 
-def test_build_graph_from_pairs_dedups_edge_endpoints(monkeypatch):
-    from backend.pipeline.build_graph import ConceptGraph, build_graph_from_pairs
+def test_edge_endpoint_alias_dedups_and_retargets(monkeypatch):
+    from backend.pipeline.build_graph import ConceptGraph
 
     vecs = _hand_vecs()
     monkeypatch.setattr(
@@ -86,11 +86,10 @@ def test_build_graph_from_pairs_dedups_edge_endpoints(monkeypatch):
         lambda self, names: [vecs.get(n, np.zeros(4)) for n in names],
     )
 
-    graph, removed = build_graph_from_pairs(
-        ["Gradient Descent", "GD optimization"],
-        [("GD optimization", "Loss Function", 0.8)],
-        dedup_threshold=0.85,
-    )
+    graph = ConceptGraph(dedup_threshold=0.85)
+    graph.add_concepts(["Gradient Descent", "GD optimization"])
+    graph.add_edge("GD optimization", "Loss Function", 0.8)
+    removed = graph.resolve_cycles()
     # "GD optimization" collapses into the "Gradient Descent" node, so the
     # edge's source resolves there; "Loss Function" becomes a second node.
     assert removed == []

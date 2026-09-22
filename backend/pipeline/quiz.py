@@ -6,10 +6,6 @@ A student's wrong answers are mapped onto concepts, then the prerequisite
 graph (Stage 4) determines the remediation order — not "here's what you got
 wrong" but "study these first, because they're upstream of what you missed."
 
-  order_quiz(values)            -> sort a course's concepts into a suggested
-                                   quiz-taking order from the graph's learner
-                                   order (optional).
-
   select_remediation_sequence(graph, failed_concepts)
                                 -> the dependency-ordered clip/watch list for a
                                    student: the failed concepts plus everything
@@ -45,16 +41,6 @@ class _Graph:
     @classmethod
     def _from_dict(cls, graph: Dict) -> "_Graph":
         return cls(graph.get("edges", []), graph.get("topological_order", []))
-
-
-def order_quiz(topological_order: List[str]) -> List[str]:
-    """Suggested quiz-taking order for a course — the graph's learner order.
-
-    Prerequisites come before dependents, so a student who does poorly on an
-    early question reveals gaps early. Values/labels untouched; this is just
-    the ordering. Pure pass-through for completeness/tests.
-    """
-    return list(topological_order)
 
 
 def select_remediation_sequence(

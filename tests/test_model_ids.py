@@ -33,16 +33,14 @@ def test_default_model_is_the_verified_minilm_id():
 
 
 def test_load_site_defaults_agree_on_pinned_model():
-    """build_graph / classify_prerequisites / extract_concepts defaults must all
-    point at the single pinned model id (no stray hard-coded strings)."""
-    from backend.pipeline import extract_concepts as EC
+    """build_graph / classify_prerequisites defaults must all point at the
+    single pinned model id (no stray hard-coded strings)."""
     from backend.pipeline.build_graph import DEFAULT_EMBEDDING_MODEL
     from backend.pipeline.classify_prerequisites import EMBEDDING_MODEL as CP_MODEL
     from backend.pipeline.model_ids import EMBEDDING_MODEL
 
     assert DEFAULT_EMBEDDING_MODEL == EMBEDDING_MODEL
     assert CP_MODEL == EMBEDDING_MODEL
-    assert EC.merge_concepts.__kwdefaults__["embedding_model"] == EMBEDDING_MODEL
 
 
 def test_classify_load_site_routes_through_pinned_model(monkeypatch):

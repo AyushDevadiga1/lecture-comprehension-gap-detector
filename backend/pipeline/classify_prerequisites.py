@@ -223,9 +223,6 @@ class PrerequisiteClassifier:
         X = _pair_features(pair_list, cache, interactions=self._interactions)
         return [float(p[1]) for p in self._head.predict_proba(X)]
 
-    def predict(self, pairs: Sequence[Tuple[str, str]], threshold: float = 0.5) -> List[int]:
-        return [1 if p >= threshold else 0 for p in self.predict_proba(pairs)]
-
 
 # How much a "not a prerequisite" LLM verdict demotes a classifier edge. The
 # edge survives (the LLM is one fallible signal among several) but ranks below

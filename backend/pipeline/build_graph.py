@@ -260,30 +260,3 @@ def _cosine(a: np.ndarray, b: np.ndarray) -> float:
     return float(
         np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-8)
     )
-
-
-def build_graph_from_pairs(
-    names,
-    pairs,
-    *,
-    embedding_model: str = DEFAULT_EMBEDDING_MODEL,
-    dedup_threshold: float = DEDUP_THRESHOLD,
-    encoder=None,
-    encoder_fn=None,
-) -> "tuple[ConceptGraph, list]":
-    """Thin convenience for the API worker: dedup `names` into nodes, add
-    `pairs` (each (A, B, confidence)) as edges, and resolve any cycles.
-
-    Returns (graph, removed_edges).
-    """
-    graph = ConceptGraph(
-        embedding_model=embedding_model,
-        dedup_threshold=dedup_threshold,
-        encoder=encoder,
-        encoder_fn=encoder_fn,
-    )
-    graph.add_concepts(names)
-    for a, b, confidence in pairs:
-        graph.add_edge(a, b, confidence)
-    removed = graph.resolve_cycles()
-    return graph, removed

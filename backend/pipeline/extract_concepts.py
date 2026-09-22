@@ -2,23 +2,18 @@
 Stage 2 — Concept Extraction (spoken track)
 See plan/ARCHITECTURE.md, Stage 2.
 
-Two independent tracks feed one combined concept list:
-
   extract_spoken_concepts(transcript)  -> LLM reads transcript chunks and
                                           pulls out explicit + implicit
                                           concepts, each with a rough
                                           timestamp range.
 
-  merge_concepts(lists)                -> embedding-similarity dedup so
-                                          near-duplicate names from different
-                                          chunks collapse into one node.
-
-  extract_visual_concepts(video_path)  -> Phase 2b (CLIP + OCR), stub for now
-                                          (see plan/ROADMAP.md — cuttable).
-
 Chunking is quota-aware: concepts are extracted per transcript chunk so a
 lecture course stays inside the per-minute token window, and every LLM call is
 cached for repeat-free (zero-cost) re-runs during development.
+
+Near-duplicate names across chunks collapse in ConceptGraph.add_concepts
+(Stage 4), not here. The Phase 2b visual track (CLIP + OCR) is cuttable per
+plan/ROADMAP.md.
 """
 
 import json
@@ -26,7 +21,6 @@ import re
 from typing import Dict, List
 
 from backend.pipeline.llm import complete
-from backend.pipeline.model_ids import EMBEDDING_MODEL, load_kwargs
 from backend.pipeline.prompt_guard import DATA_GUARD, delimit_untrusted
 
 # ~12K chars ≈ ~3K tokens per chunk (plus <500 output each) — well inside
@@ -134,48 +128,3 @@ def extract_spoken_concepts(docs: List[Dict]) -> List[Dict]:
                 }
             )
     return concepts
-
-
-# Phase 2b — visual track (CLIP + OCR). Deliberately a stub: the system is
-# fully functional with the spoken track alone; visual adds slide-only
-# concepts. Scheduled per plan/ROADMAP.md.
-def extract_visual_concepts(video_path: str) -> List[Dict]:
-    raise NotImplementedError("Phase 2b — visual concept extraction not yet implemented")
-
-
-def merge_concepts(
-    lists: List[List[Dict]],
-    *,
-    threshold: float = 0.85,
-    embedding_model: str = EMBEDDING_MODEL,
-) -> List[Dict]:
-    """
-    Merge concept lists, collapsing near-duplicate names into one entry
-    via embedding similarity. Returns the deduplicated combined list.
-
-    `lists` is a list of concept lists (e.g. [spoken, visual]). Grouping
-    strategy: concepts are compared greedily per name-similarity against a
-    running list of representatives.
-    """
-    merged: List[Dict] = []
-    reps: List[str] = []
-    embs: List = []
-
-    from sentence_transformers import SentenceTransformer, util
-
-    model = SentenceTransformer(embedding_model, **load_kwargs(embedding_model))
-
-    for lst in lists:
-        for c in lst:
-            if not c.get("name"):
-                continue
-            vec = model.encode([c["name"]], convert_to_tensor=False)[0]
-            best_sim = 0.0
-            if embs:
-                best_sim = float(util.cos_sim([vec], embs).max())
-            if best_sim >= threshold:
-                continue
-            merged.append(dict(c))
-            reps.append(c["name"])
-            embs.append(vec)
-    return merged

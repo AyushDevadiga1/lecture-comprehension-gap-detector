@@ -119,7 +119,7 @@ raises out of the worker.
 - **Near-duplicate passages** reappearing in both windows merge by span-overlap
   > 70%.
 - **Concept-name variants** across passages collapse via the existing embedding
-  dedup recipe (`merge_concepts`, cosine ≥ 0.85).
+  dedup recipe (`ConceptGraph.add_concepts`, cosine ≥ 0.85).
 - Output: `{passages: [...], concepts: [...] (each with passage_id + span),
   links: [...] (each with evidence)}` — a clean per-lecture structure.
 
