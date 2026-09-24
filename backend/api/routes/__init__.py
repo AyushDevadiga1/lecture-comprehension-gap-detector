@@ -19,11 +19,13 @@ from fastapi import APIRouter
 
 from backend.api.routes.courses import router as courses_router
 from backend.api.routes.lectures import router as lectures_router
+from backend.api.routes.media import router as media_router
 from backend.api.routes.quizzes import router as quizzes_router
 
 router = APIRouter()
 router.include_router(lectures_router)
 router.include_router(courses_router)
 router.include_router(quizzes_router)
+router.include_router(media_router)
 
 __all__ = ["router"]

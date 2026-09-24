@@ -107,6 +107,23 @@ if clips_seen:
 else:
     check("remediation includes at least one clip", False, "no clip in remediation")
 
+print("\n== 6b. media endpoint streams with Range (framework-agnostic) ==")
+if clips_seen:
+    for cp in clips_seen[:1]:
+        rel = Path(cp)
+        check("clip file is real", rel.exists())
+        url = f"/media/clips/{rel.parent.name}/{rel.name}"
+        r = client.get(url)
+        check("GET media 200", r.status_code == 200)
+        check("media content-type video/mp4",
+              r.headers.get("content-type", "").startswith("video/"))
+        r2 = client.get(url, headers={"Range": "bytes=0-9"})
+        check("media Range -> 206 + content-range",
+              r2.status_code == 206 and r2.headers.get("content-range"),
+              f"got {r2.status_code} {r2.headers.get('content-range')}")
+else:
+    check("remediation includes at least one clip", False, "no clip in remediation")
+
 print("\n== 6. GET /students/demo-student/remediation ==")
 r = client.get("/students/demo-student/remediation", params={"course_id": "ml"})
 check("GET remediation 200", r.status_code == 200)

@@ -36,7 +36,10 @@ async def api_key_guard(request: Request, call_next):
     api_key = config.api_key()
     if api_key:
         exempt_paths = {"/health", "/docs", "/openapi.json", "/redoc"}
-        if request.url.path not in exempt_paths:
+        if (
+            request.url.path not in exempt_paths
+            and not request.url.path.startswith("/media/")
+        ):
             client_key = request.headers.get("X-API-Key")
             if not client_key:
                 auth_header = request.headers.get("Authorization", "")
