@@ -69,6 +69,34 @@ line in this file. When in doubt, this file wins.
 - **Roadmap phases and estimates (accepted as starting point, open to
   revision):** the phase table in `docs/ROADMAP.md`, accepted as a
   working plan rather than challenged line by line.
+- **Frontend split into two Streamlit entrypoints (2026-09-24).** The single
+  `frontend/app.py` (two tabs) is replaced by `frontend/student_app.py` +
+  `frontend/faculty_app.py` sharing a pure-Python API client + cache layer
+  (`frontend/client.py`, `frontend/state.py`, `frontend/components.py`).
+  `frontend/render.py` stays. Full design: `plan/FRONTEND_ARCHITECTURE.md`.
+- **Two-tier frontend cache (2026-09-24).** Tier-1 = `client.CacheStore`
+  (pure-Python TTL dict, module singleton shared across sessions in a process),
+  60 s lists / 300 s heavy reads, invalidated explicitly on every mutation.
+  Tier-2 = `state.py` over `st.session_state` for per-user UI state (active quiz,
+  loaded stats/DAG, job monitor list). This fixes audit defects: quiz/stats lost
+  on job-poll reruns, stale list after course delete, misleading "no courses"
+  when the backend 401s.
+- **Multi-job monitor (2026-09-24).** The single `lecgap_job` session binding is
+  replaced by a job *list* so starting a second job never silently drops the
+  first. Backend progress stays `lecture_id`-keyed (no job registry this phase) —
+  cross-user progress transparency is improved by seeding the monitor from
+  in-flight lectures, with the concurrent-sharing limitation documented.
+- **Stay Streamlit now; React roadmap documented (2026-09-24).** No framework
+  switch this phase. The React engine (`plan/FRONTEND_REACT_ROADMAP.md`) is a
+  leaf-replacement over the same locked HTTP contract
+  (`plan/FRONTEND_API_CONTRACT.md`), gated on the backend job registry + quiz
+  idempotency and run only when the roadmap's trigger condition fires. Overrides
+  the still-open "dedicated framework" note below by making the swap a
+  documented, cheap path instead of an open question.
+- **Media endpoint added (2026-09-24).** New `GET /media/clips/{lecture_id}/{filename}`
+  (Range-capable) is the canonical playback URL; payloads keep filesystem paths
+  in v1 and the frontend maps them at the edge. Fixes the broken `st.video`
+  remediation playback without breaking the contract.
 
 ## Proposed — not yet confirmed
 
