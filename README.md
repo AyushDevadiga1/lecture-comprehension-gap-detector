@@ -142,7 +142,7 @@ this infrastructure is stable.
   This is deliberately kept **separate from real quiz data** (`plan/LIMITATIONS.md`
   #5) — it validates the mechanism, not a deployment claim.
 - **Phase 8 — Faculty dashboard: done.** `GET /courses/{id}/stats` powers the
-  faculty tab in `frontend/app.py`: a confusion heatmap (miss rate per
+  faculty dashboard in `frontend/faculty_app.py`: a confusion heatmap (miss rate per
   concept per prerequisite) plus the *taught-vs-learned* divergence (where
   the order concepts were covered differs from the learner order the graph
   suggests). Graph edges surface `source_method` + `evidence`, so the DAG
@@ -170,7 +170,7 @@ flowchart LR
     end
 
     %% -------------------- Entry point --------------------
-    FE["Streamlit app · frontend/app.py<br/>Student tab: ingest → quiz → remediation<br/>Faculty tab: heatmap + divergence"]
+    FE["Streamlit apps · frontend/student_app.py + faculty_app.py<br/>Student dashboard: ingest → quiz → remediation<br/>Faculty dashboard: heatmap + divergence"]
 
     %% -------------------- API surface --------------------
     API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health"]
@@ -332,15 +332,19 @@ of each stage → module → output (clip videos live under `data/processed/clip
 ### Frontend
 
 ```bash
-streamlit run frontend/app.py
+streamlit run frontend/student_app.py     # student dashboard (ingest → quiz)
+streamlit run frontend/faculty_app.py     # faculty dashboard (stats/DAG/timeline)
 ```
 
-Student tab: upload a lecture → process → take the ordered quiz → get the
+Both dashboards share a pure-Python API client (`frontend/client.py`) and talk
+to the backend only over HTTP (see `plan/FRONTEND_API_CONTRACT.md`). Student
+dashboard: upload a lecture → process → take the ordered quiz → get the
 personalized remediation sequence with per-concept clip playback. The quiz is
 a graded MCQ per concept — the stem quotes the lecture's own spoken sentence,
 and grading is server-side (the client just picks an option); when the
 transcript can't support a concept the fallback is a name-recognition question,
-so every question stays answerable. Faculty tab: heatmap of concept miss rates
+so every question stays answerable. Faculty dashboard: heatmap of concept miss
+rates
 + taught-vs-learned divergence, the interactive concept prerequisite DAG
 (learner order top→bottom, edge-tooltip confidence; vis-network loads from a
 CDN so the page itself is only a few KB), and a per-lecture **timeline +
@@ -384,7 +388,8 @@ curl http://127.0.0.1:8000/lectures/1
 curl http://127.0.0.1:8000/health   # shows which LLM backends are usable
 
 # 6. (Later phases) Student / faculty UI
-python -m streamlit run frontend/app.py
+python -m streamlit run frontend/student_app.py
+# and separately:   python -m streamlit run frontend/faculty_app.py
 ```
 
 Tests and benchmarks:

@@ -49,7 +49,9 @@ MODULES = [
     "backend/pipeline/segment_clips.py",
     "experiments/fine_tune.py",
     "experiments/refine.py",
-    "frontend/app.py",
+    "frontend/client.py",
+    "frontend/student_app.py",
+    "frontend/faculty_app.py",
 ]
 
 

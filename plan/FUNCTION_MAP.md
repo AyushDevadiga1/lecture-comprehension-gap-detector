@@ -8,9 +8,9 @@ each module defines and which backend symbols it consumes. Not a call graph.
 
 Defines:
 - `api_key_guard` — line 29
-- `unhandled_exception_handler` — line 56
-- `health` — line 64
-- `llm_backends` — line 75
+- `unhandled_exception_handler` — line 59
+- `health` — line 67
+- `llm_backends` — line 78
 
 Consumes from `backend.*`:
 - `backend.api.routes`
@@ -188,6 +188,7 @@ Defines: *(none — script/module)*
 Consumes from `backend.*`:
 - `backend.api.routes.courses.router`
 - `backend.api.routes.lectures.router`
+- `backend.api.routes.media.router`
 - `backend.api.routes.quizzes.router`
 
 ## backend.api.routes.lectures.py
@@ -478,23 +479,47 @@ Consumes from `backend.*`:
 - `backend.pipeline.prompt_guard.OPEN_TAG`
 - `backend.pipeline.prompt_guard.delimit_untrusted`
 
-## frontend.app.py
+## frontend.client.py
 
 Defines:
-- `_validated_api_url` — line 27
-- `_get` — line 50
-- `_post` — line 69
-- `_delete` — line 93
-- `_course_summaries` — line 110
-- `_list_lectures` — line 117
-- `_lecture_detail` — line 127
-- `_invalidate_data_caches` — line 135
-- `_course_options` — line 144
-- `_job_guidance` — line 184
-- `_monitor_progress` — line 191
-- `_start_job` — line 275
-- `_lecture_label` — line 332
-- `render_student_tab` — line 336
-- `render_faculty_tab` — line 468
+- `validated_api_url` — line 42
+- `_auth_headers` — line 58
+- `_record_error` — line 65
+- `take_last_error` — line 70
+- `_extract_detail` — line 77
+- `_request` — line 89
+- `get` — line 130
+- `post` — line 138
+- `delete` — line 148
+- `CacheStore.__init__` — line 164  *(class method)*
+- `CacheStore._key` — line 169  *(class method)*
+- `CacheStore.get` — line 176  *(class method)*
+- `CacheStore.invalidate` — line 192  *(class method)*
+- `CacheStore.invalidate_all` — line 198  *(class method)*
+- `CacheStore.__len__` — line 202  *(class method)*
+- `invalidate` — line 210
+- `invalidate_all` — line 216
+- `invalidate_for_course` — line 220
+- `_cached` — line 231
+- `course_summaries` — line 235
+- `list_lectures` — line 240
+- `lecture_detail` — line 245
+- `lecture_clips` — line 250
+- `course_stats` — line 255
+- `course_graph` — line 260
+- `media_url` — line 267
+- `valid_course_id` — line 293
+
+Consumes from `backend.*`: *(none)*
+
+## frontend.student_app.py
+
+Defines: *(none — script/module)*
+
+Consumes from `backend.*`: *(none)*
+
+## frontend.faculty_app.py
+
+Defines: *(none — script/module)*
 
 Consumes from `backend.*`: *(none)*
