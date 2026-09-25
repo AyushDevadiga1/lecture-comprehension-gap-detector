@@ -131,3 +131,48 @@ def test_snapshot_strip_on_faculty(monkeypatch):
     at = _run()
     caps = "\n".join(c.value for c in at.get("caption"))
     assert "Course readiness:" in caps and "4 lectures · 2 ready" in caps
+
+
+def test_stats_load_failure_surfaces_detail(monkeypatch):
+    """A2: a failed stats load must say why, not silently do nothing."""
+    from frontend import client as client_mod
+
+    def stats(cid, ttl=300.0):
+        client_mod.LAST_ERROR = {"kind": "http", "status": 500,
+                                 "detail": "plot twist", "path": "/courses/x/stats"}
+        return None
+
+    install_backend(monkeypatch, {"course_stats": stats})
+    at = _run()
+    find_button(at, "Load course stats").click().run()
+    assert any("plot twist" in e.value for e in at.error)
+
+
+def test_graph_load_failure_surfaces_detail(monkeypatch):
+    from frontend import client as client_mod
+
+    def graph(cid, ttl=300.0):
+        client_mod.LAST_ERROR = {"kind": "http", "status": 500,
+                                 "detail": "graph down", "path": "/courses/x/graph"}
+        return None
+
+    install_backend(monkeypatch, {"course_graph": graph})
+    at = _run()
+    find_button(at, "Render DAG").click().run()
+    assert any("graph down" in e.value for e in at.error)
+
+
+def test_timeline_load_failure_shows_warning(monkeypatch):
+    from frontend import client as client_mod
+
+    def detail(lid, ttl=300.0):
+        client_mod.LAST_ERROR = {"kind": "http", "status": 404,
+                                 "detail": "Lecture not found", "path": "/lectures/1"}
+        return None
+
+    install_backend(monkeypatch, {
+        "list_lectures": lambda: [ready_lecture()],
+        "lecture_detail": detail,
+    })
+    at = _run()
+    assert any("Lecture not found" in w.value for w in at.warning)

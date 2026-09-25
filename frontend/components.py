@@ -627,6 +627,10 @@ def render_faculty_stats(nav_course):
         data = client.course_stats(nav_course)
         if data:
             state.set("faculty", stats=data, stats_course=nav_course)
+        else:
+            err = client.take_last_error()
+            st.error((err or {}).get("detail")
+                     or "Stats load failed — is the backend up?")
     stats = state.get("faculty", "stats")
     if stats and state.get("faculty", "stats_course") == nav_course:
         st.markdown("**Wrong-answer rates (highest first):**")
@@ -653,6 +657,10 @@ def render_faculty_dag(nav_course):
         graph = client.course_graph(nav_course)
         if graph is not None:
             state.set("faculty", graph=graph, graph_course=nav_course)
+        else:
+            err = client.take_last_error()
+            st.error((err or {}).get("detail")
+                     or "Graph load failed — is the backend up?")
     graph = state.get("faculty", "graph")
     if graph and state.get("faculty", "graph_course") == nav_course:
         if graph.get("nodes"):
@@ -689,3 +697,7 @@ def render_faculty_timeline(nav_course):
             ),
             height=520 + 24 * len(detail.get("concepts", [])),
         )
+    else:
+        err = client.take_last_error()
+        st.warning((err or {}).get("detail")
+                   or f"Could not load lecture #{pick['id']} — try again.")
