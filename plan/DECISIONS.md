@@ -124,6 +124,10 @@ line in this file. When in doubt, this file wins.
   stuck `uploaded` row renders as an "awaiting media" hint, never a spinning
   card). Faculty additionally gained the usage row (B2 usage half). Findings
   audit recorded in `plan/FRONTEND_ARCHITECTURE.md` §12.
+- **Per-lecture delete UI (B3, 2026-09-25, shipped).** Student dashboard gained a
+  "Lecture rows" section: checkbox per row + "Delete checked rows" →
+  `DELETE /lectures/{id}` (backend already existed), with cache invalidation.
+  Closes B3 so abandoned `uploaded`/failed uploads are removable from the UI.
 
 ## Proposed — not yet confirmed
 

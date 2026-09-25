@@ -475,6 +475,42 @@ def lecture_label(l):
     return f"#{l['id']} — {l.get('title', l.get('course_id'))}"
 
 
+def render_lecture_rows(nav_course):
+    """Manage / delete lecture rows (finding B3): failed or abandoned uploads
+    (stuck in ``uploaded`` because the media never streamed, or ``error``) are
+    otherwise unremovable — only whole-course delete existed. Checked rows are
+    deleted via DELETE /lectures/{id}, then the course/lecture caches clear."""
+    st.subheader("Lecture rows")
+    st.caption("Remove failed or abandoned uploads (e.g. rows stuck in "
+               "'uploaded' because the file never streamed).")
+    lectures = client.list_lectures() or []
+    rows = [l for l in lectures if l.get("course_id") == nav_course]
+    if not rows:
+        st.caption("No lecture rows for this course.")
+        return
+
+    wanted = [
+        lec["id"] for lec in rows
+        if st.checkbox(
+            f"Delete #{lec['id']} — {lec.get('title')} ({lec.get('status')})",
+            key=f"delrow_{lec['id']}",
+        )
+    ]
+
+    if st.button("Delete checked rows", disabled=not wanted):
+        deleted_any = False
+        for lid in wanted:
+            res = client.delete(f"/lectures/{lid}")
+            if res:
+                deleted_any = True
+            else:
+                err = client.take_last_error()
+                st.error((err or {}).get("detail") or f"Delete lecture #{lid} failed.")
+        if deleted_any:
+            client.invalidate_all()
+            _rerun()
+
+
 def ready_lectures(nav_course):
     lectures = client.list_lectures() or []
     return [

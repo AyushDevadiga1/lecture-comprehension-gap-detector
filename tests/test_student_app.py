@@ -282,6 +282,30 @@ def test_snapshot_strip_does_not_spin_on_stuck_uploaded(monkeypatch):
     assert not any("Processing in progress" in i.value for i in at.info)
 
 
+def test_lecture_rows_delete_checked(monkeypatch):
+    """B3: an abandoned 'uploaded' row is deletable right from the dashboard
+    (backend DELETE /lectures/{id}), closing the loop A1 opened."""
+    lectures = [
+        {"id": 9, "course_id": "ml1", "title": "Stuck", "status": "uploaded"},
+        {"id": 1, "course_id": "ml1", "title": "Lec 1", "status": "ready"},
+    ]
+    deleted = []
+
+    def delete(path, timeout=30):
+        deleted.append(path)
+        return {"deleted": True, "lecture_id": 9, "message": "ok"}
+
+    install_backend(monkeypatch, {
+        "list_lectures": lambda ttl=60.0: lectures,
+        "delete": delete,
+    })
+    at = _run()
+    target = [c for c in at.checkbox if "Delete #9" in c.label][0]
+    target.check().run()
+    find_button(at, "Delete checked rows").click().run()
+    assert deleted == ["/lectures/9"]
+
+
 def test_clips_followup_lists_cut_files_after_ready(monkeypatch):
     """Parity flow: 'Cut concept clips' registers a job whose 'ready' runs the
     clip-list follow-up (kept from the old app, now multi-job)."""

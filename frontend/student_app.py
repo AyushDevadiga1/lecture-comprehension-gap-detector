@@ -132,4 +132,7 @@ else:
             st.error(err.get("detail") or "Clip cutting not queued.")
 
 st.divider()
+components.render_lecture_rows(nav_course)
+
+st.divider()
 components.render_quiz(nav_course)
