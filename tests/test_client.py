@@ -139,6 +139,27 @@ def test_get_non_json_response_returns_none(transport):
     assert client.take_last_error()["kind"] == "json"
 
 
+def test_errors_are_thread_isolated():
+    """A3: two sessions (threads) must never consume or clobber each other's
+    recorded errors."""
+    import threading
+
+    seen = {}
+
+    def other_thread():
+        client._record_error("http", 500, "other-session-error", "/x")
+        seen["other"] = client.take_last_error()
+
+    client._record_error("http", 404, "my-error", "/y")
+    t = threading.Thread(target=other_thread, daemon=True)
+    t.start()
+    t.join(timeout=3)
+
+    assert seen["other"]["detail"] == "other-session-error"  # not my 404
+    assert client.take_last_error()["detail"] == "my-error"  # untouched
+    assert client.take_last_error() is None
+
+
 def test_post_success_and_4xx(transport):
     transport(lambda *a, **kw: _Resp(201, {"id": 7}))
     assert client.post("/lectures", json={}) == {"id": 7}

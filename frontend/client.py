@@ -33,7 +33,14 @@ _API_URL_ENV = "LECGAP_API_URL"
 # One-shot structured record of the last failed request. The app renders a
 # single top-level banner for kind == "auth" (401) and can surface other
 # details for user-triggered loads. Cleared on success or via take_last_error().
+#
+# A3 fix: the *source of truth* is thread-local, so two browser sessions (each
+# running its script in its own thread) and the upload worker thread can never
+# consume or clobber each other's errors. ``LAST_ERROR`` remains module-level
+# ONLY as a test seam fallback (tests that simulate a backend detail by setting
+# ``client.LAST_ERROR`` keep working in the single test thread).
 LAST_ERROR = None
+_ERROR_TLS = threading.local()
 
 # Test seams (module-level so tests can neutralise retry sleeps).
 RETRY_DELAY_S = 1.0
@@ -64,13 +71,24 @@ def _auth_headers() -> dict:
 
 
 def _record_error(kind, status, detail, path):
+    _ERROR_TLS.last_error = {"kind": kind, "status": status,
+                             "detail": detail, "path": path}
+
+
+def _clear_errors():
+    if hasattr(_ERROR_TLS, "last_error"):
+        del _ERROR_TLS.last_error
     global LAST_ERROR
-    LAST_ERROR = {"kind": kind, "status": status, "detail": detail, "path": path}
+    LAST_ERROR = None
 
 
 def take_last_error():
-    """Return and clear the recorded request error (used for the auth banner)."""
-    global LAST_ERROR
+    """Return and clear this thread's recorded error (auth banner / inline)."""
+    err = getattr(_ERROR_TLS, "last_error", None)
+    if err is not None:
+        del _ERROR_TLS.last_error
+        return err
+    global LAST_ERROR  # test-seam fallback (single-threaded tests only)
     err, LAST_ERROR = LAST_ERROR, None
     return err
 
@@ -123,8 +141,7 @@ def _request(method, path, *, timeout, headers=None, **kw):
     except Exception as exc:  # noqa: BLE001 - JSON shape errors surface neatly
         _record_error("json", r.status_code, f"Could not read {path}: {exc}", path)
         return r.status_code, None
-    global LAST_ERROR
-    LAST_ERROR = None
+    _clear_errors()
     return r.status_code, payload
 
 
