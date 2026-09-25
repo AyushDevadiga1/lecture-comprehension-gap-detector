@@ -336,20 +336,17 @@ Current-state pass over the module after the split + quota + upload iterations.
 ### A — Real issues found (to fix)
 | # | Issue | Location |
 |---|---|---|
-| A1 | Stuck `uploaded` rows (two-step creates abandoned before the media PUT) spin a permanent monitor card via `attach_in_flight_jobs` (any status outside ready/error) — 0.5s poll loop, "Currently: uploaded.", until the 6h deadline | `components.py` attach |
-| A2 | Faculty panels silently swallow fetch failures — a failed `stats`/`graph`/`detail` load looks like "the button did nothing" | `components.py` faculty panels |
-| A3 | `client.LAST_ERROR` is a process-global shared across sessions and the upload thread — error races between sessions (works single-user, racy multi-user) | `client.py` |
-| A4 | Coverage band is a single green rect to `x(covered)` — hides gaps between concept windows (caption honest, graphic misleading) | `render.py` |
-| A5 | `dag_html` pyvis import is unguarded — a broken/missing pyvis tracebacks the whole Faculty app | `render.py` |
-| A6 | Stale copy: "Student tab", "st.components.v1.html", "Faculty tab" wording remains after the dashboard split + `st.iframe` migration | `render.py` docstring/placeholder |
+| A1 | ~~Stuck `uploaded` rows spin a permanent monitor card~~ — **fixed (snapshot iteration)**: monitor seeds from `snapshot.in_flight`, `uploaded` rows are hints | `components.py` attach |
+| A2 | ~~Faculty panels silently swallow fetch failures~~ — **fixed (2026-09-25)**: stats/DAG button failures surface `st.error(detail)`, timeline failure shows a warning | `components.py` faculty panels |
+| A3 | ~~`client.LAST_ERROR` is a process-global — error races between sessions~~ — **fixed (2026-09-25)**: source of truth is thread-local; module `LAST_ERROR` remains a test-seam fallback | `client.py` |
+| A4 | ~~Coverage band is a single green rect to `x(covered)` — hides gaps~~ — **fixed (2026-09-25)**: one rect per merged covered run | `render.py` |
+| A5 | ~~`dag_html` pyvis import is unguarded~~ — **fixed (2026-09-25)**: `_load_pyvis_network()` guards, graceful placeholder | `render.py` |
+| A6 | ~~Stale copy ("Student tab", `st.components.v1.html`…)~~ — **fixed (2026-09-25)** | `render.py` docstring/placeholder |
 
 ### B — Planned, not yet built
-- **B1 Course snapshot** (in progress, 2026-09-25): derived `GET /courses/{id}/snapshot`
-  polled ~5s by both dashboards; replaces 60/300s cross-process TTL lag and drives
-  monitor seeding (also fixes A1).
-- **B2 Faculty status parity**: usage row + error surfacing (A2) on the Faculty dashboard.
-- **B3 Per-lecture delete in the UI**: backend `DELETE /lectures/{id}` exists; UI only
-  offers whole-course delete (leaves abandoned `uploaded` rows unremovable).
+- ~~**B1 Course snapshot**~~ — **shipped (2026-09-25)** (see §13).
+- **B2 Faculty status parity** — usage row landed with B1; error surfacing landed with A2; remaining: attach-to-job cards on a fresh Faculty tab come from the shared snapshot strip (no dedicated work outstanding).
+- ~~**B3 Per-lecture delete in the UI**~~ — **shipped (2026-09-25)**: "Lecture rows" section on the Student dashboard → `DELETE /lectures/{id}`.
 
 ### C — Deferred (locked out of the module; React-roadmap preconditions)
 Job registry / per-course lock, quiz idempotency, auth/RBAC (reverse proxy).
