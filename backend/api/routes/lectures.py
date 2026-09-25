@@ -13,10 +13,13 @@ from fastapi import (
     File,
     Form,
     HTTPException,
+    Request,
     UploadFile,
 )
 
 from backend.api import jobs
+from backend.api.jobs.common import client_error_message
+from backend.api.jobs.progress import update_lecture_progress
 from backend.api.schemas import (
     ClipBatchOut,
     ClipOut,
@@ -53,26 +56,46 @@ def _safe_filename(name: str) -> str:
 @router.post("", response_model=LectureOut, status_code=201)
 async def upload_lecture(
     background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
+    file: UploadFile = File(None),
     course_id: str = Form(...),
     title: Optional[str] = Form(None),
     whisper_backend: Optional[str] = Form(None),
 ) -> Lecture:
-    ext = Path(file.filename or "").suffix.lower()
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported file type '{ext}'. Allowed: {sorted(ALLOWED_EXTENSIONS)}",
-        )
+    """Create a lecture row (two-step upload flow).
+
+    With ``file`` present (legacy/single-shot): writes media to disk, schedules
+    transcription, returns. Without a file (two-step): just creates the row in
+    status ``uploaded`` — the media is streamed next via
+    ``PUT /lectures/{id}/media``. Either way the row is created and returned
+    fast; heavy transfer never blocks (plan §unch).
+    """
     if whisper_backend not in (None, "local", "groq"):
         raise HTTPException(
             status_code=400,
             detail=f"whisper_backend must be 'local' or 'groq', got '{whisper_backend}'",
         )
 
-    DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
-
     with SessionLocal() as db:
+        if file is None:
+            lecture = Lecture(
+                course_id=course_id.strip(),
+                title=(title or "").strip() or "untitled",
+                status="uploaded",
+            )
+            db.add(lecture)
+            db.commit()
+            db.refresh(lecture)
+            return lecture
+
+        ext = Path(file.filename or "").suffix.lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported file type '{ext}'. Allowed: {sorted(ALLOWED_EXTENSIONS)}",
+            )
+
+        DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
+
         lecture = Lecture(
             course_id=course_id.strip(),
             title=(title or Path(file.filename).stem).strip(),
@@ -117,6 +140,125 @@ async def upload_lecture(
         db.commit()
 
     background_tasks.add_task(jobs.process_lecture, lecture.id, whisper_backend)
+    return lecture
+
+
+@router.put("/{lecture_id}/media", response_model=LectureOut)
+async def upload_lecture_media(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    lecture_id: int,
+    filename: str,
+    whisper_backend: Optional[str] = None,
+) -> Lecture:
+    """Stream one lecture's media body to disk (two-step upload).
+
+    The request body is written chunk-by-chunk with live progress published on
+    the lecture's progress row (stage ``uploading`` -> ``transcribing``), so the
+    frontend's progress cards render the transfer without blocking. Guards:
+    lecture must exist and still be in ``uploaded`` status, extension allowed,
+    Content-Length required and within LECGAP_MAX_UPLOAD_MB.
+    """
+    ext = Path(filename or "").suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{ext}'. Allowed: {sorted(ALLOWED_EXTENSIONS)}",
+        )
+    if whisper_backend not in (None, "local", "groq"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"whisper_backend must be 'local' or 'groq', got '{whisper_backend}'",
+        )
+
+    content_length = request.headers.get("content-length", "")
+    size = int(content_length) if content_length.isdigit() else 0
+    if size <= 0:
+        raise HTTPException(
+            status_code=400, detail="Content-Length header required for media PUT"
+        )
+    if MAX_UPLOAD_MB and size > MAX_UPLOAD_MB * 1024 * 1024:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Upload exceeds LECGAP_MAX_UPLOAD_MB={MAX_UPLOAD_MB} MiB",
+        )
+
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        if lecture.status != "uploaded":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Lecture status is '{lecture.status}'; "
+                       "must be 'uploaded' before streaming media",
+            )
+
+    DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
+    dest = DATA_RAW_DIR / _safe_filename(f"lec{lecture_id}_{filename}")
+    resolved = dest.resolve()
+    allowed = DATA_RAW_DIR.resolve()
+    if not str(resolved).startswith(str(allowed)):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    update_lecture_progress(
+        lecture_id, "uploading", 0,
+        f"Receiving media {filename}...", status="uploading",
+    )
+    written = 0
+    try:
+        with dest.open("wb") as out:
+            async for chunk in request.stream():
+                written += len(chunk)
+                if written > size:
+                    raise HTTPException(status_code=400, detail="Body larger than Content-Length")
+                if MAX_UPLOAD_MB and written > MAX_UPLOAD_MB * 1024 * 1024:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Upload exceeds LECGAP_MAX_UPLOAD_MB={MAX_UPLOAD_MB} MiB",
+                    )
+                out.write(chunk)
+                pct = min(99, int(written * 100 / size))
+                update_lecture_progress(
+                    lecture_id, "uploading", pct,
+                    f"Uploading: {pct}% of {filename}", status="uploading",
+                )
+    except HTTPException as exc:
+        dest.unlink(missing_ok=True)
+        msg = client_error_message(exc, "Upload")
+        update_lecture_progress(lecture_id, "error", 0, msg, status="error")
+        with SessionLocal() as db:
+            lec = db.get(Lecture, lecture_id)
+            if lec is not None:
+                lec.status = "error"
+                lec.error = msg
+                db.commit()
+        raise
+    except Exception as exc:  # noqa: BLE001 - aborted/cancelled stream, disk error...
+        dest.unlink(missing_ok=True)
+        msg = client_error_message(exc, "Upload")
+        update_lecture_progress(lecture_id, "error", 0, msg, status="error")
+        with SessionLocal() as db:
+            lec = db.get(Lecture, lecture_id)
+            if lec is not None:
+                lec.status = "error"
+                lec.error = msg
+                db.commit()
+        raise HTTPException(status_code=400, detail=msg) from exc
+
+    update_lecture_progress(
+        lecture_id, "uploading", 100,
+        f"Media received ({written // 1024} KiB) — starting transcription.",
+        status="uploading",
+    )
+    with SessionLocal() as db:
+        lecture = db.get(Lecture, lecture_id)
+        if lecture is None:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        lecture.source_path = str(dest)
+        db.commit()
+
+    background_tasks.add_task(jobs.process_lecture, lecture_id, whisper_backend)
     return lecture
 
 
