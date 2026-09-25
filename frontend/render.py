@@ -1,10 +1,10 @@
 """Frontend render helpers — importable without Streamlit.
 
 ``dag_html()`` turns a course-graph payload (GET /courses/{id}/graph) into
-interactive HTML (pyvis + vis-network loaded from a CDN) that the Streamlit
-Faculty tab embeds via ``st.components.v1.html``. The CDN build keeps the
-generated page itself to a few KB (the inlined vis.js was ~700 KB and made
-the tab feel slow to open).
+interactive HTML (pyvis + vis-network loaded from a CDN) that the Faculty
+dashboard embeds via ``st.iframe``. The CDN build keeps the generated page
+itself to a few KB (the inlined vis.js was ~700 KB and made the view feel
+slow to open); a missing pyvis degrades to a placeholder instead of a crash.
 
 ``lecture_html()`` turns a lecture-detail payload (GET /lectures/{id},
 segments + concepts) into a static SVG timeline + coverage table: "how much
@@ -61,7 +61,9 @@ def lecture_html(
         for s in segments
     )
 
-    # union of concept windows = "covered" time
+    # union of concept windows = "covered" time. Draw one green rect PER merged
+    # run (finding A4) so gaps between concept windows are visible and the
+    # graphic matches the honest % caption.
     spans = []
     for c in concepts:
         try:
@@ -70,8 +72,16 @@ def lecture_html(
         except (TypeError, ValueError):
             continue
         spans.append((max(a, 0.0), max(b, a)))
-    covered = float(sum(end - start for start, end in _merge(spans)))
+    merged = _merge(spans)
+    covered = float(sum(end - start for start, end in merged))
     coverage = covered / duration
+    covered_rects = "\n".join(
+        '<rect x="%.1f" y="40" width="%.1f" height="10" rx="2" '
+        'fill="#10b981" opacity="0.65">'
+        "<title>covered: %.1fs–%.1fs</title></rect>"
+        % (x(start), max(x(end) - x(start), 1), start, end)
+        for start, end in merged
+    )
 
     bands = []
     taught = 0
@@ -133,8 +143,7 @@ def lecture_html(
   <svg viewBox="0 0 %d %d" width="100%%" height="%d" role="img">
     <rect x="0" y="40" width="%d" height="10" rx="5" fill="#e2e8f0"/>
     %s
-    <rect x="0" y="40" width="%.1f" height="10" rx="5" fill="#10b981" opacity="0.65">
-      <title>covered: %.1fs</title></rect>
+    %s
     %s
     <text x="0" y="78" font-family="Arial" font-size="11" fill="#64748b">0s</text>
     <text x="%d" y="78" font-family="Arial" font-size="11" fill="#64748b">%.0fs</text>
@@ -159,8 +168,7 @@ def lecture_html(
         78 + 27 * taught,
         width,
         ticks,
-        max(x(covered), 1),
-        covered,
+        covered_rects,
         "\n".join(bands),
         width - 40,
         duration,
@@ -177,6 +185,13 @@ def _merge(spans):
         else:
             merged.append((start, end))
     return merged
+
+
+def _load_pyvis_network():
+    """Module-local accessor so tests can inject a failing import (A5)."""
+    from pyvis.network import Network  # noqa: F401
+
+    return Network
 
 
 def _support_sentence(concept: str, segments: list):
@@ -207,10 +222,19 @@ def dag_html(graph: dict) -> str:
     if not nodes:
         return (
             "<p>No graph yet &mdash; run &lsquo;Extract concepts + build graph&rsquo; "
-            "from the Student tab, then reload this view.</p>"
+            "from the Student dashboard, then reload this view.</p>"
         )
 
-    from pyvis.network import Network
+    # A5: pyvis is a heavy, lazy dependency — a missing/broken install must not
+    # traceback the whole Faculty dashboard, just the interactive canvas.
+    try:
+        Network = _load_pyvis_network()
+    except ImportError:
+        return (
+            "<p>The interactive DAG add-on (pyvis / vis-network) is not "
+            "available on this install. Use the learner-order list below "
+            "instead.</p>"
+        )
 
     order = graph.get("topological_order") or list(nodes)
     n = max(len(order), 1)

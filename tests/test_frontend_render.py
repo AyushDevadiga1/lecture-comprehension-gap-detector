@@ -66,12 +66,15 @@ def test_lecture_html_computes_covered_fraction():
                   {"name": "dropout", "start_s": 60.0, "end_s": 100.0}],
         lecture_title="Lec A",
     )
-    # covered = 0-55 and 60-100 = 95s of 100s
+    # covered = 0-55 and 60-100 = 95s of 100s; drawn as TWO green rects
+    # (finding A4 — gaps stay visible, matches the honest % caption).
     assert "95% of the lecture covered" in html
     assert "2 concepts" in html
     assert "2 transcript segments" in html
     assert "dropout randomly silences neurons" in html  # evidence in table
-    assert 'width="950.0"' in html  # the green covered band spans 95% of the 1000px bar
+    assert 'width="550.0"' in html  # merged run 0-55s
+    assert 'width="400.0"' in html  # merged run 60-100s
+    assert 'width="950.0"' not in html  # no more single overstating band
 
 
 def test_lecture_html_renders_empty_lecture():
@@ -108,3 +111,33 @@ def test_dag_html_escapes_tooltip_source_method_and_evidence():
     assert "<script>alert(1)</script>" not in html
     # pyvis JSON-escapes the '&' of the HTML entities as \u0026
     assert "u0026lt;img" in html and "u0026lt;script" in html
+
+
+def test_dag_html_degrades_gracefully_without_pyvis(monkeypatch):
+    """A5: a missing/broken pyvis must not crash the dashboard — a placeholder
+    tells the user to use the learner-order list instead."""
+    from frontend import render
+
+    def boom():
+        raise ImportError("no pyvis")
+
+    monkeypatch.setattr(render, "_load_pyvis_network", boom)
+    html = dag_html({
+        "course_id": "ml1",
+        "nodes": ["A", "B"],
+        "edges": [], "node_count": 2, "edge_count": 0, "is_dag": True,
+        "topological_order": ["A", "B"],
+    })
+    assert "not available on this install" in html
+    assert "learner-order list" in html
+
+
+def test_lecture_html_keeps_gaps_between_covered_runs():
+    """A4: two disjoint concept windows stay two rects with an explicit gap."""
+    html = lecture_html(
+        segments=[{"idx": 0, "start_s": 0.0, "end_s": 200.0, "text": "x"}],
+        concepts=[{"name": "a", "start_s": 0.0, "end_s": 50.0},
+                  {"name": "b", "start_s": 150.0, "end_s": 200.0}],
+    )
+    assert html.count('y="40" width="250.0"') == 2  # two covered runs, gap between
+    assert "50% of the lecture covered" in html
