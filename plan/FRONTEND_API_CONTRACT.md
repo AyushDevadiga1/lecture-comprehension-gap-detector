@@ -38,22 +38,26 @@
 | `GET /lectures/{id}/clips` | path int | `ClipBatchOut` (status `"ready"`) | 404; 422 |
 | `GET /courses/{id}/graph` | `id` matches `[\w\-]{1,128}` | `CourseGraphOut` | 404 `"No graph for this course"`; 422 |
 | `GET /courses/{id}/stats` | `id` regex above | dict: `course_id`, `heatmap[]`, `divergence[]`, `taught_order[]`, `learned_order[]` | 422 (never 404) |
+| `GET /usage` | — | `{services:{groq.chat, groq.whisper, local, ollama}, availability}` — live per-service Groq rate-limit leftovers (`remaining_requests`, `remaining_tokens`, `reset_in_s`), honest absence when no call happened yet; **guarded** like `/llm/backends` | 401 via middleware |
 | `GET /health` | — | liveness (public, no auth) | — |
 
 **Progress semantics** (`LectureProgressOut`): live `status` values during work are
 `transcribing` (transcribe/extract/etc. — backend keeps this as the live state
 string) with a `stage` giving finer granularity; `progress_pct` 0–100; `detail`
-human text; `elapsed_s` since job start; `updated_at` ISO. Terminal states the
-frontend acts on: `ready` (100), `error`, `not_found` (lecture row gone). After a
-backend restart, live progress is lost and the DB fallback reports
-`transcribing/50` (stuck) or `ready` (stale) — Engine-2 requires the job registry
-to fix this; Engine-1 must render these honestly.
+human text; `elapsed_s` since job start; `duration_s?` the probed media length,
+published once the transcribe worker passes ffprobe (drives the quota estimate);
+`updated_at` ISO. Terminal states the frontend acts on: `ready` (100), `error`,
+`not_found` (lecture row gone). After a backend restart, live progress is lost
+and the DB fallback reports `transcribing/50` (stuck) or `ready` (stale) —
+Engine-2 requires the job registry to fix this; Engine-1 must render these
+honestly.
 
 ### Writes (mutate → invalidate caches)
 
 | Method + path | Request | Response | Errors |
 |---|---|---|---|
-| `POST /lectures` | multipart: `file` (required), `course_id` (required form), `title?`, `whisper_backend?` (“local”\|“groq”) | **201** `LectureOut` (status `"uploaded"`); transcribe runs in background | 400 bad extension / bad backend / invalid filename; 413 upload cap; 422 |
+| `POST /lectures` | multipart: `file` (optional now), `course_id` (required form), `title?`, `whisper_backend?` (“local”\|“groq”). **With `file`**: legacy single-shot (201, transcribe scheduled). **Without `file`** (two-step): creates the row fast with status `"uploaded"`, no media, no job | **201** `LectureOut` | 400 bad extension / bad backend / invalid filename; 413 upload cap; 422 |
+| `PUT /lectures/{id}/media?filename=&whisper_backend=` | streamed raw body with `Content-Length`; backend writes chunks + publishes `uploading` progress, then schedules transcription | `LectureOut` | 400 bad extension / missing Content-Length; **409** `must be 'uploaded'`; 404; 413 cap; 422 |
 | `POST /lectures/{id}/concepts` | — | `LectureDetailOut`; extraction+graph run in background | 404; **409** `must be 'ready' before extraction`; 422 |
 | `POST /courses/{id}/graph?lecture_id=` | optional `lecture_id` int (attaches progress) | **202** `CourseBuildOut` (`status:"queued"`) | 422 (no 404 — worker no-ops on empty course) |
 | `POST /lectures/{id}/clips` | — | **202** `ClipBatchOut` (`status:"queued"`) | 404; **409** `must be 'ready' to cut clips`; **409** no concepts yet; 422 |

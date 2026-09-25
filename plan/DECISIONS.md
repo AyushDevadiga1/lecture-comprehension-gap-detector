@@ -97,6 +97,25 @@ line in this file. When in doubt, this file wins.
   (Range-capable) is the canonical playback URL; payloads keep filesystem paths
   in v1 and the frontend maps them at the edge. Fixes the broken `st.video`
   remediation playback without breaking the contract.
+- **Student-dashboard quota transparency + course-key consistency (2026-09-24).**
+  First focused iteration (plan §10). Backend: `GET /usage` (guarded, like
+  `/llm/backends`) + `backend/api/usage.py` capturing Groq rate-limit headers on
+  every LLM/Whisper call, split per service (`groq.chat` / `groq.whisper`);
+  `LectureProgressOut.duration_s` published at the ffprobe probing stage gives a
+  **live-accurate** per-lecture request estimate. Frontend (student dashboard
+  only): per-service usage row + "this lecture ≈ N requests ≈ X%" once probed;
+  canonical course KEY `^[A-Z][A-Z0-9-]{0,127}$` via
+  `client.normalize_course_id` (normalize + **soft-warn**, non-breaking);
+  duplicate-upload (course, filename) soft-warn. Faculty status and the course
+  snapshot stay queued.
+- **Non-blocking two-step upload (2026-09-25, shipped).** `POST /lectures`
+  without a file creates the row fast; `PUT /lectures/{id}/media` streams the
+  body with live `uploading` progress (Content-Length required, 409 unless
+  status `uploaded`, 413 cap, abort-safe), then schedules transcription.
+  Frontend uploads from memory in 1 MiB slices inside a background thread with a
+  Cancel button (`.streamlit/config.toml` maxUploadSize=2048). Fixes the
+  frozen-button report; single-shot multipart POST retained for API compat.
+  `plan/FRONTEND_ARCHITECTURE.md` §11.
 
 ## Proposed — not yet confirmed
 

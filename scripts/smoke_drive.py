@@ -39,6 +39,27 @@ check("GET /lectures 200", r.status_code == 200)
 lectures = r.json()
 print("   lectures:", lectures)
 
+print("\n== 1b. GET /usage (quota transparency) ==")
+r = client.get("/usage")
+check("GET /usage 200", r.status_code == 200)
+usage_body = r.json()
+services = usage_body.get("services", {})
+check("usage has per-service keys",
+      {"groq.chat", "groq.whisper", "local", "ollama"} <= set(services))
+check("usage no-data is honest (no fake zeros)",
+      "remaining_requests" not in services.get("groq.whisper", {}) or
+      isinstance(services["groq.whisper"]["remaining_requests"], int))
+check("usage includes availability", "availability" in usage_body)
+
+print("\n== 1c. two-step create (POST /lectures, no file) then clean up ==")
+r = client.post("/lectures", data={"course_id": "ml", "title": "twostep-probe"})
+check("POST /lectures without file -> 201 uploaded", r.status_code == 201
+      and r.json()["status"] == "uploaded")
+probe_id = r.json()["id"]
+r = client.delete(f"/lectures/{probe_id}")
+check("DELETE probe lecture 200 (no transcription ever started)",
+      r.status_code == 200)
+
 print("\n== 2. course graph fetch ==")
 r = client.get("/courses/ml/graph")
 check("GET /courses/ml/graph 200", r.status_code == 200)

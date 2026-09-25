@@ -252,3 +252,79 @@ Every flow present in `app.py` must exist in the split apps:
 - Quiz idempotency / versioned question ids → same.
 - Auth/RBAC → reverse-proxy layer, React engine.
 - Frontend framework change → REACT_ROADMAP.
+
+## 10. Student-dashboard iteration — quota transparency + course-key consistency (2026-09-24)
+
+First focused iteration of the split dashboards. **Student dashboard only**;
+faculty-side status, non-blocking upload, and the course snapshot stay queued.
+
+### 10.1 Decisions (agreed in session)
+- **Live-accurate estimate**: per-lecture Groq request budget is computed from
+  the *probed* duration (`duration_hook` at the `probing` stage), not a fixed
+  constant.
+- **Quota split per service**: Groq LLM (`groq.chat`) and Groq Whisper
+  (`groq.whisper`) rate limits are captured and shown separately; local Whisper
+  is "offline, unlimited" with an ffmpeg-ok flag; Ollama reachability shown.
+- **Course key**: canonical uppercase slug `^[A-Z][A-Z0-9-]{0,127}$`, normalized
+  once in `client.normalize_course_id`, soft-warn (not hard-reject) on mismatch
+  and on duplicate (course, filename, size) uploads.
+- **`GET /usage` is guarded** like `/llm/backends` (the frontend already sends
+  `X-API-Key` when configured).
+
+### 10.2 Backend additions (additive, contract v1.1)
+- `backend/api/usage.py` — thread-safe in-memory store keyed per service/model;
+  captures Groq rate-limit headers (`x-ratelimit-{limit,remaining,reset}-{requests,tokens}`)
+  on every LLM/Whisper call via `client.*.with_raw_response.create(...)`, with a
+  429-exception fallback. Resets on process restart; values self-heal on the
+  next call.
+- `GET /usage` — `{services: {groq.chat, groq.whisper, local, ollama}, availability}`
+  (guarded).
+- `LectureProgressOut.duration_s` (optional) — published by the transcribe
+  worker right after ffprobe via a `duration_hook` into the progress store.
+
+### 10.3 Frontend additions (student dashboard)
+- `client.normalize_course_id(key)` — `strip → upper → whitespace→'-' →
+  collapse repeats → validate slug`.
+- `client.usage()` — live `GET /usage`, short TTL (~30s), never stale-clamped.
+- Usage row above the upload form: one line per service + an honest
+  `this lecture ≈ N requests ≈ X% of remaining` once the live duration is known
+  (`ceil(duration / GROQ_WHISPER_MAX_CHUNK_S=300)` for whisper + structure-pass
+  allowance).
+- Canonical course key shown in the sidebar caption; bootstrap upload input
+  normalizes + validates live; duplicate-upload soft-warn against
+  `list_lectures()` for (course, filename, size).
+
+### 10.4 Tests
+- `test_usage.py` (backend): header capture on success + 429 fallback, `/usage`
+  shape, `duration_s` in progress.
+- `test_client.py`: `normalize_course_id` table, `usage()` TTL.
+- AppTest (`test_student_app.py`): usage row renders, canonical key in sidebar,
+  duplicate soft-warn, normalize feedback.
+- `smoke_drive.py`: `GET /usage` shape check.
+
+## 11. Non-blocking upload (two-step media streaming, 2026-09-25)
+
+Fixes the frozen-button report: uploading a video no longer blocks the script
+in one giant multipart POST.
+
+- **Flow:** `POST /lectures` (no file) creates the row fast (status `uploaded`);
+  `PUT /lectures/{id}/media?filename=&whisper_backend=` streams the raw body on
+  disk with live progress published to the same progress row (`uploading` stage
+  -> `transcribing`); the worker is then scheduled. Single-shot POST (with
+  file) still works for API/tests/smoke.
+- **Frontend:** `client.upload_media` streams from memory in 1 MiB slices with
+  an explicit Content-Length (no second full-copy); `components.begin_upload`
+  runs it in a daemon thread (module-level registry, survives reruns) with a
+  Cancel button; the monitor card shows the transfer then hands over to the
+  transcribe stages. `client.put` added to the transport.
+- **Guards (server):** extension allow-list, Content-Length required, 409 unless
+  status is still `uploaded`, 413 cap enforced while streaming, aborted/cancelled
+  streams mark the lecture `error` and remove the partial file.
+- **Config:** `.streamlit/config.toml` raises `server.maxUploadSize` to 2048 MiB
+  (match `LECGAP_MAX_UPLOAD_MB`).
+- **Contract:** `plan/FRONTEND_API_CONTRACT.md` updated (`PUT` added; `POST` file
+  now optional).
+- **Tests:** `test_upload_streaming.py` (create/PUT/progress/409/404/400/413),
+  `client.upload_media` streaming + cancel, `components` upload registry +
+  failure + cancel, AppTest two-step submit. `smoke_drive.py` exercises the
+  create-then-delete probe (no real transcription).

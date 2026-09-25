@@ -83,8 +83,8 @@ Consumes from `backend.*`:
 
 Defines:
 - `update_lecture_progress` — line 18
-- `_finish` — line 32
-- `get_lecture_progress` — line 38
+- `_finish` — line 35
+- `get_lecture_progress` — line 41
 
 Consumes from `backend.*`:
 - `backend.models.db.Lecture`
@@ -190,6 +190,7 @@ Consumes from `backend.*`:
 - `backend.api.routes.lectures.router`
 - `backend.api.routes.media.router`
 - `backend.api.routes.quizzes.router`
+- `backend.api.routes.usage.router`
 
 ## backend.api.routes.lectures.py
 
@@ -272,6 +273,36 @@ Consumes from `backend.*`:
 - `backend.pipeline.quiz.select_remediation_sequence`
 - `backend.pipeline.quiz.supporting_sentence`
 
+## backend.api.routes.media.py
+
+Defines:
+- `serve_clip` — line 24
+
+Consumes from `backend.*`:
+- `backend.config.CLIPS_BASE_DIR`
+
+## backend.api.routes.usage.py
+
+Defines:
+- `get_usage` — line 20
+
+Consumes from `backend.*`:
+- `backend.api.usage`
+- `backend.config.GROQ_MODEL`
+- `backend.config.GROQ_WHISPER_MODEL`
+- `backend.pipeline.llm.backend_status_detailed`
+- `backend.pipeline.transcribe._ffmpeg_available`
+
+## backend.api.usage.py
+
+Defines:
+- `_hdr` — line 30
+- `parse_reset_seconds` — line 42
+- `record_groq` — line 60
+- `snapshot` — line 81
+
+Consumes from `backend.*`: *(none)*
+
 ## backend.models.db.py
 
 Defines:
@@ -296,13 +327,14 @@ Defines:
 - `_KeyLockMap.__init__` — line 152  *(class method)*
 - `_KeyLockMap.__call__` — line 157  *(class method)*
 - `_call_groq` — line 180
-- `_ollama_reachable` — line 227
-- `_call_ollama` — line 236
-- `complete` — line 262
-- `backend_status_detailed` — line 318
-- `backend_status` — line 332
+- `_ollama_reachable` — line 243
+- `_call_ollama` — line 252
+- `complete` — line 278
+- `backend_status_detailed` — line 334
+- `backend_status` — line 348
 
 Consumes from `backend.*`:
+- `backend.api.usage`
 - `backend.config.GROQ_MODEL`
 - `backend.config.LLM_CACHE_TTL_S`
 - `backend.config.LLM_MAX_RETRIES`
@@ -326,10 +358,11 @@ Defines:
 - `_split_flac` — line 174
 - `_seg_bounds` — line 224
 - `_transcribe_chunk` — line 232
-- `_transcribe_groq` — line 298
-- `transcribe` — line 354
+- `_transcribe_groq` — line 313
+- `transcribe` — line 374
 
 Consumes from `backend.*`:
+- `backend.api.usage`
 - `backend.config.GROQ_WHISPER_MAX_CHUNK_S`
 - `backend.config.GROQ_WHISPER_MODEL`
 - `backend.config.GROQ_WHISPER_UPLOAD_LIMIT`
@@ -482,33 +515,39 @@ Consumes from `backend.*`:
 ## frontend.client.py
 
 Defines:
-- `validated_api_url` — line 42
-- `_auth_headers` — line 58
-- `_record_error` — line 65
-- `take_last_error` — line 70
-- `_extract_detail` — line 77
-- `_request` — line 89
-- `get` — line 130
-- `post` — line 138
-- `delete` — line 148
-- `CacheStore.__init__` — line 164  *(class method)*
-- `CacheStore._key` — line 169  *(class method)*
-- `CacheStore.get` — line 176  *(class method)*
-- `CacheStore.invalidate` — line 192  *(class method)*
-- `CacheStore.invalidate_all` — line 198  *(class method)*
-- `CacheStore.__len__` — line 202  *(class method)*
-- `invalidate` — line 210
-- `invalidate_all` — line 216
-- `invalidate_for_course` — line 220
-- `_cached` — line 231
-- `course_summaries` — line 235
-- `list_lectures` — line 240
-- `lecture_detail` — line 245
-- `lecture_clips` — line 250
-- `course_stats` — line 255
-- `course_graph` — line 260
-- `media_url` — line 267
-- `valid_course_id` — line 293
+- `validated_api_url` — line 43
+- `_auth_headers` — line 59
+- `_record_error` — line 66
+- `take_last_error` — line 71
+- `_extract_detail` — line 78
+- `_request` — line 90
+- `get` — line 131
+- `post` — line 139
+- `delete` — line 149
+- `CacheStore.__init__` — line 165  *(class method)*
+- `CacheStore._key` — line 170  *(class method)*
+- `CacheStore.get` — line 177  *(class method)*
+- `CacheStore.invalidate` — line 193  *(class method)*
+- `CacheStore.invalidate_all` — line 199  *(class method)*
+- `CacheStore.__len__` — line 203  *(class method)*
+- `invalidate` — line 211
+- `invalidate_all` — line 217
+- `invalidate_for_course` — line 221
+- `_cached` — line 232
+- `course_summaries` — line 236
+- `list_lectures` — line 241
+- `lecture_detail` — line 246
+- `lecture_clips` — line 251
+- `course_stats` — line 256
+- `course_graph` — line 261
+- `usage` — line 266
+- `normalize_course_id` — line 276
+- `canonical_compare` — line 287
+- `media_url` — line 294
+- `valid_course_id` — line 320
+- `is_canonical_key` — line 327
+- `whisper_requests_for` — line 333
+- `videos_left` — line 344
 
 Consumes from `backend.*`: *(none)*
 
