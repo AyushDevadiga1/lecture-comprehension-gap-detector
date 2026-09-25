@@ -10,6 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlalchemy import func
 
 from backend.api import graphs, jobs
+from backend.api.jobs.progress import get_lecture_progress
 from backend.api.schemas import (
     CourseBuildOut,
     CourseDeleteOut,
@@ -18,7 +19,9 @@ from backend.api.schemas import (
 )
 from backend.config import CLIPS_BASE_DIR
 from backend.models.db import (
+    Clip,
     Concept,
+    ConceptItem,
     GraphEdge,
     GraphNode,
     Lecture,
@@ -88,6 +91,76 @@ def list_courses() -> List[CourseSummaryOut]:
             )
         )
     return summaries
+
+
+@router.get("/{course_id}/snapshot")
+def course_snapshot(course_id: str) -> dict:
+    """Derived, live course readiness (plan/FRONTEND_ARCHITECTURE.md §13, B1).
+
+    Cheap grouped counts + the lecture rows currently in flight
+    (``uploaded``|``transcribing``) enriched with the live progress stage, so a
+    5s frontend poll can show per-course state consistently across dashboards
+    without a job registry. Never 404 — unknown courses return ``exists: false``.
+    """
+    course_id = _validate_course_id(course_id)
+    with SessionLocal() as db:
+        lectures = (
+            db.query(Lecture)
+            .filter(Lecture.course_id == course_id)
+            .order_by(Lecture.id)
+            .all()
+        )
+        concept_count = (
+            db.query(func.count(Concept.id))
+            .filter(Concept.course_id == course_id).scalar() or 0
+        )
+        clip_totals = dict(
+            db.query(Clip.ok, func.count(Clip.id))
+            .join(Lecture, Clip.lecture_id == Lecture.id)
+            .filter(Lecture.course_id == course_id)
+            .group_by(Clip.ok)
+            .all()
+        )
+        question_count = (
+            db.query(func.count(ConceptItem.id))
+            .filter(ConceptItem.course_id == course_id).scalar() or 0
+        )
+        respondents = (
+            db.query(func.count(func.distinct(QuizResponse.student_id)))
+            .filter(QuizResponse.course_id == course_id).scalar() or 0
+        )
+
+    graph = graphs.course_graph(course_id) or {}
+    node_count = graph.get("node_count", 0)
+    edge_count = graph.get("edge_count", 0)
+
+    statuses = {"total": len(lectures), "ready": 0, "uploaded": 0,
+                "transcribing": 0, "error": 0}
+    in_flight: List[dict] = []
+    for lec in lectures:
+        if lec.status in ("ready", "uploaded", "transcribing", "error"):
+            statuses[lec.status] += 1
+        if lec.status in ("uploaded", "transcribing"):
+            prog = get_lecture_progress(lec.id)
+            in_flight.append({
+                "lecture_id": lec.id,
+                "title": lec.title,
+                "status": lec.status,
+                "stage": (prog or {}).get("stage", lec.status),
+                "progress_pct": (prog or {}).get("progress_pct", 0),
+            })
+
+    ok_clips = int(clip_totals.get(1, 0))
+    return {
+        "exists": bool(lectures) or concept_count > 0 or node_count > 0,
+        "course_id": course_id,
+        "lectures": statuses,
+        "concepts": concept_count,
+        "graph": {"has": node_count > 0, "nodes": node_count, "edges": edge_count},
+        "clips": {"cut": ok_clips + int(clip_totals.get(0, 0)), "ok": ok_clips},
+        "quiz": {"questions": question_count, "respondents": respondents},
+        "in_flight": in_flight,
+    }
 
 
 @router.get("/{course_id}/graph", response_model=CourseGraphOut)
