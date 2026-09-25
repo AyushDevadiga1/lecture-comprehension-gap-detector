@@ -19,6 +19,7 @@ higher-level functions without touching the framework.
 
 import copy
 import os
+import re
 import threading
 import time
 from urllib.parse import urlparse
@@ -152,6 +153,14 @@ def delete(path, timeout: int = 30):
         return None
 
 
+def put(path, params=None, headers=None, data=None, timeout: int = 600):
+    try:
+        return _request("PUT", path, timeout=timeout, params=params,
+                        headers=headers, data=data)[1]
+    except requests.RequestException:
+        return None
+
+
 # ----------------------------------------------------------------- Tier-1 cache
 
 class CacheStore:
@@ -262,6 +271,32 @@ def course_graph(course_id: str, ttl: float = 300.0):
     return _cached(f"/courses/{course_id}/graph", ttl=ttl)
 
 
+def usage(ttl: float = 30.0):
+    """GET /usage — live per-service Groq quota + local/ollama availability."""
+    return _cached("/usage", ttl=ttl)
+
+
+# ------------------------------------------------------------- course keywords
+
+_COURSE_SLUG_RE = r"^[A-Z][A-Z0-9-]{0,127}$"
+
+
+def normalize_course_id(key) -> str:
+    """Canonical course KEY — ``strip → upper → whitespace→'-' → collapse repeats``
+    applied to a new course identifier, so the same course never fragments into
+    'ML1' vs 'ml1' vs 'ml 1'. Existing keys (any case) are left untouched and
+    still accepted by ``valid_course_id`` for read/compare paths."""
+    text = (key or "").strip().upper()
+    text = re.sub(r"\s+", "-", text)
+    text = re.sub(r"-{2,}", "-", text)
+    return text
+
+
+def canonical_compare(key: str) -> str:
+    """Case-insensitive identity used for duplicate detection (never sent)."""
+    return (key or "").strip().lower().replace(" ", "-")
+
+
 # ----------------------------------------------------------------- media
 
 def media_url(path):
@@ -290,7 +325,73 @@ def media_url(path):
     return f"{API}/media/clips/{lecture_id}/{filename}"
 
 
-def valid_course_id(course_id) -> bool:
-    import re
+def upload_media(lecture_id, filename, file_bytes, whisper_backend=None,
+                 *, chunk_size: int = 1024 * 1024, cancel=None):
+    """Stream one lecture's media to PUT /lectures/{id}/media (two-step upload).
 
+    The request body is generated lazily in ``chunk_size`` slices and sent with
+    an explicit Content-Length, so requests streams from memory without
+    building another full copy; the backend publishes ``uploading`` progress on
+    the lecture's progress row. Passing ``cancel`` (a threading.Event) stops
+    the generator between chunks.
+
+    Returns the LectureOut payload (truthy) or None (LAST_ERROR holds detail).
+    """
+    if not file_bytes:
+        _record_error("http", 400, "No media bytes to upload", "/media")
+        return None
+    size = len(file_bytes)
+
+    params = {"filename": filename}
+    if whisper_backend:
+        params["whisper_backend"] = whisper_backend
+
+    def _chunks():
+        sent = 0
+        while sent < size:
+            if cancel is not None and cancel.is_set():
+                return
+            end = min(sent + chunk_size, size)
+            yield file_bytes[sent:end]
+            sent = end
+
+    return put(
+        f"/lectures/{int(lecture_id)}/media",
+        params=params,
+        headers={
+            "Content-Length": str(size),
+            "Content-Type": "application/octet-stream",
+        },
+        data=_chunks(),
+        timeout=600,
+    )
+
+
+def valid_course_id(course_id) -> bool:
+    """Accepts the backend's pattern (letters/digits/underscore/hyphen, 1-128
+    chars) so existing keys in any case stay usable; new course keys are also
+    checked against the canonical uppercase slug via ``is_canonical_key``."""
     return bool(re.match(_COURSE_ID_RE, course_id or ""))
+
+
+def is_canonical_key(course_id) -> bool:
+    return bool(re.match(_COURSE_SLUG_RE, course_id or ""))
+
+
+# ------------------------------------------------------------- quota estimates
+
+def whisper_requests_for(duration_s, max_chunk_s: int = 300) -> int:
+    """Groq Whisper requests for one lecture of ``duration_s`` seconds
+    (one chunk per window; mirrors transcribe._split_flac up to the cap)."""
+    duration = float(duration_s or 0)
+    if duration <= 0:
+        return 0
+    from math import ceil
+
+    return max(1, ceil(duration / max(max_chunk_s, 1)))
+
+
+def videos_left(remaining_requests, duration_s, max_chunk_s: int = 300):
+    """Rough 'how many more lectures fit' given the current upload's length."""
+    per = whisper_requests_for(duration_s, max_chunk_s)
+    return None if not per else int(remaining_requests // per)

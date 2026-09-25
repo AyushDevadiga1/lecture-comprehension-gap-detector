@@ -278,3 +278,105 @@ def test_valid_course_id():
     assert not client.valid_course_id("")
     assert not client.valid_course_id("has space")
     assert not client.valid_course_id("x" * 300)
+
+
+# --------------------------------------------------------- course-key normalize
+
+def test_normalize_course_id():
+    assert client.normalize_course_id(" ml 1 ") == "ML-1"
+    assert client.normalize_course_id("ml1") == "ML1"
+    assert client.normalize_course_id("ml  1") == "ML-1"
+    assert client.normalize_course_id("a--b") == "A-B"
+    assert client.normalize_course_id("a---b") == "A-B"
+    assert client.normalize_course_id("") == ""
+    assert client.normalize_course_id(None) == ""
+
+
+def test_canonical_compare_is_case_insensitive():
+    assert client.canonical_compare("ML1") == client.canonical_compare("ml1")
+    assert client.canonical_compare("ml 1") == client.canonical_compare("ML-1")
+
+
+def test_is_canonical_key():
+    assert client.is_canonical_key("ML1")
+    assert client.is_canonical_key("ML1-F23")
+    assert not client.is_canonical_key("ml1")
+    assert not client.is_canonical_key("ML_1")
+    assert not client.is_canonical_key("")
+
+
+# -------------------------------------------------------------- quota estimates
+
+def test_whisper_requests_for():
+    assert client.whisper_requests_for(0) == 0
+    assert client.whisper_requests_for(0.0) == 0
+    assert client.whisper_requests_for(299) == 1
+    assert client.whisper_requests_for(300) == 1
+    assert client.whisper_requests_for(301) == 2
+    assert client.whisper_requests_for(900) == 3
+
+
+def test_videos_left():
+    assert client.videos_left(12, 900) == 4  # 3 req/lecture at 300s chunks
+    assert client.videos_left(0, 900) == 0
+    assert client.videos_left(5, 0) is None  # unknown duration
+
+
+def test_usage_goes_through_cache_store(monkeypatch):
+    clock = _Clock()
+    monkeypatch.setattr(client, "_CACHE", client.CacheStore(clock=clock))
+    calls = []
+
+    def fake_get(path, params=None, timeout=30):
+        calls.append(path)
+        return {"services": {"groq.whisper": {"remaining_requests": 9}}}
+
+    monkeypatch.setattr(client, "get", fake_get)
+    assert client.usage()["services"]["groq.whisper"]["remaining_requests"] == 9
+    assert client.usage()["services"]["groq.whisper"]["remaining_requests"] == 9
+    assert calls == ["/usage"]  # 30s TTL: one HTTP call, memoized
+
+
+# ------------------------------------------------------------ media streaming
+
+def test_upload_media_streams_with_content_length(monkeypatch):
+    captured = {}
+
+    def fake_put(path, params=None, headers=None, data=None, timeout=600):
+        captured.update(path=path, params=params, headers=headers, data=data)
+        return {"id": 5, "status": "uploaded"}
+
+    monkeypatch.setattr(client, "put", fake_put)
+    payload = client.upload_media(
+        5, "lec.mp4", b"x" * 3000, whisper_backend="groq", chunk_size=1024,
+    )
+    assert payload == {"id": 5, "status": "uploaded"}
+    assert captured["path"] == "/lectures/5/media"
+    assert captured["params"]["filename"] == "lec.mp4"
+    assert captured["params"]["whisper_backend"] == "groq"
+    assert captured["headers"]["Content-Length"] == "3000"
+    chunks = list(captured["data"])
+    assert b"".join(chunks) == b"x" * 3000
+    assert len(chunks) == 3 and all(len(c) <= 1024 for c in chunks)
+
+
+def test_upload_media_rejects_empty_bytes(monkeypatch):
+    client.LAST_ERROR = None
+    assert client.upload_media(1, "x.mp4", b"") is None
+    assert client.take_last_error()["detail"] == "No media bytes to upload"
+
+
+def test_upload_media_cancel_stops_the_stream(monkeypatch):
+    import threading
+
+    cancel = threading.Event()
+    cancel.set()
+    captured = {}
+
+    def fake_put(path, params=None, headers=None, data=None, timeout=600):
+        captured["data"] = data
+        return {"id": 1}
+
+    monkeypatch.setattr(client, "put", fake_put)
+    client.upload_media(1, "x.mp4", b"abc" * 10, cancel=cancel)
+    assert list(captured["data"]) == []  # nothing sent after cancel
