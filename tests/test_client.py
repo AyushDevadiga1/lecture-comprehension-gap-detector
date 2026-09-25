@@ -337,6 +337,28 @@ def test_usage_goes_through_cache_store(monkeypatch):
     assert calls == ["/usage"]  # 30s TTL: one HTTP call, memoized
 
 
+def test_course_snapshot_uses_short_ttl(monkeypatch):
+    clock = _Clock()
+    store = client.CacheStore(clock=clock)
+    monkeypatch.setattr(client, "_CACHE", store)
+    calls = []
+
+    def fake_get(path, params=None, timeout=30):
+        calls.append(path)
+        return {"exists": True, "lectures": {"total": 2, "ready": 1}}
+
+    monkeypatch.setattr(client, "get", fake_get)
+    payload = client.course_snapshot("ml1", ttl=5.0)
+    assert payload["lectures"]["ready"] == 1
+    assert calls == ["/courses/ml1/snapshot"]
+    client.course_snapshot("ml1", ttl=5.0)
+    assert calls == ["/courses/ml1/snapshot"]  # 5s TTL memoizes
+
+    clock.advance(6)
+    client.course_snapshot("ml1", ttl=5.0)
+    assert len(calls) == 2  # expired -> re-fetched live
+
+
 # ------------------------------------------------------------ media streaming
 
 def test_upload_media_streams_with_content_length(monkeypatch):

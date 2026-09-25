@@ -173,3 +173,35 @@ def test_cancel_upload_sets_the_stop_event(monkeypatch, sess):
     finally:
         release.set()
         assert components._UPLOADS[5]["done"].wait(2)
+
+
+# ----------------------------------------------------------- course snapshot
+
+def test_snapshot_line_renders_counts():
+    data = {
+        "exists": True, "concepts": 3,
+        "lectures": {"total": 4, "ready": 2},
+        "graph": {"has": True}, "clips": {"ok": 5},
+        "quiz": {"questions": 12},
+    }
+    line = components._snapshot_line(data)
+    assert "4 lectures · 2 ready" in line
+    assert "3 concepts" in line and "graph ✓" in line
+    assert "5 clips ✓" in line and "12 questions" in line
+
+    empty = components._snapshot_line({})
+    assert "0 lectures · 0 ready" in empty and "no graph" in empty
+
+
+def test_seed_monitor_from_snapshot_seeds_only_transcribing(sess):
+    transcribing = [
+        {"lecture_id": 7, "title": "live", "status": "transcribing"},
+        {"lecture_id": 8, "title": "live2", "status": "transcribing"},
+    ]
+    components._seed_monitor_from_snapshot("ml", transcribing)
+    kinds = {j["lecture_id"]: j["kind"] for j in state.get("jobs", "items")}
+    assert kinds == {7: "attach", 8: "attach"}
+
+    components._seed_monitor_from_snapshot("ml", transcribing)  # no-op re-seed
+    kinds = {j["lecture_id"]: j["kind"] for j in state.get("jobs", "items")}
+    assert kinds == {7: "attach", 8: "attach"}

@@ -24,7 +24,7 @@ with st.sidebar:
 components.render_auth_banner()
 components.render_usage_row()
 components.render_progress_cards()
-components.attach_in_flight_jobs(nav_course)
+components.render_course_snapshot(nav_course)
 
 # ------------------------------------------------------------ ingest + process
 

@@ -271,6 +271,14 @@ def course_graph(course_id: str, ttl: float = 300.0):
     return _cached(f"/courses/{course_id}/graph", ttl=ttl)
 
 
+def course_snapshot(course_id: str, ttl: float = 5.0):
+    """GET /courses/{id}/snapshot — derived per-course readiness (plan §13).
+
+    Short TTL by design: it is the live consistency layer both dashboards poll
+    (~5s), so a change made in one session/dashboard surfaces in the other."""
+    return _cached(f"/courses/{course_id}/snapshot", ttl=ttl)
+
+
 def usage(ttl: float = 30.0):
     """GET /usage — live per-service Groq quota + local/ollama availability."""
     return _cached("/usage", ttl=ttl)

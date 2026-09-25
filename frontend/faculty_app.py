@@ -22,7 +22,9 @@ with st.sidebar:
     nav_course = components.course_sidebar()
 
 components.render_auth_banner()
+components.render_usage_row()
 components.render_progress_cards()
+components.render_course_snapshot(nav_course)
 
 if nav_course is None:
     st.info("No courses yet — upload a lecture from the Student dashboard.")

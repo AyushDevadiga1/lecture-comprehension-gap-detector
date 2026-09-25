@@ -75,11 +75,8 @@ def course_sidebar():
     summaries = {c["course_id"]: c for c in (client.course_summaries() or [])}
     row = summaries.get(nav_course)
     if row:
-        st.caption(
-            f"Course key: `{nav_course}` · {row['total_lectures']} lectures · "
-            f"{row['ready_lectures']} ready · {row['total_concepts']} concepts · "
-            f"{'graph ✓' if row['has_graph'] else 'no graph yet'}"
-        )
+        snap = client.course_snapshot(nav_course) or {}
+        st.caption(f"Course key: `{nav_course}` · {_snapshot_line(snap)}")
     if st.button("Refresh course list"):
         client.invalidate_all()
         _rerun()
@@ -416,20 +413,62 @@ def _run_after(job, lecture_id):
                     st.code(c.get("path", ""))
 
 
-def attach_in_flight_jobs(course_id):
-    """Transparency between users: if the current session has no monitored job
-    but the course has lectures stuck in a non-ready state, surface them as
-    monitor cards so a fresh tab sees what the backend is doing."""
-    if state.get("jobs", "items"):
+def _snapshot_line(data) -> str:
+    """Compact readiness line from a /snapshot payload (pure, unit-testable)."""
+    snap = data.get("lectures", {}) or {}
+    graph = data.get("graph", {}) or {}
+    clips = data.get("clips", {}) or {}
+    quiz = data.get("quiz", {}) or {}
+    return (f"{snap.get('total', 0)} lectures · {snap.get('ready', 0)} ready · "
+            f"{data.get('concepts', 0)} concepts · "
+            f"{'graph ✓' if graph.get('has') else 'no graph'} · "
+            f"{clips.get('ok', 0)} clips ✓ · {quiz.get('questions', 0)} questions")
+
+
+def render_course_snapshot(course_id):
+    """Live course-readiness strip (plan §13): the 5s snapshot drives both
+    dashboards, so a change made in one session surfaces in the other. Seeds
+    monitor cards only for *transcribing* lectures (finding A1 fix: a stuck
+    ``uploaded`` row is a hint, never a spinning card)."""
+    if not course_id:
         return
-    lectures = client.list_lectures() or []
-    in_flight = [
-        l for l in lectures
-        if l.get("course_id") == course_id and l.get("status") not in ("ready", "error")
-    ]
-    for lec in in_flight:
-        start_job(course_id, lec["id"], f"Lecture #{lec['id']} — {lec.get('status')}",
-                  kind="attach")
+    data = client.course_snapshot(course_id)
+    if not data:
+        return
+    st.caption("Course readiness: " + _snapshot_line(data))
+
+    in_flight = data.get("in_flight", []) or []
+    uploading = [f for f in in_flight if f.get("status") == "uploaded"]
+    transcribing = [f for f in in_flight if f.get("status") == "transcribing"]
+
+    if transcribing:
+        st.info("Processing in progress:")
+        for f in transcribing:
+            pro = client.get(f"/lectures/{f['lecture_id']}/progress") or {}
+            st.text(f"  • #{f['lecture_id']} — {f.get('title')} "
+                    f"[{pro.get('stage', f.get('stage', ''))} "
+                    f"{pro.get('progress_pct', f.get('progress_pct', 0))}%]")
+        _seed_monitor_from_snapshot(course_id, transcribing)
+
+    if uploading:
+        ids = ", ".join(str(f["lecture_id"]) for f in uploading)
+        st.warning(f"{len(uploading)} lecture(s) awaiting media (uploaded but not "
+                   f"streamed: #{ids}) — delete or re-upload them.")
+
+
+def _seed_monitor_from_snapshot(course_id, transcribing):
+    """Attach monitor cards for backend jobs a fresh tab wasn't present for.
+    Only ``transcribing`` rows (never stuck ``uploaded`` rows — A1)."""
+    already = {
+        (j.get("course_id"), j.get("lecture_id"), j.get("kind"))
+        for j in (state.get("jobs", "items") or [])
+    }
+    for f in transcribing:
+        key = (course_id, f["lecture_id"], "attach")
+        if key in already:
+            continue
+        start_job(course_id, f["lecture_id"],
+                  f"Lecture #{f['lecture_id']} — {f.get('title')}", kind="attach")
 
 
 def lecture_label(l):

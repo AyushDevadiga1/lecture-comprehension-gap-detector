@@ -221,6 +221,67 @@ def test_two_step_upload_creates_then_streams(monkeypatch):
     assert any("Uploading lecture #77" in s.value for s in at.success)
 
 
+SNAPSHOT = {
+    "exists": True, "concepts": 3,
+    "lectures": {"total": 4, "ready": 2, "transcribing": 1, "uploaded": 1,
+                 "error": 0},
+    "graph": {"has": True}, "clips": {"ok": 5}, "quiz": {"questions": 12},
+    "in_flight": [
+        {"lecture_id": 3, "title": "Live", "status": "transcribing",
+         "stage": "clips", "progress_pct": 40},
+        {"lecture_id": 4, "title": "Stuck", "status": "uploaded",
+         "stage": "uploaded", "progress_pct": 0},
+    ],
+}
+
+
+def test_snapshot_strip_renders_counts_and_in_flight_hint(monkeypatch):
+    """B1 + A1: the 5s snapshot renders readiness; an 'uploaded' (stuck) row is
+    a HINT, never a spinner card; the transcribing one gets a monitor card."""
+
+    def get(path, params=None, timeout=30):
+        if path == "/lectures/3/progress":
+            return {"status": "transcribing", "stage": "clips",
+                    "progress_pct": 40}
+        return None
+
+    install_backend(monkeypatch, {
+        "course_snapshot": lambda cid, ttl=5.0: SNAPSHOT,
+        "get": get,
+    })
+    at = _run()
+    caps = "\n".join(c.value for c in at.get("caption"))
+    assert "4 lectures · 2 ready" in caps
+    assert "Course readiness:" in caps
+    infos = "\n".join(i.value for i in at.info)
+    texts = "\n".join(t.value for t in at.get("text"))
+    assert "Processing in progress" in infos
+    assert "clips 40%" in texts and "#3 — Live" in texts
+    warns = "\n".join(w.value for w in at.warning)
+    assert "awaiting media" in warns and "#4" in warns
+
+
+def test_snapshot_strip_does_not_spin_on_stuck_uploaded(monkeypatch):
+    """Regression for A1: only transcribing rows seed monitor cards, so a stuck
+    'uploaded' row must not create a 0.5s poll loop."""
+
+    def snapshot(cid, ttl=5.0):
+        return {
+            "exists": True, "lectures": {"total": 1, "uploaded": 1},
+            "graph": {"has": False}, "concepts": 0,
+            "clips": {"ok": 0}, "quiz": {"questions": 0},
+            "in_flight": [{"lecture_id": 4, "title": "Stuck",
+                           "status": "uploaded", "stage": "uploaded",
+                           "progress_pct": 0}],
+        }
+
+    install_backend(monkeypatch, {"course_snapshot": snapshot})
+    at = _run()
+    assert any("awaiting media" in w.value for w in at.warning)
+    # no monitor card for #4 -> no info "Processing" -> no rerun loop source
+    assert not any("Processing in progress" in i.value for i in at.info)
+
+
 def test_clips_followup_lists_cut_files_after_ready(monkeypatch):
     """Parity flow: 'Cut concept clips' registers a job whose 'ready' runs the
     clip-list follow-up (kept from the old app, now multi-job)."""

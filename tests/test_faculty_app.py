@@ -116,3 +116,18 @@ def test_no_ready_lecture_info(monkeypatch):
     install_backend(monkeypatch, {"list_lectures": lambda: []})
     at = _run()
     assert any("No ready lecture" in i.value for i in at.info)
+
+
+def test_snapshot_strip_on_faculty(monkeypatch):
+    """Faculty dashboard also shows the live readiness strip (same snapshot)."""
+    snapshot = {
+        "exists": True, "concepts": 3,
+        "lectures": {"total": 4, "ready": 2, "transcribing": 1},
+        "graph": {"has": True}, "clips": {"ok": 5}, "quiz": {"questions": 12},
+        "in_flight": [{"lecture_id": 3, "title": "Live", "status": "transcribing",
+                       "stage": "clips", "progress_pct": 40}],
+    }
+    install_backend(monkeypatch, {"course_snapshot": lambda cid, ttl=5.0: snapshot})
+    at = _run()
+    caps = "\n".join(c.value for c in at.get("caption"))
+    assert "Course readiness:" in caps and "4 lectures · 2 ready" in caps
