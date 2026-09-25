@@ -48,6 +48,8 @@ DEFAULT_CLIENT = {
     "course_graph": lambda course_id, ttl=300.0: None,
     "lecture_detail": lambda lecture_id, ttl=300.0: None,
     "lecture_clips": lambda lecture_id, ttl=60.0: None,
+    "usage": lambda ttl=30.0: None,
+    "upload_media": lambda *a, **k: {"id": 1, "status": "uploaded"},
 }
 
 

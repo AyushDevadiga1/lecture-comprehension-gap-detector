@@ -1,0 +1,4 @@
+[server]
+# Match the backend cap (LECGAP_MAX_UPLOAD_MB, default 2048 MiB) so big lecture
+# videos are not rejected by the Streamlit proxy before the backend sees them.
+maxUploadSize = 2048

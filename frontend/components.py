@@ -10,6 +10,7 @@ The entrypoints (``student_app.py``, ``faculty_app.py``) stay thin: they wire
 widgets and call the functions here.
 """
 
+import threading
 import time
 
 import streamlit as st
@@ -19,6 +20,10 @@ from frontend.render import dag_html, lecture_html
 
 _MAX_POLL_FAILS = 5
 _JOB_DEADLINE_S = 6 * 60 * 60
+
+# In-process upload registry keyed by lecture id — survives reruns (module-level)
+# so a background upload thread is never lost between script executions.
+_UPLOADS = {}
 
 _STAGE_HINTS = {
     "initializing": "Starting the background job…",
@@ -71,8 +76,8 @@ def course_sidebar():
     row = summaries.get(nav_course)
     if row:
         st.caption(
-            f"{row['total_lectures']} lectures · {row['ready_lectures']} ready · "
-            f"{row['total_concepts']} concepts · "
+            f"Course key: `{nav_course}` · {row['total_lectures']} lectures · "
+            f"{row['ready_lectures']} ready · {row['total_concepts']} concepts · "
             f"{'graph ✓' if row['has_graph'] else 'no graph yet'}"
         )
     if st.button("Refresh course list"):
@@ -105,6 +110,105 @@ def _course_options():
         return sorted({c["course_id"] for c in summaries})
     lectures = client.list_lectures() or []
     return sorted({l["course_id"] for l in lectures})
+
+
+# ------------------------------------------------------------ API quota row
+
+def _usage_summary(services: dict, availability=None, duration_s=None) -> list:
+    """Compose the quota transparency lines (pure, unit-testable)."""
+    services = services or {}
+    availability = availability or {}
+    chat = services.get("groq.chat", {}) or {}
+    whisper = services.get("groq.whisper", {}) or {}
+    local = services.get("local", {}) or {}
+    ollama = services.get("ollama", {}) or {}
+    out = []
+
+    def _has_data(s):
+        return (s.get("calls", 0) or 0) > 0 or s.get("remaining_requests") is not None
+
+    def _groq_line(name, s, has_tokens=False):
+        reqs = s.get("remaining_requests")
+        reset = s.get("reset_in_s")
+        line = f"{name}: {reqs:,} req left"
+        if has_tokens and s.get("remaining_tokens") is not None:
+            line += f" · {s['remaining_tokens']:,} tok left"
+        if reset is not None:
+            mm = int(reset) // 60
+            ss = int(reset) % 60
+            line += f" · resets ~{mm}m{ss:02d}s"
+        return line
+
+    if _has_data(chat):
+        out.append(_groq_line("Groq chat", chat, has_tokens=True))
+    elif availability.get("groq_configured"):
+        out.append("Groq chat: no usage data yet — appears after the first API call")
+    if _has_data(whisper):
+        out.append(_groq_line("Groq whisper", whisper))
+    elif availability.get("groq_configured"):
+        out.append("Groq whisper: no usage data yet — appears after the first API call")
+    if local.get("available"):
+        ff = "ffmpeg ✓" if local.get("ffmpeg_ok") else "ffmpeg ✗ (use local backend)"
+        out.append(f"Local Whisper: available · offline · unlimited · {ff}")
+    if ollama.get("reachable"):
+        out.append("Ollama: reachable")
+
+    if duration_s and _has_data(whisper) and whisper.get("remaining_requests") is not None:
+        per = client.whisper_requests_for(duration_s)
+        left = client.videos_left(whisper["remaining_requests"], duration_s)
+        if left is not None and per:
+            pct = per / max(whisper["remaining_requests"], 1) * 100
+            plural = "s" if left != 1 else ""
+            out.append(f"This lecture ≈ {per} Groq requests "
+                       f"({pct:.1f}% of remaining) ≈ {left} more lecture{plural} like this.")
+    return out
+
+
+def render_usage_row():
+    """Live per-service quota line(s) above the upload form (plan 10).
+
+    Honest by design: services with no recorded call yet render 'no usage data
+    yet' (never fake zeros); the per-lecture estimate uses the probed duration
+    of the current transcribe job, so it is accurate as soon as ffprobe runs.
+    """
+    data = client.usage()
+    if not data:
+        return
+    lines = _usage_summary(
+        data.get("services"), availability=data.get("availability"),
+        duration_s=_active_transcribe_duration(),
+    )
+    if lines:
+        st.caption("API quota (live): " + " · ".join(lines))
+
+
+def _active_transcribe_duration():
+    """Duration of the first in-flight transcribe job (live, from progress)."""
+    for job in (state.get("jobs", "items") or []):
+        if job.get("kind") != "transcribe":
+            continue
+        data = client.get(f"/lectures/{job.get('lecture_id')}/progress")
+        if data and data.get("duration_s"):
+            return float(data["duration_s"])
+    return None
+
+
+def duplicate_lecture(course_id, filename):
+    """Soft-warn (non-blocking) if a lecture for this course already uses this
+    filename (title auto-defaults to the filename). Returns the lecture id or
+    None."""
+    if not filename:
+        return None
+    from pathlib import Path
+
+    stem = Path(filename).stem
+    for lec in (client.list_lectures() or []):
+        if lec.get("course_id") != course_id:
+            continue
+        title = (lec.get("title") or "")
+        if title == filename or title == stem or title == f"{stem}.":
+            return lec["id"]
+    return None
 
 
 # ------------------------------------------------------------ auth / banners
@@ -144,6 +248,70 @@ def start_job(course_id, lecture_id, title, kind, after=None):
     state.set("jobs", items=items)
 
 
+# ----------------------------------------------------------------- upload thread
+
+def begin_upload(course_id, lecture_id, title, filename, file_bytes,
+                 whisper_backend=None):
+    """Non-blocking upload (plan §unch): create the row was already done; this
+    streams the media in a daemon thread while the progress card shows the
+    transfer, so the script never blocks on the file."""
+    entry = _UPLOADS.get(lecture_id)
+    if entry and not entry["done"].is_set():
+        return False  # already uploading this lecture
+
+    cancel = threading.Event()
+    done = threading.Event()
+    outcome = {"ok": False, "error": None}
+
+    def worker():
+        try:
+            resp = client.upload_media(
+                lecture_id, filename, file_bytes,
+                whisper_backend=whisper_backend, cancel=cancel,
+            )
+            err = client.take_last_error()
+            if resp is None:
+                outcome["error"] = "Upload cancelled." if cancel.is_set() else (
+                    (err or {}).get("detail") or "Upload failed."
+                )
+            outcome["ok"] = resp is not None
+        except Exception as exc:  # noqa: BLE001 - surface in the card
+            outcome["error"] = f"Upload failed: {exc}"
+        finally:
+            done.set()
+
+    thread = threading.Thread(target=worker, daemon=True)
+    _UPLOADS[lecture_id] = {"thread": thread, "cancel": cancel, "done": done,
+                            "ok": outcome, "title": title}
+    thread.start()
+    start_job(course_id, lecture_id, title, kind="upload")
+    return True
+
+
+def cancel_upload(lecture_id):
+    entry = _UPLOADS.get(lecture_id)
+    if entry and not entry["done"].is_set():
+        entry["cancel"].set()
+        return True
+    return False
+
+
+def _upload_status(lecture_id, kind):
+    """(done, ok, error) for a job; ``(done=True, ok=True)`` once finished OK.
+
+    ``done=False`` covers both "uploading" and "about to start" (registry entry
+    pending) so the monitor keeps polling without inventing errors."""
+    if kind != "upload":
+        return None
+    entry = _UPLOADS.get(lecture_id)
+    if entry is None:
+        return False, False, None  # awaiting the thread's first tick
+    if entry["done"].is_set():
+        _UPLOADS.pop(lecture_id, None)  # handled; keep memory tight
+        return True, entry["ok"]["ok"], entry["ok"]["error"]
+    return False, False, None
+
+
 def _job_guidance(stage, elapsed_s):
     hint = _STAGE_HINTS.get(stage, f"Currently: {stage or 'working'}.")
     mm, ss = divmod(int(elapsed_s or 0), 60)
@@ -164,6 +332,23 @@ def render_progress_cards():
     keep, want_rerun, backoff = [], False, 1.5
     for job in items:
         lecture_id = job.get("lecture_id")
+        kind = job.get("kind")
+
+        # --- non-blocking upload: handle the client-side upload thread first ---
+        if kind == "upload":
+            pending, up_ok, up_err = _upload_status(lecture_id, kind)
+            if not pending and not up_ok:
+                st.error(up_err or "Upload failed.")
+                client.invalidate_for_course(job.get("course_id"))
+                continue
+            if not pending:
+                # hand off: media landed, the backend worker card reports from
+                # here on (stage flips to transcribing after the PUT schedules it)
+                job["kind"] = "transcribe"
+                kind = "transcribe"
+            elif st.button("Cancel upload", key=f"cancel_up_{lecture_id}"):
+                cancel_upload(lecture_id)
+
         data = client.get(f"/lectures/{lecture_id}/progress")
         if not data:
             fails = int(job.get("fail_count", 0)) + 1
@@ -189,6 +374,13 @@ def render_progress_cards():
         if status in ("error", "not_found"):
             st.error(data.get("detail") or f"Job ended with status '{status}'.")
             client.invalidate_for_course(job.get("course_id"))
+            continue
+        if kind == "upload" and status == "uploaded":
+            st.progress(0, text="Upload starting…")
+            st.caption(job.get("title", "Upload"))
+            keep.append(job)
+            want_rerun = True
+            backoff = min(backoff, 0.5)
             continue
 
         st.progress(min(int(data.get("progress_pct", 0)), 100),

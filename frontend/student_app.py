@@ -9,6 +9,7 @@ this file is thin wiring so the two dashboards stay independent and testable.
 """
 
 import streamlit as st
+from pathlib import Path
 
 from frontend import client, components
 
@@ -21,6 +22,7 @@ with st.sidebar:
     nav_course = components.course_sidebar()
 
 components.render_auth_banner()
+components.render_usage_row()
 components.render_progress_cards()
 components.attach_in_flight_jobs(nav_course)
 
@@ -29,8 +31,13 @@ components.attach_in_flight_jobs(nav_course)
 upload_course = nav_course
 if upload_course is None:
     st.warning("No course exists yet. Upload below to create the first course.")
-    upload_course = st.text_input("Course ID (creates the course)",
-                                  max_chars=128)
+    typed = st.text_input("Course ID (creates the course)", max_chars=128)
+    upload_course = client.normalize_course_id(typed)
+    if typed and not client.valid_course_id(upload_course):
+        st.error("Course ID must be 1-128 alphanumeric/hyphen/underscore chars.")
+        upload_course = None
+    elif typed and upload_course != typed:
+        st.caption(f"Will use canonical key `{upload_course}` (consistent everywhere).")
 
 st.subheader("Ingest a lecture")
 if upload_course:
@@ -43,28 +50,43 @@ if upload_course:
         )
         up = st.file_uploader("Lecture media (mp4/mp3/wav/m4a/mkv/mov/webm)")
         submit = st.form_submit_button("Upload + transcribe")
-    if submit and up:
+
+    dup = components.duplicate_lecture(upload_course, up.name if up else None)
+    if up and dup:
+        st.warning(f"Duplicate: lecture #{dup} already exists for course "
+                   f"'{upload_course}' with this filename. Uploading will create "
+                   "a second row.")
+        dedupe_ok = st.checkbox("Upload anyway (I know it's a duplicate)",
+                                key="dup_upload_ok")
+    else:
+        dedupe_ok = True
+
+    if submit and up and dedupe_ok:
         if not client.valid_course_id(upload_course):
             st.error("Course ID must be 1-128 alphanumeric/hyphen/underscore chars.")
         else:
-            data = {"course_id": upload_course}
+            data = {"course_id": upload_course, "title": Path(up.name).stem}
             if backend != "auto":
                 data["whisper_backend"] = backend
-            resp = client.post(
-                "/lectures",
-                files={"file": (up.name, up.getvalue(),
-                                "application/octet-stream")},
-                data=data,
-            )
+            resp = client.post("/lectures", data=data)
             err = client.take_last_error()
             if resp:
                 client.invalidate_all()
-                st.success(f"Uploaded lecture #{resp['id']} — transcribing now "
-                           "(see the progress card below).")
-                components.start_job(upload_course, resp["id"], "Transcription",
-                                     kind="transcribe")
+                started = components.begin_upload(
+                    upload_course, resp["id"], "Upload + transcribe", up.name,
+                    up.getvalue(),
+                    whisper_backend=backend if backend != "auto" else None,
+                )
+                st.success(
+                    f"Uploading lecture #{resp['id']} — the transfer runs in the "
+                    f"background; progress card below."
+                    if started else
+                    "Upload already in progress — see the progress card below."
+                )
             elif err:
                 st.error(err.get("detail") or "Upload failed.")
+    elif submit and up and not dedupe_ok:
+        st.info("Duplicate upload not sent — tick 'Upload anyway' to proceed.")
 else:
     st.info("Upload media above to create the first course.")
 

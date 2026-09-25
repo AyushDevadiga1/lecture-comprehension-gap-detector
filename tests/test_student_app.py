@@ -158,6 +158,69 @@ def test_bootstrap_creates_first_course_without_courses(monkeypatch):
     assert any("first course" in w.value.lower() for w in at.warning)
 
 
+USAGE_PAYLOAD = {
+    "services": {
+        "groq.chat": {"model": "gpt-oss-20b", "remaining_requests": 14391,
+                      "remaining_tokens": 1499000, "reset_in_s": 907,
+                      "last_checked": 1, "calls": 2},
+        "groq.whisper": {"model": "whisper-turbo", "remaining_requests": 90,
+                         "reset_in_s": 300, "last_checked": 1, "calls": 1},
+        "local": {"available": True, "unlimited": True, "ffmpeg_ok": True},
+        "ollama": {"reachable": False},
+    },
+}
+
+
+def test_usage_row_renders_per_service(monkeypatch):
+    install_backend(monkeypatch, {"usage": lambda ttl=30.0: USAGE_PAYLOAD})
+    at = _run()
+    caps = [c.value for c in at.get("caption")]
+    joined = "\n".join(caps)
+    assert "Groq chat: 14,391 req left" in joined
+    assert "1,499,000 tok left" in joined
+    assert "Groq whisper: 90 req left" in joined
+    assert "Local Whisper: available" in joined
+
+
+def test_bootstrap_normalizes_course_to_canonical_key(monkeypatch):
+    install_backend(monkeypatch, {
+        "course_summaries": lambda: [],
+        "list_lectures": lambda: [],
+    })
+    at = _run()
+    t = [t for t in at.get("text_input")
+         if t.label == "Course ID (creates the course)"][0]
+    t.set_value("  ml  1 ").run()
+    caps = "\n".join(c.value for c in at.get("caption"))
+    assert "canonical key `ML-1`" in caps
+
+
+def test_two_step_upload_creates_then_streams(monkeypatch):
+    """Frozen-button fix: submit no longer sends the whole file in one blocking
+    POST — the row is created fast, then begin_upload streams it in a thread."""
+
+    calls = []
+
+    def post(path, **kw):
+        calls.append(("create", dict(kw)))
+        return {"id": 77, "status": "uploaded"}
+
+    def upload_media(*args, **kwargs):
+        calls.append(("upload", {}))
+        return {"id": 77, "status": "uploaded"}
+
+    install_backend(monkeypatch, {"post": post, "upload_media": upload_media})
+    at = _run()
+    at.file_uploader[0].set_value(("lec.mp4", b"x" * 20, "video/mp4")).run()
+    find_button(at, "Upload + transcribe").click().run()
+
+    assert calls and calls[0][0] == "create"
+    assert "files" not in calls[0][1]  # two-step: no multipart file in the POST
+    assert calls[0][1]["data"]["course_id"] == "ml1"
+    assert any(c[0] == "upload" for c in calls)  # media streamed separately
+    assert any("Uploading lecture #77" in s.value for s in at.success)
+
+
 def test_clips_followup_lists_cut_files_after_ready(monkeypatch):
     """Parity flow: 'Cut concept clips' registers a job whose 'ready' runs the
     clip-list follow-up (kept from the old app, now multi-job)."""
