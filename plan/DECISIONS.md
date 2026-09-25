@@ -116,6 +116,14 @@ line in this file. When in doubt, this file wins.
   Cancel button (`.streamlit/config.toml` maxUploadSize=2048). Fixes the
   frozen-button report; single-shot multipart POST retained for API compat.
   `plan/FRONTEND_ARCHITECTURE.md` §11.
+- **Course snapshot (B1, 2026-09-25, shipped).** New derived `GET /courses/{id}/snapshot`
+  (grouped counts + `in_flight` from `uploaded|transcribing` lecture rows enriched
+  with the live progress stage; never 404). Frontend polls it at a 5s TTL on both
+  dashboards (readiness strip, sidebar counts now live), and monitor seeding now
+  comes from `snapshot.in_flight` — **transcribing only**, fixing finding A1 (a
+  stuck `uploaded` row renders as an "awaiting media" hint, never a spinning
+  card). Faculty additionally gained the usage row (B2 usage half). Findings
+  audit recorded in `plan/FRONTEND_ARCHITECTURE.md` §12.
 
 ## Proposed — not yet confirmed
 

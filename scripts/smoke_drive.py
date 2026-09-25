@@ -66,7 +66,20 @@ check("GET /courses/ml/graph 200", r.status_code == 200)
 graph = r.json()
 print("   learner order:", graph.get("topological_order"))
 
-print("\n== 2b. faculty DAG view renders (frontend.render.dag_html) ==")
+print("\n== 2b. course snapshot (derived readiness, plan B1) ==")
+r = client.get("/courses/ml/snapshot")
+check("GET /courses/ml/snapshot 200", r.status_code == 200)
+snap = r.json()
+check("snapshot exists + counts present", snap.get("exists")
+      and "lectures" in snap and "in_flight" in snap and "graph" in snap
+      and "quiz" in snap and "clips" in snap)
+check("snapshot 5s readiness keys", {"total", "ready", "uploaded",
+      "transcribing", "error"} <= set(snap["lectures"]))
+r = client.get("/courses/nosuch/snapshot")
+check("unknown course snapshot -> exists false (never 404)",
+      r.status_code == 200 and r.json().get("exists") is False)
+
+print("\n== 2c. faculty DAG view renders (frontend.render.dag_html) ==")
 if graph.get("topological_order"):
     from frontend.render import dag_html
     html = dag_html(graph)

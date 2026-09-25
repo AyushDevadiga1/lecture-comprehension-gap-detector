@@ -38,6 +38,7 @@
 | `GET /lectures/{id}/clips` | path int | `ClipBatchOut` (status `"ready"`) | 404; 422 |
 | `GET /courses/{id}/graph` | `id` matches `[\w\-]{1,128}` | `CourseGraphOut` | 404 `"No graph for this course"`; 422 |
 | `GET /courses/{id}/stats` | `id` regex above | dict: `course_id`, `heatmap[]`, `divergence[]`, `taught_order[]`, `learned_order[]` | 422 (never 404) |
+| `GET /courses/{id}/snapshot` | `id` regex above | dict: `exists`, `lectures{total,ready,uploaded,transcribing,error}`, `concepts`, `graph{has,nodes,edges}`, `clips{cut,ok}`, `quiz{questions,respondents}`, `in_flight[{lecture_id,title,status,stage,progress_pct}]` — derived readiness; the frontend's 5s consistency layer | 422 (never 404) |
 | `GET /usage` | — | `{services:{groq.chat, groq.whisper, local, ollama}, availability}` — live per-service Groq rate-limit leftovers (`remaining_requests`, `remaining_tokens`, `reset_in_s`), honest absence when no call happened yet; **guarded** like `/llm/backends` | 401 via middleware |
 | `GET /health` | — | liveness (public, no auth) | — |
 

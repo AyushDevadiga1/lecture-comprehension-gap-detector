@@ -328,3 +328,38 @@ in one giant multipart POST.
   `client.upload_media` streaming + cancel, `components` upload registry +
   failure + cancel, AppTest two-step submit. `smoke_drive.py` exercises the
   create-then-delete probe (no real transcription).
+
+## 12. Frontend findings audit (2026-09-25, section pass)
+
+Current-state pass over the module after the split + quota + upload iterations.
+
+### A — Real issues found (to fix)
+| # | Issue | Location |
+|---|---|---|
+| A1 | Stuck `uploaded` rows (two-step creates abandoned before the media PUT) spin a permanent monitor card via `attach_in_flight_jobs` (any status outside ready/error) — 0.5s poll loop, "Currently: uploaded.", until the 6h deadline | `components.py` attach |
+| A2 | Faculty panels silently swallow fetch failures — a failed `stats`/`graph`/`detail` load looks like "the button did nothing" | `components.py` faculty panels |
+| A3 | `client.LAST_ERROR` is a process-global shared across sessions and the upload thread — error races between sessions (works single-user, racy multi-user) | `client.py` |
+| A4 | Coverage band is a single green rect to `x(covered)` — hides gaps between concept windows (caption honest, graphic misleading) | `render.py` |
+| A5 | `dag_html` pyvis import is unguarded — a broken/missing pyvis tracebacks the whole Faculty app | `render.py` |
+| A6 | Stale copy: "Student tab", "st.components.v1.html", "Faculty tab" wording remains after the dashboard split + `st.iframe` migration | `render.py` docstring/placeholder |
+
+### B — Planned, not yet built
+- **B1 Course snapshot** (in progress, 2026-09-25): derived `GET /courses/{id}/snapshot`
+  polled ~5s by both dashboards; replaces 60/300s cross-process TTL lag and drives
+  monitor seeding (also fixes A1).
+- **B2 Faculty status parity**: usage row + error surfacing (A2) on the Faculty dashboard.
+- **B3 Per-lecture delete in the UI**: backend `DELETE /lectures/{id}` exists; UI only
+  offers whole-course delete (leaves abandoned `uploaded` rows unremovable).
+
+### C — Deferred (locked out of the module; React-roadmap preconditions)
+Job registry / per-course lock, quiz idempotency, auth/RBAC (reverse proxy).
+
+## 13. Course snapshot (B1, 2026-09-25)
+
+See §12-B1. New derived read `GET /courses/{id}/snapshot` (never 404; `exists`
+flag; `in_flight` from `uploaded|transcribing` lecture rows enriched with the
+live `stage` from the progress store). Frontend: `client.course_snapshot`
+(5s TTL) + a live readiness strip on both dashboards; monitor seeding switches
+from the lectures-list guess to `snapshot.in_flight` (transcribing only) — the
+`uploaded` count renders as a "awaiting media" hint instead of a spinning card.
+Sidebar counts move to the 5s snapshot (kills the cross-dashboard lag).
