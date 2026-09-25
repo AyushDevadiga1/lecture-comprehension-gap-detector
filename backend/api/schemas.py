@@ -30,7 +30,11 @@ class LectureOut(BaseModel):
 
 
 class LectureProgressOut(BaseModel):
-    """Live job progress — the payload behind GET /lectures/{id}/progress."""
+    """Live job progress — the payload behind GET /lectures/{id}/progress.
+
+    ``duration_s`` (optional) is the probed media length, published once the
+    transcription worker hits the probing stage; used by the quota widget.
+    """
 
     lecture_id: int
     status: str
@@ -38,6 +42,7 @@ class LectureProgressOut(BaseModel):
     progress_pct: int
     detail: str
     elapsed_s: float
+    duration_s: Optional[float] = None
     updated_at: str
 
 

@@ -16,7 +16,8 @@ _lecture_progress: dict = {}
 
 
 def update_lecture_progress(
-    lecture_id: int, stage: str, pct: int, detail: str, status: str = "transcribing"
+    lecture_id: int, stage: str, pct: int, detail: str, status: str = "transcribing",
+    duration_s: float = None,
 ) -> None:
     with _progress_lock:
         entry = _lecture_progress.get(lecture_id)
@@ -26,6 +27,8 @@ def update_lecture_progress(
         entry["pct"] = int(max(0, min(pct, 100)))
         entry["detail"] = detail
         entry["status"] = status
+        if duration_s is not None:
+            entry["duration_s"] = float(duration_s)
         entry["updated_at"] = time.time()
 
 
@@ -48,6 +51,7 @@ def get_lecture_progress(lecture_id: int) -> dict:
                 "progress_pct": prog.get("pct", 0),
                 "detail": prog.get("detail", "Processing..."),
                 "elapsed_s": round(elapsed, 1),
+                "duration_s": prog.get("duration_s"),
                 "updated_at": datetime.fromtimestamp(
                     prog.get("updated_at", time.time())
                 ).astimezone().isoformat(),
@@ -69,5 +73,6 @@ def get_lecture_progress(lecture_id: int) -> dict:
             "progress_pct": pct,
             "detail": detail,
             "elapsed_s": 0.0,
+            "duration_s": None,
             "updated_at": datetime.now().astimezone().isoformat(),
         }

@@ -182,7 +182,7 @@ def test_backend_defaults_to_local():
 def test_transcribe_dispatches_to_groq_backend(monkeypatch):
     calls = []
 
-    def fake_groq(media_path, progress_callback=None):
+    def fake_groq(media_path, progress_callback=None, duration_hook=None):
         calls.append(media_path)
         return ["segments-from-groq"]
 

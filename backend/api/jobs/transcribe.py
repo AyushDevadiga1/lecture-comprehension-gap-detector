@@ -38,8 +38,18 @@ def _process_lecture_inner(lecture_id: int, backend: str = None) -> None:
     def _on_progress(stage, pct, detail) -> None:
         update_lecture_progress(lecture_id, stage, pct, detail, status="transcribing")
 
+    def _on_duration(duration_s) -> None:
+        update_lecture_progress(
+            lecture_id, "probing", 5,
+            f"Probing audio duration with ffprobe... {duration_s:.0f}s",
+            status="transcribing", duration_s=duration_s,
+        )
+
     try:
-        segments = transcribe(source_path, backend=backend, progress_callback=_on_progress)
+        segments = transcribe(
+            source_path, backend=backend, progress_callback=_on_progress,
+            duration_hook=_on_duration,
+        )
     except Exception as exc:  # noqa: BLE001 — surface any failure on the lecture row
         err_msg = client_error_message(exc, "Transcription")
         update_lecture_progress(lecture_id, "error", 0, err_msg, status="error")

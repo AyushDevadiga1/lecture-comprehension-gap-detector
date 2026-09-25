@@ -180,6 +180,10 @@ _inflight = _KeyLockMap()
 def _call_groq(system: str, user: str, max_tokens: int, temperature: float) -> LLMResult:
     from groq import Groq, RateLimitError
 
+    # lazy: usage.py is imported by the routes package which itself imports this
+    # module — a top-level import would form a cycle (backend.api <-> llm).
+    from backend.api import usage
+
     client = Groq()
     kwargs = dict(
         messages=[
@@ -195,7 +199,13 @@ def _call_groq(system: str, user: str, max_tokens: int, temperature: float) -> L
     last_error: Optional[Exception] = None
     for attempt in range(MAX_RETRIES + 1):
         try:
-            resp = client.chat.completions.create(model=GROQ_MODEL, **kwargs)
+            raw = client.chat.completions.with_raw_response.create(model=GROQ_MODEL,
+                                                                   **kwargs)
+            try:
+                usage.record_groq("groq.chat", GROQ_MODEL, raw.headers)
+            except Exception:  # noqa: BLE001 - usage capture must never break a call
+                pass
+            resp = raw.parse()
             return LLMResult(
                 text=(resp.choices[0].message.content or "").strip(),
                 backend="groq",
@@ -206,6 +216,13 @@ def _call_groq(system: str, user: str, max_tokens: int, temperature: float) -> L
             )
         except RateLimitError as exc:
             last_error = exc
+            try:
+                usage.record_groq(
+                    "groq.chat", GROQ_MODEL,
+                    getattr(exc.response, "headers", None),
+                )
+            except Exception:  # noqa: BLE001
+                pass
             reset = 60.0
             try:
                 reset = _parse_reset_seconds(

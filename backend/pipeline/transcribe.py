@@ -241,20 +241,47 @@ def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, 
     """
     from groq import InternalServerError, RateLimitError
 
+    # lazy: usage.py is imported by the routes package (see llm._call_groq note)
+    from backend.api import usage
+
+    try:
+        raw_caller = client.audio.transcriptions.with_raw_response.create
+    except AttributeError:  # older/plain-client shapes (incl. test fakes)
+        raw_caller = None
+
+    def _create(fh):
+        kwargs = dict(
+            model=GROQ_WHISPER_MODEL,
+            file=(os.path.basename(chunk_path), fh),
+            response_format="verbose_json",
+            timestamp_granularities=["segment"],
+        )
+        if raw_caller is not None:
+            raw = raw_caller(**kwargs)
+            try:
+                usage.record_groq("groq.whisper", GROQ_WHISPER_MODEL,
+                                  getattr(raw, "headers", None))
+            except Exception:  # noqa: BLE001 - capture must not break the call
+                pass
+            return raw.parse()
+        return client.audio.transcriptions.create(**kwargs)
+
     resp = None
     last_error = None
     for attempt in range(MAX_TRANSCRIBE_RETRIES + 1):
         try:
             with open(chunk_path, "rb") as fh:
-                resp = client.audio.transcriptions.create(
-                    model=GROQ_WHISPER_MODEL,
-                    file=(os.path.basename(chunk_path), fh),
-                    response_format="verbose_json",
-                    timestamp_granularities=["segment"],
-                )
+                resp = _create(fh)
             break
         except RateLimitError as exc:
             last_error = exc
+            try:
+                usage.record_groq(
+                    "groq.whisper", GROQ_WHISPER_MODEL,
+                    getattr(exc.response, "headers", None),
+                )
+            except Exception:  # noqa: BLE001
+                pass
             reset = 60.0
             try:
                 reset = _parse_reset_seconds(
@@ -296,7 +323,7 @@ def _transcribe_chunk(client, chunk_path: str, offset: float) -> List[Dict[str, 
 
 
 def _transcribe_groq(
-    media_path: str, progress_callback=None
+    media_path: str, progress_callback=None, duration_hook=None
 ) -> List[Dict[str, float | str]]:
     if not groq_api_key():
         raise RuntimeError(
@@ -321,6 +348,11 @@ def _transcribe_groq(
         flac = _downmix_to_flac(media_path, os.path.join(tmp, "audio.flac"))
         size = os.path.getsize(flac)
         duration = _probe_duration(flac)
+        if duration_hook:
+            try:
+                duration_hook(duration)
+            except Exception:  # noqa: BLE001 - metadata hook must not fail the job
+                pass
 
         chunk_s = _chunk_seconds(duration, size, GROQ_UPLOAD_LIMIT,
                                  max_s=GROQ_MAX_CHUNK_S)
@@ -355,6 +387,7 @@ def transcribe(
     media_path: str,
     backend: str = None,
     progress_callback=None,
+    duration_hook=None,
 ) -> List[Dict[str, float | str]]:
     """
     Transcribe a media file (any format ffmpeg can read) into segments:
@@ -377,8 +410,15 @@ def transcribe(
             )
 
     if selected_backend == "groq":
-        return _transcribe_groq(media_path, progress_callback=progress_callback)
+        return _transcribe_groq(
+            media_path, progress_callback=progress_callback, duration_hook=duration_hook
+        )
 
+    if duration_hook:
+        try:
+            duration_hook(_probe_duration(media_path))
+        except Exception:  # noqa: BLE001
+            pass
     if progress_callback:
         progress_callback(
             "loading_model", 20, f"Loading Whisper model '{MODEL_SIZE}' on CPU..."
