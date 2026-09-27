@@ -7,7 +7,7 @@ scrolls inside its own box rather than stretching the page.
 
 import streamlit as st
 
-from frontend import client, layout, state
+from frontend import client, layout, state, theme
 from frontend.panels import shell
 
 
@@ -42,6 +42,7 @@ def render_clips(lecture_id, heading=None, player_height=230, max_height=520):
     unplayable = [c for c in clips if not c.get("ok")]
     st.caption(f"{len(playable)} of {len(clips)} concept clips are playable.")
 
+    pal = theme.current()
     blocks = []
     for c in playable:
         name = c.get("concept_name") or "(unnamed concept)"
@@ -52,20 +53,21 @@ def render_clips(lecture_id, heading=None, player_height=230, max_height=520):
         url = client.media_url(c.get("path"))
         if not url:
             blocks.append(
-                f'<div style="font-weight:600">{layout.escape(name + span)}</div>'
-                f'<div style="color:#b45309;font-size:12px">clip file missing on '
+                f'<div style="font-weight:600;color:{pal.text}">'
+                f'{layout.escape(name + span)}</div>'
+                f'<div style="color:{pal.warn};font-size:12px">clip file missing on '
                 f'the server — re-cut this lecture\'s clips</div>'
             )
             continue
         blocks.append(
-            f'<div style="font-weight:600;margin-top:8px">'
+            f'<div style="font-weight:600;margin-top:8px;color:{pal.text}">'
             f'{layout.escape(name + span)}</div>'
             + layout.video_box(url, height=player_height)
         )
 
     if unplayable:
         blocks.append(
-            f'<div style="color:#64748b;font-size:12px;margin-top:8px">'
+            f'<div style="color:{pal.muted};font-size:12px;margin-top:8px">'
             f'{len(unplayable)} clip row(s) have no media file on the server, so '
             f'they cannot be played. Re-run &quot;Cut concept clips&quot; to '
             f'rebuild them.</div>'

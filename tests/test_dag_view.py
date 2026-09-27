@@ -74,14 +74,26 @@ def test_node_colours_differ_between_nodes():
 
 
 def test_node_text_contrasts_with_its_fill():
-    """Label colour must be a dark shade of the same hue, never the fill."""
-    for n in ["Covariance", "HAVING", "update", "Bayes' Rule",
-              "A Very Long Concept Name Indeed"]:
-        fill, ink = render.node_colors(n)
-        assert fill != ink
-        assert _luminance(ink) < _luminance(fill), n
-        # strong separation, comfortably readable
-        assert (_luminance(fill) - _luminance(ink)) > 0.35, n
+    """The label must be a different colour from its node, and strongly so.
+
+    The *direction* follows the theme: on the dark theme a node is a dark block
+    with a light label, on the light theme a light block with a dark one. What
+    used to be pinned here - a dark ink under a light fill - was an accident of
+    the light-theme palette, and the gap that matters is measured contrast, not
+    which end happens to be darker.
+    """
+    for base in ("dark", "light"):
+        for n in ["Covariance", "HAVING", "update", "Bayes' Rule",
+                  "A Very Long Concept Name Indeed"]:
+            fill, ink = render.node_colors(n, base=base)
+            assert fill != ink, n
+            assert abs(_luminance(ink) - _luminance(fill)) > 0.25, (base, n)
+            if base == "dark":
+                assert _luminance(ink) > _luminance(fill), (
+                    f"{base}: a dark node needs a light label, got {ink} on {fill}")
+            else:
+                assert _luminance(ink) < _luminance(fill), (
+                    f"{base}: a light node needs a dark label, got {ink} on {fill}")
 
 
 def _luminance(hex_colour):

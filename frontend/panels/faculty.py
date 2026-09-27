@@ -7,7 +7,7 @@ without dragging the faculty views along.
 
 import streamlit as st
 
-from frontend import client, layout, state
+from frontend import client, layout, state, theme
 from frontend.panels import library
 from frontend.render import lecture_html
 
@@ -32,6 +32,7 @@ def render_faculty_stats(nav_course):
     if not heatmap:
         st.caption("No graded answers yet — students must submit a quiz first.")
     else:
+        pal = theme.current()
         st.markdown("**Wrong-answer rates (highest first)**")
         rows = []
         for h in heatmap:
@@ -39,10 +40,11 @@ def render_faculty_stats(nav_course):
             bar = "&#9608;" * int(round(rate * 10))
             rows.append(
                 f'<div style="padding:2px 0">'
-                f'<span style="display:inline-block;min-width:240px">'
+                f'<span style="display:inline-block;min-width:240px;'
+                f'color:{pal.text}">'
                 f'{layout.escape(h.get("concept", ""))}</span>'
-                f'<span style="color:#b91c1c;font-family:monospace">{bar}</span> '
-                f'<span style="color:#64748b">{rate:.0%} '
+                f'<span style="color:{pal.bad};font-family:monospace">{bar}</span> '
+                f'<span style="color:{pal.muted}">{rate:.0%} '
                 f'({h.get("wrong", 0)}/{h.get("attempts", 0)})</span></div>'
             )
         st.markdown(layout.scroll_box("".join(rows), max_height=320),
@@ -50,6 +52,7 @@ def render_faculty_stats(nav_course):
 
     divergence = stats.get("divergence") or []
     if divergence:
+        pal = theme.current()
         st.markdown("**Taught order → learned order divergence**")
         rows = []
         for d in divergence:
@@ -59,11 +62,12 @@ def render_faculty_stats(nav_course):
             li = d.get("learned_idx")
             rows.append(
                 f'<div style="padding:2px 0">'
-                f'<span style="display:inline-block;min-width:240px">'
+                f'<span style="display:inline-block;min-width:240px;'
+                f'color:{pal.text}">'
                 f'{layout.escape(d.get("concept", ""))}</span>'
-                f'taught #{ti if ti is not None else "—"} vs '
-                f'learned #{li if li is not None else "—"} '
-                f'({layout.escape(arrow)})</div>'
+                f'<span style="color:{pal.muted}">taught #{ti if ti is not None else "—"} '
+                f'vs learned #{li if li is not None else "—"} '
+                f'({layout.escape(arrow)})</span></div>'
             )
         st.markdown(layout.scroll_box("".join(rows), max_height=320),
                     unsafe_allow_html=True)

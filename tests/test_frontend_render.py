@@ -1,14 +1,20 @@
 """Tests for the interactive DAG renderer (frontend/render.py)."""
 
+from frontend import theme
 from frontend.render import dag_html, lecture_html
 
 
 def test_dag_html_placeholder_when_no_nodes():
+    """The placeholder is a whole page in its own frame, so it carries the theme
+    too - a bare <p> would render as a white strip inside a dark app."""
     html = dag_html({"course_id": "ml1", "nodes": [], "edges": [],
                      "node_count": 0, "edge_count": 0, "is_dag": True,
                      "topological_order": []})
-    assert html.startswith("<p>No graph")
+    pal = theme.current()
+    assert "No graph" in html
     assert "Extract concepts + build graph" in html
+    assert f"background:{pal.graph_bg}" in html
+    assert f"color:{pal.text}" in html
 
 
 def test_dag_html_embeds_nodes_edges_and_loads_vis_from_cdn():

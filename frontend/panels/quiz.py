@@ -20,7 +20,7 @@ import time
 
 import streamlit as st
 
-from frontend import client, layout, state
+from frontend import client, layout, state, theme
 
 DEFAULT_STUDENT = "demo-student"
 # A quiz is a quiz: `POST /quizzes` writes one question per course concept, and
@@ -163,13 +163,15 @@ def _generation_error(quiz, nav_course, cap):
 
 def render_result(result):
     """Score, per-question feedback and remediation — each in a bounded box."""
+    pal = theme.current()
     score = result.get("score", 0)
     total = result.get("total", 0)
     pct = (score / total * 100) if total else 0
     st.markdown(
         layout.panel(
-            f'<div style="font-size:22px;font-weight:700">Score {score}/{total}</div>'
-            f'<div style="color:#64748b">{pct:.0f}% correct</div>'
+            f'<div style="font-size:22px;font-weight:700;color:{pal.text}">'
+            f'Score {score}/{total}</div>'
+            f'<div style="color:{pal.muted}">{pct:.0f}% correct</div>'
         ),
         unsafe_allow_html=True,
     )
@@ -178,16 +180,20 @@ def render_result(result):
     rows = []
     for f in feedback:
         tag = "correct" if f.get("correct") else "wrong"
-        colour = "#15803d" if f.get("correct") else "#b91c1c"
+        colour = pal.ok if f.get("correct") else pal.bad
         rows.append(
-            f'<div style="padding:6px 0;border-bottom:1px solid #f1f5f9">'
-            f'<span style="font-weight:600">{layout.escape(f.get("concept", ""))}</span> '
+            f'<div style="padding:6px 0;border-bottom:1px solid {pal.border}">'
+            f'<span style="font-weight:600;color:{pal.text}">'
+            f'{layout.escape(f.get("concept", ""))}</span> '
             f'<span style="color:{colour};font-weight:700">{tag}</span>'
-            + (f'<div style="font-size:13px;color:#334155">✓ {layout.escape(f["explanation"])}</div>'
+            + (f'<div style="font-size:13px;color:{pal.muted}">✓ '
+               f'{layout.escape(f["explanation"])}</div>'
                if f.get("explanation") else "")
-            + (f'<div style="font-size:13px">correct answer: {layout.escape(f["answer"])}</div>'
+            + (f'<div style="font-size:13px;color:{pal.text}">correct answer: '
+               f'{layout.escape(f["answer"])}</div>'
                if not f.get("correct") and f.get("answer") else "")
-            + (f'<div style="font-size:13px">why your pick was wrong: {layout.escape(f["rationale"])}</div>'
+            + (f'<div style="font-size:13px;color:{pal.text}">'
+               f'why your pick was wrong: {layout.escape(f["rationale"])}</div>'
                if not f.get("correct") and f.get("rationale") else "")
             + "</div>"
         )
@@ -204,9 +210,9 @@ def render_result(result):
     for item in remediation:
         why = "failed" if item.get("failed") else "prerequisite"
         blocks.append(
-            f'<div style="font-weight:600;margin-top:8px">'
+            f'<div style="font-weight:600;margin-top:8px;color:{pal.text}">'
             f'{layout.escape(item.get("concept", ""))} '
-            f'<span style="color:#b45309;font-weight:400">({layout.escape(why)})</span>'
+            f'<span style="color:{pal.warn};font-weight:400">({layout.escape(why)})</span>'
             f'</div>'
         )
         url = client.media_url(item.get("clip"))

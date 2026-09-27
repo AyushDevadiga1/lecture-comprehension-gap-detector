@@ -2,3 +2,14 @@
 # Match the backend cap (LECGAP_MAX_UPLOAD_MB, default 2048 MiB) so big lecture
 # videos are not rejected by the Streamlit proxy before the backend sees them.
 maxUploadSize = 2048
+
+# The theme is declared rather than inherited, because frontend/theme.py derives
+# every panel colour from it and a card's contrast is only meaningful against the
+# page it actually sits on. Flip `base` to "light" and the whole app follows:
+# the palette, the DAG canvas and every ink choice re-derive from it.
+[theme]
+base = "dark"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#161b22"
+textColor = "#e6edf3"
+primaryColor = "#58a6ff"

@@ -10,11 +10,17 @@ slow to open); a missing pyvis degrades to a placeholder instead of a crash.
 segments + concepts) into a static SVG timeline + coverage table: "how much
 of the lecture is actually covered by extracted concepts" — the insight the
 DAG and quiz both lean on.
+
+Every colour here comes from :mod:`frontend.theme` (which follows the theme the
+app declares). Nothing in this module picks a colour by eye: node labels and
+badges get their ink from a measured contrast choice, so they stay legible on
+whichever fill a node ends up with.
 """
 
-import colorsys
 import hashlib
 import html as _html
+
+from frontend import theme
 
 
 def lecture_html(
@@ -23,6 +29,7 @@ def lecture_html(
     lecture_title: str = "",
     *,
     width: int = 1000,
+    base: str = None,
 ) -> str:
     """Render a lecture's spoken timeline + concept coverage as HTML.
 
@@ -30,8 +37,9 @@ def lecture_html(
         segments: [{idx, start_s, end_s, text}, ...] — the transcript.
         concepts: [{name, start_s, end_s}, ...] — extracted concept windows.
         lecture_title: shown as the header if provided.
+        base: theme base override ("dark"/"light"); None = the running app's.
 
-    Visual: a grey duration bar with transcript ticks, green "covered" windows
+    Visual: a track bar with transcript ticks, green "covered" windows
     (union of concept time-spans), then one coloured band per concept in taught
     order. Below, a coverage table lists every concept with its time window,
     transcript support, and the exact sentence used as quiz-answer evidence.
@@ -40,6 +48,7 @@ def lecture_html(
     costs nothing to embed.
     """
     esc = _html.escape
+    pal = theme.palette(base)
     segments = segments or []
     concepts = concepts or []
 
@@ -58,8 +67,8 @@ def lecture_html(
 
     # transcript ticks under the baseline
     ticks = "\n".join(
-        '<rect x="%.1f" y="42" width="2" height="6" fill="#cbd5e1"/>'
-        % x(s["start_s"])
+        '<rect x="%.1f" y="42" width="2" height="6" fill="%s"/>'
+        % (x(s["start_s"]), pal.tick)
         for s in segments
     )
 
@@ -79,9 +88,9 @@ def lecture_html(
     coverage = covered / duration
     covered_rects = "\n".join(
         '<rect x="%.1f" y="40" width="%.1f" height="10" rx="2" '
-        'fill="#10b981" opacity="0.65">'
-        "<title>covered: %.1fs–%.1fs</title></rect>"
-        % (x(start), max(x(end) - x(start), 1), start, end)
+        'fill="%s" opacity="0.75">'
+        "<title>covered: %.1fs&ndash;%.1fs</title></rect>"
+        % (x(start), max(x(end) - x(start), 1), pal.covered, start, end)
         for start, end in merged
     )
 
@@ -95,17 +104,18 @@ def lecture_html(
         except (TypeError, ValueError):
             continue
         fraction = taught / max(len(concepts) - 1, 1)
-        r = int(20 + 226 * fraction)
-        g = int(184 - 74 * fraction)
-        bcol = int(156 - 30 * fraction)
-        color = "#%02x%02x%02x" % (r, g, bcol)
+        # teal -> coral, the same hue the DAG ramp uses, so a concept reads the
+        # same way in the timeline and in the graph
+        hue = (175.0 + (8.0 - 175.0) * fraction) / 360.0
+        color = theme.node_fill(hue, base=base)
+        ink = theme.readable_on(color, base=base)   # never white-on-white
         top = 58 + 26 * taught
         y_label = top + 15
         bands.append(
             '<rect x="%.1f" y="%d" width="%.1f" height="14" rx="3" fill="%s">'
             "<title>%s — %.1fs–%.1fs</title></rect>"
             '<text x="%d" y="%d" font-family="Arial" font-size="11" '
-            'fill="#1e293b">%s</text>'
+            'fill="%s">%s</text>'
             % (
                 x(a),
                 top,
@@ -116,6 +126,7 @@ def lecture_html(
                 b,
                 int(x(a)) + 6,
                 y_label,
+                ink,
                 esc(name),
             )
         )
@@ -137,44 +148,45 @@ def lecture_html(
         )
 
     return """
-<div style="font-family: Arial, sans-serif; max-width: 1000px;">
-  <h5 style="margin:0;">%s</h5>
-  <p style="margin:2px 0 8px; color:#475569; font-size:13px;">
-    %d concepts · %d transcript segments · <b>%.0f%% of the lecture covered</b>
-    by extracted concepts (%.0fs of %.0fs).</p>
-  <svg viewBox="0 0 %d %d" width="100%%" height="%d" role="img">
-    <rect x="0" y="40" width="%d" height="10" rx="5" fill="#e2e8f0"/>
-    %s
-    %s
-    %s
-    <text x="0" y="78" font-family="Arial" font-size="11" fill="#64748b">0s</text>
-    <text x="%d" y="78" font-family="Arial" font-size="11" fill="#64748b">%.0fs</text>
+<div style="font-family: Arial, sans-serif; max-width: 1000px; color:%(text)s;">
+  <h5 style="margin:0; color:%(text)s;">%(title)s</h5>
+  <p style="margin:2px 0 8px; color:%(muted)s; font-size:13px;">
+    %(n_concepts)d concepts · %(n_segments)d transcript segments · <b>%(pct).0f%% of the lecture covered</b>
+    by extracted concepts (%(covered).0fs of %(duration).0fs).</p>
+  <svg viewBox="0 0 %(width)d %(height)d" width="100%%" height="%(height)d" role="img">
+    <rect x="0" y="40" width="%(width)d" height="10" rx="5" fill="%(track)s"/>
+    %(ticks)s
+    %(covered_rects)s
+    %(bands)s
+    <text x="0" y="78" font-family="Arial" font-size="11" fill="%(muted)s">0s</text>
+    <text x="%(label_x)d" y="78" font-family="Arial" font-size="11" fill="%(muted)s">%(duration).0fs</text>
   </svg>
   <table style="border-collapse:collapse; width:100%%; margin-top:10px;
-                font-size:12.5px;">
-    <tr style="text-align:left; color:#475569;">
+                font-size:12.5px; color:%(text)s;">
+    <tr style="text-align:left; color:%(muted)s; background:%(surface_alt)s;">
       <th>#</th><th>Concept</th><th>Window</th><th>Quiz-answer evidence (spoken sentence)</th>
     </tr>
-    %s
+    %(rows)s
   </table>
 </div>
-""" % (
-        esc(lecture_title),
-        len(concepts),
-        len(segments),
-        coverage * 100,
-        covered,
-        duration,
-        width,
-        78 + 27 * taught,
-        78 + 27 * taught,
-        width,
-        ticks,
-        covered_rects,
-        "\n".join(bands),
-        width - 40,
-        duration,
-        "\n".join(rows),
+""" % dict(
+        text=pal.text,
+        title=esc(lecture_title),
+        n_concepts=len(concepts),
+        n_segments=len(segments),
+        pct=coverage * 100,
+        covered=covered,
+        duration=duration,
+        width=width,
+        height=78 + 27 * taught,
+        track=pal.track,
+        ticks=ticks,
+        covered_rects=covered_rects,
+        bands="\n".join(bands),
+        label_x=width - 40,
+        muted=pal.muted,
+        surface_alt=pal.surface_alt,
+        rows="\n".join(rows),
     )
 
 
@@ -253,7 +265,8 @@ def graph_importance(graph: dict, limit: int = 40):
     return set(nodes), set()
 
 
-def node_colors(name: str, rank: int = None, total: int = None, mode: str = "order"):
+def node_colors(name: str, rank: int = None, total: int = None,
+                mode: str = "order", base: str = None):
     """Return ``(fill, ink)`` for a node.
 
     Two modes, because they answer different questions:
@@ -265,29 +278,27 @@ def node_colors(name: str, rank: int = None, total: int = None, mode: str = "ord
       draw: genuinely random-per-render would recolour the whole graph on every
       Streamlit rerun.
 
-    The ramp is built in HSL at a fixed high lightness rather than by lerping
-    RGB endpoints. The old RGB lerp ran from a mid-dark teal to a light coral,
-    and the teal end only reached ~2.6:1 contrast against its dark label — below
-    the 4.5:1 WCAG AA floor for body text. A fixed lightness keeps every rank
-    readable while the hue still carries the order.
+    Two earlier approaches were replaced rather than tuned. Lerping RGB endpoints
+    ran the teal end to ~2.6:1 against its own label, below the 4.5:1 AA floor.
+    The fixed-lightness HSL ramp fixed that by keeping a *light* fill and a *dark*
+    ink — legible, but on the dark theme every node became a bright slab, and a
+    mid-luminance hue could still land below the floor.
+
+    Now the fill follows the theme (a dark tinted block on dark, a light one on
+    light) and the ink is chosen by measured contrast rather than by guesswork:
+    :func:`theme.readable_on` returns whichever candidate actually reads better,
+    so a label is legible on any fill the ramp or hash can produce.
     """
+    base = base or theme.current_base()
     if mode == "order" and rank is not None and total and total > 1:
         frac = min(max(rank / float(total - 1), 0.0), 1.0)
         hue = (175.0 + (8.0 - 175.0) * frac) / 360.0   # teal -> coral
-        fill = _hsl_hex(hue, 0.46, 0.80)
-        ink = _hsl_hex(hue, 0.70, 0.22)                # same hue, very dark
-        return fill, ink
+        return theme.node_pair(hue, base=base)
 
     digest = hashlib.sha256(str(name).encode("utf-8")).digest()
     hue = digest[0] / 255.0
-    light = 0.80 + (digest[1] / 255.0) * 0.08
     sat = 0.45 + (digest[2] / 255.0) * 0.18
-    return _hsl_hex(hue, sat, light), _hsl_hex(hue, min(sat + 0.2, 0.95), 0.20)
-
-
-def _hsl_hex(h, s, ll):
-    r, g, b = colorsys.hls_to_rgb(h, ll, s)
-    return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
+    return theme.node_pair(hue, base=base, sat=sat)
 
 
 def dag_svg(
@@ -298,6 +309,7 @@ def dag_svg(
     methods=None,
     max_height: int = 560,
     color_by: str = "order",
+    base: str = None,
 ) -> str:
     """Render a course graph as a self-contained, scroll-contained inline SVG.
 
@@ -315,12 +327,16 @@ def dag_svg(
     Layout is layered by longest-path depth so prerequisites sit above the
     concepts that depend on them, matching the learner order. ``methods``
     filters edges by ``source_method`` (e.g. only spoken-transcript links).
+    ``base`` overrides the theme base; None = the running app's theme.
     """
+    pal = theme.palette(base)
     nodes = graph.get("nodes") or []
     if not nodes:
         return (
+            f'<div style="background:{pal.graph_bg};color:{pal.text};'
+            f'font-family:Segoe UI,Arial,sans-serif">'
             "<p>No graph yet &mdash; run &lsquo;Extract concepts + build graph&rsquo; "
-            "from the Student dashboard, then reload this view.</p>"
+            "from the Student dashboard, then reload this view.</p></div>"
         )
 
     try:
@@ -384,16 +400,16 @@ def dag_svg(
     # any JavaScript - pure CSS, so it costs nothing and cannot break offline.
     parts = [
         f'<div style="max-height:{max_height}px;min-height:180px;overflow:auto;'
-        f'resize:vertical;border:1px solid #e2e8f0;border-radius:10px;'
-        f'background:#ffffff;padding:4px">',
+        f'resize:vertical;border:1px solid {pal.border};border-radius:10px;'
+        f'background:{pal.graph_bg};padding:4px">',
         f'<svg xmlns="http://www.w3.org/2000/svg" '
         f'width="{shown_w}" height="{shown_h}" viewBox="0 0 {svg_w} {height}" '
         f'role="img" aria-label="Course prerequisite graph" '
         f'style="display:block">',
         '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" '
         'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
-        '<path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs>',
-        f'<rect width="{svg_w}" height="{height}" fill="#ffffff"/>',
+        f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{pal.graph_edge}"/></marker></defs>',
+        f'<rect width="{svg_w}" height="{height}" fill="{pal.graph_bg}"/>',
     ]
 
     pos = {}
@@ -423,14 +439,15 @@ def dag_svg(
         parts.append(
             f'<path d="M {x1c:.1f} {y1c:.1f} C {x1c:.1f} {y1c + 22:.1f}, '
             f'{x2c:.1f} {y2c - 22:.1f}, {x2c:.1f} {y2c:.1f}" fill="none" '
-            f'stroke="#cbd5e1" stroke-width="1.3" marker-end="url(#arrow)">'
+            f'stroke="{pal.graph_edge}" stroke-width="1.3" marker-end="url(#arrow)">'
             f'<title>{tip}</title></path>'
         )
 
     for name, (x, y) in pos.items():
         r_index = rank.get(name)
         fill, ink = node_colors(name, r_index, len(order),
-                                mode="order" if color_by == "order" else "identity")
+                                mode="order" if color_by == "order" else "identity",
+                                base=base)
         label = _html.escape(str(name))
         shown_n = max(len(order), 1)
         tip = (f"learner order #{r_index + 1}/{shown_n}" if r_index is not None
@@ -443,8 +460,8 @@ def dag_svg(
                 f'<rect x="{x:.1f}" y="{y - 8:.1f}" width="21" height="16" rx="5" '
                 f'fill="{ink}"/>'
                 f'<text x="{x + 10.5:.1f}" y="{y + 4:.1f}" font-size="10" '
-                f'font-weight="700" fill="#ffffff" text-anchor="middle">'
-                f'{r_index + 1}</text>'
+                f'font-weight="700" fill="{theme.readable_on(ink, base=base)}" '
+                f'text-anchor="middle">{r_index + 1}</text>'
             )
         parts.append(
             f'<g><title>{_html.escape(tip)}</title>{badge}'
@@ -461,50 +478,51 @@ def dag_svg(
     if edges == [] and all_edges:
         parts.append(
             '<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
-            'color:#b45309;margin:6px 2px 0">No links of the selected type connect '
-            'the concepts currently shown. Re-enable an edge type, or raise '
-            '"Concepts shown" — spoken-transcript links are usually few and often '
+            f'color:{pal.warn};margin:6px 2px 0">No links of the selected type '
+            'connect the concepts currently shown. Re-enable an edge type, or raise '
+            '"Concepts shown" &mdash; spoken-transcript links are usually few and often '
             'join nodes the significance filter hides.</p>'
         )
     if dropped:
         names = sorted(str(d) for d in dropped)[:12]
         parts.append(
             f'<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
-            f'color:#64748b;margin:6px 2px 0">Hiding {len(dropped)} '
+            f'color:{pal.muted};margin:6px 2px 0">Hiding {len(dropped)} '
             f'lower-significance node(s) to keep this readable, e.g. '
             f'{_html.escape(", ".join(names))}. Raise the limit to see them.</p>'
         )
 
-    parts.append(_legend(color_by, len(shown), len(nodes), len(order)))
+    parts.append(_legend(color_by, len(shown), len(nodes), len(order), base=base))
     return "".join(parts)
 
 
-def _legend(color_by, n_shown, n_total, n_order) -> str:
+def _legend(color_by, n_shown, n_total, n_order, base: str = None) -> str:
     """A visible key for the colour scheme, plus how much of the graph is shown."""
+    pal = theme.palette(base)
     if color_by == "order":
         swatches = "".join(
             f'<span style="display:inline-block;width:26px;height:11px;'
-            f'background:{node_colors("k", int(i * 11 / 11.0), 12, mode="order")[0]};'
-            f'"></span>'
+            f'background:{node_colors("k", i, 11, mode="order", base=base)[0]};'
+            f'border:1px solid {pal.border};"></span>'
             for i in range(12)
         )
-        key = (f'{swatches}<span style="color:#64748b">study first → last '
-               f'(1–{n_order})</span>')
+        key = (f'{swatches}<span style="color:{pal.muted}">study first &rarr; last '
+               f'(1&ndash;{n_order})</span>')
     else:
-        key = ('<span style="color:#64748b">each concept has its own stable '
+        key = (f'<span style="color:{pal.muted}">each concept has its own stable '
                'colour (identity, not order)</span>')
     return (
         f'<div style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
-        f'color:#334155;margin:6px 2px 0;display:flex;align-items:center;gap:8px;'
+        f'color:{pal.text};margin:6px 2px 0;display:flex;align-items:center;gap:8px;'
         f'flex-wrap:wrap">'
-        f'<span style="color:#64748b">Colour:</span>{key}'
-        f'<span style="color:#64748b">· Badge = learner-order position · '
-        f'Showing {n_shown} of {n_total} concepts · drag the frame\'s '
+        f'<span style="color:{pal.muted}">Colour:</span>{key}'
+        f'<span style="color:{pal.muted}">&middot; Badge = learner-order position &middot; '
+        f'Showing {n_shown} of {n_total} concepts &middot; drag the frame\'s '
         f'bottom-right corner to resize</span></div>'
     )
 
 
-def dag_html(graph: dict) -> str:
+def dag_html(graph: dict, base: str = None) -> str:
     """Render a course graph dict as self-contained interactive HTML.
 
     Expected payload shape (matching ``CourseGraphOut``):
@@ -516,12 +534,19 @@ def dag_html(graph: dict) -> str:
     tooltip = confidence + where the link came from (spoken transcript vs
     classifier) + the verbatim evidence sentence when one exists. Empty graphs
     return a short placeholder message instead of an empty canvas.
+
+    This page is loaded in its own frame, so it cannot inherit the dashboard's
+    CSS: its background, node fills, labels and edges are all written out from
+    the theme tokens, or it would render as a white canvas in a dark app.
     """
+    pal = theme.palette(base)
     nodes = graph.get("nodes") or []
     if not nodes:
         return (
+            f'<body style="background:{pal.graph_bg};color:{pal.text};'
+            'font-family:Segoe UI,Arial,sans-serif">'
             "<p>No graph yet &mdash; run &lsquo;Extract concepts + build graph&rsquo; "
-            "from the Student dashboard, then reload this view.</p>"
+            "from the Student dashboard, then reload this view.</p></body>"
         )
 
     # A5: pyvis is a heavy, lazy dependency — a missing/broken install must not
@@ -530,9 +555,11 @@ def dag_html(graph: dict) -> str:
         Network = _load_pyvis_network()
     except ImportError:
         return (
+            f'<body style="background:{pal.graph_bg};color:{pal.text};'
+            'font-family:Segoe UI,Arial,sans-serif">'
             "<p>The interactive DAG add-on (pyvis / vis-network) is not "
             "available on this install. Use the learner-order list below "
-            "instead.</p>"
+            "instead.</p></body>"
         )
 
     order = graph.get("topological_order") or list(nodes)
@@ -543,7 +570,7 @@ def dag_html(graph: dict) -> str:
         height="720px",
         width="100%",
         directed=True,
-        bgcolor="#ffffff",
+        bgcolor=pal.graph_bg,
         cdn_resources="remote",
     )
     net.set_options(
@@ -568,29 +595,27 @@ var options = {
   "edges": {
     "arrows": { "to": { "enabled": true, "scaleFactor": 0.85 } },
     "smooth": { "enabled": false },
-    "color": { "color": "#94a3b8" }
+    "color": { "color": "%(graph_edge)s" }
   },
   "nodes": {
-    "font": { "face": "Arial", "size": 13, "color": "#1e293b" },
+    "font": { "face": "Arial", "size": 13, "color": "%(text)s" },
     "borderWidth": 1,
     "shape": "dot"
   }
 }
-"""
+""" % {"graph_edge": pal.graph_edge, "text": pal.text}
     )
     for name in nodes:
         pos = rank.get(name, n - 1)
         frac = pos / max(n - 1, 1)
-        # teal (early, should-learn-first) -> coral (late) colour ramp
-        r = int(20 + 226 * frac)
-        g = int(184 - 74 * frac)
-        b = int(156 - 30 * frac)
-        color = "#%02x%02x%02x" % (r, g, b)
+        # teal (early, should-learn-first) -> coral (late), the same ramp the
+        # inline SVG uses, at this theme's node lightness
+        fill, ink = node_colors(name, pos, n, mode="order", base=base)
         net.add_node(
             name,
             label=name,
             title="%s<br/>learner order #%d/%d" % (_html.escape(str(name)), pos + 1, n),
-            color={"background": color, "border": "#334155"},
+            color={"background": fill, "border": ink, "font": {"color": ink}},
         )
     for edge in graph.get("edges") or []:
         conf = edge.get("confidence", 1.0)
