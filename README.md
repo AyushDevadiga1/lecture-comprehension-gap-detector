@@ -260,7 +260,7 @@ flowchart LR
     JFEED -->|"snapshot, no polling"| FE
     R -->|"store upload"| RAW
     R -->|"creates a job, then schedules the worker"| JOBS
-    JOBS -->|"job row + stage/detail/%| DB
+    JOBS -->|"job row + stage + detail + progress"| DB
     JOBS -->|"/jobs · /jobs/stream"| SSE
     R -->|"job_id back to the client"| FE
     R -->|"background task: transcribe()"| TR
