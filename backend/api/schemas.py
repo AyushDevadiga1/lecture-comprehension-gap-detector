@@ -165,6 +165,39 @@ class QuizSubmitIn(BaseModel):
     answers: List[QuizAnswerIn]
 
 
+class JobAcceptedOut(BaseModel):
+    """202 acknowledgement for a queued job."""
+
+    job_id: int
+    status: str = "queued"
+    detail: Optional[str] = None
+
+
+class JobOut(BaseModel):
+    """A persisted background job (Engine 2, C2)."""
+
+    id: int
+    kind: str
+    status: str
+    course_id: Optional[str] = None
+    lecture_id: Optional[int] = None
+    title: Optional[str] = None
+    stage: Optional[str] = None
+    detail: Optional[str] = None
+    progress_pct: int = 0
+    error: Optional[str] = None
+    created_at: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    heartbeat_at: Optional[datetime] = None
+    duration_s: Optional[float] = None
+    terminal: bool = False
+
+
+class JobListOut(BaseModel):
+    jobs: List[JobOut] = []
+
+
 class WatchItemOut(BaseModel):
     concept: str
     failed: bool

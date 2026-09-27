@@ -324,6 +324,48 @@ class QuizResponse(Base):
     question = relationship("ConceptItem")
 
 
+class Job(Base):
+    """A persisted background job (Engine 2, C2 — the job registry).
+
+    Replaces the process-memory progress store, which had three consequences
+    this table exists to remove:
+
+    * a backend restart silently lost every running job, leaving the UI polling
+      a value that would never change again;
+    * progress was keyed by ``lecture_id``, so a second session could only see
+      jobs it had itself started, and a course-level job (graph rebuild) had no
+      honest key at all;
+    * there was no record of a job that died, so "stalled" and "finished" were
+      indistinguishable.
+
+    ``status`` is the state machine: ``queued -> running -> ready | error |
+    orphaned``. ``orphaned`` is assigned at boot to any job left ``running`` by a
+    previous process, which is the honest answer for work nobody is doing any
+    more. ``heartbeat_at`` is what makes that judgement possible.
+    """
+
+    __tablename__ = "jobs"
+
+    id = Column(Integer, primary_key=True)
+    kind = Column(String, nullable=False, index=True)
+    status = Column(String, nullable=False, default="queued", index=True)
+    course_id = Column(String, nullable=True, index=True)
+    lecture_id = Column(Integer, nullable=True, index=True)
+    title = Column(String, nullable=True)
+    stage = Column(String, nullable=True)
+    detail = Column(String, nullable=True)
+    progress_pct = Column(Integer, nullable=False, default=0)
+    error = Column(String, nullable=True)
+    payload_json = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    heartbeat_at = Column(DateTime(timezone=True), nullable=True)
+
+    def is_terminal(self) -> bool:
+        return self.status in ("ready", "error", "orphaned", "cancelled")
+
+
 _ADDABLE_SQLITE_TYPES = {"INTEGER", "FLOAT", "TEXT", "VARCHAR", "DATETIME", "BOOLEAN"}
 
 

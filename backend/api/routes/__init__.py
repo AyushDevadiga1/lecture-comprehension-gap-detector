@@ -10,6 +10,9 @@ Endpoints:
     lectures.py   — upload/media lifecycle, concept extraction, clips
     courses.py    — per-course prerequisite graph + faculty stats
     quizzes.py    — graded MCQs, submit/grade, remediation sequence
+    jobs.py       — persisted job registry + the live SSE progress stream
+    media.py      — Range-capable clip streaming
+    usage.py      — provider rate-limit snapshots
 
 This package aggregates the per-domain routers into one `router` so
 backend.main includes a single surface (app.include_router(routes.router)).
@@ -18,6 +21,7 @@ backend.main includes a single surface (app.include_router(routes.router)).
 from fastapi import APIRouter
 
 from backend.api.routes.courses import router as courses_router
+from backend.api.routes.jobs import router as jobs_router
 from backend.api.routes.lectures import router as lectures_router
 from backend.api.routes.media import router as media_router
 from backend.api.routes.quizzes import router as quizzes_router
@@ -27,6 +31,7 @@ router = APIRouter()
 router.include_router(lectures_router)
 router.include_router(courses_router)
 router.include_router(quizzes_router)
+router.include_router(jobs_router)
 router.include_router(media_router)
 router.include_router(usage_router)
 

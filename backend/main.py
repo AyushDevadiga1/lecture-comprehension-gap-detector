@@ -22,6 +22,16 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 init_db()
 
+# Engine 2 / C2: a job left `running` by a previous process is not running any
+# more. Marking it `orphaned` here is what stops the UI polling a progress
+# value that can never change again after a restart.
+try:
+    from backend.api.jobs.registry import recover_orphans
+
+    recover_orphans()
+except Exception as _exc:  # noqa: BLE001 - never block startup on recovery
+    logging.getLogger("lecgap.main").warning("orphan recovery failed: %s", _exc)
+
 app = FastAPI(title="LecGap API")
 
 

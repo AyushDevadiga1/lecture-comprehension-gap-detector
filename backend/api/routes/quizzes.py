@@ -3,13 +3,24 @@ sequence (Stage 6/7). Note: /students paths live here too because remediation
 is computed from quiz responses."""
 
 from bisect import bisect_left
+import logging
 import threading
 from typing import Optional
 
-from fastapi import APIRouter, Body, HTTPException, Path, Query
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Body,
+    HTTPException,
+    Path,
+    Query,
+)
+
+from backend.api.jobs import registry
 
 from backend.api import graphs, queries
 from backend.api.schemas import (
+    JobAcceptedOut,
     QuestionFeedbackOut,
     QuizOut,
     QuizSubmitIn,
@@ -40,6 +51,7 @@ router = APIRouter(tags=["quizzes"])
 # overlapping work inside this one process.
 _QUIZ_LOCKS: dict = {}
 _QUIZ_LOCKS_GUARD = threading.Lock()
+_LOGGER = logging.getLogger("lecgap.quizzes")
 
 
 def _quiz_lock(course_id: str) -> threading.Lock:
@@ -72,9 +84,13 @@ def create_quiz(
 ) -> QuizOut:
     """Build a graded MCQ quiz from a course's extracted concepts.
 
+    Blocks until the questions are written. For an interface that must not
+    freeze, use ``POST /quizzes/jobs`` instead - it returns 202 + a job id and
+    the same work runs in the background (Engine 2 / C2).
+
     Each question (Stage 6b/6c) is written by the cached LLM from the
-    transcript passage where the concept is taught — a real definition plus
-    three plausible-but-wrong distractors — falling back to the evidence
+    transcript passage where the concept is taught - a real definition plus
+    three plausible-but-wrong distractors - falling back to the evidence
     sentence (another concept's spoken description) on any LLM miss. The
     ground-truth option is stored beside the question, and grading happens
     server-side on submit (the probe/self-grade mode of Phase 6 is kept for
@@ -95,6 +111,78 @@ def create_quiz(
         return _create_quiz(course_id, student_id, max_questions)
     finally:
         lock.release()
+
+
+@router.post("/quizzes/jobs", response_model=JobAcceptedOut, status_code=202)
+def create_quiz_job(
+    background_tasks: BackgroundTasks,
+    course_id: str = Body(..., max_length=128, pattern=r"^[\w\-]+$"),
+    student_id: str = Body(..., max_length=128, pattern=r"^[\w\-@.]+$"),
+    max_questions: Optional[int] = Body(None, ge=1, le=200),
+) -> JobAcceptedOut:
+    """Queue quiz generation and return immediately with a job id.
+
+    This is the endpoint the UI should use. Generation is one LLM call per
+    question fanned out six-wide, so the synchronous POST /quizzes froze the
+    whole page for minutes; here the caller gets a job to watch over the SSE
+    stream and can do anything else meanwhile.
+    """
+    lock = _quiz_lock(course_id)
+    if not lock.acquire(blocking=False):
+        raise HTTPException(
+            status_code=409,
+            detail="A quiz is already being generated for this course — "
+                   "wait for it to finish, then try again.",
+        )
+    try:
+        with SessionLocal() as db:
+            n = db.query(Concept).filter(
+                Concept.course_id == course_id).count()
+        if not n:
+            raise HTTPException(
+                status_code=404, detail="No concepts for course")
+    except HTTPException:
+        lock.release()
+        raise
+    except Exception:
+        lock.release()
+        raise
+
+    job_id = registry.create_job(
+        "quiz", course_id=course_id,
+        title=f"Quiz for {course_id}",
+        payload={"course_id": course_id, "student_id": student_id,
+                 "max_questions": max_questions},
+    )
+    background_tasks.add_task(_run_quiz_job, job_id, course_id, student_id,
+                               max_questions, lock)
+    return JobAcceptedOut(job_id=job_id, status="queued",
+                          detail=f"Writing up to {max_questions or n} questions")
+
+
+def _run_quiz_job(job_id, course_id, student_id, max_questions, lock) -> None:
+    """Background body for POST /quizzes/jobs."""
+    try:
+        registry.update_job(job_id, stage="writing_questions", detail="Asking "
+                           "the model for one question per concept…",
+                           status="running")
+        _create_quiz(course_id, student_id, max_questions)
+        registry.finish_job(job_id, status="ready",
+                            detail="Quiz ready — open it to answer.")
+    except Exception as exc:  # noqa: BLE001
+        # M2 convention: the full exception goes to the server log, the job
+        # record carries a summary safe to show a user. The job is admin-facing
+        # rather than a public API response, but leaking provider internals
+        # into a persisted row would outlive the log retention anyway.
+        _LOGGER.exception("quiz generation job %s failed", job_id)
+        registry.fail_job(
+            job_id, f"{type(exc).__name__}: quiz generation failed — see "
+                    "server logs.")
+    finally:
+        try:
+            lock.release()
+        except RuntimeError:
+            pass
 
 
 def _spread_sample(names: list, limit: int) -> list:
