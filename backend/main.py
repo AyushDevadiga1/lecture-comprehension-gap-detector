@@ -26,7 +26,7 @@ init_db()
 # more. Marking it `orphaned` here is what stops the UI polling a progress
 # value that can never change again after a restart.
 try:
-    from backend.api.jobs.registry import recover_orphans
+    from backend.api.job_registry import recover_orphans
 
     recover_orphans()
 except Exception as _exc:  # noqa: BLE001 - never block startup on recovery

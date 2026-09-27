@@ -17,6 +17,7 @@ from fastapi import (
     UploadFile,
 )
 
+from backend.api import job_registry as registry
 from backend.api import jobs
 from backend.api.jobs.common import client_error_message
 from backend.api.jobs.progress import update_lecture_progress
@@ -51,6 +52,24 @@ def _safe_filename(name: str) -> str:
     stem = re.sub(r"[^\w\- ]", "_", Path(name).stem).strip() or "upload"
     ext = Path(name).suffix.lower()
     return f"{stem}{ext}"
+
+
+def _enqueue(background_tasks, fn, *, kind: str, lecture_id: int,
+             course_id: str, title: str, args: tuple = ()) -> int:
+    """Register a durable job, then schedule the worker bound to it (C3).
+
+    The job row is created *before* the worker is scheduled, so a UI can attach
+    to a `queued` job immediately instead of finding nothing until the worker
+    thread publishes its first stage. The worker receives the id and binds it
+    for the run (see `backend.api.jobs.progress.job_scope`).
+
+    Returns the job id, which is also set on the response as `X-Job-Id` so a
+    client that does not poll /jobs can still follow along.
+    """
+    job_id = registry.create_job(kind, course_id=course_id,
+                                 lecture_id=lecture_id, title=title)
+    background_tasks.add_task(fn, *args, job_id=job_id)
+    return job_id
 
 
 @router.post("", response_model=LectureOut, status_code=201)
@@ -139,7 +158,10 @@ async def upload_lecture(
         lecture.source_path = str(dest)
         db.commit()
 
-    background_tasks.add_task(jobs.process_lecture, lecture.id, whisper_backend)
+    _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
+             lecture_id=lecture.id, course_id=lecture.course_id,
+             title=lecture.title or f"Lecture #{lecture.id}",
+             args=(lecture.id, whisper_backend))
     return lecture
 
 
@@ -257,8 +279,13 @@ async def upload_lecture_media(
             raise HTTPException(status_code=404, detail="Lecture not found")
         lecture.source_path = str(dest)
         db.commit()
+        course_id_for_job = lecture.course_id
+        title_for_job = lecture.title
 
-    background_tasks.add_task(jobs.process_lecture, lecture_id, whisper_backend)
+    _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
+             lecture_id=lecture_id, course_id=course_id_for_job,
+             title=title_for_job or f"Lecture #{lecture_id}",
+             args=(lecture_id, whisper_backend))
     return _with_media(lecture)
 
 
@@ -372,8 +399,13 @@ def rerun_lecture(
         db.commit()
         db.refresh(lecture)
         delivered = lecture
+        course_id_for_job = lecture.course_id
+        title_for_job = lecture.title
 
-    background_tasks.add_task(jobs.process_lecture, lecture_id, whisper_backend)
+    _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
+             lecture_id=lecture_id, course_id=course_id_for_job,
+             title=title_for_job or f"Lecture #{lecture_id}",
+             args=(lecture_id, whisper_backend))
     return _with_media(delivered)
 
 
@@ -394,8 +426,13 @@ def run_concept_extraction(
                 detail=f"Lecture status is '{lecture.status}'; must be 'ready' before extraction",
             )
         lecture_id_out = lecture.id
+        course_id_for_job = lecture.course_id
+        title_for_job = lecture.title
 
-    background_tasks.add_task(jobs.extract_concepts_worker, lecture_id_out)
+    _enqueue(background_tasks, jobs.extract_concepts_worker, kind="extract",
+             lecture_id=lecture_id_out, course_id=course_id_for_job,
+             title=title_for_job or f"Concepts for #{lecture_id_out}",
+             args=(lecture_id_out,))
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id_out)
         _ = lecture.segments  # force-load before session closes
@@ -434,8 +471,13 @@ def cut_lecture_clips(
                 detail="No concepts extracted yet; run POST /lectures/{id}/concepts first",
             )
         lecture_id_out = lecture.id
+        course_id_for_job = lecture.course_id
+        title_for_job = lecture.title
 
-    background_tasks.add_task(jobs.cut_clips_worker, lecture_id_out)
+    _enqueue(background_tasks, jobs.cut_clips_worker, kind="clips",
+             lecture_id=lecture_id_out, course_id=course_id_for_job,
+             title=title_for_job or f"Clips for #{lecture_id_out}",
+             args=(lecture_id_out,))
     return ClipBatchOut(lecture_id=lecture_id_out, status="queued")
 
 

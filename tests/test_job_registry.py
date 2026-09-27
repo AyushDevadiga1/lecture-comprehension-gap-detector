@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.api.jobs import registry
+from backend.api import job_registry as registry
 from backend.main import app
 from backend.models.db import Job, SessionLocal
 

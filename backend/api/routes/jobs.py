@@ -12,7 +12,7 @@ import json
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
-from backend.api.jobs import registry
+from backend.api import job_registry as registry
 from backend.api.schemas import JobOut, JobListOut
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])

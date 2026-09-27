@@ -3,20 +3,21 @@
 from datetime import datetime
 
 from backend.api.jobs.common import PIPELINE_SEMAPHORE, client_error_message
-from backend.api.jobs.progress import _finish, update_lecture_progress
+from backend.api.jobs.progress import _finish, job_scope, update_lecture_progress
 from backend.models.db import Lecture, SessionLocal, TranscriptSegment
 from backend.pipeline.transcribe import transcribe
 
 
-def process_lecture(lecture_id: int, backend: str = None) -> None:
+def process_lecture(lecture_id: int, backend: str = None, job_id: int = None) -> None:
     """Background worker: transcribe one lecture and persist its segments.
 
     ``backend`` ("groq"/"local"/None) maps onto transcribe()'s override — the
     upload endpoint surfaces whatever the user picked in the UI.
+    ``job_id`` binds the durable job row for the run (Engine 2 / C3).
 
     Concurrency-throttled by PIPELINE_SEMAPHORE to prevent OOM/CPU exhaustion.
     """
-    with PIPELINE_SEMAPHORE:
+    with job_scope(job_id), PIPELINE_SEMAPHORE:
         _process_lecture_inner(lecture_id, backend)
 
 

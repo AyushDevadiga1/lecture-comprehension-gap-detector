@@ -112,6 +112,9 @@ class CourseGraphOut(BaseModel):
 class CourseBuildOut(BaseModel):
     status: str
     course_id: str
+    # Durable job for the queued rebuild (Engine 2 / C3), so a client can
+    # follow it over /jobs or the SSE stream instead of guessing.
+    job_id: Optional[int] = None
 
 
 class ClipOut(BaseModel):

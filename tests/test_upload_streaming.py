@@ -25,8 +25,10 @@ from fastapi.testclient import TestClient  # noqa: E402
 def _patch_worker(monkeypatch):
     scheduled = []
 
-    def fake_process(lecture_id, backend=None):
-        scheduled.append({"id": lecture_id, "backend": backend})
+    def fake_process(lecture_id, backend=None, job_id=None):
+        # job_id is added by the C3 enqueue path; recording it lets the tests
+        # below assert the worker is bound to a durable job row.
+        scheduled.append({"id": lecture_id, "backend": backend, "job_id": job_id})
 
     monkeypatch.setattr(jobs, "process_lecture", fake_process)
     return scheduled
@@ -65,8 +67,16 @@ def test_two_step_create_then_stream(client, _patch_worker):
     # media written to disk under data/raw
     dest = MEDIA_ROOT_DIR / f"lec{lid}_lec.mp4"
     assert dest.read_bytes() == body
-    # transcription scheduled with the backend the frontend re-sent on the PUT
-    assert _patch_worker == [{"id": lid, "backend": "groq"}]
+    # transcription scheduled with the backend the frontend re-sent on the PUT,
+    # and bound to a durable job row (C3)
+    assert len(_patch_worker) == 1
+    call = _patch_worker[0]
+    assert call["id"] == lid and call["backend"] == "groq"
+    assert isinstance(call["job_id"], int) and call["job_id"] > 0
+    from backend.api import job_registry as registry
+    job = registry.get_job(call["job_id"])
+    assert job is not None and job["kind"] == "transcribe"
+    assert job["lecture_id"] == lid
     dest.unlink(missing_ok=True)
     jobs_progress._finish(lid)
 

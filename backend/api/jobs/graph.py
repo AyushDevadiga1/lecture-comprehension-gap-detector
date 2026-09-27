@@ -5,13 +5,14 @@ from backend.api.jobs.common import (
     client_error_message,
     get_shared_classifier,
 )
-from backend.api.jobs.progress import _finish, update_lecture_progress
+from backend.api.jobs.progress import _finish, job_scope, update_lecture_progress
 from backend.config import llm_reasoning_enabled
 from backend.models.db import Concept, GraphEdge, GraphNode, Lecture, LectureLink, SessionLocal
 from backend.pipeline.build_graph import ConceptGraph
 
 
-def build_course_graph_worker(course_id: str, lecture_id: int = None) -> None:
+def build_course_graph_worker(course_id: str, lecture_id: int = None,
+                             job_id: int = None) -> None:
     """Background worker: dedup concept names, score edges, persist per-course.
 
     No-op when the course has no concept rows yet — the concept-extraction
@@ -23,7 +24,7 @@ def build_course_graph_worker(course_id: str, lecture_id: int = None) -> None:
     job move and settle on a `ready` status instead of polling an untouched
     lecture row forever.
     """
-    with PIPELINE_SEMAPHORE:
+    with job_scope(job_id), PIPELINE_SEMAPHORE:
         _build_course_graph_worker(course_id, lecture_id)
 
 

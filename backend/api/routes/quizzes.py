@@ -16,8 +16,7 @@ from fastapi import (
     Query,
 )
 
-from backend.api.jobs import registry
-
+from backend.api import job_registry as registry
 from backend.api import graphs, queries
 from backend.api.schemas import (
     JobAcceptedOut,

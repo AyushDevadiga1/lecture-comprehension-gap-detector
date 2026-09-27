@@ -9,7 +9,7 @@ from typing import List, Optional
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlalchemy import func
 
-from backend.api import graphs, jobs
+from backend.api import graphs, jobs, job_registry as registry
 from backend.api.jobs.progress import get_lecture_progress
 from backend.api.schemas import (
     CourseBuildOut,
@@ -197,10 +197,16 @@ def build_course_graph(
     row to watch and a `ready` terminal state.
     """
     course_id = _validate_course_id(course_id)
+    course_id = course_id.strip()
+    # Durable job first (C3), so a client can attach to a `queued` graph build
+    # rather than discovering nothing until the worker publishes a stage.
+    job_id = registry.create_job("graph", course_id=course_id,
+                                 lecture_id=lecture_id,
+                                 title=f"Graph rebuild for {course_id}")
     background_tasks.add_task(
-        jobs.build_course_graph_worker, course_id.strip(), lecture_id
+        jobs.build_course_graph_worker, course_id, lecture_id, job_id=job_id
     )
-    return CourseBuildOut(status="queued", course_id=course_id.strip())
+    return CourseBuildOut(status="queued", course_id=course_id, job_id=job_id)
 
 
 @router.get("/{course_id}/stats")
