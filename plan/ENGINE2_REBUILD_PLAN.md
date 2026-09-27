@@ -1,9 +1,20 @@
 # Engine 2 Rebuild Plan — progressive, checkpointed
 
-> **Status: PROPOSED (2026-09-27)** — supersedes the "stay on Streamlit now" call in
+> **Status: IN PROGRESS (2026-09-27)** — supersedes the "stay on Streamlit now" call in
 > `plan/FRONTEND_REACT_ROADMAP.md:3-7`. Extends that roadmap (kept as the
 > architectural reference: stack §4, parity checklist §6, non-goals §8) with an
 > ordered, individually-testable checkpoint sequence.
+>
+> **Shipped so far:** C0 (stop the bleeding), C1 (test isolation), C2 (durable job
+> registry + SSE + non-blocking quiz), C3 (workers publish to the registry),
+> **C4a (the Streamlit UI consumes it** — `frontend/jobfeed.py` + fragment-rendered
+> progress cards, `886b845`/`bbbddf2` on `main`).
+>
+> **Still to do, in this order:** the *contract* half of C4 (below), then C5–C9.
+> Note the naming collision: this plan's "C4" is *contract v2*; the C4 work
+> already merged was the SSE frontend. The contract half is a hard prerequisite
+> for C5 — a typed client is generated from it, and a Vite dev server is
+> browser-blocked without CORS.
 >
 > **Trigger:** the confirmed UX ceiling — no loading screen, whole-script rerun
 > freezing, polling-by-rerender, 6-hour spinner on a non-terminal job.

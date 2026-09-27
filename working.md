@@ -1,5 +1,9 @@
 # LecGap — System Data-Flow Chart
 
+> **Sync note (2026-09-27):** this diagram was updated for the Engine 2 job
+> registry (`backend/api/job_registry.py`, the `jobs` table, `GET /jobs/stream`
+> and the SSE-fed progress cards). The copy in the README has the same change.
+
 **TL;DR — one credential, one loop.** A lecture video is uploaded, transcribed
 into timestamped segments (locally or via Groq), an LLM pulls concepts out and
 MiniLM merges near-duplicates, the prerequisite classifier + LLM check turn
@@ -20,16 +24,23 @@ flowchart LR
     end
 
     %% -------------------- Entry point --------------------
-    FE["Streamlit app · frontend/app.py<br/>Student tab: ingest → quiz → remediation<br/>Faculty tab: heatmap + divergence"]
+    FE["Streamlit apps · frontend/app.py<br/>Student tab: ingest → quiz → remediation<br/>Faculty tab: heatmap + divergence<br/>job cards fed by SSE"]
 
     %% -------------------- API surface --------------------
-    API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health"]
+    API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health<br/>boot recovery marks dead jobs orphaned"]
     R["backend/api/routes/ · HTTP endpoints<br/>upload · concepts · clips · graph · quiz · stats<br/>background jobs in api/jobs/"]
 
+    %% -------------------- Job registry (Engine 2) --------------------
+    JOBS["backend/api/job_registry.py<br/>create · update · finish · fail · list<br/>per-course advisory lock"]
+    SSE["GET /jobs · /jobs/{id} · /jobs/{id}/cancel<br/>GET /jobs/stream (SSE)"]
+
     %% -------------------- Storage --------------------
-    DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache<br/>concepts · graph · clips · quiz · responses")]
+    DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache<br/>concepts · graph · clips · quiz · responses<br/>jobs — the durable registry")]
     RAW["data/raw/ · uploaded lecture media"]
     CLIPS["data/processed/clips/ per lecture<br/>one exportable video per concept"]
+
+    %% -------------------- Frontend job feed --------------------
+    JFEED["frontend/jobfeed.py · one SSE connection<br/>in-memory snapshot · polling fallback<br/>cards render inside a st.fragment"]
 
     %% -------------------- ML data & models --------------------
     WHISPERL["openai-whisper · local engine<br/>WHISPER_MODEL · base · offline · no quota"]
@@ -50,9 +61,17 @@ flowchart LR
     GK --> GROQCHAT
     GK --> GROQAUD
     API -->|".env + DB init at startup"| GK
+    API -->|"boot: orphaned jobs"| JOBS
     FE -->|"health probe"| API
     FE -->|"media + course_id"| R
+    FE -->|"SSE subscribe"| SSE
+    SSE -->|"job rows"| JFEED
+    JFEED -->|"snapshot, no polling"| FE
     R -->|"store upload"| RAW
+    R -->|"creates a job, then schedules the worker"| JOBS
+    JOBS -->|"job row + stage/detail/%| DB
+    JOBS -->|"/jobs · /jobs/stream"| SSE
+    R -->|"job_id back to the client"| FE
     R -->|"background task: transcribe()"| TR
     RAW -->|"source_path"| TR
     TR -->|"local engine"| WHISPERL
@@ -93,14 +112,16 @@ flowchart LR
     classDef ml fill:#ffe4e6,stroke:#e11d48,color:#111;
     classDef ui fill:#fff7ed,stroke:#ea580c,color:#111;
     classDef api fill:#f1f5f9,stroke:#64748b,color:#111;
+    classDef job fill:#cffafe,stroke:#0891b2,color:#111;
 
     class GK key;
     class GROQCHAT,GROQAUD,OLLAMA,FFMPEG ext;
     class LLM,TR,EX,CLS,BG,SC,QZ,RF mod;
     class DB,RAW,CLIPS store;
     class MINILM,LB ml;
-    class FE ui;
-    class API,R api;
+    class FE,JFEED ui;
+    class API,R,SSE api;
+    class JOBS job;
 ```
 
 ## How it flows, step by step

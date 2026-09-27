@@ -151,6 +151,50 @@ this infrastructure is stable.
   `backend/`, and the same endpoints power both the student remediation tab
   and the faculty tab.
 
+## Background jobs, live progress and restart safety
+
+Every long operation (transcribe → structure pass → graph → clip cuts → quiz
+generation) is a **persisted job**, not a fire-and-forget background task. This
+is what the dashboards read, and it is the difference between "the page froze
+for six minutes" and "you can see what it's doing".
+
+- **`jobs` table** (`backend/models/db.py`) + `backend/api/job_registry.py`:
+  `queued → running → ready | error | orphaned | cancelled`, with `course_id`,
+  `lecture_id`, `stage`, `detail`, `progress_pct`, `heartbeat_at` and
+  `payload_json`. A job is created *before* its worker is scheduled, so a client
+  can attach to a `queued` job immediately instead of finding nothing.
+- **Workers publish through a thread-local job scope** (`api/jobs/progress.py`),
+  not an extra argument on each of the ~20 progress call sites — and every
+  publish still writes the legacy per-lecture row, so nothing downstream is
+  version-locked to this.
+- **Cross-user visibility.** `GET /jobs?course_id=` is deliberately *not* scoped
+  to a session: a second browser sees what the first one started.
+- **`GET /jobs/stream`** — server-sent events carrying job-state changes
+  (emits only on change, plus a keep-alive, so an idle course costs one cheap
+  query per interval).
+- **Restart safety.** On boot, `recover_orphans()` marks any `running` job whose
+  heartbeat is stale as `orphaned` — so a job that died with the server says so,
+  instead of the UI polling a value that can never change.
+- **Per-course advisory lock**, so two users cannot interleave rebuilds on the
+  same DAG.
+- **Quiz generation no longer blocks**: `POST /quizzes/jobs` returns
+  `202 {job_id}` immediately (generation is one LLM call per question, fanned
+  out six-wide — the synchronous `POST /quizzes` froze the page for minutes and
+  remains only for compatibility).
+- Every queueing endpoint returns the `job_id` it created, so the client can
+  follow the work it started.
+
+The Streamlit dashboards consume this over SSE (`frontend/jobfeed.py`) and render
+the progress cards inside a `st.fragment(run_every=...)`. That is the fix for
+"the video restarts while I watch it": the old monitor re-ran the *entire* script
+every 0.5–1.5 s to read a progress number, which rebuilt every element on the
+page. A finished job is *recorded* and announced by the page body once, not
+announced inside a fragment that re-renders every second. There is a polling
+fallback for an older backend, and no feed is opened at all for a job that has
+no durable id.
+
+Design and the remaining checkpoints: `plan/ENGINE2_REBUILD_PLAN.md`.
+
 ## System data flow
 
 A lecture enters as a video, is transcribed into timestamped segments, mined
@@ -170,16 +214,23 @@ flowchart LR
     end
 
     %% -------------------- Entry point --------------------
-    FE["Streamlit apps · frontend/student_app.py + faculty_app.py<br/>Student dashboard: ingest → quiz → remediation<br/>Faculty dashboard: heatmap + divergence"]
+    FE["Streamlit apps · frontend/student_app.py + faculty_app.py<br/>Student dashboard: ingest → quiz → remediation<br/>Faculty dashboard: heatmap + divergence<br/>job cards fed by SSE"]
 
     %% -------------------- API surface --------------------
-    API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health"]
+    API["backend/main.py · FastAPI app<br/>loads .env · creates tables · /health<br/>boot recovery marks dead jobs orphaned"]
     R["backend/api/routes/ · HTTP endpoints<br/>upload · concepts · clips · graph · quiz · stats<br/>background jobs in api/jobs/"]
 
+    %% -------------------- Job registry (Engine 2) --------------------
+    JOBS["backend/api/job_registry.py<br/>create · update · finish · fail · list<br/>per-course advisory lock"]
+    SSE["GET /jobs · /jobs/{id} · /jobs/{id}/cancel<br/>GET /jobs/stream (SSE)"]
+
     %% -------------------- Storage --------------------
-    DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache · concepts<br/>passages · lecture_links · graph · clips · quiz · responses")]
+    DB[("SQLite · data/lecgap.db<br/>lectures · transcript_segments · llm_cache · concepts<br/>passages · lecture_links · graph · clips · quiz · responses<br/>jobs — the durable registry")]
     RAW["data/raw/ · uploaded lecture media"]
     CLIPS["data/processed/clips/ per lecture<br/>one exportable video per concept"]
+
+    %% -------------------- Frontend job feed --------------------
+    JFEED["frontend/jobfeed.py · one SSE connection<br/>in-memory snapshot · polling fallback<br/>cards render inside a st.fragment"]
 
     %% -------------------- ML data & models --------------------
     WHISPERL["openai-whisper · local engine<br/>WHISPER_MODEL · base · offline · no quota"]
@@ -201,9 +252,17 @@ flowchart LR
     GK --> GROQCHAT
     GK --> GROQAUD
     API -->|".env + DB init at startup"| GK
+    API -->|"boot: orphaned jobs"| JOBS
     FE -->|"health probe"| API
     FE -->|"media + course_id"| R
+    FE -->|"SSE subscribe"| SSE
+    SSE -->|"job rows"| JFEED
+    JFEED -->|"snapshot, no polling"| FE
     R -->|"store upload"| RAW
+    R -->|"creates a job, then schedules the worker"| JOBS
+    JOBS -->|"job row + stage/detail/%| DB
+    JOBS -->|"/jobs · /jobs/stream"| SSE
+    R -->|"job_id back to the client"| FE
     R -->|"background task: transcribe()"| TR
     RAW -->|"source_path"| TR
     TR -->|"local engine"| WHISPERL
@@ -247,14 +306,16 @@ flowchart LR
     classDef ml fill:#ffe4e6,stroke:#e11d48,color:#111;
     classDef ui fill:#fff7ed,stroke:#ea580c,color:#111;
     classDef api fill:#f1f5f9,stroke:#64748b,color:#111;
+    classDef job fill:#cffafe,stroke:#0891b2,color:#111;
 
     class GK key;
     class GROQCHAT,GROQAUD,OLLAMA,FFMPEG ext;
     class LLM,TR,SP,EX,CLS,BG,SC,QZ,RF mod;
     class DB,RAW,CLIPS store;
     class MINILM,LB ml;
-    class FE ui;
-    class API,R api;
+    class FE,JFEED ui;
+    class API,R,SSE api;
+    class JOBS job;
 ```
 
 Seven stages, one loop: **upload → transcribe → extract concepts → build the
@@ -344,12 +405,31 @@ transcript can't support a concept the fallback is a name-recognition question,
 so every question stays answerable. Faculty dashboard: heatmap of concept miss
 rates
 + taught-vs-learned divergence, the interactive concept prerequisite DAG
-(learner order top→bottom, edge-tooltip confidence; vis-network loads from a
-CDN so the page itself is only a few KB), and a per-lecture **timeline +
-coverage** view showing how much of the spoken lecture the extracted concepts
-pin down, with each concept's quiz-answer evidence sentence — all served by
-the API (`GET /courses/{id}/stats`, `GET /courses/{id}/graph`,
-`GET /lectures/{id}`).
+(learner order top→bottom, edge-tooltip confidence, **hover an edge for the
+verbatim sentence the professor said** and which method produced it), and a
+per-lecture **timeline + coverage** view showing how much of the spoken lecture
+the extracted concepts pin down, with each concept's quiz-answer evidence
+sentence — all served by the API (`GET /courses/{id}/stats`,
+`GET /courses/{id}/graph`, `GET /lectures/{id}`).
+
+The DAG is a **dependency-free inline SVG** (`frontend/render.py::dag_svg`): no
+JavaScript, no iframe, no CDN, so it cannot fail to render on a laptop with no
+network — the previous vis-network version loaded two CDNs and a
+`node_modules` path that did not exist in this repo, and it silently rendered
+an empty canvas. It is scroll-contained and CSS-resizable, and it colours nodes
+either by learner order (a teal→coral ramp) or by concept identity.
+
+**Colour is one system, not a hundred hardcoded hexes** (`frontend/theme.py`).
+The theme is *declared* in `.streamlit/config.toml` (`base = "dark"`) and every
+surface reads semantic tokens from it — `text`, `muted`, `border`, `surface`,
+`warn` — so a panel asks for a meaning rather than a colour, and flipping
+`base = "light"` re-themes the whole app. A label's ink is never chosen by eye:
+`theme.readable_on(background)` returns whichever ink candidate measures better
+by WCAG contrast, and `tests/test_theme.py` pins the properties (every text
+token ≥ 4.5:1 on every surface in both themes, meaningful marks ≥ 3:1, a node's
+label legible on its fill for every rank and hashed hue, the declared theme
+matching the palette) plus a scanner that fails if any module outside
+`theme.py` names a colour.
 
 ### Recovery experiment (Phase 7 validator)
 
@@ -394,12 +474,15 @@ Tests and benchmarks:
 
 ```bash
 # Unit tests (stubbed/monkeypatched LLM + whisper + encoder — zero API usage,
-# zero model/weight download, isolated test DB). 162 tests across:
+# zero model/weight download, isolated test DB). 688 tests across:
 #   transcription, LLM layer, the Lecture-Structure pass (16 tests),
 #   concept extraction + fallback, prerequisite classifier,
 #   graph construction (incl. the transcript-first merge), clip segmentation,
 #   quiz generation (passage-grounded + Stage 6c LLM-written MCQs) + grading +
 #   refinement,
+#   the durable job registry + restart recovery + worker progress publishing,
+#   the SSE job feed and the fragment-rendered progress cards,
+#   the colour system (contrast properties + a no-hardcoded-hex scanner),
 #   frontend DAG + timeline renderers, fine-tune helpers, and API integration.
 python -m pytest tests
 
@@ -464,6 +547,10 @@ Raw media and the database are git-ignored — never commit them.
 | File | Contents |
 |---|---|
 | `plan/ARCHITECTURE.md` | Full 8-stage pipeline, stage by stage, tech stack |
+| `plan/ENGINE2_REBUILD_PLAN.md` | The Engine 2 checkpoint sequence C0–C9 (job registry → contract → React), with what ships after each checkpoint |
+| `plan/FRONTEND_ARCHITECTURE.md` | Frontend layering, session state, caching and panel boundaries |
+| `plan/FRONTEND_API_CONTRACT.md` | The HTTP boundary: endpoints, payload shapes, error envelope |
+| `plan/FRONTEND_REACT_ROADMAP.md` | The React rebuild: stack, parity checklist, non-goals |
 | `plan/LECTURE_STRUCTURE.md` | Approved Lecture-Structure redesign spec (passages, teach-spans, transcript-first graph) |
 | `plan/EVALUATION.md` | How the prerequisite classifier and refinement loop are tested |
 | `plan/ROADMAP.md` | Phased build plan (complexity-based, not semester-bound) |
