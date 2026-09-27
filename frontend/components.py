@@ -21,9 +21,20 @@ from frontend.render import dag_html, lecture_html
 _MAX_POLL_FAILS = 5
 _JOB_DEADLINE_S = 6 * 60 * 60
 
+# Number of consecutive polls that may return the same non-advancing status
+# before we call the job stalled and stop re-rendering. The backend's DB-derived
+# fallback (backend/api/jobs/progress.py:68) reports a lecture's raw status, so a
+# row that never leaves `uploaded` is reported identically forever — without a
+# cutoff the page re-rendered every 0.5-1.5s until _JOB_DEADLINE_S (6 hours).
+# Generous because a local-Whisper transcribe legitimately sits on one stage.
+_MAX_STALLED_POLLS = 40
+
 # In-process upload registry keyed by lecture id — survives reruns (module-level)
 # so a background upload thread is never lost between script executions.
+# Guarded by _UPLOADS_LOCK: the daemon upload thread and the per-session script
+# thread both touch it, and it is process-global, so two sessions share it.
 _UPLOADS = {}
+_UPLOADS_LOCK = threading.RLock()
 
 _STAGE_HINTS = {
     "initializing": "Starting the background job…",
@@ -245,16 +256,32 @@ def start_job(course_id, lecture_id, title, kind, after=None):
     state.set("jobs", items=items)
 
 
+def active_job(lecture_id, kinds=None):
+    """True while a monitor card for this lecture is still live.
+
+    Lets action buttons disable themselves instead of letting a second click
+    queue duplicate work (Streamlit reruns the whole script per interaction, so
+    a double-click fired the request twice).
+    """
+    for j in (state.get("jobs", "items") or []):
+        if j.get("lecture_id") != lecture_id:
+            continue
+        if kinds is None or j.get("kind") in kinds:
+            return True
+    return False
+
+
 # ----------------------------------------------------------------- upload thread
 
 def begin_upload(course_id, lecture_id, title, filename, file_bytes,
                  whisper_backend=None):
     """Non-blocking upload (plan §unch): create the row was already done; this
     streams the media in a daemon thread while the progress card shows the
-    transfer, so the script never blocks on the file."""
-    entry = _UPLOADS.get(lecture_id)
-    if entry and not entry["done"].is_set():
-        return False  # already uploading this lecture
+    transfer, so     the script never blocks on the file."""
+    with _UPLOADS_LOCK:
+        entry = _UPLOADS.get(lecture_id)
+        if entry and not entry["done"].is_set():
+            return False  # already uploading this lecture
 
     cancel = threading.Event()
     done = threading.Event()
@@ -278,35 +305,50 @@ def begin_upload(course_id, lecture_id, title, filename, file_bytes,
             done.set()
 
     thread = threading.Thread(target=worker, daemon=True)
-    _UPLOADS[lecture_id] = {"thread": thread, "cancel": cancel, "done": done,
-                            "ok": outcome, "title": title}
+    with _UPLOADS_LOCK:
+        _UPLOADS[lecture_id] = {"thread": thread, "cancel": cancel, "done": done,
+                                "ok": outcome, "title": title}
     thread.start()
     start_job(course_id, lecture_id, title, kind="upload")
     return True
 
 
 def cancel_upload(lecture_id):
-    entry = _UPLOADS.get(lecture_id)
-    if entry and not entry["done"].is_set():
-        entry["cancel"].set()
-        return True
+    with _UPLOADS_LOCK:
+        entry = _UPLOADS.get(lecture_id)
+        if entry and not entry["done"].is_set():
+            entry["cancel"].set()
+            return True
     return False
 
 
 def _upload_status(lecture_id, kind):
-    """(done, ok, error) for a job; ``(done=True, ok=True)`` once finished OK.
+    """``(state, ok, error)`` for an upload job; ``state`` is one of:
 
-    ``done=False`` covers both "uploading" and "about to start" (registry entry
-    pending) so the monitor keeps polling without inventing errors."""
+    * ``"done"``   — the transfer finished; read ``ok``/``error`` for the result.
+    * ``"pending"``— a live registry entry whose thread has not finished.
+    * ``"absent"`` — no registry entry at all: the thread is gone (it was never
+      started, or a previous poll already consumed the result).
+
+    The three states used to collapse: "pending" and "absent" both returned
+    ``(False, False, None)``, so the monitor could not tell a transfer still in
+    flight from one with no thread behind it, and it reported "Upload failed."
+    on the first poll. That made the "Upload starting…" branch and the Cancel
+    button unreachable.
+    """
     if kind != "upload":
         return None
-    entry = _UPLOADS.get(lecture_id)
-    if entry is None:
-        return False, False, None  # awaiting the thread's first tick
-    if entry["done"].is_set():
-        _UPLOADS.pop(lecture_id, None)  # handled; keep memory tight
-        return True, entry["ok"]["ok"], entry["ok"]["error"]
-    return False, False, None
+    with _UPLOADS_LOCK:
+        entry = _UPLOADS.get(lecture_id)
+        if entry is None:
+            return "absent", False, None
+        if entry["done"].is_set():
+            # read what we need before dropping it, so a concurrent reader can
+            # never observe a half-removed entry
+            ok, err = entry["ok"]["ok"], entry["ok"]["error"]
+            _UPLOADS.pop(lecture_id, None)  # handled; keep memory tight
+            return "done", ok, err
+    return "pending", False, None
 
 
 def _job_guidance(stage, elapsed_s):
@@ -333,12 +375,17 @@ def render_progress_cards():
 
         # --- non-blocking upload: handle the client-side upload thread first ---
         if kind == "upload":
-            pending, up_ok, up_err = _upload_status(lecture_id, kind)
-            if not pending and not up_ok:
+            up_state, up_ok, up_err = _upload_status(lecture_id, kind)
+            if up_state == "absent":
+                # No thread behind this job — nothing left to wait for.
                 st.error(up_err or "Upload failed.")
                 client.invalidate_for_course(job.get("course_id"))
                 continue
-            if not pending:
+            if up_state == "done":
+                if not up_ok:
+                    st.error(up_err or "Upload failed.")
+                    client.invalidate_for_course(job.get("course_id"))
+                    continue
                 # hand off: media landed, the backend worker card reports from
                 # here on (stage flips to transcribing after the PUT schedules it)
                 job["kind"] = "transcribe"
@@ -361,6 +408,7 @@ def render_progress_cards():
         job["fail_count"] = 0
         status = data.get("status", "")
         stage = data.get("stage", "working")
+        pct = int(data.get("progress_pct", 0) or 0)
 
         if status == "ready":
             st.progress(100)
@@ -372,18 +420,36 @@ def render_progress_cards():
             st.error(data.get("detail") or f"Job ended with status '{status}'.")
             client.invalidate_for_course(job.get("course_id"))
             continue
+
+        # Stall detection: a job that reports the identical stage+pct on every
+        # poll is not making progress. Without this, a lecture the backend never
+        # advances out of `uploaded` re-rendered the page until the 6h deadline.
+        fingerprint = f"{status}|{stage}|{pct}"
+        if job.get("fingerprint") == fingerprint:
+            job["stalled_polls"] = int(job.get("stalled_polls", 0)) + 1
+        else:
+            job["fingerprint"] = fingerprint
+            job["stalled_polls"] = 0
+
         if kind == "upload" and status == "uploaded":
             st.progress(0, text="Upload starting…")
             st.caption(job.get("title", "Upload"))
+            if job["stalled_polls"] >= _MAX_STALLED_POLLS:
+                st.warning("Upload is not starting — the backend never picked up "
+                           "the media. Delete the row and re-upload it.")
+                continue
             keep.append(job)
             want_rerun = True
             backoff = min(backoff, 0.5)
             continue
 
-        st.progress(min(int(data.get("progress_pct", 0)), 100),
-                    text=data.get("detail") or stage)
+        st.progress(min(pct, 100), text=data.get("detail") or stage)
         st.caption(_job_guidance(stage, data.get("elapsed_s", 0)))
 
+        if job["stalled_polls"] >= _MAX_STALLED_POLLS:
+            st.warning(f"Stalled on '{stage}' with no progress — the job may have "
+                       "stopped. Reload the page to re-attach to it.")
+            continue
         if time.monotonic() > float(job.get("deadline", 0)):
             st.warning("Timed out waiting — the job still runs in the "
                        "background; reload to re-attach.")

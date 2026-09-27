@@ -1,6 +1,10 @@
 """Stage 4 job — regenerate a course's prerequisite graph from its concepts."""
 
-from backend.api.jobs.common import client_error_message, get_shared_classifier
+from backend.api.jobs.common import (
+    PIPELINE_SEMAPHORE,
+    client_error_message,
+    get_shared_classifier,
+)
 from backend.api.jobs.progress import _finish, update_lecture_progress
 from backend.config import llm_reasoning_enabled
 from backend.models.db import Concept, GraphEdge, GraphNode, Lecture, LectureLink, SessionLocal
@@ -19,6 +23,11 @@ def build_course_graph_worker(course_id: str, lecture_id: int = None) -> None:
     job move and settle on a `ready` status instead of polling an untouched
     lecture row forever.
     """
+    with PIPELINE_SEMAPHORE:
+        _build_course_graph_worker(course_id, lecture_id)
+
+
+def _build_course_graph_worker(course_id: str, lecture_id: int = None) -> None:
     if lecture_id is not None:
         update_lecture_progress(
             lecture_id, "building_graph", 55,

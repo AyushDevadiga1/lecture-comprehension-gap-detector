@@ -105,7 +105,13 @@ else:
     chosen = st.selectbox("Lecture to process", ready,
                           format_func=components.lecture_label,
                           key="process_lecture")
-    if st.button("Extract concepts + build graph"):
+    # One pipeline job at a time per lecture: a second click would queue
+    # duplicate work behind the same semaphore slot.
+    busy = components.active_job(chosen["id"], kinds=("extract", "graph", "clips"))
+    if busy:
+        st.info("A job is already running for this lecture — see the progress "
+                "card above. Actions are disabled until it finishes.")
+    if st.button("Extract concepts + build graph", disabled=busy):
         resp = client.post(f"/lectures/{chosen['id']}/concepts")
         err = client.take_last_error()
         if resp:
@@ -113,7 +119,7 @@ else:
                                  "Concept extraction + graph", kind="extract")
         elif err:
             st.error(err.get("detail") or "Extraction not queued.")
-    if st.button("Rebuild graph only (after edits/reruns)"):
+    if st.button("Rebuild graph only (after edits/reruns)", disabled=busy):
         resp = client.post(f"/courses/{nav_course}/graph",
                            params={"lecture_id": chosen["id"]})
         err = client.take_last_error()
@@ -122,7 +128,7 @@ else:
                                  "Course-graph rebuild", kind="graph")
         elif err:
             st.error(err.get("detail") or "Graph build not queued.")
-    if st.button("Cut concept clips"):
+    if st.button("Cut concept clips", disabled=busy):
         resp = client.post(f"/lectures/{chosen['id']}/clips")
         err = client.take_last_error()
         if resp:

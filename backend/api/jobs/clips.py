@@ -1,6 +1,10 @@
 """Stage 5 job — cut one clip per concept and persist the rows."""
 
-from backend.api.jobs.common import REPO_ROOT, client_error_message
+from backend.api.jobs.common import (
+    PIPELINE_SEMAPHORE,
+    REPO_ROOT,
+    client_error_message,
+)
 from backend.api.jobs.progress import _finish, update_lecture_progress
 from backend.config import CLIPS_BASE_DIR
 from backend.models.db import Clip, Lecture, SessionLocal
@@ -9,6 +13,11 @@ from backend.pipeline.segment_clips import cut_concept_clips
 
 def cut_clips_worker(lecture_id: int) -> None:
     """Background worker: cut one clip per concept and persist the rows."""
+    with PIPELINE_SEMAPHORE:
+        _cut_clips_worker(lecture_id)
+
+
+def _cut_clips_worker(lecture_id: int) -> None:
     update_lecture_progress(
         lecture_id, "cutting_clips", 5, "Collecting concepts for clip cutting...",
         status="clips",

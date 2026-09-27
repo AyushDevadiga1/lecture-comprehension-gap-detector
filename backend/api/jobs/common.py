@@ -28,7 +28,49 @@ _shared_clf = None
 # pipeline jobs (transcription, concept extraction, clip cutting, graph build).
 # Prevents OOM / CPU exhaustion when many uploads arrive in quick succession.
 # LECGAP_MAX_PIPELINE_JOBS (>= 1, default 3) configures this in backend/config.py.
-PIPELINE_SEMAPHORE = threading.BoundedSemaphore(MAX_PIPELINE_JOBS)
+class _PipelineThrottle:
+    """Reentrant counting throttle over a fixed number of permits.
+
+    Reentrant because the workers nest: `extract_concepts_worker` chains a
+    course-graph rebuild, so a plain BoundedSemaphore would let a job that
+    already holds a permit block forever on its own nested acquire (and
+    deadlock outright at LECGAP_MAX_PIPELINE_JOBS=1). A thread that already
+    holds a permit re-enters without consuming another.
+    """
+
+    def __init__(self, permits: int):
+        self._permits = max(1, int(permits))
+        self._free = self._permits
+        self._cond = threading.Condition()
+        self._held_by: set = set()
+
+    def __enter__(self):
+        me = threading.get_ident()
+        with self._cond:
+            if me in self._held_by:
+                return self  # already counted; don't double-consume
+            while self._free <= 0:
+                self._cond.wait()
+            self._free -= 1
+            self._held_by.add(me)
+        return self
+
+    def __exit__(self, *exc_info):
+        me = threading.get_ident()
+        with self._cond:
+            if me in self._held_by:
+                self._held_by.discard(me)
+                self._free += 1
+                self._cond.notify()
+        return False
+
+    @property
+    def in_use(self) -> int:
+        with self._cond:
+            return self._permits - self._free
+
+
+PIPELINE_SEMAPHORE = _PipelineThrottle(MAX_PIPELINE_JOBS)
 
 
 def get_shared_classifier():

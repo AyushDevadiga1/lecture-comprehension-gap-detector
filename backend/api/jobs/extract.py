@@ -11,7 +11,7 @@ user is never stranded — the old path is the rescue rope, not the default.
 
 from typing import List
 
-from backend.api.jobs.common import client_error_message
+from backend.api.jobs.common import PIPELINE_SEMAPHORE, client_error_message
 from backend.api.jobs.graph import rebuild_course_graph
 from backend.api.jobs.progress import _finish, update_lecture_progress
 from backend.models.db import Concept, Lecture, LectureLink, Passage, SessionLocal
@@ -22,6 +22,11 @@ from backend.pipeline.refine_timeline import refine_concept_times
 
 def extract_concepts_worker(lecture_id: int) -> None:
     """Background worker: run the Lecture-Structure pass and persist rows."""
+    with PIPELINE_SEMAPHORE:
+        _extract_concepts_worker(lecture_id)
+
+
+def _extract_concepts_worker(lecture_id: int) -> None:
     update_lecture_progress(
         lecture_id, "extracting", 10, "Reading transcript and starting structure pass...",
         status="extracting",

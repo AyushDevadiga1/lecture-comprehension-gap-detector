@@ -3,6 +3,7 @@ sequence (Stage 6/7). Note: /students paths live here too because remediation
 is computed from quiz responses."""
 
 from bisect import bisect_left
+import threading
 
 from fastapi import APIRouter, Body, HTTPException, Path, Query
 
@@ -29,6 +30,24 @@ from backend.pipeline.quiz import (
 
 router = APIRouter(tags=["quizzes"])
 
+# Per-course guard for quiz generation. Generation takes minutes (an LLM call
+# per concept, fanned out six-wide) and ends by deleting + recreating the
+# course's ConceptItem rows, so two concurrent requests for one course would
+# have the second silently discard the first's freshly-written questions —
+# leaving an in-flight student's answers pointing at deleted rows. A
+# process-wide registry keyed by course_id is enough: it only has to stop
+# overlapping work inside this one process.
+_QUIZ_LOCKS: dict = {}
+_QUIZ_LOCKS_GUARD = threading.Lock()
+
+
+def _quiz_lock(course_id: str) -> threading.Lock:
+    with _QUIZ_LOCKS_GUARD:
+        lock = _QUIZ_LOCKS.get(course_id)
+        if lock is None:
+            lock = _QUIZ_LOCKS[course_id] = threading.Lock()
+        return lock
+
 
 def _watch_entry(item, clips):
     """Serialize one remediation item with its clip path attached."""
@@ -53,7 +72,25 @@ def create_quiz(
     ground-truth option is stored beside the question, and grading happens
     server-side on submit (the probe/self-grade mode of Phase 6 is kept for
     courses that have no transcript evidence yet).
+
+    One generation per course at a time. This is a non-blocking guard rather
+    than a queue: a second request gets an immediate, honest 409 instead of
+    silently waiting minutes behind the first and then racing it.
     """
+    lock = _quiz_lock(course_id)
+    if not lock.acquire(blocking=False):
+        raise HTTPException(
+            status_code=409,
+            detail="A quiz is already being generated for this course — "
+                   "wait for it to finish, then try again.",
+        )
+    try:
+        return _create_quiz(course_id, student_id)
+    finally:
+        lock.release()
+
+
+def _create_quiz(course_id: str, student_id: str) -> QuizOut:
     with SessionLocal() as db:
         concepts = (
             db.query(Concept)
