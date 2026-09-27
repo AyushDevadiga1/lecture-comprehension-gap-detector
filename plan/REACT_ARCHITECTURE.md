@@ -9,6 +9,10 @@
 > the alternatives that were rejected, and why — with the thing in *this* repo
 > that makes the choice necessary. Anything marked **OPEN** must be decided before
 > the checkpoint that depends on it.
+>
+> **New session? Read §12 first** — it has the verified state of the repo, the
+> commands that work, and the traps that cost time while these decisions were
+> made.
 
 ---
 
@@ -292,3 +296,121 @@ the engine has reintroduced the defect this whole exercise exists to remove.
 | 3 | `graph_importance`: keep server-side, or port? | C7 | duplicating it is a real risk; the answer depends on how the graph endpoint is shaped |
 | 4 | MUI vs a lighter kit, decided with screens rather than a table | C5 | paper comparison of UI kits is not evidence |
 | 5 | Playwright in CI or pre-merge only | C9 | depends on whether the team has CI at all (`plan/TEAM.md` flags this) |
+
+---
+
+## 12. Handoff — verified state, commands, and traps
+
+> Everything below was **checked on 2026-09-27**, not recalled. Where a number
+> could go stale, the command to re-check it is given rather than the answer.
+
+### 12.1 Where the repo stands
+
+| | |
+|---|---|
+| `main` | `e4f67ad` — **1 commit ahead of `origin/main`, not pushed** |
+| `engine2/scaffold` | `886b845` — level with its origin, **1 behind `main`**; sync it before starting React work |
+| topic branches | `c3/job-progress` + `c4/sse-frontend` deleted (local + remote) after being merged |
+| `pre-engine2` tag | the pre-Engine-2 baseline, for a clean before/after |
+| suite | **706 passed, 1 skipped** (the skip is the opt-in Node mermaid parse) |
+| shipping today | the durable job registry, SSE, fragment-rendered progress cards, one colour system |
+| **not** shipping | contract v2, CORS, anything React, quiz version stamping |
+
+What C0–C4a bought, in one line each: a job you can *name* (`jobs` table), that
+survives a restart (`orphaned`), that another browser can see (`GET /jobs` is not
+session-scoped), that streams (`GET /jobs/stream`), and a progress card that no
+longer restarts your video. C4a is the frontend half — the Streamlit dashboards
+now consume all of it.
+
+### 12.2 The commands that actually work
+
+```powershell
+cd C:\Users\hp\Desktop\lecture-comprehension-gap-detector
+$py = "D:\Anaconda3\envs\lecgap\python.exe"   # the project env — see the trap below
+
+& $py -m pytest tests -q                        # 706 passed, ~2 min
+& $py -m uvicorn backend.main:app --reload --port 8000
+& $py -m streamlit run frontend/student_app.py
+& $py -m streamlit run frontend/faculty_app.py
+```
+
+### 12.3 Traps (each one cost real time)
+
+1. **Use the pinned interpreter, not the one on `PATH`.** The project env is
+   `D:\Anaconda3\envs\lecgap\python.exe` (py3.10.20, streamlit 1.62, pytest
+   9.1.1, matching every `environment.yml` pin). `python` on `PATH` is 3.13
+   (no pytest) or 3.11 — and **streamlit 1.53 on 3.11 lacks
+   `AppTest.file_uploader`**, so `test_two_step_upload_creates_then_streams`
+   fails *spuriously*. A whole session was spent chasing that phantom failure.
+2. **`WORKLOG.md` is git-ignored.** It is the human progress tracker and it is
+   *not* in a fresh clone or a new agent's context. Anything durable belongs in
+   `plan/`, a committed doc, or a commit message. (It is still worth keeping up
+   to date — it is where the "why" of past sessions lives for a human.)
+3. **Tests must never touch `data/lecgap.db`.** `tests/conftest.py` hard-sets
+   `LECGAP_DATABASE_URL` to a temp dir *before* any backend import, and a
+   `pytest_collection_finish` hook **fails the suite** if anything re-binds to
+   the live DB. Do not add a module-level `LECGAP_DATABASE_URL` in a new test
+   file: it runs at *collection* time, which is after conftest, and it wins.
+4. **A bare `%` in a mermaid diagram is a comment to the lexer** — and it breaks
+   a *later* line, so the reported line number is a red herring. The always-on
+   rules are in `tests/test_docs_render.py`; the real parse is
+   `npm --prefix .mermaid-check install mermaid jsdom`, then
+   `LECGAP_MERMAID_DIR=.mermaid-check node scripts/check_mermaid.mjs README.md`.
+5. **A raw `|` inside a markdown table cell silently splits the column.** Six
+   WORKLOG rows were malformed that way (four of them from earlier sessions). A
+   table row here needs exactly four `|`.
+6. **`.env` holds a live `GROQ_API_KEY`** (rotated 2026-09-21). Never commit it;
+   `/health` reports which backends are actually usable.
+
+### 12.4 The immediate blocker: contract v2 (plan "C4")
+
+This is what stands between the current tree and a typeable client. Checked
+today, all three items are still open:
+
+- **CORS.** `backend/main.py` has no `add_middleware` at all. A Vite dev server
+  is browser-blocked until an allow-list exists for the dev origin.
+- **`ClipOut.path` is the last filesystem path in a payload** (`schemas.py:130`).
+  Contract v2 emits a `url`. `frontend/client.py::media_url` exists *only*
+  because of that field, and the React client should have no such mapper — a
+  path in a payload becomes a contract-test failure, not a runtime surprise.
+- **No OpenAPI snapshot test**, so contract drift fails nobody.
+
+Then quiz version stamping (roadmap precondition 4): `POST /quizzes` still
+deletes and recreates a course's questions, so a second student's generation can
+invalidate the first's in-flight answers. §2's "a stale draft fails gracefully"
+depends on it, and the plan's C3 ("quiz idempotency") is otherwise not done —
+note the collision in naming: the committed **C3** was *worker progress
+publishing*, while the plan's C3 is *quiz idempotency*.
+
+### 12.5 Dead code and doc drift to decide on
+
+- `render.dag_html` (the pyvis path + its lazy import) is **used by no panel** —
+  both dashboards call `dag_svg`. It survives in `scripts/smoke_drive.py` and
+  three test files. Purge it or keep it deliberately; right now it is neither.
+- `plan/FRONTEND_REACT_ROADMAP.md` §4 describes the DAG as vis-network. The
+  renderer is a dependency-free inline SVG; the roadmap predates that.
+
+### 12.6 Invariants — do not break these in the new engine
+
+1. Progress arrives by **push**. A value that changes must never be the reason a
+   component re-renders.
+2. A finished job is **announced once by the page body**, not inside the thing
+   that re-renders.
+3. Every queueing endpoint returns the `job_id` it created; workers publish
+   through the thread-local job scope, so a progress publish cannot be applied to
+   the wrong job.
+4. **One colour system.** Panels ask for semantic tokens, never hex; a label's
+   ink is chosen by measured contrast; no module outside `frontend/theme.py` may
+   name a colour. The React app inherits the tokens — it does not bring its own.
+5. **No filesystem paths in payloads.**
+6. `main` is the stable baseline. React merges to `main` only at parity. Push
+   only when explicitly told.
+
+### 12.7 Not yet confirmed by a human
+
+C4a's whole point is that a playing `<video>` survives a running job. That is
+covered by unit tests and AppTest, and by a live SSE check against a real server
+(`mode=stream`, real job rows over the wire) — but the *visual* confirmation
+(play a clip, start a long job, keep watching) was left to the user. If that was
+never eyeballed, do it before trusting C6's parity gate, which is defined
+against it.
