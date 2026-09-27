@@ -259,7 +259,7 @@ async def upload_lecture_media(
         db.commit()
 
     background_tasks.add_task(jobs.process_lecture, lecture_id, whisper_backend)
-    return lecture
+    return _with_media(lecture)
 
 
 @router.get("", response_model=List[LectureOut])
@@ -271,13 +271,30 @@ def list_lectures(limit: int = 500, offset: int = 0) -> List[Lecture]:
     if offset < 0:
         raise HTTPException(status_code=400, detail="offset must be >= 0")
     with SessionLocal() as db:
-        return (
+        return [_with_media(lec) for lec in (
             db.query(Lecture)
             .order_by(Lecture.id)
             .offset(offset)
             .limit(limit)
             .all()
-        )
+        )]
+
+
+def _with_media(lec: Lecture) -> LectureOut:
+    """Serialize a lecture with `has_media` resolved from the filesystem.
+
+    A registered source_path whose file has since been removed does not count:
+    the UI offers "start processing" only when the bytes are really there.
+    """
+    path = (lec.source_path or "").strip()
+    if not path:
+        return LectureOut.model_validate(lec).model_copy(
+            update={"has_media": False})
+    try:
+        present = Path(path).is_file()
+    except OSError:
+        present = False
+    return LectureOut.model_validate(lec).model_copy(update={"has_media": present})
 
 
 @router.get("/{lecture_id}", response_model=LectureDetailOut)
@@ -357,7 +374,7 @@ def rerun_lecture(
         delivered = lecture
 
     background_tasks.add_task(jobs.process_lecture, lecture_id, whisper_backend)
-    return delivered
+    return _with_media(delivered)
 
 
 @router.post("/{lecture_id}/concepts", response_model=LectureDetailOut)

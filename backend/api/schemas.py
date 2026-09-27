@@ -27,6 +27,12 @@ class LectureOut(BaseModel):
     error: Optional[str] = None
     created_at: datetime
     processed_at: Optional[datetime] = None
+    # Whether the media actually landed on disk. A row can sit in `uploaded`
+    # for two very different reasons — the client created it and never streamed
+    # a file (abandoned, safe to delete), or the media is registered and only
+    # transcription never started (resumable). Without this the frontend can
+    # only show one alarming "not streamed yet" message for both.
+    has_media: bool = False
 
 
 class LectureProgressOut(BaseModel):

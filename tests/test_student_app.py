@@ -140,7 +140,9 @@ def test_background_job_card_resolves_on_ready(monkeypatch):
     install_backend(monkeypatch, {"post": post, "get": get})
     at = _run()
     find_button(at, "Extract concepts + build graph").click().run()
-    at.run()  # progress poll tick -> job lands on 'ready', card shows
+    # The card now renders directly under the button that queued the job, so the
+    # job is polled in the SAME script run as the click and lands on 'ready'
+    # immediately — no wasted "poll tick" rerun.
     assert any("Done." in s.value for s in at.success)
 
     at.run()  # terminal card is gone; nothing re-queues
@@ -209,7 +211,17 @@ def test_two_step_upload_creates_then_streams(monkeypatch):
         calls.append(("upload", {}))
         return {"id": 77, "status": "uploaded"}
 
-    install_backend(monkeypatch, {"post": post, "upload_media": upload_media})
+    def get(path, params=None, timeout=30):
+        # a real backend answers /progress for any existing lecture; returning
+        # None here would look like an unreachable worker and send the monitor
+        # into its retry loop, discarding the success message via st.rerun()
+        if path == "/lectures/77/progress":
+            return {"status": "ready", "stage": "ready", "progress_pct": 100,
+                    "detail": "Done.", "elapsed_s": 2}
+        return None
+
+    install_backend(monkeypatch, {"post": post, "upload_media": upload_media,
+                                  "get": get})
     at = _run()
     at.file_uploader[0].set_value(("lec.mp4", b"x" * 20, "video/mp4")).run()
     find_button(at, "Upload + transcribe").click().run()
@@ -256,9 +268,13 @@ def test_snapshot_strip_renders_counts_and_in_flight_hint(monkeypatch):
     infos = "\n".join(i.value for i in at.info)
     texts = "\n".join(t.value for t in at.get("text"))
     assert "Processing in progress" in infos
-    assert "clips 40%" in texts and "#3 — Live" in texts
-    warns = "\n".join(w.value for w in at.warning)
-    assert "awaiting media" in warns and "#4" in warns
+    assert "clips 40%" in texts and "#3" in texts
+    # a stuck 'uploaded' row is a pointer, not an alarm, and it is demoted to
+    # st.info: the snapshot cannot tell resumable from abandoned, so it must not
+    # claim the row is broken.
+    notes = "\n".join(i.value for i in at.info)
+    assert "not finished yet" in notes and "#4" in notes
+    assert "awaiting media" not in "\n".join(w.value for w in at.warning)
 
 
 def test_snapshot_strip_does_not_spin_on_stuck_uploaded(monkeypatch):
@@ -277,7 +293,8 @@ def test_snapshot_strip_does_not_spin_on_stuck_uploaded(monkeypatch):
 
     install_backend(monkeypatch, {"course_snapshot": snapshot})
     at = _run()
-    assert any("awaiting media" in w.value for w in at.warning)
+    # still a hint, now worded as a pointer to the actionable panel
+    assert any("not finished yet" in i.value for i in at.info)
     # no monitor card for #4 -> no info "Processing" -> no rerun loop source
     assert not any("Processing in progress" in i.value for i in at.info)
 
@@ -330,5 +347,10 @@ def test_clips_followup_lists_cut_files_after_ready(monkeypatch):
     install_backend(monkeypatch, {"post": post, "get": get})
     at = _run()
     find_button(at, "Cut concept clips").click().run()
-    at.run()  # poll tick -> ready + follow-up list
-    assert any_markdown_contains(at, "1 clips cut")
+    # card sits under the button -> resolved in the same run, follow-up included
+    assert any_markdown_contains(at, "Clips cut for this lecture")
+    # a real player keyed on the concept name - not a filesystem path
+    assert any_markdown_contains(at, "Alpha")
+    caps = "\n".join(c.value for c in at.get("caption"))
+    assert "1 of 1 concept clips are playable" in caps
+    assert not at.get("code"), "clip paths must not be dumped as code blocks"

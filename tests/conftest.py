@@ -10,6 +10,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[1]
 
 if str(REPO) not in sys.path:
@@ -39,3 +41,18 @@ def pytest_collection_finish(session):
         f"tests bound to the live database ({bound}); "
         "remove the module-level LECGAP_DATABASE_URL override"
     )
+
+
+@pytest.fixture(autouse=True)
+def _no_poll_backoff(monkeypatch):
+    """Neutralise the progress monitor's sleep/rerun back-off in tests.
+
+    The monitor is intentionally a stop → sleep → st.rerun() loop. Under
+    AppTest a job that legitimately stays non-terminal (e.g. a snapshot seeding
+    a still-transcribing lecture) would re-render until the 3s run budget blew,
+    which is a harness artifact, not app behaviour. Termination semantics are
+    covered directly in tests/test_c0_fixes.py.
+    """
+    from frontend import components
+
+    monkeypatch.setattr(components, "_sleep", lambda *_a, **_k: None)

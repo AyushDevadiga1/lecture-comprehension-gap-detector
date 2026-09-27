@@ -233,6 +233,16 @@ def render_auth_banner():
 
 # ------------------------------------------------------------------ jobs
 
+def _sleep(seconds):
+    """Indirection over time.sleep for the poll back-off.
+
+    The monitor is a deliberate stop/sleep/rerun loop, so under Streamlit's
+    AppTest a seeded job would burn the whole 3s run budget re-rendering. Tests
+    neutralise this one function; production keeps the real back-off.
+    """
+    time.sleep(seconds)
+
+
 def start_job(course_id, lecture_id, title, kind, after=None):
     """Remember a background job so the monitor renders its card on the next
     rerun. Jobs accumulate — starting a new one never drops an old card
@@ -357,19 +367,29 @@ def _job_guidance(stage, elapsed_s):
     return f"{hint}  Elapsed: {mm}m {ss:02d}s"
 
 
-def render_progress_cards():
+def render_progress_cards(kinds=None):
     """Live, self-refreshing progress card per monitored job.
 
     One poll per rerun, adaptive back-off (fast on short stages, slower on long
     unadvancing ones). Jobs are removed once terminal; a follow-up (e.g. the
     clip list) runs straight after ``ready``.
+
+    ``kinds`` restricts the call to a subset of job kinds and leaves the others
+    untouched, so the dashboard can render the ingest monitor and the
+    process monitor as two separate blocks — each directly under the controls
+    that started those jobs, instead of one block pinned above everything.
     """
     items = state.get("jobs", "items", []) or []
     if not items:
         return
 
+    mine = [j for j in items if kinds is None or j.get("kind") in kinds]
+    others = [j for j in items if kinds is not None and j.get("kind") not in kinds]
+    if not mine:
+        return
+
     keep, want_rerun, backoff = [], False, 1.5
-    for job in items:
+    for job in mine:
         lecture_id = job.get("lecture_id")
         kind = job.get("kind")
 
@@ -458,25 +478,52 @@ def render_progress_cards():
         want_rerun = True
         backoff = min(backoff, 1.5 if stage in _LONG_STAGES else 0.5)
 
-    state.set("jobs", items=keep)
+    state.set("jobs", items=keep + others)
     if want_rerun:
-        time.sleep(backoff)
+        _sleep(backoff)
         try:
             st.rerun()
         except Exception:  # noqa: BLE001 - AppTest / bare runtimes have no rerun
             pass
 
 
+def render_clips(lecture_id, heading=None):
+    """Playable concept clips for one lecture.
+
+    Streams each clip through the Range-capable media endpoint with its concept
+    name, instead of printing the server-side filesystem path — a path is an
+    implementation detail and is not something a user can do anything with.
+    """
+    batch = client.get(f"/lectures/{lecture_id}/clips") or {}
+    clips = batch.get("clips") or []
+    if heading:
+        st.markdown(heading)
+    if not clips:
+        st.caption("No clips cut for this lecture yet.")
+        return
+    playable = [c for c in clips if c.get("ok")]
+    unplayable = [c for c in clips if not c.get("ok")]
+    st.caption(f"{len(playable)} of {len(clips)} concept clips are playable.")
+    for c in playable:
+        name = c.get("concept_name") or "(unnamed concept)"
+        start, end = c.get("start_s"), c.get("end_s")
+        span = ""
+        if isinstance(start, (int, float)) and isinstance(end, (int, float)):
+            span = f" · {start:.0f}–{end:.0f}s"
+        st.markdown(f"**{name}**{span}")
+        url = client.media_url(c.get("path"))
+        if url:
+            st.video(url)
+        else:
+            st.caption("clip file missing on the server — re-cut this lecture's clips")
+    if unplayable:
+        st.caption(f"{len(unplayable)} clip row(s) have no media file on the server, "
+                   "so they cannot be played. Re-run 'Cut concept clips' to rebuild them.")
+
+
 def _run_after(job, lecture_id):
     if job.get("after") == "clips_list":
-        batch = client.get(f"/lectures/{lecture_id}/clips") or {}
-        ok = [c for c in batch.get("clips", []) if c.get("ok")]
-        st.write(f"{len(ok)} clips cut under "
-                 f"data/processed/clips/{lecture_id}/")
-        if ok:
-            with st.expander("Clip file paths"):
-                for c in ok:
-                    st.code(c.get("path", ""))
+        render_clips(lecture_id, heading="**Clips cut for this lecture**")
 
 
 def _snapshot_line(data) -> str:
@@ -517,9 +564,12 @@ def render_course_snapshot(course_id):
         _seed_monitor_from_snapshot(course_id, transcribing)
 
     if uploading:
-        ids = ", ".join(str(f["lecture_id"]) for f in uploading)
-        st.warning(f"{len(uploading)} lecture(s) awaiting media (uploaded but not "
-                   f"streamed: #{ids}) — delete or re-upload them.")
+        # The snapshot cannot tell a resumable row from an abandoned one, so it
+        # must not claim they are all broken. Point at the panel that can.
+        ids = ", ".join(f"#{f['lecture_id']}" for f in uploading)
+        st.info(f"{len(uploading)} lecture(s) are not finished yet: {ids}. "
+                "See 'Ready to process' / 'Incomplete uploads' below — each one "
+                "either needs processing started, or needs deleting.")
 
 
 def _seed_monitor_from_snapshot(course_id, transcribing):
@@ -541,14 +591,81 @@ def lecture_label(l):
     return f"#{l['id']} — {l.get('title', l.get('course_id'))}"
 
 
+def stalled_rows(nav_course):
+    """Split unfinished rows by what is actually wrong with them.
+
+    Two very different situations both surface as status ``uploaded``:
+
+    * **resumable** — the media is registered and on disk (``has_media``), only
+      transcription never started. Fixable with POST /lectures/{id}/rerun.
+    * **abandoned** — no file ever arrived; the client created the row and the
+      stream died. Nothing to resume, so the row is just clutter to delete.
+
+    Reporting both as one "not streamed yet" warning is what made this
+    unreadable.
+    """
+    lectures = client.list_lectures() or []
+    resumable, abandoned = [], []
+    for lec in lectures:
+        if lec.get("course_id") != nav_course:
+            continue
+        if lec.get("status") in ("uploaded", "error"):
+            (resumable if lec.get("has_media") else abandoned).append(lec)
+    return resumable, abandoned
+
+
+def render_stalled_rows(nav_course):
+    """Actionable panel for rows the pipeline never finished."""
+    resumable, abandoned = stalled_rows(nav_course)
+    if not resumable and not abandoned:
+        return
+
+    if resumable:
+        st.subheader("Ready to process, but never started")
+        st.caption("These rows already have their video on the server. "
+                   "Transcription just never ran — start it below, no re-upload needed.")
+        for lec in resumable:
+            lid = lec["id"]
+            busy = active_job(lid)
+            col1, col2 = st.columns([3, 1])
+            col1.markdown(f"**#{lid} — {lec.get('title')}**")
+            if col2.button("Start processing", key=f"resume_{lid}", disabled=busy):
+                resp = client.post(f"/lectures/{lid}/rerun")
+                err = client.take_last_error()
+                if resp:
+                    start_job(nav_course, lid,
+                              f"#{lid} — {lec.get('title')}", kind="transcribe")
+                    client.invalidate_for_course(nav_course)
+                    st.success(f"Transcription queued for #{lid}.")
+                else:
+                    st.error((err or {}).get("detail")
+                             or f"Could not start #{lid}.")
+            if lec.get("error"):
+                st.caption(f"Last error: {lec['error']}")
+
+    if abandoned:
+        st.subheader("Incomplete uploads (no file arrived)")
+        st.caption("A row was created but the video never finished uploading, so "
+                   "there is nothing on the server to process. Delete these to clean up.")
+        for lec in abandoned:
+            st.write(f"#{lec['id']} — {lec.get('title')} · no media on the server")
+        ids = [lec["id"] for lec in abandoned]
+        if st.button("Delete these empty rows", key="drop_abandoned"):
+            for lid in ids:
+                if client.delete(f"/lectures/{lid}"):
+                    st.success(f"Deleted #{lid}.")
+                else:
+                    st.error((client.take_last_error() or {}).get("detail")
+                             or f"Delete #{lid} failed.")
+            client.invalidate_all()
+            _rerun()
+
+
 def render_lecture_rows(nav_course):
     """Manage / delete lecture rows (finding B3): failed or abandoned uploads
-    (stuck in ``uploaded`` because the media never streamed, or ``error``) are
-    otherwise unremovable — only whole-course delete existed. Checked rows are
-    deleted via DELETE /lectures/{id}, then the course/lecture caches clear."""
+    are otherwise unremovable — only whole-course delete existed. Checked rows
+    are deleted via DELETE /lectures/{id}, then the course/lecture caches clear."""
     st.subheader("Lecture rows")
-    st.caption("Remove failed or abandoned uploads (e.g. rows stuck in "
-               "'uploaded' because the file never streamed).")
     lectures = client.list_lectures() or []
     rows = [l for l in lectures if l.get("course_id") == nav_course]
     if not rows:
@@ -739,6 +856,45 @@ def render_faculty_dag(nav_course):
         else:
             st.info("No nodes yet — run 'Extract concepts + build graph' from the "
                     "Student dashboard.")
+
+
+def render_course_graph(nav_course, key_prefix="sg"):
+    """The course prerequisite DAG, with the payload kept in session state.
+
+    Shared by the student dashboard (so a graph build started there can be seen
+    without switching tabs) and reusable for the Engine 2 parity work.
+    """
+    st.subheader("Course concept graph")
+    if st.button("Load / refresh graph", key=f"{key_prefix}_load"):
+        graph = client.course_graph(nav_course)
+        if graph is not None:
+            state.set("graph", data=graph, course=nav_course)
+        else:
+            err = client.take_last_error()
+            st.error((err or {}).get("detail")
+                     or "Graph load failed — no graph for this course yet "
+                        "(extract concepts first), or the backend is down.")
+    graph = state.get("graph", "data")
+    if not graph or state.get("graph", "course") != nav_course:
+        st.caption("Not loaded yet — press 'Load / refresh graph'. If the course "
+                   "has no graph at all, run 'Extract concepts + build graph' on a "
+                   "ready lecture first.")
+        return
+    nodes = graph.get("nodes") or []
+    edges = graph.get("edges") or []
+    if not nodes:
+        st.info("This course has no graph yet. Use 'Extract concepts + build graph' "
+                "on a ready lecture, or 'Rebuild graph only'.")
+        return
+    st.write(f"**{graph.get('node_count', len(nodes))} concepts · "
+             f"{graph.get('edge_count', len(edges))} prerequisite links · "
+             f"{'acyclic' if graph.get('is_dag') else 'contains cycles'}**")
+    st.caption("Hover an edge for where the link came from (spoken transcript vs "
+               "classifier) and its evidence.")
+    st.iframe(dag_html(graph), height=720)
+    with st.expander("Learner order (topological)"):
+        for i, name in enumerate(graph.get("topological_order") or [], 1):
+            st.write(f"{i}. {name}")
 
 
 def render_faculty_timeline(nav_course):

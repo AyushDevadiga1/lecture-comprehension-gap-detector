@@ -1,4 +1,4 @@
-"""LecGap — Student dashboard.
+﻿"""LecGap â€” Student dashboard.
 
 Run with the backend already up:
     streamlit run frontend/student_app.py
@@ -11,11 +11,11 @@ this file is thin wiring so the two dashboards stay independent and testable.
 import streamlit as st
 from pathlib import Path
 
-from frontend import client, components
+from frontend import client, components, state
 
-st.set_page_config(page_title="LecGap · Student", layout="wide")
+st.set_page_config(page_title="LecGap Â· Student", layout="wide")
 st.title("LecGap")
-st.caption("Lecture Comprehension Gap Detector — Student dashboard")
+st.caption("Lecture Comprehension Gap Detector â€” Student dashboard")
 
 with st.sidebar:
     st.subheader("Course")
@@ -23,7 +23,6 @@ with st.sidebar:
 
 components.render_auth_banner()
 components.render_usage_row()
-components.render_progress_cards()
 components.render_course_snapshot(nav_course)
 
 # ------------------------------------------------------------ ingest + process
@@ -45,7 +44,7 @@ if upload_course:
         backend = st.selectbox(
             "Transcription backend",
             ["auto", "local", "groq"],
-            help="auto: groq when GROQ_API_KEY + ffmpeg are available (≈10× "
+            help="auto: groq when GROQ_API_KEY + ffmpeg are available (â‰ˆ10Ã— "
                  "real-time live-measured), otherwise the bundled local Whisper.",
         )
         up = st.file_uploader("Lecture media (mp4/mp3/wav/m4a/mkv/mov/webm)")
@@ -78,29 +77,34 @@ if upload_course:
                     whisper_backend=backend if backend != "auto" else None,
                 )
                 st.success(
-                    f"Uploading lecture #{resp['id']} — the transfer runs in the "
+                    f"Uploading lecture #{resp['id']} â€” the transfer runs in the "
                     f"background; progress card below."
                     if started else
-                    "Upload already in progress — see the progress card below."
+                    "Upload already in progress â€” see the progress card below."
                 )
             elif err:
                 st.error(err.get("detail") or "Upload failed.")
     elif submit and up and not dedupe_ok:
-        st.info("Duplicate upload not sent — tick 'Upload anyway' to proceed.")
+        st.info("Duplicate upload not sent â€” tick 'Upload anyway' to proceed.")
 else:
     st.info("Upload media above to create the first course.")
 
+# Upload/transcription progress sits directly under the upload controls rather
+# than pinned above the whole page, so the bar you are watching is next to the
+# button that started it.
+components.render_progress_cards(kinds=("upload", "transcribe", "attach"))
+
 st.divider()
 st.subheader("Process a lecture")
-st.caption("Extract concepts → auto-rebuild the course graph → cut clips.")
+st.caption("Extract concepts â†’ auto-rebuild the course graph â†’ cut clips.")
 
 if nav_course is None:
-    st.warning("No course available to process yet — upload one above.")
+    st.warning("No course available to process yet â€” upload one above.")
     st.stop()
 
 ready = components.ready_lectures(nav_course)
 if not ready:
-    st.warning(f"No ready lecture in course '{nav_course}' — upload one above.")
+    st.warning(f"No ready lecture in course '{nav_course}' â€” upload one above.")
 else:
     chosen = st.selectbox("Lecture to process", ready,
                           format_func=components.lecture_label,
@@ -109,8 +113,8 @@ else:
     # duplicate work behind the same semaphore slot.
     busy = components.active_job(chosen["id"], kinds=("extract", "graph", "clips"))
     if busy:
-        st.info("A job is already running for this lecture — see the progress "
-                "card above. Actions are disabled until it finishes.")
+        st.info("A job is already running for this lecture â€” progress is shown "
+                "just below. Actions stay disabled until it finishes.")
     if st.button("Extract concepts + build graph", disabled=busy):
         resp = client.post(f"/lectures/{chosen['id']}/concepts")
         err = client.take_last_error()
@@ -136,6 +140,31 @@ else:
                                  kind="clips", after="clips_list")
         elif err:
             st.error(err.get("detail") or "Clip cutting not queued.")
+
+# Pipeline progress (extract / graph / clips) directly under the process buttons
+# that queued it.
+components.render_progress_cards(kinds=("extract", "graph", "clips"))
+
+st.divider()
+st.subheader("Concept clips")
+ready_for_clips = components.ready_lectures(nav_course)
+if ready_for_clips:
+    clip_pick = st.selectbox("Lecture whose clips to watch", ready_for_clips,
+                             format_func=components.lecture_label,
+                             key="watch_clips")
+    if st.button("Show clips", key="show_clips"):
+        state.set("clips_view", lecture_id=clip_pick["id"])
+    if state.get("clips_view", "lecture_id") == clip_pick["id"]:
+        components.render_clips(clip_pick["id"])
+else:
+    st.caption("No ready lecture in this course yet.")
+
+st.divider()
+components.render_stalled_rows(nav_course)
+
+st.divider()
+st.subheader("Course graph")
+components.render_course_graph(nav_course)
 
 st.divider()
 components.render_lecture_rows(nav_course)
