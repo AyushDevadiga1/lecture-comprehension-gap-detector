@@ -841,10 +841,10 @@ def render_faculty_stats(nav_course):
 
 def render_faculty_dag(nav_course):
     st.subheader("Concept prerequisite DAG")
-    st.caption("Topological (learner) order runs top→bottom; hover a node for its "
-               "rank in the sequence, hover an edge for the confidence + where the "
-               "link came from (spoken transcript vs classifier) + its evidence. "
-               "Early concepts are teal, late ones coral.")
+    st.caption("Prerequisites sit above what they unlock. Scroll inside the box to "
+               "pan, hover a node for its rank in the learner sequence, hover an "
+               "edge for its confidence + whether the professor said it (spoken "
+               "transcript) or the classifier inferred it + the evidence.")
     if st.button("Render DAG"):
         graph = client.course_graph(nav_course)
         if graph is not None:
@@ -856,9 +856,33 @@ def render_faculty_dag(nav_course):
     graph = state.get("faculty", "graph")
     if graph and state.get("faculty", "graph_course") == nav_course:
         if graph.get("nodes"):
+            nodes = graph.get("nodes") or []
+            methods_present = sorted({
+                str(e.get("source_method", "classifier"))
+                for e in (graph.get("edges") or [])
+            }) or ["classifier"]
+            c1, c2 = st.columns([1, 2])
+            with c1:
+                zoom = st.slider("Zoom", 0.5, 2.0, 1.0, 0.1,
+                                 key="faculty_zoom",
+                                 help="Scales the drawing; scroll inside the box to pan.")
+            with c2:
+                methods = st.multiselect("Edge types", options=methods_present,
+                                         default=methods_present,
+                                         key="faculty_methods")
+            readable_all = 60
+            default_limit = len(nodes) if len(nodes) <= readable_all else 40
+            limit = st.slider("Concepts shown", 5, max(len(nodes), 5),
+                              default_limit, 5, key="faculty_limit")
             st.write(f"**{graph['node_count']} nodes · {graph['edge_count']} edges · "
                      f"{'acyclic (DAG)' if graph['is_dag'] else 'has cycles'}**")
-            st.markdown(dag_svg(graph), unsafe_allow_html=True)
+            st.markdown(
+                dag_svg(graph, max_nodes=limit, zoom=zoom,
+                        methods=methods or None),
+                unsafe_allow_html=True)
+            with st.expander("Full learner order (topological) — the study sequence"):
+                for i, name in enumerate(graph.get("topological_order") or [], 1):
+                    st.write(f"{i}. {name}")
             with st.expander("Learner order (topological)"):
                 for i, name in enumerate(graph.get("topological_order", []), 1):
                     st.write(f"{i}. {name}")
@@ -912,18 +936,44 @@ def render_course_graph(nav_course, key_prefix="sg"):
              "specific names). Keyword fragments like HAVING/update rank lowest.",
     )
     shown, dropped = graph_importance(graph, limit=limit)
+
+    methods_present = sorted({
+        str(e.get("source_method", "classifier")) for e in (graph.get("edges") or [])
+    }) or ["classifier"]
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        zoom = st.slider("Zoom", min_value=0.5, max_value=2.0, value=1.0,
+                         step=0.1, key=f"{key_prefix}_zoom",
+                         help="Scales the drawing. Scroll inside the box to pan.")
+    with c2:
+        methods = st.multiselect(
+            "Edge types", options=methods_present, default=methods_present,
+            key=f"{key_prefix}_methods",
+            help="Spoken-transcript links are the ones the professor stated "
+                 "out loud; classifier links are inferred.")
+    with c3:
+        n_edges = len(graph.get("edges") or [])
+        shown_edges = 0
+        wanted = {str(m) for m in (methods or methods_present)}
+        for e in (graph.get("edges") or []):
+            if (e.get("source") in shown and e.get("target") in shown
+                    and str(e.get("source_method", "classifier")) in wanted):
+                shown_edges += 1
+        st.metric("Links drawn", f"{shown_edges} / {n_edges}")
+
     st.write(f"**{graph.get('node_count', len(nodes))} concepts in total · "
-             f"{len(shown)} shown · {graph.get('edge_count', len(edges))} "
-             f"prerequisite links · "
+             f"{len(shown)} shown · "
              f"{'acyclic' if graph.get('is_dag') else 'contains cycles'}**")
     if dropped:
         st.caption(f"{len(dropped)} lower-significance concept(s) hidden to keep "
                    f"this readable. Raise the slider to include them.")
-    st.caption("Prerequisites sit above what they unlock. Hover an edge for where "
-               "the link came from (spoken transcript vs classifier) and its "
-               "evidence.")
-    st.markdown(dag_svg(graph, max_nodes=limit), unsafe_allow_html=True)
-    with st.expander("Learner order (topological)"):
+    st.caption("Prerequisites sit above what they unlock. Scroll inside the box to "
+               "pan; hover an edge for where the link came from (spoken transcript "
+               "vs classifier) and its evidence.")
+    st.markdown(
+        dag_svg(graph, max_nodes=limit, zoom=zoom, methods=methods or None),
+        unsafe_allow_html=True)
+    with st.expander("Full learner order (topological) — the study sequence"):
         for i, name in enumerate(graph.get("topological_order") or [], 1):
             st.write(f"{i}. {name}")
 

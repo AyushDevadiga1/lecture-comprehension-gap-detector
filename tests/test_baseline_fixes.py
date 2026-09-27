@@ -57,6 +57,8 @@ class _St:
         self.iframes = []
         self.buttons = {}
         self.sliders = []
+        self.multiselects = []
+        self.metrics = []
         self.columns_made = []
         self.reruns = 0
 
@@ -108,6 +110,13 @@ class _St:
 
     def selectbox(self, label, options, **k):
         return options[0] if options else None
+
+    def metric(self, label, value=None, **k):
+        self.metrics.append((label, value))
+
+    def multiselect(self, label, options, default=None, **k):
+        self.multiselects.append((label, list(options)))
+        return list(options if default is None else default)
 
     def slider(self, label, min_value=None, max_value=None, value=None,
                step=None, **k):
@@ -320,9 +329,12 @@ def test_render_course_graph_renders_counts_and_dag(monkeypatch, sess, fake_st):
     monkeypatch.setattr(components, "dag_svg", lambda g, **k: "<svg>ok</svg>")
     components.render_course_graph("ml")
     text = fake_st.all_text()
-    assert "2 concepts" in text and "1 prerequisite links" in text
+    assert "2 concepts in total" in text and "2 shown" in text
     assert "acyclic" in text
     assert "<svg>ok</svg>" in "\n".join(fake_st.md)
+    # the learner order stays reachable, and the study sequence is offered
+    assert "Full learner order" in "\n".join(fake_st.expander_labels)
+    assert "1. A" in text and "2. B" in text
 
 
 def test_render_course_graph_will_not_show_another_courses_graph(monkeypatch, sess, fake_st):

@@ -12,6 +12,8 @@ of the lecture is actually covered by extracted concepts" — the insight the
 DAG and quiz both lean on.
 """
 
+import colorsys
+import hashlib
 import html as _html
 
 
@@ -251,8 +253,39 @@ def graph_importance(graph: dict, limit: int = 40):
     return set(nodes), set()
 
 
-def dag_svg(graph: dict, max_nodes: int = 40, width: int = 1180) -> str:
-    """Render a course graph as a self-contained inline SVG.
+def node_colors(name: str):
+    """Stable per-node fill + a high-contrast label colour.
+
+    "Random" but *deterministic*: the hue is derived from a hash of the node
+    name, so a node keeps its colour across reruns. Genuinely random-per-render
+    would make the whole graph flicker on every Streamlit rerun, which is
+    exactly the kind of churn this view is trying to avoid.
+
+    Fill is a light pastel (lightness 0.74-0.87) and the label is a very dark
+    shade of the *same* hue, so text contrast stays strong whatever the hue —
+    adjacent nodes still read as distinct because the lightness varies too.
+    """
+    digest = hashlib.sha256(str(name).encode("utf-8")).digest()
+    hue = digest[0] / 255.0
+    light = 0.74 + (digest[1] / 255.0) * 0.13
+    sat = 0.52 + (digest[2] / 255.0) * 0.20
+
+    def _hex(l, s):
+        r, g, b = colorsys.hls_to_rgb(hue, l, s)
+        return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
+
+    return _hex(light, sat), _hex(0.20, min(sat + 0.1, 0.95))
+
+
+def dag_svg(
+    graph: dict,
+    max_nodes: int = 40,
+    width: int = 1180,
+    zoom: float = 1.0,
+    methods=None,
+    max_height: int = 560,
+) -> str:
+    """Render a course graph as a self-contained, scroll-contained inline SVG.
 
     Deliberately dependency-free: the previous renderer emitted vis-network and
     Bootstrap from two CDNs plus a ``../node_modules/vis/dist/vis.js`` path that
@@ -260,8 +293,14 @@ def dag_svg(graph: dict, max_nodes: int = 40, width: int = 1180) -> str:
     whenever the CDN was unreachable. This needs no JavaScript, no iframe, and
     no network at all, which also means it renders inside Streamlit directly.
 
+    The SVG is wrapped in a fixed-height ``overflow:auto`` box so a wide graph
+    scrolls *inside* its container instead of stretching the page and forcing a
+    horizontal scrollbar for the whole dashboard. ``zoom`` scales the drawing
+    via the viewBox, so it costs no script.
+
     Layout is layered by longest-path depth so prerequisites sit above the
-    concepts that depend on them, matching the learner order.
+    concepts that depend on them, matching the learner order. ``methods``
+    filters edges by ``source_method`` (e.g. only spoken-transcript links).
     """
     nodes = graph.get("nodes") or []
     if not nodes:
@@ -270,13 +309,26 @@ def dag_svg(graph: dict, max_nodes: int = 40, width: int = 1180) -> str:
             "from the Student dashboard, then reload this view.</p>"
         )
 
+    try:
+        zoom = float(zoom)
+    except (TypeError, ValueError):
+        zoom = 1.0
+    # clamped to the same 0.5-2.0 range the UI sliders expose
+    zoom = min(max(zoom, 0.5), 3.0)
+
     kept, dropped = graph_importance(graph, limit=max_nodes)
     shown = [n for n in nodes if n in kept]
     shown_set = set(shown)
-    edges = [
+    all_edges = [
         e for e in (graph.get("edges") or [])
         if e.get("source") in shown_set and e.get("target") in shown_set
     ]
+    if methods:
+        wanted = {str(m) for m in methods}
+        edges = [e for e in all_edges
+                 if str(e.get("source_method", "classifier")) in wanted]
+    else:
+        edges = all_edges
 
     # longest-path depth per node, restricted to the edges we draw
     depth: dict = {}
@@ -311,10 +363,16 @@ def dag_svg(graph: dict, max_nodes: int = 40, width: int = 1180) -> str:
     height = pad * 2 + max(len(levels), 1) * (node_h + gap_y)
     svg_w = max(width, row_w + pad * 2)
 
+    shown_w = round(svg_w * zoom)
+    shown_h = round(height * zoom)
+
     parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{svg_w}" height="{height}" '
-        f'viewBox="0 0 {svg_w} {height}" role="img" '
-        f'aria-label="Course prerequisite graph">',
+        f'<div style="max-height:{max_height}px;overflow:auto;border:1px solid #e2e8f0;'
+        f'border-radius:10px;background:#ffffff;padding:4px">',
+        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'width="{shown_w}" height="{shown_h}" viewBox="0 0 {svg_w} {height}" '
+        f'role="img" aria-label="Course prerequisite graph" '
+        f'style="display:block">',
         '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" '
         'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
         '<path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs>',
@@ -352,36 +410,63 @@ def dag_svg(graph: dict, max_nodes: int = 40, width: int = 1180) -> str:
             f'<title>{tip}</title></path>'
         )
 
-    total_shown = max(len(shown) - 1, 1)
     for name, (x, y) in pos.items():
-        frac = rank.get(name, total_shown) / total_shown
-        r = int(20 + 226 * frac)
-        g = int(184 - 74 * frac)
-        b = int(156 - 30 * frac)
-        fill = "#%02x%02x%02x" % (r, g, b)
+        fill, ink = node_colors(name)
         label = _html.escape(str(name))
-        tip = _html.escape(f"learner order #{rank.get(name, 0) + 1}/{len(order)}")
+        r = rank.get(name)
+        shown_n = max(len(order), 1)
+        tip = (f"learner order #{r + 1}/{shown_n}" if r is not None
+               else "learner order unknown")
+        badge = ""
+        if r is not None:
+            # learner-order badge: the graph is only useful if you can read the
+            # order to study in, so it is drawn on the node, not hidden in a list
+            badge = (
+                f'<rect x="{x:.1f}" y="{y - 8:.1f}" width="21" height="16" rx="5" '
+                f'fill="{ink}"/>'
+                f'<text x="{x + 10.5:.1f}" y="{y + 4:.1f}" font-size="10" '
+                f'font-weight="700" fill="#ffffff" text-anchor="middle">'
+                f'{r + 1}</text>'
+            )
         parts.append(
-            f'<g><title>{tip}</title>'
+            f'<g><title>{_html.escape(tip)}</title>{badge}'
             f'<rect x="{x:.1f}" y="{y:.1f}" width="{node_w}" height="{node_h}" '
-            f'rx="7" fill="{fill}" stroke="#334155" stroke-width="1"/>'
+            f'rx="7" fill="{fill}" stroke="{ink}" stroke-width="1"/>'
             f'<text x="{x + node_w / 2:.1f}" y="{y + node_h / 2 + 4:.1f}" '
             f'font-family="Segoe UI,Arial,sans-serif" font-size="12" '
-            f'fill="#0f172a" text-anchor="middle">{label[:26]}</text></g>'
+            f'font-weight="600" fill="{ink}" text-anchor="middle">'
+            f'{label[:26]}</text></g>'
         )
 
-    parts.append("</svg>")
-    svg = "".join(parts)
+    parts.append("</svg></div>")
 
+    # legend: what the badge and the layering mean
+    n_shown = len(shown)
+    parts.append(
+        f'<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
+        f'color:#64748b;margin:6px 2px 0">Badge = position in the learner order '
+        f'(1 = study first, of {len(order)} concepts). Each row depends only on '
+        f'rows above it, so study top-down. Showing {n_shown} of {len(nodes)} '
+        f'concepts.</p>'
+    )
+
+    if edges == [] and all_edges:
+        parts.append(
+            '<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
+            'color:#b45309;margin:6px 2px 0">No links of the selected type connect '
+            'the concepts currently shown. Re-enable an edge type, or raise '
+            '"Concepts shown" — spoken-transcript links are usually few and often '
+            'join nodes the significance filter hides.</p>'
+        )
     if dropped:
         names = sorted(str(d) for d in dropped)[:12]
-        svg += (
+        parts.append(
             f'<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
-            f'color:#64748b">Hiding {len(dropped)} lower-significance node(s) to '
-            f'keep this readable, e.g. {_html.escape(", ".join(names))}. '
-            f'Increase the limit or filter at extraction time to see them.</p>'
+            f'color:#64748b;margin:6px 2px 0">Hiding {len(dropped)} '
+            f'lower-significance node(s) to keep this readable, e.g. '
+            f'{_html.escape(", ".join(names))}. Raise the limit to see them.</p>'
         )
-    return svg
+    return "".join(parts)
 
 
 def dag_html(graph: dict) -> str:

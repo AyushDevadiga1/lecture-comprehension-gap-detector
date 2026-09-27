@@ -98,16 +98,20 @@ def test_dag_svg_has_no_external_dependencies():
     assert "node_modules" not in svg
 
 
-def test_dag_svg_starts_with_an_svg_element():
-    svg = render.dag_svg(GRAPH)
-    assert svg.lstrip().startswith("<svg")
-    assert svg.rstrip().endswith("</svg>") or "</svg>" in svg
+def test_dag_svg_is_an_svg_inside_its_container():
+    out = render.dag_svg(GRAPH, max_nodes=10)
+    # wrapped in a scroll container so a wide graph cannot stretch the page
+    assert out.lstrip().startswith('<div style="')
+    assert "<svg" in out
+    assert "</svg></div>" in out
 
 
 def test_dag_svg_draws_a_node_per_kept_concept():
     svg = render.dag_svg(GRAPH, max_nodes=10)
-    # one rounded rect per node (plus the background rect)
-    assert svg.count("<rect") == len(GRAPH["nodes"]) + 1
+    # node boxes use rx="7"; the learner-order badges use rx="5", and there is
+    # one full-bleed background rect
+    assert svg.count('rx="7"') == len(GRAPH["nodes"])
+    assert svg.count("<rect") == len(GRAPH["nodes"]) * 2 + 1  # node + badge + bg
 
 
 def test_dag_svg_draws_edges_with_arrowheads():
