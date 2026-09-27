@@ -148,8 +148,18 @@ def rebuild_course_graph(course_id: str, lecture_id: int = None) -> None:
             lecture_id, "building_graph", 85, "Scoring candidate prerequisite pairs...",
             status="building_graph",
         )
+
+    def _on_pair_progress(pct, detail):
+        # real sub-step boundaries inside the heaviest phase of the rebuild, so
+        # the bar advances instead of sitting frozen for a minute
+        if lecture_id is not None:
+            update_lecture_progress(
+                lecture_id, "building_graph", pct, detail, status="building_graph",
+            )
+
     try:
-        confirmed = classify_course_pairs(concepts, encoder=clf._encoder)
+        confirmed = classify_course_pairs(concepts, encoder=clf._encoder,
+                                          on_progress=_on_pair_progress)
     except ValueError:
         confirmed = []  # LectureBank absent on this deployment -> nodes-only
 

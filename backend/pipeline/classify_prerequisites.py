@@ -397,6 +397,7 @@ def classify_course_pairs(
     threshold: float = 0.5,
     lecturebank_dir: Optional[str] = None,
     encoder=None,
+    on_progress=None,
 ) -> List[Dict]:
     """Course-scoped bridge into Stage 4 (graph construction).
 
@@ -408,13 +409,26 @@ def classify_course_pairs(
     loaded weights serve candidate pre-filtering, fitting, and prediction (one
     "Loading weights" line per process instead of three).
 
+    `on_progress`, when given, is called as ``on_progress(pct, detail)`` at each
+    real sub-step boundary. This whole call takes the bulk of a graph rebuild
+    (tens of seconds for a large course), so without it the progress bar sits
+    frozen on one number for the entire scoring phase.
+
     Returns confirmed pairs as [{"a": name, "b": name, "confidence": p}] for
     p >= threshold, ready for build_graph.add_edge.
     """
+    def _notify(pct, detail):
+        if on_progress is not None:
+            try:
+                on_progress(pct, detail)
+            except Exception:  # noqa: BLE001 - progress must never fail a build
+                pass
+
     if lecturebank_dir is None:
         lecturebank_dir = os.path.join(
             os.path.dirname(__file__), "..", "..", "data", "lecturebank"
         )
+    _notify(78, "Loading LectureBank prerequisite pairs...")
     lib = _load_lecturebank(lecturebank_dir)
     if not lib:
         raise ValueError(
@@ -422,11 +436,14 @@ def classify_course_pairs(
             "cannot be learned without it."
         )
 
+    _notify(80, f"Ranking {len(concepts)} concepts for candidate pairs...")
     candidates = get_candidate_pairs(concepts, encoder=encoder)
     if not candidates:
         return []
 
+    _notify(83, "Fitting the prerequisite classifier...")
     clf = _fitted_classifier(lib, encoder=encoder)
+    _notify(85, f"Scoring {len(candidates)} candidate pairs...")
     probs = clf.predict_proba(candidates)
     return [
         {"a": a, "b": b, "confidence": float(p)}

@@ -22,7 +22,7 @@ import os
 import re
 import threading
 import time
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import requests
 
@@ -332,6 +332,11 @@ def media_url(path):
     the frontend maps them to an absolute backend URL. The lecture id is read
     from the path itself (second-to-last segment). Returns None for an
     empty/bogus path or a non-int lecture id.
+
+    The filename is percent-encoded. Concept names routinely contain spaces
+    ("INNER JOIN", "GROUP BY", "transaction commit"), and an unencoded space in
+    a URL path makes the media request fail - which is why clips rendered but
+    never played.
     """
     if not path:
         return None
@@ -347,7 +352,7 @@ def media_url(path):
         lecture_id = int(lecture_id)
     except (TypeError, ValueError):
         return None
-    return f"{API}/media/clips/{lecture_id}/{filename}"
+    return f"{API}/media/clips/{lecture_id}/{quote(filename)}"
 
 
 def upload_media(lecture_id, filename, file_bytes, whisper_backend=None,

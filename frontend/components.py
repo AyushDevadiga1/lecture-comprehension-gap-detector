@@ -16,7 +16,7 @@ import time
 import streamlit as st
 
 from frontend import client, state
-from frontend.render import dag_html, lecture_html
+from frontend.render import dag_svg, dag_html, graph_importance, lecture_html
 
 _MAX_POLL_FAILS = 5
 _JOB_DEADLINE_S = 6 * 60 * 60
@@ -26,8 +26,15 @@ _JOB_DEADLINE_S = 6 * 60 * 60
 # fallback (backend/api/jobs/progress.py:68) reports a lecture's raw status, so a
 # row that never leaves `uploaded` is reported identically forever — without a
 # cutoff the page re-rendered every 0.5-1.5s until _JOB_DEADLINE_S (6 hours).
-# Generous because a local-Whisper transcribe legitimately sits on one stage.
+#
+# The heavy stages publish only a handful of coarse milestones around work that
+# legitimately takes minutes (MiniLM cold load ~33s, whole-course dedup, pair
+# scoring, ffmpeg re-encode), so a single flat budget declared them "stalled"
+# while they were working fine. Those get a much larger allowance.
 _MAX_STALLED_POLLS = 40
+_SLOW_STAGES = {"building_graph", "extracting", "cutting_clips", "clips",
+                "local_transcribing", "loading_model", "transcribing"}
+_MAX_STALLED_POLLS_SLOW = 600      # ~15 min at the 1.5s long-stage backoff
 
 # In-process upload registry keyed by lecture id — survives reruns (module-level)
 # so a background upload thread is never lost between script executions.
@@ -450,11 +457,13 @@ def render_progress_cards(kinds=None):
         else:
             job["fingerprint"] = fingerprint
             job["stalled_polls"] = 0
+        budget = (_MAX_STALLED_POLLS_SLOW if stage in _SLOW_STAGES
+                  else _MAX_STALLED_POLLS)
 
         if kind == "upload" and status == "uploaded":
             st.progress(0, text="Upload starting…")
             st.caption(job.get("title", "Upload"))
-            if job["stalled_polls"] >= _MAX_STALLED_POLLS:
+            if job["stalled_polls"] >= budget:
                 st.warning("Upload is not starting — the backend never picked up "
                            "the media. Delete the row and re-upload it.")
                 continue
@@ -466,9 +475,9 @@ def render_progress_cards(kinds=None):
         st.progress(min(pct, 100), text=data.get("detail") or stage)
         st.caption(_job_guidance(stage, data.get("elapsed_s", 0)))
 
-        if job["stalled_polls"] >= _MAX_STALLED_POLLS:
-            st.warning(f"Stalled on '{stage}' with no progress — the job may have "
-                       "stopped. Reload the page to re-attach to it.")
+        if job["stalled_polls"] >= budget:
+            st.warning(f"Stalled on '{stage}' with no progress for a while — the "
+                       "job may have stopped. Reload the page to re-attach to it.")
             continue
         if time.monotonic() > float(job.get("deadline", 0)):
             st.warning("Timed out waiting — the job still runs in the "
@@ -849,7 +858,7 @@ def render_faculty_dag(nav_course):
         if graph.get("nodes"):
             st.write(f"**{graph['node_count']} nodes · {graph['edge_count']} edges · "
                      f"{'acyclic (DAG)' if graph['is_dag'] else 'has cycles'}**")
-            st.iframe(dag_html(graph), height=760)
+            st.markdown(dag_svg(graph), unsafe_allow_html=True)
             with st.expander("Learner order (topological)"):
                 for i, name in enumerate(graph.get("topological_order", []), 1):
                     st.write(f"{i}. {name}")
@@ -865,6 +874,9 @@ def render_course_graph(nav_course, key_prefix="sg"):
     without switching tabs) and reusable for the Engine 2 parity work.
     """
     st.subheader("Course concept graph")
+    total_nodes = None
+    snapshot = client.course_snapshot(nav_course) or {}
+    total_nodes = ((snapshot.get("graph") or {}).get("nodes")) or None
     if st.button("Load / refresh graph", key=f"{key_prefix}_load"):
         graph = client.course_graph(nav_course)
         if graph is not None:
@@ -886,12 +898,31 @@ def render_course_graph(nav_course, key_prefix="sg"):
         st.info("This course has no graph yet. Use 'Extract concepts + build graph' "
                 "on a ready lecture, or 'Rebuild graph only'.")
         return
-    st.write(f"**{graph.get('node_count', len(nodes))} concepts · "
-             f"{graph.get('edge_count', len(edges))} prerequisite links · "
+
+    # A course DAG can hold 100+ nodes; drawing them all is unreadable in any
+    # renderer. Let the user choose how much of it to show, but default to
+    # showing everything for a graph small enough to be legible — a "readability"
+    # filter must not silently hide real concepts like Covariance.
+    readable_all = 60
+    default_limit = len(nodes) if len(nodes) <= readable_all else 40
+    limit = st.slider(
+        "Concepts shown", min_value=5, max_value=max(len(nodes), 5),
+        value=default_limit, step=5, key=f"{key_prefix}_limit",
+        help="Lower shows only the most significant concepts (well-connected, "
+             "specific names). Keyword fragments like HAVING/update rank lowest.",
+    )
+    shown, dropped = graph_importance(graph, limit=limit)
+    st.write(f"**{graph.get('node_count', len(nodes))} concepts in total · "
+             f"{len(shown)} shown · {graph.get('edge_count', len(edges))} "
+             f"prerequisite links · "
              f"{'acyclic' if graph.get('is_dag') else 'contains cycles'}**")
-    st.caption("Hover an edge for where the link came from (spoken transcript vs "
-               "classifier) and its evidence.")
-    st.iframe(dag_html(graph), height=720)
+    if dropped:
+        st.caption(f"{len(dropped)} lower-significance concept(s) hidden to keep "
+                   f"this readable. Raise the slider to include them.")
+    st.caption("Prerequisites sit above what they unlock. Hover an edge for where "
+               "the link came from (spoken transcript vs classifier) and its "
+               "evidence.")
+    st.markdown(dag_svg(graph, max_nodes=limit), unsafe_allow_html=True)
     with st.expander("Learner order (topological)"):
         for i, name in enumerate(graph.get("topological_order") or [], 1):
             st.write(f"{i}. {name}")

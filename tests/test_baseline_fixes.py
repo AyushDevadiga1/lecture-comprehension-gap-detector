@@ -56,6 +56,7 @@ class _St:
         self.expander_labels = []
         self.iframes = []
         self.buttons = {}
+        self.sliders = []
         self.columns_made = []
         self.reruns = 0
 
@@ -107,6 +108,11 @@ class _St:
 
     def selectbox(self, label, options, **k):
         return options[0] if options else None
+
+    def slider(self, label, min_value=None, max_value=None, value=None,
+               step=None, **k):
+        self.sliders.append((label, value))
+        return value
 
     def checkbox(self, label, **k):
         return False
@@ -311,20 +317,12 @@ def test_render_course_graph_renders_counts_and_dag(monkeypatch, sess, fake_st):
         "node_count": 2, "edge_count": 1, "topological_order": ["A", "B"],
     }
     state.set("graph", data=graph, course="ml")
-    monkeypatch.setattr(components, "dag_html", lambda g: "<html></html>")
-    rendered = {}
-
-    class _St2(_St):
-        def iframe(self, src, **k):
-            rendered["src"] = src
-            rendered["height"] = k.get("height")
-
-    fake_st.iframe = lambda src, **k: rendered.update(src=src, height=k.get("height"))
+    monkeypatch.setattr(components, "dag_svg", lambda g, **k: "<svg>ok</svg>")
     components.render_course_graph("ml")
     text = fake_st.all_text()
     assert "2 concepts" in text and "1 prerequisite links" in text
     assert "acyclic" in text
-    assert rendered.get("src") == "<html></html>"
+    assert "<svg>ok</svg>" in "\n".join(fake_st.md)
 
 
 def test_render_course_graph_will_not_show_another_courses_graph(monkeypatch, sess, fake_st):

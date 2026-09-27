@@ -205,6 +205,185 @@ def _support_sentence(concept: str, segments: list):
     return (best or "")[:160]
 
 
+def graph_importance(graph: dict, limit: int = 40):
+    """Rank graph nodes so the important ones survive a readability cut.
+
+    A course DAG can easily hold 100+ nodes, and forcing all of them into one
+    view is unreadable in *any* renderer — this is a content problem, not a
+    framework one. Concepts like "HAVING", "update" or "GROUP BY" are real rows
+    in the graph but are not concepts a learner needs to reason about.
+
+    Score (higher = keep):
+      * graph degree — a node with several prerequisite links is load-bearing;
+      * name specificity — a multi-word name ("Conditional Expectation") is a
+        concept, a single bare token ("update", "filter") usually is not;
+      * case shape — ALL-CAPS names are overwhelmingly SQL/keyword fragments.
+
+    Returns ``(kept_names, dropped_names)``.
+    """
+    nodes = graph.get("nodes") or []
+    edges = graph.get("edges") or []
+    degree: dict = {}
+    for e in edges:
+        for side in ("source", "target"):
+            nm = e.get(side)
+            if nm:
+                degree[nm] = degree.get(nm, 0) + 1
+
+    def score(name: str) -> float:
+        s = float(degree.get(name, 0)) * 1.0
+        words = [w for w in str(name).split() if w]
+        if len(words) >= 2:
+            s += 2.0
+        if len(str(name)) >= 18:
+            s += 1.0
+        letters = [ch for ch in str(name) if ch.isalpha()]
+        if letters and all(ch.isupper() for ch in letters):
+            s -= 2.5
+        if len(str(name)) <= 6:
+            s -= 1.0
+        return s
+
+    ranked = sorted(nodes, key=lambda n: (-score(n), str(n)))
+    if limit and len(ranked) > limit:
+        kept = set(ranked[:limit])
+        return kept, set(nodes) - kept
+    return set(nodes), set()
+
+
+def dag_svg(graph: dict, max_nodes: int = 40, width: int = 1180) -> str:
+    """Render a course graph as a self-contained inline SVG.
+
+    Deliberately dependency-free: the previous renderer emitted vis-network and
+    Bootstrap from two CDNs plus a ``../node_modules/vis/dist/vis.js`` path that
+    does not exist in this repository, so the graph silently failed to render
+    whenever the CDN was unreachable. This needs no JavaScript, no iframe, and
+    no network at all, which also means it renders inside Streamlit directly.
+
+    Layout is layered by longest-path depth so prerequisites sit above the
+    concepts that depend on them, matching the learner order.
+    """
+    nodes = graph.get("nodes") or []
+    if not nodes:
+        return (
+            "<p>No graph yet &mdash; run &lsquo;Extract concepts + build graph&rsquo; "
+            "from the Student dashboard, then reload this view.</p>"
+        )
+
+    kept, dropped = graph_importance(graph, limit=max_nodes)
+    shown = [n for n in nodes if n in kept]
+    shown_set = set(shown)
+    edges = [
+        e for e in (graph.get("edges") or [])
+        if e.get("source") in shown_set and e.get("target") in shown_set
+    ]
+
+    # longest-path depth per node, restricted to the edges we draw
+    depth: dict = {}
+
+    def node_depth(name, seen=None):
+        if name in depth:
+            return depth[name]
+        seen = seen or set()
+        if name in seen:            # defensive: the graph claims to be a DAG
+            return 0
+        seen.add(name)
+        parents = [e["source"] for e in edges if e["target"] == name]
+        d = 0 if not parents else 1 + max(node_depth(p, seen) for p in parents)
+        depth[name] = d
+        return d
+
+    for n in shown:
+        node_depth(n)
+
+    levels: dict = {}
+    for n in shown:
+        levels.setdefault(depth[n], []).append(n)
+    for items in levels.values():
+        items.sort(key=str)
+
+    order = graph.get("topological_order") or shown
+    rank = {name: i for i, name in enumerate(order)}
+
+    node_w, node_h, gap_x, gap_y, pad = 168, 34, 18, 58, 20
+    widest = max((len(v) for v in levels.values()), default=1)
+    row_w = widest * (node_w + gap_x) - gap_x
+    height = pad * 2 + max(len(levels), 1) * (node_h + gap_y)
+    svg_w = max(width, row_w + pad * 2)
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{svg_w}" height="{height}" '
+        f'viewBox="0 0 {svg_w} {height}" role="img" '
+        f'aria-label="Course prerequisite graph">',
+        '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+        'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
+        '<path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs>',
+        f'<rect width="{svg_w}" height="{height}" fill="#ffffff"/>',
+    ]
+
+    pos = {}
+    for level, items in sorted(levels.items()):
+        y = pad + level * (node_h + gap_y)
+        total = len(items) * (node_w + gap_x) - gap_x
+        x0 = (svg_w - total) / 2
+        for i, name in enumerate(items):
+            pos[name] = (x0 + i * (node_w + gap_x), y)
+
+    # edges first so nodes paint over them
+    for e in edges:
+        x1, y1 = pos[e["source"]]
+        x2, y2 = pos[e["target"]]
+        x1c, y1c = x1 + node_w / 2, y1 + node_h
+        x2c, y2c = x2 + node_w / 2, y2
+        conf = e.get("confidence", 1.0)
+        try:
+            conf = float(conf)
+        except (TypeError, ValueError):
+            conf = 1.0
+        method = _html.escape(str(e.get("source_method", "classifier")))
+        tip = f"confidence {conf:.2f} - source: {method}"
+        ev = (e.get("evidence") or "").strip()
+        if ev:
+            tip += f" - evidence: {_html.escape(ev[:300])}"
+        parts.append(
+            f'<path d="M {x1c:.1f} {y1c:.1f} C {x1c:.1f} {y1c + 22:.1f}, '
+            f'{x2c:.1f} {y2c - 22:.1f}, {x2c:.1f} {y2c:.1f}" fill="none" '
+            f'stroke="#cbd5e1" stroke-width="1.3" marker-end="url(#arrow)">'
+            f'<title>{tip}</title></path>'
+        )
+
+    total_shown = max(len(shown) - 1, 1)
+    for name, (x, y) in pos.items():
+        frac = rank.get(name, total_shown) / total_shown
+        r = int(20 + 226 * frac)
+        g = int(184 - 74 * frac)
+        b = int(156 - 30 * frac)
+        fill = "#%02x%02x%02x" % (r, g, b)
+        label = _html.escape(str(name))
+        tip = _html.escape(f"learner order #{rank.get(name, 0) + 1}/{len(order)}")
+        parts.append(
+            f'<g><title>{tip}</title>'
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{node_w}" height="{node_h}" '
+            f'rx="7" fill="{fill}" stroke="#334155" stroke-width="1"/>'
+            f'<text x="{x + node_w / 2:.1f}" y="{y + node_h / 2 + 4:.1f}" '
+            f'font-family="Segoe UI,Arial,sans-serif" font-size="12" '
+            f'fill="#0f172a" text-anchor="middle">{label[:26]}</text></g>'
+        )
+
+    parts.append("</svg>")
+    svg = "".join(parts)
+
+    if dropped:
+        names = sorted(str(d) for d in dropped)[:12]
+        svg += (
+            f'<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
+            f'color:#64748b">Hiding {len(dropped)} lower-significance node(s) to '
+            f'keep this readable, e.g. {_html.escape(", ".join(names))}. '
+            f'Increase the limit or filter at extraction time to see them.</p>'
+        )
+    return svg
+
+
 def dag_html(graph: dict) -> str:
     """Render a course graph dict as self-contained interactive HTML.
 

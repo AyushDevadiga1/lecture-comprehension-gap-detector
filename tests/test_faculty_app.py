@@ -79,12 +79,15 @@ def test_dag_renders_and_persists_across_rerun(monkeypatch):
     at = _run()
     find_button(at, "Render DAG").click().run()
 
-    assert any_markdown_contains(at, "2 nodes · 1 edges")
+    assert any_markdown_contains(at, "2 nodes")
     assert any_markdown_contains(at, "acyclic (DAG)")
-    frames = at.get("iframe")
-    assert len(frames) == 1  # dag_html embedded via st.iframe
-    assert "Alpha" in frames[0].proto.srcdoc
-    assert "vis-network" in frames[0].proto.srcdoc
+    # now inline dependency-free SVG, not a vis-network iframe: the old
+    # renderer needed two CDNs plus a ../node_modules/vis path that does not
+    # exist here, so the graph silently failed to render
+    assert not at.get("iframe"), "the DAG must not depend on an iframe"
+    assert any_markdown_contains(at, "<svg")
+    assert any_markdown_contains(at, "Alpha")
+    assert not any_markdown_contains(at, "vis-network")
 
     at.run()
     assert any_markdown_contains(at, "acyclic (DAG)")  # persisted, not wiped

@@ -253,10 +253,18 @@ def test_snapshot_strip_renders_counts_and_in_flight_hint(monkeypatch):
 
     def get(path, params=None, timeout=30):
         if path == "/lectures/3/progress":
+            # call 1 is the snapshot strip's own read (asserts the live stage
+            # text); call 2 is the monitor, which we let settle so the poll loop
+            # terminates instead of burning its whole stage-aware budget
+            get.n += 1
+            if get.n > 1:
+                return {"status": "ready", "stage": "ready",
+                        "progress_pct": 100, "detail": "Done."}
             return {"status": "transcribing", "stage": "clips",
                     "progress_pct": 40}
         return None
 
+    get.n = 0
     install_backend(monkeypatch, {
         "course_snapshot": lambda cid, ttl=5.0: SNAPSHOT,
         "get": get,
