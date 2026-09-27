@@ -1,9 +1,9 @@
 """Tests for GET /courses/{id}/snapshot — derived readiness + in_flight.
 
-Hermetic: temp SQLite DB; rows seeded directly through the ORM; no real jobs.
+Hermetic: throwaway SQLite DB (tests/conftest.py); rows seeded directly through
+the ORM; no real jobs.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -11,8 +11,6 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-
-os.environ["LECGAP_DATABASE_URL"] = "sqlite:///data/test_snapshot_lecgap.db"
 
 from backend.api.jobs.progress import update_lecture_progress  # noqa: E402
 from backend.main import app  # noqa: E402

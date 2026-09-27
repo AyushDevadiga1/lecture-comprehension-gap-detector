@@ -1,11 +1,10 @@
 """Tests for the clip media endpoint (backend/api/routes/media.py).
 
 Serves real files from data/processed/clips/<lecture_id>/ with Range support,
-so this suite writes a scratch clip under CLIPS_BASE_DIR (cleaned up after) and
-points the app at a throwaway SQLite DB to keep the dev lecgap.db untouched.
+so this suite writes a scratch clip under CLIPS_BASE_DIR (cleaned up after).
+The DB comes from tests/conftest.py, keeping the dev lecgap.db untouched.
 """
 
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -14,8 +13,6 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-
-os.environ["LECGAP_DATABASE_URL"] = "sqlite:///data/test_media_lecgap.db"
 
 from backend.config import CLIPS_BASE_DIR  # noqa: E402
 from backend.main import app  # noqa: E402

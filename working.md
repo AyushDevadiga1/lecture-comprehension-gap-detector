@@ -35,7 +35,6 @@ flowchart LR
     WHISPERL["openai-whisper · local engine<br/>WHISPER_MODEL · base · offline · no quota"]
     MINILM["MiniLM sentence encoder<br/>concept dedup · classifier encoder"]
     LB["LectureBank CSVs · data/lecturebank/<br/>prerequisite training & benchmark"]
-    FT["Fine-tuned checkpoint<br/>data/models/lecgap_ft · benchmarked"]
 
     %% -------------------- Pipeline · Stages 1-7 --------------------
     LLM["llm.py · LLM access layer<br/>SQLite cache → Groq chat → Ollama<br/>429 backoff · quota metering"]
@@ -68,7 +67,6 @@ flowchart LR
     CLS -->|"pair scoring"| MINILM
     CLS -->|"LLM reasoning check"| LLM
     CLS -->|"evaluation"| LB
-    CLS -->|"encoder backend"| FT
     CLS -->|"confirmed edges"| BG
     BG -->|"nodes + edges stored"| DB
     R -->|"concepts + timestamps"| SC
@@ -100,7 +98,7 @@ flowchart LR
     class GROQCHAT,GROQAUD,OLLAMA,FFMPEG ext;
     class LLM,TR,EX,CLS,BG,SC,QZ,RF mod;
     class DB,RAW,CLIPS store;
-    class MINILM,LB,FT ml;
+    class MINILM,LB ml;
     class FE ui;
     class API,R api;
 ```
@@ -132,7 +130,7 @@ flowchart LR
 | Blue | External services (Groq chat, Groq Whisper, Ollama, ffmpeg) |
 | Green | Pipeline logic (Stages 1-7) |
 | Purple | Storage (SQLite + media files) |
-| Pink | ML artifacts (MiniLM, LectureBank, fine-tuned checkpoint) |
+| Pink | ML artifacts (MiniLM, LectureBank) |
 | Orange | Frontend (Streamlit) |
 | Grey | FastAPI surface |
 

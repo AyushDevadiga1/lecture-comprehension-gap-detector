@@ -1,10 +1,9 @@
 """Tests for the API-usage store + `GET /usage` + progress duration_s.
 
-Hermetic: points the app at a throwaway SQLite DB (dev lecgap.db untouched)
-and drives the usage store + endpoint directly.
+Hermetic: the DB comes from tests/conftest.py (dev lecgap.db untouched) and the
+usage store + endpoint are driven directly.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -12,8 +11,6 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-
-os.environ["LECGAP_DATABASE_URL"] = "sqlite:///data/test_usage_lecgap.db"
 
 from backend.api import usage  # noqa: E402
 from backend.api.jobs import progress as jobs_progress  # noqa: E402

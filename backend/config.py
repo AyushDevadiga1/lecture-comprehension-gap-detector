@@ -99,13 +99,23 @@ def whisper_backend_override() -> str:
     return get_str("WHISPER_BACKEND")
 
 
+def database_url() -> str:
+    """LECGAP_DATABASE_URL, resolved at call time.
+
+    Exists because every other import-time constant freezes whatever the
+    environment said when the process first imported this module. A caller that
+    needs a late override (the test suite points itself at a throwaway DB
+    before the first backend import) must go through this function rather than
+    trusting the frozen ``DATABASE_URL``.
+    """
+    return get_str("LECGAP_DATABASE_URL", f"sqlite:///{REPO_ROOT / 'data' / 'lecgap.db'}")
+
+
 # --------------------------------------------------- import-time (frozen) keys
 
 # Database (backend/models/db.py). The pragma listener keys on the scheme,
 # so keep the sqlite:// default shape unchanged.
-DATABASE_URL = get_str(
-    "LECGAP_DATABASE_URL", f"sqlite:///{REPO_ROOT / 'data' / 'lecgap.db'}"
-)
+DATABASE_URL = database_url()
 
 # Upload cap (MiB) — 0 disables the cap for local use (backend/api/routes/lectures.py).
 MAX_UPLOAD_MB = get_int("LECGAP_MAX_UPLOAD_MB", 2048)

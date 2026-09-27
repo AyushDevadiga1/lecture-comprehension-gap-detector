@@ -33,7 +33,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
-from backend.config import DATABASE_URL
+from backend.config import DATABASE_URL, database_url
 
 # Locally owned copy of the DB location — used only to create the parent dir
 # at boot; the URL itself comes from backend/config.py (LECGAP_DATABASE_URL).
@@ -43,14 +43,15 @@ DEFAULT_DB_PATH = Path(__file__).resolve().parents[2] / "data" / "lecgap.db"
 # keep "database is locked" out of the picture (long jobs no longer block
 # /health and friends while a graph rebuild or segmentation is writing).
 engine = create_engine(
-    DATABASE_URL,
+    database_url(),
     connect_args={"check_same_thread": False, "timeout": 30},
 )
 
 
 @event.listens_for(engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):  # noqa: ARG001
-    if not DATABASE_URL.startswith("sqlite"):
+    url = database_url()
+    if not url.startswith("sqlite"):
         return
     try:
         cursor = dbapi_connection.cursor()

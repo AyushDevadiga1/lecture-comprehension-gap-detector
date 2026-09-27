@@ -1,11 +1,11 @@
 """Tests for the two-step upload flow: POST /lectures (no file) + the streamed
 PUT /lectures/{id}/media with live progress.
 
-Hermetic: temp SQLite DB + monkeypatched background transcribe worker (no real
-Whisper/network). Reuses the smoke clip media so a real file exists on disk.
+Hermetic: throwaway SQLite DB (tests/conftest.py) + monkeypatched background
+transcribe worker (no real Whisper/network). Reuses the smoke clip media so a
+real file exists on disk.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -13,8 +13,6 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-
-os.environ["LECGAP_DATABASE_URL"] = "sqlite:///data/test_stream_lecgap.db"
 
 from backend.api import jobs  # noqa: E402
 from backend.api.jobs import progress as jobs_progress  # noqa: E402

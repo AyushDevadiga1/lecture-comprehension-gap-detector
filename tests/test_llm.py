@@ -2,11 +2,10 @@
 Tests for the LLM access layer (backend/pipeline/llm.py).
 
 These tests NEVER hit the real Groq API or consume quota — LLM calls are
-always stubbed/monkeypatched. Caching tests use a temporary SQLite DB so
-the real data/lecgap.db is never touched either.
+always stubbed/monkeypatched. The cache DB comes from tests/conftest.py, which
+points the whole session at a throwaway SQLite file.
 """
 
-import os
 import sys
 import time
 from pathlib import Path
@@ -15,8 +14,6 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-
-os.environ["LECGAP_DATABASE_URL"] = f"sqlite:///{REPO / 'data' / 'test_lecgap.db'}"
 
 
 @pytest.fixture(autouse=True)
@@ -28,8 +25,9 @@ def clean_cache_db():
         s.query(dbmod.LLMCache).delete()
         s.commit()
     yield
-    # re-init default once at the end
-    os.environ.pop("LECGAP_DATABASE_URL", None)
+    # No env teardown here: this module used to point LECGAP_DATABASE_URL at
+    # data/test_lecgap.db and then popped it, which handed later tests the live
+    # data/lecgap.db. tests/conftest.py owns DB isolation for the whole session.
 def test_cache_key_is_stable_and_input_sensitive():
     from backend.pipeline.llm import _cache_key
 

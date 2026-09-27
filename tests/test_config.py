@@ -46,6 +46,7 @@ IMPORT_TIME_KEYS = {
 # Lazy (call-time) keys plus the auth keys.
 LAZY_KEYS = {
     "LECGAP_API_KEY",
+    "LECGAP_DATABASE_URL",  # also exported as the frozen constant DATABASE_URL
     "GROQ_API_KEY",
     "LECGAP_LLM_REASONING",
     "LECGAP_SNAP_SILENCE",
@@ -134,6 +135,21 @@ def test_clip_reencode_threshold_defaults_on_junk(monkeypatch):
     assert clip_reencode_threshold_s() == 60.0
     monkeypatch.setenv("LECGAP_CLIP_REENCODE_THRESHOLD_S", "boom")
     assert clip_reencode_threshold_s() == 120.0
+
+
+def test_database_url_is_lazy_and_honours_late_override(monkeypatch):
+    """The DB URL must resolve at call time.
+
+    Import-time freezing meant whichever test module imported backend.config
+    first decided the database for the whole session, so a suite that set the
+    variable later silently wrote to the developer's data/lecgap.db.
+    """
+    from backend.config import REPO_ROOT, database_url
+
+    monkeypatch.delenv("LECGAP_DATABASE_URL", raising=False)
+    assert database_url() == f"sqlite:///{REPO_ROOT / 'data' / 'lecgap.db'}"
+    monkeypatch.setenv("LECGAP_DATABASE_URL", "sqlite:///somewhere/other.db")
+    assert database_url() == "sqlite:///somewhere/other.db"
 
 
 def test_whisper_backend_override_distinguishes_unset_from_value(monkeypatch):

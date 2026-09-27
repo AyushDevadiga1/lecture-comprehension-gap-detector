@@ -185,7 +185,6 @@ flowchart LR
     WHISPERL["openai-whisper · local engine<br/>WHISPER_MODEL · base · offline · no quota"]
     MINILM["MiniLM sentence encoder<br/>concept dedup · classifier encoder"]
     LB["LectureBank CSVs · data/lecturebank/<br/>prerequisite training & benchmark"]
-    FT["Fine-tuned checkpoint<br/>data/models/lecgap_ft · benchmarked"]
 
     %% -------------------- Pipeline · Stages 1-7 --------------------
     LLM["llm.py · LLM access layer<br/>SQLite cache → Groq chat → Ollama<br/>429 backoff · quota metering"]
@@ -223,7 +222,6 @@ flowchart LR
     CLS -->|"pair scoring"| MINILM
     CLS -->|"uncovered pairs → confirmed edges"| BG
     CLS -->|"evaluation"| LB
-    CLS -->|"encoder backend"| FT
     BG -->|"nodes + edges stored"| DB
     R -->|"concepts + teach-spans"| SC
     SC -->|"ffmpeg"| FFMPEG
@@ -254,7 +252,7 @@ flowchart LR
     class GROQCHAT,GROQAUD,OLLAMA,FFMPEG ext;
     class LLM,TR,SP,EX,CLS,BG,SC,QZ,RF mod;
     class DB,RAW,CLIPS store;
-    class MINILM,LB,FT ml;
+    class MINILM,LB ml;
     class FE ui;
     class API,R api;
 ```
