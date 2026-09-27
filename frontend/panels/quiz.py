@@ -44,6 +44,20 @@ def _question_count():
     return quiz_max_questions()
 
 
+def cap_violation(returned: int, requested: int):
+    """Warning when the backend ignored ``max_questions``, else None.
+
+    A backend predating the cap ignores the field and regenerates one question
+    per concept. The panel says so instead of quietly rendering a 74-question
+    form the reader has to scroll through.
+    """
+    if requested and returned > requested:
+        return (f"The backend returned {returned} questions instead of the "
+                f"{requested} requested, so it is an older build — restart it "
+                "to pick up the quiz cap.")
+    return None
+
+
 def render_quiz(nav_course):
     """Student quiz flow with session-state persistence.
 
@@ -65,11 +79,15 @@ def render_quiz(nav_course):
     if st.button("Generate quiz"):
         state.set("quiz", course_id=nav_course, student_id=student_id,
                   questions=None, version=int(state.get("quiz", "version", 0)) + 1,
-                  render_t=time.time(), result=None, error=None)
+                  render_t=time.time(), result=None, error=None, cap=cap)
         quiz = _generate(nav_course, student_id, cap)
         if quiz and quiz.get("questions"):
+            got = len(quiz["questions"])
             state.set("quiz", questions=quiz["questions"],
                       render_t=time.time(), result=None)
+            stale = cap_violation(got, cap)
+            if stale:
+                state.set("quiz", error=stale)
         else:
             state.set("quiz", error=_generation_error(quiz, nav_course, cap))
 

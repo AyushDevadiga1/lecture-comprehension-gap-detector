@@ -222,7 +222,25 @@ def _create_quiz(course_id: str, student_id: str,
                 plan[concept_name] = q
 
     with SessionLocal() as db:
-        db.query(ConceptItem).filter(ConceptItem.course_id == course_id).delete()
+        # Delete only questions nobody has answered.
+        #
+        # A blanket DELETE FROM quiz_questions violates the
+        # quiz_responses.question_id foreign key, so it raised a 500 for any
+        # course that had already been graded — and the graded responses are
+        # exactly the data the whole gap-detection product is built on. Keeping
+        # answered questions also preserves the attempt history, so the faculty
+        # heatmap and the taught-vs-learned divergence survive a regeneration.
+        answered = {
+            qid for (qid,) in db.query(QuizResponse.question_id)
+            .filter(QuizResponse.course_id == course_id,
+                    QuizResponse.question_id.isnot(None))
+            .distinct()
+            .all()
+        }
+        stale = db.query(ConceptItem).filter(ConceptItem.course_id == course_id)
+        if answered:
+            stale = stale.filter(~ConceptItem.id.in_(answered))
+        stale.delete(synchronize_session=False)
         new_ids = []
         for i, name in enumerate(names):
             q = plan[name]

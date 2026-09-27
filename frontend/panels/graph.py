@@ -24,17 +24,25 @@ def _controls(graph, key_prefix):
         for e in (graph.get("edges") or [])
     }) or ["classifier"]
 
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     with c1:
         zoom = st.slider("Zoom", 0.5, 2.0, 1.0, 0.1, key=f"{key_prefix}_zoom",
-                         help="Scales the drawing. Scroll inside the box to pan.")
+                         help="Scales the drawing. Scroll inside the box to pan, "
+                              "or drag its bottom-right corner to resize it.")
     with c2:
+        color_by = st.selectbox(
+            "Colour by", ["order", "identity"], key=f"{key_prefix}_color",
+            format_func=lambda v: ("Learner order (first → last)" if v == "order"
+                                   else "Concept identity"),
+            help="Learner order makes 'what do I study first' visible at a "
+                 "glance. Identity gives every concept its own stable colour.")
+    with c3:
         methods = st.multiselect(
             "Edge types", options=methods_present, default=methods_present,
             key=f"{key_prefix}_methods",
             help="Spoken-transcript links are the ones the professor stated out "
                  "loud; classifier links are inferred.")
-    with c3:
+    with c4:
         st.metric("Links drawn", _count_drawn(graph, methods, nodes))
 
     default_limit = len(nodes) if len(nodes) <= READABLE_ALL else DEFAULT_LIMIT
@@ -43,7 +51,7 @@ def _controls(graph, key_prefix):
                       help="Lower shows only the most significant concepts "
                            "(well-connected, specific names). Keyword fragments "
                            "like HAVING/update rank lowest.")
-    return zoom, (methods or None), limit
+    return zoom, (methods or None), limit, color_by
 
 
 def _count_drawn(graph, methods, nodes):
@@ -89,7 +97,7 @@ def render_course_graph(nav_course, key_prefix="sg"):
                 "on a ready lecture, or 'Rebuild graph only'.")
         return
 
-    zoom, methods, limit = _controls(graph, key_prefix)
+    zoom, methods, limit, color_by = _controls(graph, key_prefix)
     shown, dropped = graph_importance(graph, limit=limit)
     st.write(f"**{graph.get('node_count', len(nodes))} concepts in total · "
              f"{len(shown)} shown · "
@@ -98,8 +106,10 @@ def render_course_graph(nav_course, key_prefix="sg"):
         st.caption(f"{len(dropped)} lower-significance concept(s) hidden to keep "
                    f"this readable. Raise the slider to include them.")
     st.caption("Prerequisites sit above what they unlock. Scroll inside the box to "
-               "pan; hover an edge for where the link came from and its evidence.")
-    st.markdown(dag_svg(graph, max_nodes=limit, zoom=zoom, methods=methods),
+               "pan, drag its corner to resize, and hover an edge to see where the "
+               "link came from and its evidence.")
+    st.markdown(dag_svg(graph, max_nodes=limit, zoom=zoom, methods=methods,
+                        color_by=color_by),
                 unsafe_allow_html=True)
     _study_sequence(graph, key_prefix)
 
@@ -129,11 +139,12 @@ def render_faculty_dag(nav_course):
                 "Student dashboard.")
         return
 
-    zoom, methods, limit = _controls(graph, "faculty")
+    zoom, methods, limit, color_by = _controls(graph, "faculty")
     shown, dropped = graph_importance(graph, limit=limit)
     st.write(f"**{graph.get('node_count', len(nodes))} concepts · "
              f"{len(shown)} shown · "
              f"{'acyclic (DAG)' if graph.get('is_dag') else 'has cycles'}**")
-    st.markdown(dag_svg(graph, max_nodes=limit, zoom=zoom, methods=methods),
+    st.markdown(dag_svg(graph, max_nodes=limit, zoom=zoom, methods=methods,
+                        color_by=color_by),
                 unsafe_allow_html=True)
     _study_sequence(graph, "faculty")

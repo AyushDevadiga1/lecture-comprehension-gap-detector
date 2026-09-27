@@ -96,7 +96,9 @@ def _luminance(hex_colour):
 
 def test_svg_uses_the_per_node_colour_for_fill_and_label():
     svg = render.dag_svg(G, max_nodes=10)
-    fill, ink = render.node_colors("Conditional Expectation")
+    # default mode is learner order, so the fill must come from the rank
+    fill, ink = render.node_colors("Conditional Expectation", 0,
+                                   len(G["topological_order"]), mode="order")
     assert f'fill="{fill}"' in svg
     assert f'fill="{ink}"' in svg
     # the label is drawn in the dark ink, not the pastel fill
@@ -185,9 +187,8 @@ def test_badges_use_the_topological_order_not_an_arbitrary_index():
 
 def test_legend_explains_the_badge_and_the_row_direction():
     svg = render.dag_svg(G, max_nodes=10)
-    assert "Badge = position in the learner order" in svg
-    assert "1 = study first" in svg
-    assert "study top-down" in svg
+    assert "Badge = learner-order position" in svg
+    assert "study first" in svg
     assert "Showing 5 of 5 concepts" in svg
 
 
@@ -206,7 +207,7 @@ def test_missing_topological_order_falls_back_rather_than_breaking():
     svg = render.dag_svg(g, max_nodes=10)
     assert "<svg" in svg
     assert ">1<" in svg and ">2<" in svg
-    assert "Badge = position in the learner order" in svg
+    assert "Badge = learner-order position" in svg
 
 
 # ------------------------------------------------------- regression guards

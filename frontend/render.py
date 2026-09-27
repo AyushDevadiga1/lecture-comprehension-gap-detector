@@ -253,28 +253,41 @@ def graph_importance(graph: dict, limit: int = 40):
     return set(nodes), set()
 
 
-def node_colors(name: str):
-    """Stable per-node fill + a high-contrast label colour.
+def node_colors(name: str, rank: int = None, total: int = None, mode: str = "order"):
+    """Return ``(fill, ink)`` for a node.
 
-    "Random" but *deterministic*: the hue is derived from a hash of the node
-    name, so a node keeps its colour across reruns. Genuinely random-per-render
-    would make the whole graph flicker on every Streamlit rerun, which is
-    exactly the kind of churn this view is trying to avoid.
+    Two modes, because they answer different questions:
 
-    Fill is a light pastel (lightness 0.74-0.87) and the label is a very dark
-    shade of the *same* hue, so text contrast stays strong whatever the hue —
-    adjacent nodes still read as distinct because the lightness varies too.
+    * ``mode="order"`` — a teal→coral ramp along the learner sequence, so "what
+      do I study first" is visible at a glance.
+    * ``mode="identity"`` — a hue hashed from the node *name*, giving every
+      concept its own stable colour. The hash is deliberate rather than a random
+      draw: genuinely random-per-render would recolour the whole graph on every
+      Streamlit rerun.
+
+    The ramp is built in HSL at a fixed high lightness rather than by lerping
+    RGB endpoints. The old RGB lerp ran from a mid-dark teal to a light coral,
+    and the teal end only reached ~2.6:1 contrast against its dark label — below
+    the 4.5:1 WCAG AA floor for body text. A fixed lightness keeps every rank
+    readable while the hue still carries the order.
     """
+    if mode == "order" and rank is not None and total and total > 1:
+        frac = min(max(rank / float(total - 1), 0.0), 1.0)
+        hue = (175.0 + (8.0 - 175.0) * frac) / 360.0   # teal -> coral
+        fill = _hsl_hex(hue, 0.46, 0.80)
+        ink = _hsl_hex(hue, 0.70, 0.22)                # same hue, very dark
+        return fill, ink
+
     digest = hashlib.sha256(str(name).encode("utf-8")).digest()
     hue = digest[0] / 255.0
-    light = 0.74 + (digest[1] / 255.0) * 0.13
-    sat = 0.52 + (digest[2] / 255.0) * 0.20
+    light = 0.80 + (digest[1] / 255.0) * 0.08
+    sat = 0.45 + (digest[2] / 255.0) * 0.18
+    return _hsl_hex(hue, sat, light), _hsl_hex(hue, min(sat + 0.2, 0.95), 0.20)
 
-    def _hex(l, s):
-        r, g, b = colorsys.hls_to_rgb(hue, l, s)
-        return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
 
-    return _hex(light, sat), _hex(0.20, min(sat + 0.1, 0.95))
+def _hsl_hex(h, s, ll):
+    r, g, b = colorsys.hls_to_rgb(h, ll, s)
+    return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
 
 
 def dag_svg(
@@ -284,6 +297,7 @@ def dag_svg(
     zoom: float = 1.0,
     methods=None,
     max_height: int = 560,
+    color_by: str = "order",
 ) -> str:
     """Render a course graph as a self-contained, scroll-contained inline SVG.
 
@@ -366,9 +380,12 @@ def dag_svg(
     shown_w = round(svg_w * zoom)
     shown_h = round(height * zoom)
 
+    # `resize:vertical` lets the reader drag the frame taller or shorter without
+    # any JavaScript - pure CSS, so it costs nothing and cannot break offline.
     parts = [
-        f'<div style="max-height:{max_height}px;overflow:auto;border:1px solid #e2e8f0;'
-        f'border-radius:10px;background:#ffffff;padding:4px">',
+        f'<div style="max-height:{max_height}px;min-height:180px;overflow:auto;'
+        f'resize:vertical;border:1px solid #e2e8f0;border-radius:10px;'
+        f'background:#ffffff;padding:4px">',
         f'<svg xmlns="http://www.w3.org/2000/svg" '
         f'width="{shown_w}" height="{shown_h}" viewBox="0 0 {svg_w} {height}" '
         f'role="img" aria-label="Course prerequisite graph" '
@@ -411,14 +428,15 @@ def dag_svg(
         )
 
     for name, (x, y) in pos.items():
-        fill, ink = node_colors(name)
+        r_index = rank.get(name)
+        fill, ink = node_colors(name, r_index, len(order),
+                                mode="order" if color_by == "order" else "identity")
         label = _html.escape(str(name))
-        r = rank.get(name)
         shown_n = max(len(order), 1)
-        tip = (f"learner order #{r + 1}/{shown_n}" if r is not None
+        tip = (f"learner order #{r_index + 1}/{shown_n}" if r_index is not None
                else "learner order unknown")
         badge = ""
-        if r is not None:
+        if r_index is not None:
             # learner-order badge: the graph is only useful if you can read the
             # order to study in, so it is drawn on the node, not hidden in a list
             badge = (
@@ -426,7 +444,7 @@ def dag_svg(
                 f'fill="{ink}"/>'
                 f'<text x="{x + 10.5:.1f}" y="{y + 4:.1f}" font-size="10" '
                 f'font-weight="700" fill="#ffffff" text-anchor="middle">'
-                f'{r + 1}</text>'
+                f'{r_index + 1}</text>'
             )
         parts.append(
             f'<g><title>{_html.escape(tip)}</title>{badge}'
@@ -439,16 +457,6 @@ def dag_svg(
         )
 
     parts.append("</svg></div>")
-
-    # legend: what the badge and the layering mean
-    n_shown = len(shown)
-    parts.append(
-        f'<p style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
-        f'color:#64748b;margin:6px 2px 0">Badge = position in the learner order '
-        f'(1 = study first, of {len(order)} concepts). Each row depends only on '
-        f'rows above it, so study top-down. Showing {n_shown} of {len(nodes)} '
-        f'concepts.</p>'
-    )
 
     if edges == [] and all_edges:
         parts.append(
@@ -466,7 +474,34 @@ def dag_svg(
             f'lower-significance node(s) to keep this readable, e.g. '
             f'{_html.escape(", ".join(names))}. Raise the limit to see them.</p>'
         )
+
+    parts.append(_legend(color_by, len(shown), len(nodes), len(order)))
     return "".join(parts)
+
+
+def _legend(color_by, n_shown, n_total, n_order) -> str:
+    """A visible key for the colour scheme, plus how much of the graph is shown."""
+    if color_by == "order":
+        swatches = "".join(
+            f'<span style="display:inline-block;width:26px;height:11px;'
+            f'background:{node_colors("k", int(i * 11 / 11.0), 12, mode="order")[0]};'
+            f'"></span>'
+            for i in range(12)
+        )
+        key = (f'{swatches}<span style="color:#64748b">study first → last '
+               f'(1–{n_order})</span>')
+    else:
+        key = ('<span style="color:#64748b">each concept has its own stable '
+               'colour (identity, not order)</span>')
+    return (
+        f'<div style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;'
+        f'color:#334155;margin:6px 2px 0;display:flex;align-items:center;gap:8px;'
+        f'flex-wrap:wrap">'
+        f'<span style="color:#64748b">Colour:</span>{key}'
+        f'<span style="color:#64748b">· Badge = learner-order position · '
+        f'Showing {n_shown} of {n_total} concepts · drag the frame\'s '
+        f'bottom-right corner to resize</span></div>'
+    )
 
 
 def dag_html(graph: dict) -> str:
