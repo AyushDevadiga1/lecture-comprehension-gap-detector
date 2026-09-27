@@ -30,6 +30,8 @@ import pytest
 
 from frontend import client as client_mod
 from frontend import render
+# the stall-budget constants moved to the shell panel with the monitor
+from frontend.panels import shell as components
 
 
 # ------------------------------------------------------- A. clip URL encoding
@@ -220,8 +222,6 @@ def test_dag_svg_reports_what_it_hid():
 # ------------------------------------------------- C. stage-aware stall budget
 
 def test_slow_stages_get_a_larger_stall_budget():
-    from frontend import components
-
     assert (components._MAX_STALLED_POLLS_SLOW
             > components._MAX_STALLED_POLLS)
     for stage in ("building_graph", "extracting", "cutting_clips",
@@ -230,8 +230,6 @@ def test_slow_stages_get_a_larger_stall_budget():
 
 
 def test_slow_stall_budget_is_still_bounded():
-    from frontend import components
-
     # must stay well under the 6h deadline, but comfortably above a
     # multi-minute dedup/score/re-encode phase
     assert components._MAX_STALLED_POLLS_SLOW <= 1200
@@ -241,8 +239,6 @@ def test_slow_stall_budget_is_still_bounded():
 def test_uploaded_row_still_uses_the_tight_budget():
     """The original 6-hour flicker must stay fixed: a stuck `uploaded` row is
     cheap to detect and must not get the slow-stage allowance."""
-    from frontend import components
-
     assert "uploaded" not in components._SLOW_STAGES
 
 

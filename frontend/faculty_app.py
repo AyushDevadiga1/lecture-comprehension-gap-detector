@@ -11,27 +11,28 @@ reruns never wipe them.
 
 import streamlit as st
 
-from frontend import client, components
+from frontend.panels import faculty, graph, shell
 
 st.set_page_config(page_title="LecGap · Faculty", layout="wide")
 st.title("LecGap")
 st.caption("Lecture Comprehension Gap Detector — Faculty dashboard")
 
 with st.sidebar:
-    st.subheader("Course")
-    nav_course = components.course_sidebar()
+    nav_course = shell.course_sidebar()
 
-components.render_auth_banner()
-components.render_usage_row()
-components.render_progress_cards()
-components.render_course_snapshot(nav_course)
+shell.render_auth_banner()
+shell.render_usage_row()
+# no `kinds` filter here: faculty wants to see every job on the course,
+# whoever started it
+shell.render_progress_cards()
+shell.render_course_snapshot(nav_course)
 
 if nav_course is None:
     st.info("No courses yet — upload a lecture from the Student dashboard.")
     st.stop()
 
-components.render_faculty_stats(nav_course)
+faculty.render_faculty_stats(nav_course)
 st.divider()
-components.render_faculty_dag(nav_course)
+graph.render_faculty_dag(nav_course)
 st.divider()
-components.render_faculty_timeline(nav_course)
+faculty.render_faculty_timeline(nav_course)

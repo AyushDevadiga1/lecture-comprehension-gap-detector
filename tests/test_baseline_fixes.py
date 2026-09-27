@@ -16,7 +16,26 @@ import types
 import pytest
 
 from frontend import client as client_mod
-from frontend import components, state
+from frontend import state
+# these tests span three panels now; each is patched at its owning module
+from frontend.panels import graph, library, shell
+
+
+class _PanelNs:
+    """Attribute-style access across the panel modules.
+
+    Keeps these tests readable (``components.render_clips``) while each symbol
+    resolves to the module that actually owns it after the split.
+    """
+
+    def __getattr__(self, name):
+        for mod in (shell, library, graph):
+            if hasattr(mod, name):
+                return getattr(mod, name)
+        raise AttributeError(name)
+
+
+components = _PanelNs()
 
 
 class _SessionState:
@@ -143,7 +162,8 @@ class _St:
         raise RuntimeError("rerun")
 
     def all_text(self):
-        return "\n".join(self.md + self.captions + self.subheaders + self.infos)
+        return "\n".join(self.md + self.captions + self.subheaders + self.infos
+                         + self.warnings + self.errors)
 
 
 @pytest.fixture
@@ -156,8 +176,10 @@ def sess(monkeypatch):
 @pytest.fixture
 def fake_st(monkeypatch):
     st = _St()
-    monkeypatch.setattr(components, "st", st)
-    monkeypatch.setattr(components, "_sleep", lambda *_a, **_k: None)
+    # every panel that renders needs the double substituted
+    for mod in (shell, library, graph):
+        monkeypatch.setattr(mod, "st", st, raising=False)
+    monkeypatch.setattr(shell, "_sleep", lambda *_a, **_k: None)
     return st
 
 
@@ -266,21 +288,24 @@ CLIPS = {
 def test_render_clips_plays_each_concept_with_its_name(monkeypatch, sess, fake_st):
     monkeypatch.setattr(client_mod, "get",
                         lambda p, params=None, timeout=30: CLIPS)
-    components.render_clips(1, heading="**Clips cut for this lecture**")
+    library.render_clips(1, heading="**Clips cut for this lecture**")
 
     text = fake_st.all_text()
-    assert "Bayes' Rule" in text and "Covariance" in text
-    # timestamp span rendered for the user
+    # clip labels are HTML-escaped, so match the escaped apostrophe
+    assert "Bayes" in text and "Covariance" in text
     assert "272" in text and "384" in text
-    # a real <video> per playable clip, via the media endpoint
-    assert len(fake_st.videos) == 2
-    assert all("/media/clips/1/" in v for v in fake_st.videos)
+    # a real <video> per playable clip, via the media endpoint, inside a
+    # bounded frame so a long list does not stretch the page
+    blob = "\n".join(fake_st.md)
+    assert blob.count("<video") == 2
+    assert blob.count("/media/clips/1/") >= 2
+    assert "overflow:auto" in blob
 
 
 def test_render_clips_says_so_when_nothing_cut(monkeypatch, sess, fake_st):
     monkeypatch.setattr(client_mod, "get",
                         lambda p, params=None, timeout=30: {"clips": []})
-    components.render_clips(1)
+    library.render_clips(1)
     assert any("No clips cut" in c for c in fake_st.captions)
 
 
@@ -292,19 +317,20 @@ def test_render_clips_counts_unplayable_rows(monkeypatch, sess, fake_st):
             {"id": 2, "concept_name": "B", "start_s": 0.0, "end_s": 1.0,
              "path": "", "ok": False, "error": "no media"},
         ]})
-    components.render_clips(1)
+    library.render_clips(1)
     caps = "\n".join(fake_st.captions)
     assert "1 of 2 concept clips are playable" in caps
-    assert "no media file on the server" in caps
-    assert len(fake_st.videos) == 1
+    blob = "\n".join(fake_st.md)
+    assert "no media file on the server" in blob
+    assert blob.count("<video") == 1
 
 
 def test_render_clips_tolerates_missing_spans(monkeypatch, sess, fake_st):
     monkeypatch.setattr(client_mod, "get", lambda p, params=None, timeout=30: {
         "clips": [{"id": 1, "concept_name": "A", "start_s": None, "end_s": None,
                    "path": "data/processed/clips/1/a.mp4", "ok": True}]})
-    components.render_clips(1)  # must not raise on a None span
-    assert len(fake_st.videos) == 1
+    library.render_clips(1)  # must not raise on a None span
+    assert "\n".join(fake_st.md).count("<video") == 1
 
 
 # --------------------------------------------------------- graph on student
@@ -320,21 +346,23 @@ def test_render_course_graph_explains_absence(monkeypatch, sess, fake_st):
 
 
 def test_render_course_graph_renders_counts_and_dag(monkeypatch, sess, fake_st):
-    graph = {
+    payload = {
         "course_id": "ml", "nodes": ["A", "B"], "is_dag": True,
         "edges": [{"source": "A", "target": "B", "confidence": 0.9}],
         "node_count": 2, "edge_count": 1, "topological_order": ["A", "B"],
     }
-    state.set("graph", data=graph, course="ml")
-    monkeypatch.setattr(components, "dag_svg", lambda g, **k: "<svg>ok</svg>")
-    components.render_course_graph("ml")
+    state.set("graph", data=payload, course="ml")
+    monkeypatch.setattr(graph, "dag_svg", lambda g, **k: "<svg>ok</svg>")
+    graph.render_course_graph("ml")
     text = fake_st.all_text()
     assert "2 concepts in total" in text and "2 shown" in text
     assert "acyclic" in text
-    assert "<svg>ok</svg>" in "\n".join(fake_st.md)
-    # the learner order stays reachable, and the study sequence is offered
-    assert "Full learner order" in "\n".join(fake_st.expander_labels)
-    assert "1. A" in text and "2. B" in text
+    blob = "\n".join(fake_st.md)
+    assert "<svg>ok</svg>" in blob
+    # the learner order is a bounded, numbered definition list
+    assert ">1<" in blob or ">1</span>" in blob
+    assert "A" in blob and "B" in blob
+    assert "overflow:auto" in blob
 
 
 def test_render_course_graph_will_not_show_another_courses_graph(monkeypatch, sess, fake_st):
@@ -362,13 +390,12 @@ def test_progress_cards_partition_by_kind(sess, fake_st, monkeypatch):
 
     monkeypatch.setattr(client_mod, "get", get)
     monkeypatch.setattr(client_mod, "invalidate_for_course", lambda *_a: None)
-    monkeypatch.setattr(components, "_upload_status",
+    monkeypatch.setattr(shell, "_upload_status",
                         lambda lid, kind: ("done", True, None))
 
-    # upload monitor: the finished upload hands off to kind="transcribe", which
-    # is still this monitor's kind, so the job stays visible here
+    # upload monitor
     try:
-        components.render_progress_cards(kinds=("upload", "transcribe", "attach"))
+        shell.render_progress_cards(kinds=("upload", "transcribe", "attach"))
     except RuntimeError:
         pass
     kinds_after = sorted(j["kind"] for j in state.get("jobs", "items"))
@@ -376,7 +403,7 @@ def test_progress_cards_partition_by_kind(sess, fake_st, monkeypatch):
 
     # process monitor handles only its own and leaves the other untouched
     try:
-        components.render_progress_cards(kinds=("extract", "graph", "clips"))
+        shell.render_progress_cards(kinds=("extract", "graph", "clips"))
     except RuntimeError:
         pass
     kinds_after = sorted(j["kind"] for j in state.get("jobs", "items"))
@@ -385,6 +412,6 @@ def test_progress_cards_partition_by_kind(sess, fake_st, monkeypatch):
 
 def test_progress_cards_noop_when_no_jobs_of_that_kind(sess, fake_st):
     components.start_job("ml", 1, "Building graph", kind="graph")
-    components.render_progress_cards(kinds=("upload", "transcribe"))
+    shell.render_progress_cards(kinds=("upload", "transcribe"))
     assert fake_st.reruns == 0
     assert len(state.get("jobs", "items")) == 1

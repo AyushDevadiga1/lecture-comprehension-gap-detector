@@ -4,6 +4,7 @@ is computed from quiz responses."""
 
 from bisect import bisect_left
 import threading
+from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException, Path, Query
 
@@ -62,6 +63,12 @@ def _watch_entry(item, clips):
 def create_quiz(
     course_id: str = Body(..., max_length=128, pattern=r"^[\w\-]+$"),
     student_id: str = Body(..., max_length=128, pattern=r"^[\w\-@.]+$"),
+    max_questions: Optional[int] = Body(
+        None, ge=1, le=200,
+        description="Cap the number of generated questions. Evenly sampled "
+                    "across the course so a short quiz still covers the whole "
+                    "lecture. Omit for every concept.",
+    ),
 ) -> QuizOut:
     """Build a graded MCQ quiz from a course's extracted concepts.
 
@@ -85,12 +92,26 @@ def create_quiz(
                    "wait for it to finish, then try again.",
         )
     try:
-        return _create_quiz(course_id, student_id)
+        return _create_quiz(course_id, student_id, max_questions)
     finally:
         lock.release()
 
 
-def _create_quiz(course_id: str, student_id: str) -> QuizOut:
+def _spread_sample(names: list, limit: int) -> list:
+    """Evenly sample ``limit`` names, preserving course order.
+
+    Even spacing rather than a prefix so the questions cover the whole lecture
+    instead of only its opening concepts.
+    """
+    if limit <= 0 or limit >= len(names):
+        return list(names)
+    step = (len(names) - 1) / float(limit - 1) if limit > 1 else 0
+    picked = {int(round(i * step)) for i in range(limit)}
+    return [n for i, n in enumerate(names) if i in picked][:limit]
+
+
+def _create_quiz(course_id: str, student_id: str,
+                 max_questions: Optional[int] = None) -> QuizOut:
     with SessionLocal() as db:
         concepts = (
             db.query(Concept)
@@ -101,6 +122,11 @@ def _create_quiz(course_id: str, student_id: str) -> QuizOut:
         if not concepts:
             raise HTTPException(status_code=404, detail="No concepts for course")
         names = sorted({c.name for c in concepts})
+        if max_questions and max_questions < len(names):
+            # A quiz is a quiz. One LLM call per concept, six-wide, inline in
+            # this request — without a cap a 153-concept course meant 153 calls
+            # (a multi-minute frozen UI) and 153 radio buttons on submit.
+            names = _spread_sample(names, max_questions)
         by_name = {c.name: c for c in concepts}
 
         # Stage 6 grounding (plan/LECTURE_STRUCTURE.md §4): when the concept was

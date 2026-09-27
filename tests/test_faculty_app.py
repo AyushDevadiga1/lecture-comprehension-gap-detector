@@ -67,7 +67,10 @@ def test_stats_render_and_persist_across_rerun(monkeypatch):
     find_button(at, "Load course stats").click().run()
 
     assert any_markdown_contains(at, "Wrong-answer rates")
-    assert any_markdown_contains(at, "Alpha: 2/5 (40%)")
+    # the heatmap is now a bounded, bar-charted panel rather than plain lines
+    blob = "\n".join(m.value for m in at.markdown)
+    assert "Alpha" in blob and "2/5" in blob and "40%" in blob
+    assert "overflow:auto" in blob
     assert any_markdown_contains(at, "taught #—")  # None indices render as —
 
     at.run()  # a background poll rerun must NOT erase the loaded stats
@@ -79,7 +82,7 @@ def test_dag_renders_and_persists_across_rerun(monkeypatch):
     at = _run()
     find_button(at, "Render DAG").click().run()
 
-    assert any_markdown_contains(at, "2 nodes")
+    assert any_markdown_contains(at, "2 concepts")
     assert any_markdown_contains(at, "acyclic (DAG)")
     # now inline dependency-free SVG, not a vis-network iframe: the old
     # renderer needed two CDNs plus a ../node_modules/vis path that does not
@@ -109,10 +112,12 @@ def test_timeline_renders_coverage_html(monkeypatch):
     })
     at = _run()
     assert any(s.label == "Lecture" for s in at.selectbox)
-    frames = at.get("iframe")
-    assert len(frames) >= 1  # lecture_html timeline embedded via st.iframe
-    rendered = frames[-1].proto.srcdoc
-    assert "1 concepts" in rendered and "Alpha" in rendered
+    # the timeline is inline SVG now, not an iframe (it no longer needs a
+    # JavaScript runtime to draw)
+    assert not at.get("iframe")
+    blob = "\n".join(m.value for m in at.markdown)
+    assert "1 concepts" in blob and "Alpha" in blob
+    assert "<svg" in blob
 
 
 def test_no_ready_lecture_info(monkeypatch):

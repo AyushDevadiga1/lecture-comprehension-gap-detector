@@ -96,8 +96,12 @@ def test_quiz_submit_scores_and_shows_remediation(monkeypatch):
     find_button(at, "Generate quiz").click().run()
     find_button(at, "Submit answers").click().run()
 
-    assert any_markdown_contains(at, "Score: 1/1")
-    assert any_markdown_contains(at, "**Beta**")
+    # score and feedback are now bounded panels
+    blob = "\n".join(m.value for m in at.markdown)
+    assert "Score 1/1" in blob
+    assert "100% correct" in blob
+    assert "Beta" in blob
+    assert "overflow:auto" in blob, "feedback must not run the page away"
 
 
 def test_stale_quiz_submit_degrades_gracefully(monkeypatch):

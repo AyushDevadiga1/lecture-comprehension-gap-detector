@@ -6,7 +6,11 @@ import types
 
 import pytest
 
-from frontend import components, state
+from frontend import state
+# the shell panel now owns the sidebar / monitor / upload-registry helpers;
+# duplicate detection moved to the ingest panel
+from frontend.panels import ingest
+from frontend.panels import shell as components
 
 
 class _SessionState:
@@ -121,10 +125,10 @@ def test_duplicate_lecture_detects_matching_stem_or_name(monkeypatch):
         {"id": 6, "course_id": "other", "title": "lec1.mp4"},
     ]
     monkeypatch.setattr(client_mod, "list_lectures", lambda ttl=60.0: lectures)
-    assert components.duplicate_lecture("ml", "lec1.mp4") == 4
-    assert components.duplicate_lecture("ml", "lec2.mp4") == 5  # stem match
-    assert components.duplicate_lecture("ml", "brand-new.mp4") is None
-    assert components.duplicate_lecture("ml", None) is None
+    assert ingest.duplicate_lecture("ml", "lec1.mp4") == 4
+    assert ingest.duplicate_lecture("ml", "lec2.mp4") == 5  # stem match
+    assert ingest.duplicate_lecture("ml", "brand-new.mp4") is None
+    assert ingest.duplicate_lecture("ml", None) is None
 
 
 # ----------------------------------------------------------- upload registry

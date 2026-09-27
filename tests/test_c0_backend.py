@@ -189,7 +189,7 @@ def test_create_quiz_releases_the_lock_on_success(monkeypatch):
 
     sentinel = object()
     monkeypatch.setattr(quizzes, "_create_quiz",
-                        lambda c, s: (sentinel, c, s))
+                        lambda c, s, m=None: (sentinel, c, s, m))
     assert quizzes.create_quiz(course_id="ok-course", student_id="s1")[0] is sentinel
     # released, so the next request is admitted
     assert quizzes.create_quiz(course_id="ok-course", student_id="s2")[0] is sentinel
@@ -198,7 +198,7 @@ def test_create_quiz_releases_the_lock_on_success(monkeypatch):
 def test_create_quiz_releases_the_lock_on_failure(monkeypatch):
     from backend.api.routes import quizzes
 
-    def boom(c, s):
+    def boom(c, s, m=None):
         raise RuntimeError("generation exploded")
 
     monkeypatch.setattr(quizzes, "_create_quiz", boom)
@@ -207,3 +207,37 @@ def test_create_quiz_releases_the_lock_on_failure(monkeypatch):
     # the lock must not stay held after an exception
     assert quizzes._quiz_lock("err-course").acquire(blocking=False) is True
     quizzes._quiz_lock("err-course").release()
+
+
+def test_max_questions_is_passed_through(monkeypatch):
+    from backend.api.routes import quizzes
+
+    seen = {}
+    monkeypatch.setattr(quizzes, "_create_quiz",
+                        lambda c, s, m=None: seen.update(m=m) or None)
+    quizzes.create_quiz(course_id="cap-course", student_id="s1", max_questions=7)
+    assert seen["m"] == 7
+
+
+def test_spread_sample_covers_the_whole_course():
+    from backend.api.routes.quizzes import _spread_sample
+
+    names = [f"c{i}" for i in range(100)]
+    picked = _spread_sample(names, 10)
+    assert len(picked) == 10
+    assert picked[0] == "c0", "must start at the first concept"
+    assert picked[-1] == "c99", "must reach the last concept"
+    # evenly spread across the whole range, not a prefix
+    idx = [int(n[1:]) for n in picked]
+    gaps = [b - a for a, b in zip(idx, idx[1:])]
+    assert max(gaps) - min(gaps) <= 1, f"uneven spread: {gaps}"
+
+
+def test_spread_sample_edge_cases():
+    from backend.api.routes.quizzes import _spread_sample
+
+    names = [f"c{i}" for i in range(5)]
+    assert _spread_sample(names, 0) == names
+    assert _spread_sample(names, 99) == names
+    assert len(_spread_sample(names, 5)) == 5
+    assert len(_spread_sample(names, 1)) == 1

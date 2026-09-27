@@ -23,7 +23,10 @@ import types
 import pytest
 
 from frontend import client as client_mod
-from frontend import components, state
+from frontend import state
+# every symbol this module exercises now lives in the shell panel; aliasing it
+# as `components` keeps the test names readable
+from frontend.panels import shell as components
 
 
 # --------------------------------------------------------------- session state
