@@ -25,6 +25,7 @@ shell.render_usage_row()
 # no `kinds` filter here: faculty wants to see every job on the course,
 # whoever started it
 shell.render_progress_cards()
+shell.drain_ready()
 shell.render_course_snapshot(nav_course)
 
 if nav_course is None:

@@ -172,6 +172,56 @@ def test_upload_lecture_and_list(api, monkeypatch):
         s.commit()
 
 
+def test_queueing_endpoints_hand_back_the_durable_job_id(api, monkeypatch):
+    """Every endpoint that queues work must return the row it created.
+
+    The client cannot follow a job it cannot name: the progress card reads the
+    durable row (and the SSE stream that carries it), so an endpoint that
+    schedules a worker without reporting its id forces the frontend back to
+    polling the legacy per-lecture endpoint.
+    """
+    client, Session = api
+    monkeypatch.setattr(jobs_transcribe, "transcribe", lambda path, **kw: [])
+    monkeypatch.setattr(jobs_extract, "extract_lecture_structure",
+                        lambda docs: {"passages": [], "concepts": [], "links": []})
+    monkeypatch.setattr(jobs_graph, "rebuild_course_graph",
+                        lambda course_id, lecture_id=None: None)
+    monkeypatch.setattr(jobs_clips, "cut_concept_clips",
+                        lambda media, concepts, out_dir, on_done=None: [])
+
+    r = client.post(
+        "/lectures",
+        files={"file": ("lec.mp4", b"fake", "video/mp4")},
+        data={"course_id": "ml1", "title": "Intro"},
+    )
+    upload_job = r.json()["job_id"]
+    assert upload_job is not None
+    assert client.get(f"/jobs/{upload_job}").json()["kind"] == "transcribe"
+    with Session() as s:  # the upload wrote a real file into data/raw
+        lec = s.get(models.Lecture, r.json()["id"])
+        if lec and lec.source_path:
+            Path(lec.source_path).unlink(missing_ok=True)
+
+    lid = _add_lecture(Session, status="ready", source_path="media.mp4")
+    with Session() as s:  # clips need something to cut
+        s.add(models.Concept(course_id="ml1", lecture_id=lid, name="Bias",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.commit()
+    # clips first: the extraction worker replaces the lecture's concepts, so a
+    # later clips call would be refused with 409 for having nothing to cut
+    clips_job = client.post(f"/lectures/{lid}/clips").json()["job_id"]
+    assert clips_job is not None
+    assert client.get(f"/jobs/{clips_job}").json()["kind"] == "clips"
+
+    extract_job = client.post(f"/lectures/{lid}/concepts").json()["job_id"]
+    assert extract_job is not None
+    assert client.get(f"/jobs/{extract_job}").json()["kind"] == "extract"
+
+    graph_job = client.post("/courses/ml1/graph").json()["job_id"]
+    assert graph_job is not None
+    assert client.get(f"/jobs/{graph_job}").json()["kind"] == "graph"
+
+
 # ------------------------------------------------------- concept extraction
 
 def test_concept_extraction_requires_ready(api):

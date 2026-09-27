@@ -201,6 +201,10 @@ def test_bootstrap_normalizes_course_to_canonical_key(monkeypatch):
     assert "canonical key `ML-1`" in caps
 
 
+@pytest.mark.skipif(
+    not hasattr(AppTest, "file_uploader"),
+    reason="AppTest.file_uploader needs the pinned streamlit (see environment.yml)",
+)
 def test_two_step_upload_creates_then_streams(monkeypatch):
     """Frozen-button fix: submit no longer sends the whole file in one blocking
     POST — the row is created fast, then begin_upload streams it in a thread."""

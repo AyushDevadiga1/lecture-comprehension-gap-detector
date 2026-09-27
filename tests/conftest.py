@@ -44,15 +44,16 @@ def pytest_collection_finish(session):
 
 
 @pytest.fixture(autouse=True)
-def _no_poll_backoff(monkeypatch):
-    """Neutralise the progress monitor's sleep/rerun back-off in tests.
+def _no_live_job_feed(monkeypatch):
+    """Keep the progress cards offline.
 
-    The monitor is intentionally a stop → sleep → st.rerun() loop. Under
-    AppTest a job that legitimately stays non-terminal (e.g. a snapshot seeding
-    a still-transcribing lecture) would re-render until the 3s run budget blew,
-    which is a harness artifact, not app behaviour. Termination semantics are
-    covered directly in tests/test_c0_fixes.py.
+    The first card that sees a durable job id opens the SSE feed, which is a
+    background thread with its own reconnect loop. In a test suite that thread
+    outlives the test that started it and would then poll a *later* test's
+    monkeypatched client. The singleton is pre-seeded with an unstarted feed,
+    so the real wiring is still exercised but no socket is ever opened; tests
+    that want the feed's behaviour construct a JobFeed themselves.
     """
-    from frontend import components
+    from frontend import jobfeed
 
-    monkeypatch.setattr(components, "_sleep", lambda *_a, **_k: None)
+    monkeypatch.setattr(jobfeed, "_feed", jobfeed.JobFeed(), raising=False)

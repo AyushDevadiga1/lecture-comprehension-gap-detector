@@ -63,8 +63,8 @@ def _enqueue(background_tasks, fn, *, kind: str, lecture_id: int,
     thread publishes its first stage. The worker receives the id and binds it
     for the run (see `backend.api.jobs.progress.job_scope`).
 
-    Returns the job id, which is also set on the response as `X-Job-Id` so a
-    client that does not poll /jobs can still follow along.
+    Returns the job id, which every caller puts on its own response (`job_id`),
+    so a client that never polls /jobs can still follow the work it started.
     """
     job_id = registry.create_job(kind, course_id=course_id,
                                  lecture_id=lecture_id, title=title)
@@ -158,11 +158,11 @@ async def upload_lecture(
         lecture.source_path = str(dest)
         db.commit()
 
-    _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
-             lecture_id=lecture.id, course_id=lecture.course_id,
-             title=lecture.title or f"Lecture #{lecture.id}",
-             args=(lecture.id, whisper_backend))
-    return lecture
+    job_id = _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
+                      lecture_id=lecture.id, course_id=lecture.course_id,
+                      title=lecture.title or f"Lecture #{lecture.id}",
+                      args=(lecture.id, whisper_backend))
+    return _with_media(lecture, job_id=job_id)
 
 
 @router.put("/{lecture_id}/media", response_model=LectureOut)
@@ -282,11 +282,11 @@ async def upload_lecture_media(
         course_id_for_job = lecture.course_id
         title_for_job = lecture.title
 
-    _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
-             lecture_id=lecture_id, course_id=course_id_for_job,
-             title=title_for_job or f"Lecture #{lecture_id}",
-             args=(lecture_id, whisper_backend))
-    return _with_media(lecture)
+    job_id = _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
+                      lecture_id=lecture_id, course_id=course_id_for_job,
+                      title=title_for_job or f"Lecture #{lecture_id}",
+                      args=(lecture_id, whisper_backend))
+    return _with_media(lecture, job_id=job_id)
 
 
 @router.get("", response_model=List[LectureOut])
@@ -307,7 +307,7 @@ def list_lectures(limit: int = 500, offset: int = 0) -> List[Lecture]:
         )]
 
 
-def _with_media(lec: Lecture) -> LectureOut:
+def _with_media(lec: Lecture, job_id: int = None) -> LectureOut:
     """Serialize a lecture with `has_media` resolved from the filesystem.
 
     A registered source_path whose file has since been removed does not count:
@@ -316,12 +316,13 @@ def _with_media(lec: Lecture) -> LectureOut:
     path = (lec.source_path or "").strip()
     if not path:
         return LectureOut.model_validate(lec).model_copy(
-            update={"has_media": False})
+            update={"has_media": False, "job_id": job_id})
     try:
         present = Path(path).is_file()
     except OSError:
         present = False
-    return LectureOut.model_validate(lec).model_copy(update={"has_media": present})
+    return LectureOut.model_validate(lec).model_copy(
+        update={"has_media": present, "job_id": job_id})
 
 
 @router.get("/{lecture_id}", response_model=LectureDetailOut)
@@ -402,17 +403,17 @@ def rerun_lecture(
         course_id_for_job = lecture.course_id
         title_for_job = lecture.title
 
-    _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
-             lecture_id=lecture_id, course_id=course_id_for_job,
-             title=title_for_job or f"Lecture #{lecture_id}",
-             args=(lecture_id, whisper_backend))
-    return _with_media(delivered)
+    job_id = _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
+                      lecture_id=lecture_id, course_id=course_id_for_job,
+                      title=title_for_job or f"Lecture #{lecture_id}",
+                      args=(lecture_id, whisper_backend))
+    return _with_media(delivered, job_id=job_id)
 
 
 @router.post("/{lecture_id}/concepts", response_model=LectureDetailOut)
 def run_concept_extraction(
     lecture_id: int, background_tasks: BackgroundTasks
-) -> Lecture:
+) -> LectureDetailOut:
     """Extract (spoken) concepts for a lecture. Runs in background; results
     appear on GET /lectures/{id} once done. Concept rows are replaced on
     re-run (idempotent, cached LLM calls keep re-runs free)."""
@@ -429,15 +430,16 @@ def run_concept_extraction(
         course_id_for_job = lecture.course_id
         title_for_job = lecture.title
 
-    _enqueue(background_tasks, jobs.extract_concepts_worker, kind="extract",
-             lecture_id=lecture_id_out, course_id=course_id_for_job,
-             title=title_for_job or f"Concepts for #{lecture_id_out}",
-             args=(lecture_id_out,))
+    job_id = _enqueue(background_tasks, jobs.extract_concepts_worker, kind="extract",
+                      lecture_id=lecture_id_out, course_id=course_id_for_job,
+                      title=title_for_job or f"Concepts for #{lecture_id_out}",
+                      args=(lecture_id_out,))
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id_out)
         _ = lecture.segments  # force-load before session closes
         db.refresh(lecture, ["concepts"])
-        return lecture
+        return LectureDetailOut.model_validate(lecture).model_copy(
+            update={"job_id": job_id})
 
 
 @router.post("/{lecture_id}/clips", response_model=ClipBatchOut, status_code=202)
@@ -474,11 +476,11 @@ def cut_lecture_clips(
         course_id_for_job = lecture.course_id
         title_for_job = lecture.title
 
-    _enqueue(background_tasks, jobs.cut_clips_worker, kind="clips",
-             lecture_id=lecture_id_out, course_id=course_id_for_job,
-             title=title_for_job or f"Clips for #{lecture_id_out}",
-             args=(lecture_id_out,))
-    return ClipBatchOut(lecture_id=lecture_id_out, status="queued")
+    job_id = _enqueue(background_tasks, jobs.cut_clips_worker, kind="clips",
+                      lecture_id=lecture_id_out, course_id=course_id_for_job,
+                      title=title_for_job or f"Clips for #{lecture_id_out}",
+                      args=(lecture_id_out,))
+    return ClipBatchOut(lecture_id=lecture_id_out, status="queued", job_id=job_id)
 
 
 @router.get("/{lecture_id}/clips", response_model=ClipBatchOut)

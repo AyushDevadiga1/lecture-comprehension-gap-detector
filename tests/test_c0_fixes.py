@@ -100,7 +100,6 @@ class _St:
 def fake_st(monkeypatch):
     st = _St()
     monkeypatch.setattr(components, "st", st)
-    monkeypatch.setattr(components.time, "sleep", lambda *_a, **_k: None)
     return st
 
 
@@ -283,18 +282,21 @@ def test_concurrent_begin_upload_registers_exactly_one(monkeypatch, sess):
 
 def test_upload_status_pops_entry_under_lock(monkeypatch, sess):
     """_upload_status must not leave a half-read entry behind."""
-    monkeypatch.setattr(client_mod, "upload_media", lambda *a, **k: {"id": 1})
+    monkeypatch.setattr(client_mod, "upload_media",
+                        lambda *a, **k: {"id": 1, "job_id": 42})
     monkeypatch.setattr(client_mod, "take_last_error", lambda: None)
     components.begin_upload("ml", 11, "T", "f.mp4", b"x")
     # the first terminal observation is the one that pops the entry
-    result = (False, False, None)
+    result = (False, False, None, None)
     for _ in range(200):
         result = components._upload_status(11, "upload")
         if result[0]:
             break
         time.sleep(0.01)
-    done, ok, err = result
+    done, ok, err, job_id = result
     assert done and ok and err is None
+    # the id of the job the PUT enqueued, so the card can follow the real thing
+    assert job_id == 42
     with components._UPLOADS_LOCK:
         assert 11 not in components._UPLOADS
 

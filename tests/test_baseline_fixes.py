@@ -179,7 +179,6 @@ def fake_st(monkeypatch):
     # every panel that renders needs the double substituted
     for mod in (shell, library, graph):
         monkeypatch.setattr(mod, "st", st, raising=False)
-    monkeypatch.setattr(shell, "_sleep", lambda *_a, **_k: None)
     return st
 
 
@@ -390,8 +389,9 @@ def test_progress_cards_partition_by_kind(sess, fake_st, monkeypatch):
 
     monkeypatch.setattr(client_mod, "get", get)
     monkeypatch.setattr(client_mod, "invalidate_for_course", lambda *_a: None)
+    # the transfer finished: the card hands off to the job the PUT enqueued
     monkeypatch.setattr(shell, "_upload_status",
-                        lambda lid, kind: ("done", True, None))
+                        lambda lid, kind: ("done", True, None, 91))
 
     # upload monitor
     try:

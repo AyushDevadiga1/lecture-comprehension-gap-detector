@@ -45,7 +45,6 @@ from frontend.panels.shell import (
     _UPLOADS,
     _UPLOADS_LOCK,
     _job_guidance,
-    _sleep,
     _snapshot_line,
     _upload_status,
     _usage_summary,
@@ -53,6 +52,7 @@ from frontend.panels.shell import (
     begin_upload,
     cancel_upload,
     course_sidebar,
+    drain_ready,
     render_auth_banner,
     render_course_snapshot,
     render_progress_cards,
@@ -64,9 +64,9 @@ from frontend.panels.shell import (
 __all__ = [
     # shell
     "course_sidebar", "render_auth_banner", "render_usage_row",
-    "render_course_snapshot", "render_progress_cards", "rerun",
+    "render_course_snapshot", "render_progress_cards", "drain_ready", "rerun",
     "start_job", "active_job", "begin_upload", "cancel_upload",
-    "_snapshot_line", "_usage_summary", "_upload_status", "_sleep",
+    "_snapshot_line", "_usage_summary", "_upload_status",
     "_UPLOADS", "_UPLOADS_LOCK", "_MAX_POLL_FAILS", "_MAX_STALLED_POLLS",
     "_MAX_STALLED_POLLS_SLOW", "_SLOW_STAGES", "_JOB_DEADLINE_S", "_job_guidance",
     # ingest

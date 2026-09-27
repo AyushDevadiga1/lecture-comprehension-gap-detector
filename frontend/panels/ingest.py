@@ -82,6 +82,7 @@ def render_ingest_form(upload_course):
 
     # upload/transcription progress sits directly under the upload controls
     shell.render_progress_cards(kinds=("upload", "transcribe", "attach"))
+    shell.drain_ready()
 
 
 def render_process_controls(nav_course):
@@ -109,7 +110,8 @@ def render_process_controls(nav_course):
         err = client.take_last_error()
         if resp:
             shell.start_job(nav_course, chosen["id"],
-                            "Concept extraction + graph", kind="extract")
+                            "Concept extraction + graph", kind="extract",
+                            job_id=resp.get("job_id"))
         elif err:
             st.error(err.get("detail") or "Extraction not queued.")
 
@@ -119,7 +121,8 @@ def render_process_controls(nav_course):
         err = client.take_last_error()
         if resp:
             shell.start_job(nav_course, chosen["id"],
-                            "Course-graph rebuild", kind="graph")
+                            "Course-graph rebuild", kind="graph",
+                            job_id=resp.get("job_id"))
         elif err:
             st.error(err.get("detail") or "Graph build not queued.")
 
@@ -128,10 +131,13 @@ def render_process_controls(nav_course):
         err = client.take_last_error()
         if resp:
             shell.start_job(nav_course, chosen["id"], "Clip cutting",
-                            kind="clips", after="clips_list")
+                            kind="clips", after="clips_list",
+                            job_id=resp.get("job_id"))
         elif err:
             st.error(err.get("detail") or "Clip cutting not queued.")
 
-    # Pipeline progress directly under the process buttons that queued it.
-    shell.render_progress_cards(kinds=("extract", "graph", "clips"),
-                                on_ready=library.clips_followup)
+    # Pipeline progress directly under the process buttons that queued it. The
+    # drain sits outside the fragment: the finished-job line and the clip list
+    # must render in the page body, not be rebuilt every second.
+    shell.render_progress_cards(kinds=("extract", "graph", "clips"))
+    shell.drain_ready(on_ready=library.clips_followup)

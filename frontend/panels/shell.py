@@ -2,7 +2,7 @@
 
 Everything that frames the page or reports background state lives here, so the
 content panels (ingest / process / library / graph / quiz) never have to know
-about session plumbing, the poll loop, or the upload thread registry.
+about session plumbing, the job feed, or the upload thread registry.
 """
 
 import threading
@@ -10,24 +10,33 @@ import time
 
 import streamlit as st
 
-from frontend import client, state
+from frontend import client, jobfeed, state
 
 # ---------------------------------------------------------------- tunables
 
 _MAX_POLL_FAILS = 5
-_JOB_DEADLINE_S = 6 * 60 * 60
-_JOB_DEADLINE_S_ALIAS = _JOB_DEADLINE_S
 
-# Consecutive polls that may repeat the same non-advancing status before the job
-# is called stalled. The backend's DB-derived fallback reports a lecture's raw
-# status, so a row stuck in `uploaded` is reported identically forever; without a
-# cutoff the page re-rendered every 0.5-1.5s until the 6h deadline. Heavy stages
-# publish only coarse milestones around work that legitimately takes minutes, so
-# they get a much larger allowance.
+# Backstop only. A job settles on a terminal status in the durable registry, so
+# this should never fire; it exists so a job whose feed has gone quiet is
+# dropped with an explanation instead of rendering forever.
+_JOB_DEADLINE_S = 6 * 60 * 60
+
+# How often the progress-card fragment re-executes. Short enough to feel live,
+# long enough not to hammer the backend. The card does no fetching of its own -
+# it reads the SSE feed's in-memory snapshot.
+_REFRESH = "1s"
+
+# Consecutive ticks that may repeat the same non-advancing status before the job
+# is called stalled. A tick is one fragment re-execution (_REFRESH), not a page
+# rerun: the backend's DB-derived fallback reports a lecture's raw status, so a
+# row stuck in `uploaded` is reported identically forever, and without a cutoff
+# the card would render for the full 6h backstop. Heavy stages publish only
+# coarse milestones around work that legitimately takes minutes, so they get a
+# much larger allowance - 600 ticks is ~10 minutes at _REFRESH.
 _MAX_STALLED_POLLS = 40
 _SLOW_STAGES = {"building_graph", "extracting", "cutting_clips", "clips",
                 "local_transcribing", "loading_model", "transcribing"}
-_MAX_STALLED_POLLS_SLOW = 600      # ~15 min at the 1.5s long-stage backoff
+_MAX_STALLED_POLLS_SLOW = 600
 
 # In-process upload registry keyed by lecture id — module-level so a background
 # upload thread survives between script executions. Guarded because the daemon
@@ -58,12 +67,6 @@ _STAGE_HINTS = {
     "cutting_clips": "Cutting concept clips with ffmpeg (re-encoded, several "
                      "minutes for many clips)…",
     "saving_clips": "Saving clip rows…",
-}
-
-_LONG_STAGES = {
-    "loading_model", "local_transcribing", "transcribing", "extracting",
-    "building_graph", "clips", "cutting_clips", "saving_clips", "downmixing",
-    "chunking",
 }
 
 
@@ -214,16 +217,6 @@ def render_auth_banner():
 
 # ------------------------------------------------------------ upload thread
 
-def _sleep(seconds):
-    """Indirection over time.sleep for the poll back-off.
-
-    The monitor is a deliberate stop/sleep/rerun loop, so under Streamlit's
-    AppTest a seeded job would burn the whole 3s run budget re-rendering. Tests
-    neutralise this one function; production keeps the real back-off.
-    """
-    time.sleep(seconds)
-
-
 def begin_upload(course_id, lecture_id, title, filename, file_bytes,
                  whisper_backend=None):
     """Stream the media in a daemon thread so the script never blocks on it."""
@@ -234,7 +227,7 @@ def begin_upload(course_id, lecture_id, title, filename, file_bytes,
 
     cancel = threading.Event()
     done = threading.Event()
-    outcome = {"ok": False, "error": None}
+    outcome = {"ok": False, "error": None, "job_id": None}
 
     def worker():
         try:
@@ -247,7 +240,11 @@ def begin_upload(course_id, lecture_id, title, filename, file_bytes,
                 outcome["error"] = "Upload cancelled." if cancel.is_set() else (
                     (err or {}).get("detail") or "Upload failed."
                 )
-            outcome["ok"] = resp is not None
+            else:
+                outcome["ok"] = True
+                # the PUT enqueued the durable transcription job, so the card
+                # can follow the real thing from here on instead of guessing
+                outcome["job_id"] = resp.get("job_id")
         except Exception as exc:  # noqa: BLE001 - surface in the card
             outcome["error"] = f"Upload failed: {exc}"
         finally:
@@ -272,9 +269,10 @@ def cancel_upload(lecture_id):
 
 
 def _upload_status(lecture_id, kind):
-    """``(state, ok, error)`` for an upload job; ``state`` is one of:
+    """``(state, ok, error, job_id)`` for an upload job; ``state`` is one of:
 
-    * ``"done"``   - the transfer finished; read ``ok``/``error`` for the result.
+    * ``"done"``   - the transfer finished; read ``ok``/``error`` for the result
+      and ``job_id`` for the transcription job the PUT enqueued.
     * ``"pending"``- a live registry entry whose thread has not finished.
     * ``"absent"`` - no registry entry at all: the thread is gone (it was never
       started, or a previous poll already consumed the result).
@@ -289,23 +287,29 @@ def _upload_status(lecture_id, kind):
     with _UPLOADS_LOCK:
         entry = _UPLOADS.get(lecture_id)
         if entry is None:
-            return "absent", False, None
+            return "absent", False, None, None
         if entry["done"].is_set():
             # read what we need before dropping it, so a concurrent reader can
             # never observe a half-removed entry
-            ok, err = entry["ok"]["ok"], entry["ok"]["error"]
+            ok = entry["ok"]["ok"]
+            err = entry["ok"]["error"]
+            job_id = entry["ok"].get("job_id")
             _UPLOADS.pop(lecture_id, None)  # handled; keep memory tight
-            return "done", ok, err
-    return "pending", False, None
+            return "done", ok, err, job_id
+    return "pending", False, None, None
 
 
 # ------------------------------------------------------------- job registry
 
-def start_job(course_id, lecture_id, title, kind, after=None):
+def start_job(course_id, lecture_id, title, kind, after=None, job_id=None):
     """Remember a background job so the monitor renders its card next rerun.
 
     Jobs accumulate - starting a new one never drops an old card. Identical
     (lecture, kind) pairs are coalesced.
+
+    ``job_id`` is the durable row the backend created for this work (Engine 2 /
+    C3). When present the monitor reads that row from the job feed instead of
+    polling the legacy per-lecture endpoint.
     """
     items = state.get("jobs", "items", [])
     items = [
@@ -317,6 +321,7 @@ def start_job(course_id, lecture_id, title, kind, after=None):
     items.append({
         "course_id": course_id,
         "lecture_id": lecture_id,
+        "job_id": job_id,
         "title": title,
         "kind": kind,
         "after": after,
@@ -349,122 +354,270 @@ def _job_guidance(stage, elapsed_s):
     return f"{hint}  ({ss}s elapsed)"
 
 
-def render_progress_cards(kinds=None, on_ready=None):
-    """Live, self-refreshing progress card per monitored job.
+def render_progress_cards(kinds=None, feed=None):
+    """Live progress cards, rendered inside a self-refreshing fragment.
 
-    One poll per rerun with adaptive back-off. ``kinds`` restricts the call to a
-    subset of job kinds and leaves the others untouched, so the dashboard can
-    render the ingest monitor and the process monitor as two separate blocks -
-    each directly under the controls that started those jobs.
+    C4: this used to call ``st.rerun()`` in a sleep/poll loop, which re-executed
+    the whole script and therefore rebuilt every element on the page - restarting
+    each ``<video>`` player and making long lists unusable while a job ran.
 
-    ``on_ready(job, lecture_id)`` is invoked for a job that lands on ``ready``,
-    which is how a panel attaches its own follow-up (e.g. the clip list) without
-    the monitor knowing anything about clips.
+    Now the cards live in a ``st.fragment(run_every=...)``, so only this block
+    re-executes; the rest of the page stays mounted. Progress itself arrives
+    over the SSE job feed (see :mod:`frontend.jobfeed`), so rendering does not
+    have to fetch anything.
+
+    ``kinds`` restricts the call to a subset of job kinds and leaves the others
+    untouched, so the dashboard can render the ingest monitor and the process
+    monitor as two separate blocks - each directly under the controls that
+    started those jobs.
+
+    Call :func:`drain_ready` once per full page pass to render whatever finished
+    (and any panel follow-up); that must stay outside the fragment, or the
+    follow-up would be rebuilt every second.
     """
-    items = state.get("jobs", "items", []) or []
+    def _block():
+        # Re-read the job list every tick: the fragment may hold a stale list
+        # while the rest of the page is untouched. This block's verdict is
+        # written back, and jobs belonging to the *other* monitor are carried
+        # over untouched.
+        current = state.get("jobs", "items", []) or []
+        mine = [j for j in current if _owns(j, kinds)]
+        if not mine:
+            return
+        keep = render_job_cards(mine, feed=feed)
+        others = [j for j in (state.get("jobs", "items", []) or [])
+                  if not _owns(j, kinds)]
+        state.set("jobs", items=list(keep) + others)
+
+    _auto_refreshing(_block)()
+
+
+def _owns(job, kinds):
+    return kinds is None or job.get("kind") in kinds
+
+
+def _auto_refreshing(fn):
+    """Schedule ``fn`` to re-execute on its own, when Streamlit supports it.
+
+    ``st.fragment(run_every=...)`` re-executes *only* the wrapped block, which is
+    the whole point of C4: the clip players, graph and quiz elsewhere on the
+    page stay mounted instead of being rebuilt on every poll. Where there is no
+    fragment scheduler (AppTest, Streamlit older than 1.37) the block simply
+    renders once per rerun - the legacy behaviour, which still works.
+
+    Only the two "not supported" shapes fall back silently. Any other exception
+    is re-raised: a monitor that quietly stops refreshing is the exact failure
+    C4 was written to remove, so it must not degrade into "looks fine, frozen".
+    """
+    try:
+        return st.fragment(fn, run_every=_REFRESH)
+    except (AttributeError, TypeError):  # no fragment support -> plain render
+        return fn
+
+
+def render_job_cards(items, feed=None):
+    """Render one card per job; return the jobs that are still live.
+
+    Split out from :func:`render_progress_cards` so it can be driven directly by
+    tests, which cannot rely on Streamlit's fragment scheduler running. It never
+    fetches anything for a job the feed knows about, and never reruns the page -
+    a completion is recorded in session state and rendered by the dashboard
+    itself, outside the fragment (see :func:`drain_ready`).
+    """
+    keep = []
     if not items:
-        return
+        return keep
+    if feed is None:
+        feed = _feed_for(items)
 
-    mine = [j for j in items if kinds is None or j.get("kind") in kinds]
-    others = [j for j in items if kinds is not None and j.get("kind") not in kinds]
-    if not mine:
-        return
-
-    keep, want_rerun, backoff = [], False, 1.5
-    for job in mine:
-        lecture_id = job.get("lecture_id")
-        kind = job.get("kind")
-
-        # --- non-blocking upload: handle the client-side upload thread first ---
-        if kind == "upload":
-            up_state, up_ok, up_err = _upload_status(lecture_id, kind)
-            if up_state == "absent":
-                st.error(up_err or "Upload failed.")
-                client.invalidate_for_course(job.get("course_id"))
-                continue
-            if up_state == "done":
-                if not up_ok:
-                    st.error(up_err or "Upload failed.")
-                    client.invalidate_for_course(job.get("course_id"))
-                    continue
-                # hand off: media landed, the backend worker card reports from
-                # here on (stage flips to transcribing after the PUT schedules it)
-                job["kind"] = "transcribe"
-                kind = "transcribe"
-            elif st.button("Cancel upload", key=f"cancel_up_{lecture_id}"):
-                cancel_upload(lecture_id)
-
-        data = client.get(f"/lectures/{lecture_id}/progress")
-        if not data:
-            fails = int(job.get("fail_count", 0)) + 1
-            job["fail_count"] = fails
-            if fails < _MAX_POLL_FAILS:
-                keep.append(job)
-                want_rerun = True
-                continue
-            st.warning(f"Job '{job.get('title', '')}' is queued but unreachable — "
-                       "the worker may have stopped. Refresh to re-attach.")
+    for job in items:
+        if job.get("kind") == "upload":
+            keep.extend(_upload_step(job))
             continue
+        remote = feed.job(job.get("job_id")) if feed is not None else None
+        if remote is None:
+            reading = _legacy_reading(job)
+            if reading is None:
+                keep.extend(_unreachable(job))
+                continue
+            status, stage, pct, detail, terminal = reading
+            elapsed = 0
+        else:
+            status = remote.get("status", "")
+            stage = remote.get("stage") or ""
+            pct = int(remote.get("progress_pct", 0) or 0)
+            detail = remote.get("detail")
+            terminal = bool(remote.get("terminal"))
+            elapsed = remote.get("duration_s") or 0
 
-        job["fail_count"] = 0
-        status = data.get("status", "")
-        stage = data.get("stage", "working")
-        pct = int(data.get("progress_pct", 0) or 0)
+        job["fingerprint"] = f"{status}|{stage}|{pct}"
+        if job.get("_fp") == job["fingerprint"]:
+            job["stalled_polls"] = int(job.get("stalled_polls", 0)) + 1
+        else:
+            job["_fp"] = job["fingerprint"]
+            job["stalled_polls"] = 0
 
         if status == "ready":
             st.progress(100)
-            st.success(data.get("detail") or f"{job.get('title')} — Done.")
-            client.invalidate_for_course(job.get("course_id"))
-            if on_ready is not None:
-                on_ready(job, lecture_id)
+            _record_ready(job, detail)
             continue
-        if status in ("error", "not_found"):
-            st.error(data.get("detail") or f"Job ended with status '{status}'.")
+        if status in ("error", "not_found", "cancelled", "orphaned"):
+            label = {"orphaned": "stopped by a server restart",
+                     "cancelled": "cancelled"}.get(status, status)
+            st.error(detail or f"Job ended with status '{label}'.")
             client.invalidate_for_course(job.get("course_id"))
             continue
 
-        # Stall detection: a job reporting an identical stage+pct every poll is
-        # not making progress.
-        fingerprint = f"{status}|{stage}|{pct}"
-        if job.get("fingerprint") == fingerprint:
-            job["stalled_polls"] = int(job.get("stalled_polls", 0)) + 1
-        else:
-            job["fingerprint"] = fingerprint
-            job["stalled_polls"] = 0
+        st.progress(min(pct, 100), text=detail or stage)
+        st.caption(_job_guidance(stage, elapsed))
+
         budget = (_MAX_STALLED_POLLS_SLOW if stage in _SLOW_STAGES
                   else _MAX_STALLED_POLLS)
-
-        if kind == "upload" and status == "uploaded":
-            st.progress(0, text="Upload starting…")
-            st.caption(job.get("title", "Upload"))
-            if job["stalled_polls"] >= budget:
-                st.warning("Upload is not starting — the backend never picked up "
-                           "the media. Delete the row and re-upload it.")
-                continue
-            keep.append(job)
-            want_rerun = True
-            backoff = min(backoff, 0.5)
-            continue
-
-        st.progress(min(pct, 100), text=data.get("detail") or stage)
-        st.caption(_job_guidance(stage, data.get("elapsed_s", 0)))
-
         if job["stalled_polls"] >= budget:
-            st.warning(f"Stalled on '{stage}' with no progress for a while — the "
-                       "job may have stopped. Reload the page to re-attach to it.")
+            st.warning(f"Stalled on '{stage}' with no progress for a while — "
+                       "the job may have stopped. Reload to re-attach.")
             continue
-        if time.monotonic() > float(job.get("deadline", 0)):
-            st.warning("Timed out waiting — the job still runs in the "
-                       "background; reload to re-attach.")
+        if _over_deadline(job):
             continue
-        keep.append(job)
-        want_rerun = True
-        backoff = min(backoff, 1.5 if stage in _LONG_STAGES else 0.5)
+        if not terminal:
+            keep.append(job)
+    return keep
 
-    state.set("jobs", items=keep + others)
-    if want_rerun:
-        _sleep(backoff)
-        _rerun()
+
+def _over_deadline(job):
+    """Backstop: drop a job that has been watched for an absurdly long time."""
+    if time.monotonic() <= float(job.get("deadline") or 0):
+        return False
+    st.warning("Timed out waiting — the job still runs in the background; "
+               "reload to re-attach.")
+    return True
+
+
+def _feed_for(items, feed=None):
+    """The feed to read, or None. Only started once a job has a durable row.
+
+    A job queued before the backend returned its id (the client-side upload
+    transfer, a pre-C3 backend) has nothing to look up, so no connection is
+    opened for it - the legacy per-lecture endpoint answers those.
+    """
+    if feed is not None:
+        return feed
+    if not any(j.get("job_id") is not None for j in items):
+        return None
+    try:
+        return jobfeed.job_feed()
+    except Exception:  # noqa: BLE001 - the UI must not break on the feed
+        return None
+
+
+def _legacy_reading(job):
+    """``(status, stage, pct, detail, terminal)`` from the per-lecture endpoint.
+
+    Returns None when the endpoint is unreachable; the caller counts the miss
+    and gives up after ``_MAX_POLL_FAILS``. A job that has a durable id but no
+    feed row yet lands here too, which is exactly the window between "the POST
+    returned" and "the stream connected" - it must not look like a dead worker.
+    """
+    data = client.get(f"/lectures/{job.get('lecture_id')}/progress")
+    if not data:
+        return None
+    status = data.get("status", "")
+    return (status, data.get("stage", "working"),
+            int(data.get("progress_pct", 0) or 0), data.get("detail"),
+            status in ("ready", "error", "not_found", "cancelled", "orphaned"))
+
+
+def _unreachable(job):
+    """Keep or drop a job whose progress endpoint cannot be read."""
+    job["fail_count"] = int(job.get("fail_count", 0)) + 1
+    if job["fail_count"] < _MAX_POLL_FAILS:
+        return [job]
+    st.warning(f"Job '{job.get('title', '')}' is queued but unreachable — "
+               "the worker may have stopped. Refresh to re-attach.")
+    return []
+
+
+def _upload_step(job):
+    """One tick of a client-side upload card; returns the jobs to keep.
+
+    The transfer runs in *this* process, so the card has no durable row to read
+    and its percentage comes from the per-lecture progress the PUT publishes.
+    The moment the transfer lands, ``PUT /lectures/{id}/media`` returns the
+    transcription job it enqueued, and the card becomes that job's card - which
+    is why the returned list carries the same dict, mutated.
+    """
+    lecture_id = job.get("lecture_id")
+    up_state, ok, err, job_id = _upload_status(lecture_id, "upload")
+    if up_state == "absent":
+        st.error(err or "Upload failed.")
+        client.invalidate_for_course(job.get("course_id"))
+        return []
+    if up_state == "done":
+        if not ok:
+            st.error(err or "Upload failed.")
+            client.invalidate_for_course(job.get("course_id"))
+            return []
+        job["kind"] = "transcribe"
+        job["job_id"] = job_id
+        job["_fp"] = None
+        job["stalled_polls"] = 0
+        return [job]
+
+    if st.button("Cancel upload", key=f"cancel_up_{lecture_id}"):
+        cancel_upload(lecture_id)
+
+    data = client.get(f"/lectures/{lecture_id}/progress") or {}
+    if data.get("status") != "uploaded":
+        # the backend already moved on (or knows nothing yet): the next tick
+        # renders the transcription card this is about to become
+        return [] if _over_deadline(job) else [job]
+
+    st.progress(int(data.get("progress_pct", 0) or 0),
+                text=data.get("detail") or "Uploading…")
+    st.caption(job.get("title", "Upload"))
+    job["stalled_polls"] = int(job.get("stalled_polls", 0)) + 1
+    if job["stalled_polls"] >= _MAX_STALLED_POLLS:
+        st.warning("Upload is not starting — the backend never picked up the "
+                   "media. Delete the row and re-upload it.")
+        return []
+    return [] if _over_deadline(job) else [job]
+
+
+def _record_ready(job, detail):
+    """Finish a job: invalidate its course and remember what to announce.
+
+    The announcement is *not* rendered here. A fragment re-executes every second,
+    so a success message rendered inside it would flash and vanish. It is
+    recorded in session state and rendered by the dashboard on the next full
+    pass (:func:`drain_ready`), which is also where a panel's ``on_ready``
+    follow-up belongs.
+    """
+    client.invalidate_for_course(job.get("course_id"))
+    pending = state.get("jobs", "completed", []) or []
+    pending.append({"lecture_id": job.get("lecture_id"),
+                    "course_id": job.get("course_id"),
+                    "title": job.get("title"),
+                    "after": job.get("after"),
+                    "detail": detail or f"{job.get('title')} — Done."})
+    state.set("jobs", completed=pending)
+    return pending
+
+
+def drain_ready(on_ready=None):
+    """Render (once) the jobs that finished since the last pass.
+
+    Called by a dashboard *outside* the fragment, so the "Done" line and the
+    panel's follow-up land in the page body and stay put until the reader does
+    something else.
+    """
+    pending = state.get("jobs", "completed", []) or []
+    if not pending:
+        return
+    state.set("jobs", completed=[])
+    for record in pending:
+        st.success(record.get("detail") or "Done.")
+        if on_ready is not None and record.get("after"):
+            on_ready({"after": record["after"]}, record.get("lecture_id"))
 
 
 # ----------------------------------------------------------------- snapshot

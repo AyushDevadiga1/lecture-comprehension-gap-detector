@@ -139,7 +139,8 @@ def render_stalled_rows(nav_course):
                 if resp:
                     shell.start_job(nav_course, lid,
                                     f"#{lid} — {lec.get('title')}",
-                                    kind="transcribe")
+                                    kind="transcribe",
+                                    job_id=resp.get("job_id"))
                     client.invalidate_for_course(nav_course)
                     st.success(f"Transcription queued for #{lid}.")
                 else:

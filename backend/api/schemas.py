@@ -33,6 +33,9 @@ class LectureOut(BaseModel):
     # transcription never started (resumable). Without this the frontend can
     # only show one alarming "not streamed yet" message for both.
     has_media: bool = False
+    # Durable job for the work this call queued (Engine 2 / C3), so the client
+    # can follow it over /jobs or the SSE stream instead of polling.
+    job_id: Optional[int] = None
 
 
 class LectureProgressOut(BaseModel):
@@ -133,6 +136,8 @@ class ClipBatchOut(BaseModel):
     lecture_id: int
     status: str
     clips: List[ClipOut] = []
+    # durable job for the queued cut (Engine 2 / C3)
+    job_id: Optional[int] = None
 
 
 class QuizQuestionOut(BaseModel):

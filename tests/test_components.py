@@ -136,16 +136,19 @@ def test_duplicate_lecture_detects_matching_stem_or_name(monkeypatch):
 def test_begin_upload_registers_job_and_resolves_ok(monkeypatch, sess):
     from frontend import client as client_mod
 
+    # the PUT enqueues the transcription job; its id is what the card follows
     monkeypatch.setattr(client_mod, "upload_media",
-                        lambda *a, **k: {"id": 3, "status": "uploaded"})
+                        lambda *a, **k: {"id": 3, "status": "uploaded",
+                                         "job_id": 77})
     assert components.begin_upload("ml", 3, "Upload + transcribe",
                                    "f.mp4", b"x" * 10) is True
     assert state.get("jobs", "items")[0]["kind"] == "upload"
 
     entry = components._UPLOADS[3]
     assert entry["done"].wait(2)
-    done, ok, err = components._upload_status(3, "upload")
+    done, ok, err, job_id = components._upload_status(3, "upload")
     assert done and ok and err is None
+    assert job_id == 77
     assert 3 not in components._UPLOADS  # registry cleaned after handling
 
 
@@ -158,8 +161,9 @@ def test_begin_upload_surfaces_failure_detail(monkeypatch, sess):
     components.begin_upload("ml", 4, "U", "f.mp4", b"x")
     entry = components._UPLOADS[4]
     assert entry["done"].wait(2)
-    done, ok, err = components._upload_status(4, "upload")
+    done, ok, err, job_id = components._upload_status(4, "upload")
     assert done and not ok and err == "too big"
+    assert job_id is None
 
 
 def test_cancel_upload_sets_the_stop_event(monkeypatch, sess):
