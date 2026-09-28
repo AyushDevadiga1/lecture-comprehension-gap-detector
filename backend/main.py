@@ -6,11 +6,13 @@ Run locally with:
 """
 
 import logging
+import os
 from pathlib import Path
 import secrets
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from backend import config
@@ -33,6 +35,26 @@ except Exception as _exc:  # noqa: BLE001 - never block startup on recovery
     logging.getLogger("lecgap.main").warning("orphan recovery failed: %s", _exc)
 
 app = FastAPI(title="LecGap API")
+
+# ------------------------------------------------------------------ CORS (C4)
+# The React dev server (Vite) runs on port 5173.  A browser will refuse all
+# API calls if the backend doesn't return the correct Access-Control-* headers.
+# In production, replace the allow-list with your actual origin(s) via the
+# LECGAP_CORS_ORIGINS env var (comma-separated, no trailing slash).
+_CORS_ORIGINS_DEFAULT = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
+_CORS_ORIGINS = [
+    o.strip()
+    for o in os.getenv("LECGAP_CORS_ORIGINS", _CORS_ORIGINS_DEFAULT).split(",")
+    if o.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Content-Range", "Accept-Ranges"],
+)
 
 
 @app.middleware("http")

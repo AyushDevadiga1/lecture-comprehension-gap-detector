@@ -56,4 +56,4 @@ def clips_by_concept(course_id: str) -> dict:
     out: dict = {}
     for clip in rows:
         out.setdefault(clip.concept_name, clip.path)
-    return out
+    return out

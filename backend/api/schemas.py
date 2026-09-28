@@ -3,9 +3,10 @@ the route module stays thin. Pure declarations; no imports from routes/jobs.
 """
 
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class SegmentOut(BaseModel):
@@ -124,12 +125,25 @@ class ClipOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    lecture_id: int = 0
     concept_name: str
     start_s: float
     end_s: float
+    # ``path`` kept for Streamlit engine backward compat.  Contract v2 (C4):
+    # React clients must use ``url`` — a filesystem path in a payload is a
+    # contract-test failure.
     path: str
+    url: Optional[str] = None  # /media/clips/{lecture_id}/{filename}
     ok: bool
     error: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _compute_url(self) -> "ClipOut":
+        """Derive the canonical media URL from the stored path."""
+        if self.url is None and self.path and self.lecture_id:
+            filename = Path(self.path).name
+            self.url = f"/media/clips/{self.lecture_id}/{filename}"
+        return self
 
 
 class ClipBatchOut(BaseModel):
@@ -209,7 +223,16 @@ class JobListOut(BaseModel):
 class WatchItemOut(BaseModel):
     concept: str
     failed: bool
+    # ``clip`` kept for Streamlit backward compat; React clients use ``clip_url``.
     clip: Optional[str] = None
+    clip_url: Optional[str] = None  # alias of clip, already a URL post C4
+
+    @model_validator(mode="after")
+    def _sync_clip_url(self) -> "WatchItemOut":
+        """Mirror clip -> clip_url so React clients never need to touch `clip`."""
+        if self.clip_url is None and self.clip is not None:
+            self.clip_url = self.clip
+        return self
 
 
 class QuestionFeedbackOut(BaseModel):

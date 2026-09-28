@@ -57,5 +57,11 @@ security-audit-skill
 
 # agent skills
 agent-skills
+improve-codebase-architecture-skill/
+
+# Local agent configs
+opencode.json
+
 # Security audit run artifacts (never commit)
 security-audits/
+
