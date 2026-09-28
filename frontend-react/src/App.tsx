@@ -7,9 +7,9 @@ import type { QueryClient } from '@tanstack/react-query'
 import { queryClient as defaultQueryClient } from './lib/queryClient'
 import { theme } from './theme/theme'
 import { AppLayout } from './components/layout/AppLayout'
-import { StudentDashboard } from './pages/StudentDashboard'
-import { FacultyDashboard } from './pages/FacultyDashboard'
-import { NotFound } from './pages/NotFound'
+import { StudentDashboard } from './features/student/StudentDashboard'
+import { FacultyDashboard } from './features/faculty/FacultyDashboard'
+import { NotFound } from './components/common/NotFound'
 
 interface AppProps {
   /** Injectable so a test can pass an isolated cache; the app uses the singleton. */

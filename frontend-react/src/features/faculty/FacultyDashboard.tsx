@@ -22,10 +22,10 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { courses as coursesApi } from '../api/courses'
-import { useAppStore } from '../store/useAppStore'
-import { LoadingScreen } from '../components/common/LoadingScreen'
-import { ErrorAlert } from '../components/common/ErrorAlert'
+import { courses as coursesApi } from '../../api/courses'
+import { useAppStore } from '../../store/useAppStore'
+import { LoadingScreen } from '../../components/common/LoadingScreen'
+import { ErrorAlert } from '../../components/common/ErrorAlert'
 
 export const FacultyDashboard: React.FC = () => {
   const queryClient = useQueryClient()
