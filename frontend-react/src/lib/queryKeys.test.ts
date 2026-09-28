@@ -102,3 +102,35 @@ describe('invalidateCourse', () => {
     expect(invalidatedKeys(qc)).toEqual([])
   })
 })
+
+/**
+ * §3: "a panel never hand-rolls an invalidation list". Four had already drifted
+ * apart and none cleared `['courses']`, so this is enforced by inspection rather
+ * than left to review.
+ */
+describe('no panel hand-rolls an invalidation list', () => {
+  const sources = import.meta.glob('../{features,components}/**/*.{ts,tsx}', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>
+
+  it('finds components to check', () => {
+    expect(Object.keys(sources).length).toBeGreaterThan(0)
+  })
+
+  for (const [file, src] of Object.entries(sources)) {
+    if (file.includes('.test.')) continue
+
+    it(`${file} invalidates through the one rule`, () => {
+      // The only permitted call is inside invalidateCourse itself.
+      const stray = src.match(/invalidateQueries\s*\(/g) ?? []
+      expect(stray, `${file} calls invalidateQueries directly`).toHaveLength(0)
+    })
+
+    it(`${file} builds keys through the factory`, () => {
+      const literal = src.match(/queryKey:\s*\[\s*['"]/g) ?? []
+      expect(literal, `${file} writes a literal query key`).toHaveLength(0)
+    })
+  }
+})

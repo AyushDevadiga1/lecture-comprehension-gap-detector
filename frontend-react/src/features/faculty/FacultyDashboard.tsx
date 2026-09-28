@@ -26,6 +26,7 @@ import { courses as coursesApi } from '../../api/courses'
 import { useAppStore } from '../../store/useAppStore'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
+import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
 
 export const FacultyDashboard: React.FC = () => {
   const queryClient = useQueryClient()
@@ -37,7 +38,7 @@ export const FacultyDashboard: React.FC = () => {
     isLoading: isLoadingGraph,
     error: graphError,
   } = useQuery({
-    queryKey: ['graph', selectedCourseId],
+    queryKey: queryKeys.graph(selectedCourseId ?? ''),
     queryFn: () => (selectedCourseId ? coursesApi.graph(selectedCourseId) : null),
     enabled: !!selectedCourseId,
   })
@@ -48,7 +49,7 @@ export const FacultyDashboard: React.FC = () => {
     isLoading: isLoadingStats,
     error: statsError,
   } = useQuery({
-    queryKey: ['stats', selectedCourseId],
+    queryKey: queryKeys.stats(selectedCourseId ?? ''),
     queryFn: () => (selectedCourseId ? coursesApi.stats(selectedCourseId) : null),
     enabled: !!selectedCourseId,
   })
@@ -60,10 +61,7 @@ export const FacultyDashboard: React.FC = () => {
       return coursesApi.buildGraph(selectedCourseId)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['graph', selectedCourseId] })
-      queryClient.invalidateQueries({ queryKey: ['stats', selectedCourseId] })
-      queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
-      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
     },
   })
 

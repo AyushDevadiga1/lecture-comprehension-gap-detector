@@ -30,6 +30,7 @@ import { courses as coursesApi } from '../../api/courses'
 import { lectures as lecturesApi } from '../../api/lectures'
 import { quizzes as quizzesApi } from '../../api/quizzes'
 import { errorMessage } from '../../api/client'
+import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
 import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
@@ -66,7 +67,7 @@ export const StudentDashboard: React.FC = () => {
     data: snapshot,
     error: snapshotError,
   } = useQuery({
-    queryKey: ['snapshot', selectedCourseId],
+    queryKey: queryKeys.snapshot(selectedCourseId ?? ''),
     queryFn: () => (selectedCourseId ? coursesApi.snapshot(selectedCourseId) : null),
     enabled: !!selectedCourseId,
   })
@@ -76,9 +77,8 @@ export const StudentDashboard: React.FC = () => {
     data: lectureList = [],
     isLoading: isLoadingLectures,
     error: lecturesError,
-    refetch: refetchLectures,
   } = useQuery({
-    queryKey: ['lectures', selectedCourseId],
+    queryKey: queryKeys.lectures(selectedCourseId ?? ''),
     queryFn: () => (selectedCourseId ? lecturesApi.list(selectedCourseId) : []),
     enabled: !!selectedCourseId,
   })
@@ -116,8 +116,8 @@ export const StudentDashboard: React.FC = () => {
     onSuccess: (data) => {
       setQuizResult(data)
       setActiveQuiz(null)
-      queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
-      queryClient.invalidateQueries({ queryKey: ['stats', selectedCourseId] })
+      // A graded submit changes the heatmap and the respondent count.
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
     },
     onError: (err: unknown) => {
       setQuizError(errorMessage(err, 'Failed to submit quiz'))
@@ -149,9 +149,7 @@ export const StudentDashboard: React.FC = () => {
       setUploadTitle('')
       setSelectedFile(null)
       setUploadProgress(null)
-      refetchLectures()
-      queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
-      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      invalidateCourse(queryClient, selectedCourseId)
     } catch (err: unknown) {
       setUploadError(errorMessage(err, 'Upload failed'))
       setUploadProgress(null)
@@ -162,8 +160,7 @@ export const StudentDashboard: React.FC = () => {
     setRowError(null)
     try {
       await lecturesApi.extractConcepts(lectureId)
-      refetchLectures()
-      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
     } catch (err: unknown) {
       setRowError(errorMessage(err, 'Could not start concept extraction'))
     }
@@ -173,8 +170,7 @@ export const StudentDashboard: React.FC = () => {
     setRowError(null)
     try {
       await lecturesApi.cutClips(lectureId)
-      refetchLectures()
-      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
     } catch (err: unknown) {
       setRowError(errorMessage(err, 'Could not start clip cutting'))
     }
