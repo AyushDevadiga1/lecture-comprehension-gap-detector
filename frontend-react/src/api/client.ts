@@ -41,9 +41,23 @@ export function errorMessage(err: unknown, fallback: string): string {
 
 function headers(extra?: HeadersInit): Headers {
   const h = new Headers(extra)
-  h.set('Accept', 'application/json')
+  if (!h.has('Accept')) h.set('Accept', 'application/json')
   if (API_KEY) h.set('X-API-Key', API_KEY)
   return h
+}
+
+/**
+ * Auth headers for an out-of-band request that does not go through the JSON
+ * verbs — currently only the `/jobs/stream` SSE feed, which needs a streaming
+ * `fetch` rather than `get()`.
+ *
+ * This exists because the key must be injected in exactly one place (§6). Note
+ * why the feed cannot use `EventSource`: that constructor has no header API at
+ * all, so a key-guarded backend 401s the stream and the feed dies silently for
+ * the life of the tab.
+ */
+export function streamHeaders(): Headers {
+  return headers({ Accept: 'text/event-stream' })
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {

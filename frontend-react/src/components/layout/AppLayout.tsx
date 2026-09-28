@@ -4,7 +4,7 @@ import { Box, Container } from '@mui/material'
 import { Navbar } from './Navbar'
 import { JobDrawer } from '../common/JobDrawer'
 import { useAppStore } from '../../store/useAppStore'
-import { useJobFeed } from '../../lib/jobFeed'
+import { useJobFeed } from '../../lib/useJobFeed'
 
 export const AppLayout: React.FC = () => {
   const { selectedCourseId } = useAppStore()
