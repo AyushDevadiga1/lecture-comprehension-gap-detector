@@ -361,6 +361,43 @@ def _create_quiz(course_id: str, student_id: str,
     )
 
 
+@router.get("/quizzes", response_model=QuizOut)
+def get_quiz(
+    course_id: str = Query(..., max_length=128, pattern=r"^[\w\-]+$"),
+    student_id: str = Query(..., max_length=128, pattern=r"^[\w\-@.]+$"),
+) -> QuizOut:
+    """Return the quiz already generated for this course. Read-only.
+
+    ``POST /quizzes/jobs`` queues generation and hands back a job id, and the
+    SSE stream tells the client when it is done — but there was no way to then
+    *fetch* the questions it wrote. The only read was ``POST /quizzes``, which
+    regenerates, so an interface that had adopted the non-blocking endpoint
+    could not use it without either re-blocking or rebuilding the questions.
+
+    Generation already preserves answered questions (``_create_quiz`` deletes
+    only ``ConceptItem`` rows with no ``QuizResponse``), so this read is safe to
+    poll and a student can reload mid-quiz without losing anything.
+    """
+    with SessionLocal() as db:
+        rows = (
+            db.query(ConceptItem)
+            .filter(ConceptItem.course_id == course_id)
+            .order_by(ConceptItem.order, ConceptItem.id)
+            .all()
+        )
+        if not rows:
+            raise HTTPException(
+                status_code=404,
+                detail="No quiz has been generated for this course yet.",
+            )
+        return QuizOut(
+            quiz_id=rows[0].id,
+            course_id=course_id,
+            student_id=student_id,
+            questions=[queries.question_out(r) for r in rows],
+        )
+
+
 @router.post("/quizzes/submit", response_model=QuizSubmitOut)
 def submit_quiz(payload: QuizSubmitIn) -> QuizSubmitOut:
     """Record a student's answers and return their remediation sequence.

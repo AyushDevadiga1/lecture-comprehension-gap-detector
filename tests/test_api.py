@@ -699,6 +699,61 @@ def test_create_quiz_and_submit_returns_remediation(api, monkeypatch):
     assert by_fb["B"]["correct"] is False
 
 
+def test_get_quiz_returns_generated_questions_without_regenerating(api, monkeypatch):
+    """GET /quizzes is the read half of POST /quizzes/jobs.
+
+    The async endpoint queues generation and returns a job id, but there was no
+    way to then fetch what it wrote without regenerating. This asserts the read
+    is cheap (no generation calls) and that a student's answers survive it.
+    """
+    client, Session = api
+    monkeypatch.setattr(jobs_graph, "ConceptGraph", DummyGraph)
+    lid = _add_lecture(Session, course_id="mlq", status="ready")
+    with Session() as s:
+        s.add(models.Concept(course_id="mlq", lecture_id=lid, name="A",
+                             source="spoken", start_s=0.0, end_s=1.0))
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.2,
+                                       end_s=0.8, text="the A concept is alpha"))
+        s.commit()
+
+    assert client.get("/quizzes", params={"course_id": "mlq", "student_id": "s1"}).status_code == 404
+
+    created = client.post("/quizzes", json={"course_id": "mlq", "student_id": "s1"})
+    assert created.status_code == 201
+    qid = created.json()["questions"][0]["id"]
+
+    def _boom(*_a, **_k):
+        raise AssertionError("GET /quizzes must not regenerate")
+
+    monkeypatch.setattr(quizzes, "generate_mcq", _boom)
+    monkeypatch.setattr(quizzes, "make_mcq", _boom)
+
+    read = client.get("/quizzes", params={"course_id": "mlq", "student_id": "s1"})
+    assert read.status_code == 200
+    body = read.json()
+    assert body["course_id"] == "mlq" and body["student_id"] == "s1"
+    assert [q["concept"] for q in body["questions"]] == ["A"]
+    assert "the A concept is alpha" in body["questions"][0]["options"]
+    # The answer key is never serialised (SECURITY_AUDIT: answer-key leak).
+    assert "answer" not in body["questions"][0]
+
+    # Reading again after answering must not drop the answered question.
+    submit = client.post("/quizzes/submit", json={
+        "course_id": "mlq", "student_id": "s1",
+        "answers": [{"question_id": qid, "selected": "the A concept is alpha"}],
+    })
+    assert submit.status_code == 200
+    again = client.get("/quizzes", params={"course_id": "mlq", "student_id": "s1"})
+    assert again.status_code == 200
+    assert [q["id"] for q in again.json()["questions"]] == [qid]
+
+
+def test_get_quiz_rejects_a_malformed_course_id(api):
+    client, _ = api
+    assert client.get("/quizzes", params={"course_id": "a b", "student_id": "s1"}).status_code == 422
+    assert client.get("/quizzes", params={"course_id": "ml"}).status_code == 422
+
+
 def test_create_quiz_dedupes_shared_evidence(api, monkeypatch):
     client, Session = api
     monkeypatch.setattr(jobs_graph, "ConceptGraph", DummyGraph)

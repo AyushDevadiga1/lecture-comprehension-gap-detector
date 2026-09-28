@@ -36,6 +36,7 @@
 | `GET /lectures/{id}` | path int | `LectureDetailOut` (segments+concepts) | 404 `"Lecture not found"`; 422 |
 | `GET /lectures/{id}/progress` | path int | `LectureProgressOut` — **always 200** for valid id; "not found" is a *status field*, not HTTP | 422 |
 | `GET /lectures/{id}/clips` | path int | `ClipBatchOut` (status `"ready"`) | 404; 422 |
+| `GET /quizzes?course_id=&student_id=` | course `^[\w\-]+$`≤128, student `^[\w\-@.]+$`≤128 | `QuizOut` — the questions already generated for the course, in learner order, options shuffled, answer never included. **Does not regenerate.** 404 `"No quiz has been generated for this course yet."` | 404; 422 |
 | `GET /courses/{id}/graph` | `id` matches `[\w\-]{1,128}` | `CourseGraphOut` | 404 `"No graph for this course"`; 422 |
 | `GET /courses/{id}/stats` | `id` regex above | dict: `course_id`, `heatmap[]`, `divergence[]`, `taught_order[]`, `learned_order[]` | 422 (never 404) |
 | `GET /courses/{id}/snapshot` | `id` regex above | dict: `exists`, `lectures{total,ready,uploaded,transcribing,error}`, `concepts`, `graph{has,nodes,edges}`, `clips{cut,ok}`, `quiz{questions,respondents}`, `in_flight[{lecture_id,title,status,stage,progress_pct}]` — derived readiness; the frontend's 5s consistency layer | 422 (never 404) |
@@ -62,7 +63,8 @@ honestly.
 | `POST /lectures/{id}/concepts` | — | `LectureDetailOut`; extraction+graph run in background | 404; **409** `must be 'ready' before extraction`; 422 |
 | `POST /courses/{id}/graph?lecture_id=` | optional `lecture_id` int (attaches progress) | **202** `CourseBuildOut` (`status:"queued"`) | 422 (no 404 — worker no-ops on empty course) |
 | `POST /lectures/{id}/clips` | — | **202** `ClipBatchOut` (`status:"queued"`) | 404; **409** `must be 'ready' to cut clips`; **409** no concepts yet; 422 |
-| `POST /quizzes` | `{course_id, student_id}` (both `[\w\-@.]`≤128, course `[\w\-]`) | **201** `QuizOut` (shuffled options, answer never included); **blocking, can take minutes, and deletes+recreates the course's question rows** | 404 `"No concepts for course"`; 422 |
+| `POST /quizzes` | `{course_id, student_id, max_questions?}` (both `[\w\-@.]`≤128, course `[\w\-]`; `max_questions` 1–200) | **201** `QuizOut` (shuffled options, answer never included); **blocking, can take minutes, and deletes+recreates the course's question rows** | 404 `"No concepts for course"`; **409** course already generating; 422 |
+| `POST /quizzes/jobs` | same body | **202** `JobAcceptedOut` (`job_id`, `status:"queued"`). **This is the endpoint a UI uses**; read the result with `GET /quizzes` once the job is `ready`. | 404 `"No concepts for course"`; 409; 422 |
 | `POST /quizzes/submit` | `{course_id, student_id, answers:[{question_id, selected?, latency_s?}]}` | `QuizSubmitOut` (graded server-side; answer/correct fields ignored if sent) | 404 `"Question {id} not found"`; **400** cross-course answer; 422 |
 | `DELETE /courses/{id}` | — | `CourseDeleteOut` (removes rows+media+clips) | 404; 422 |
 | `DELETE /lectures/{id}` | — | `LectureDeleteOut` (cascades + media) | 404; 422 |
@@ -122,8 +124,11 @@ QuestionFeedback  question_id, concept, correct, selected?, answer?,
 1. Jobs are `BackgroundTasks`, progress in RAM, keyed by `lecture_id` — one slot
    per lecture; a restart orphans jobs (Engine-2 precondition R1 fixes).
 2. Duplicate uploads are not deduped; every `POST /lectures` creates a new row.
-3. `POST /quizzes` is destructive and blocking (see §2) — concurrent generation
-   races question ids (Engine-2 precondition R4).
+3. `POST /quizzes` is destructive and blocking (see §2) — a UI must use
+   `POST /quizzes/jobs` (202 + `job_id`) and then read the questions with
+   `GET /quizzes`, so the wait happens in a job the client can watch. Concurrent
+   generation for one course is refused with **409** rather than queued
+   (Engine-2 precondition R4). `POST /quizzes` remains for API and smoke tests.
 4. Concurrent graph builds for one course are last-committer-wins (self-healing
    via cache signature), so transiently a shorter graph may be served.
 5. `POST /courses/{id}/graph` without `lecture_id` publishes no progress. The

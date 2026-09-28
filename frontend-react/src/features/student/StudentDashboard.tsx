@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Box,
   Typography,
@@ -31,12 +31,20 @@ import { lectures as lecturesApi } from '../../api/lectures'
 import { quizzes as quizzesApi } from '../../api/quizzes'
 import { errorMessage } from '../../api/client'
 import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
+import {
+  capViolation,
+  generationError,
+  latencySince,
+  quizMaxQuestions,
+  submitError,
+} from '../../lib/quiz'
+import { useJobList } from '../../lib/useJobFeed'
+import { useQuizStore, draftForCourse } from '../../store/useQuizStore'
 import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
 import { resolveClipUrl } from '../../lib/media'
-import type { QuizOut, QuizSubmitOut } from '../../api/types'
 
 
 export const StudentDashboard: React.FC = () => {
@@ -50,10 +58,19 @@ export const StudentDashboard: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Quiz state
-  const [activeQuiz, setActiveQuiz] = useState<QuizOut | null>(null)
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({})
-  const [quizResult, setQuizResult] = useState<QuizSubmitOut | null>(null)
+  // Quiz state lives in the draft store (§2): the selections are the user's,
+  // the questions are re-readable from the server.
+  const draft = useQuizStore((s) => draftForCourse(s, selectedCourseId))
+  const quizResult = useQuizStore((s) => s.result)
+  const startQuiz = useQuizStore((s) => s.start)
+  const finishQuiz = useQuizStore((s) => s.finish)
+  const clearQuiz = useQuizStore((s) => s.clear)
+  const resetQuiz = useQuizStore((s) => s.reset)
+  const selectAnswer = useQuizStore((s) => s.select)
   const [quizError, setQuizError] = useState<string | null>(null)
+  const [quizWarning, setQuizWarning] = useState<string | null>(null)
+  /** The id of the quiz job we started, so we can watch it for completion. */
+  const quizJobIdRef = useRef<number | null>(null)
 
   // Per-lecture row action errors (extract concepts / cut clips)
   const [rowError, setRowError] = useState<string | null>(null)
@@ -87,25 +104,53 @@ export const StudentDashboard: React.FC = () => {
   const generateQuizMutation = useMutation({
     mutationFn: async () => {
       if (!selectedCourseId) throw new Error('No course selected')
+      const cap = quizMaxQuestions()
+      // Queues the work and returns a job id. The blocking POST /quizzes was
+      // the endpoint that froze the page; the drawer shows this instead.
+      const accepted = await quizzesApi.createJob(selectedCourseId, studentId, cap)
       setQuizError(null)
-      setQuizResult(null)
-      return quizzesApi.create(selectedCourseId, studentId)
-    },
-    onSuccess: (data) => {
-      setActiveQuiz(data)
-      setQuizAnswers({})
+      quizJobIdRef.current = accepted.job_id
+      return accepted
     },
     onError: (err: unknown) => {
-      setQuizError(errorMessage(err, 'Failed to generate quiz'))
+      setQuizError(generationError(err))
+    },
+  })
+
+  /**
+   * Fetch the generated quiz once its job is done. Reading `GET /quizzes` is
+   * cheap — no generation calls — so this also serves as "resume the quiz I was
+   * already taking" on reload.
+   */
+  const loadQuizMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedCourseId) throw new Error('No course selected')
+      const quiz = await quizzesApi.current(selectedCourseId, studentId)
+      const cap = quizMaxQuestions()
+      const stale = capViolation(quiz.questions.length, cap)
+      if (stale) setQuizWarning(stale)
+      startQuiz({
+        quiz,
+        courseId: selectedCourseId,
+        studentId,
+        answers: {},
+        renderedAt: Date.now(),
+      })
+      return quiz
+    },
+    onError: (err: unknown) => {
+      setQuizError(generationError(err, 'Could not load the quiz for this course.'))
     },
   })
 
   const submitQuizMutation = useMutation({
     mutationFn: async () => {
-      if (!activeQuiz || !selectedCourseId) throw new Error('No active quiz')
-      const answers = Object.entries(quizAnswers).map(([qid, sel]) => ({
+      if (!draft || !selectedCourseId) throw new Error('No active quiz')
+      const answers = Object.entries(draft.answers).map(([qid, sel]) => ({
         question_id: Number(qid),
         selected: sel,
+        // Stamped on every answer, as panels/quiz.py:118-122 does.
+        latency_s: latencySince(draft.renderedAt, Object.keys(draft.answers).length),
       }))
       return quizzesApi.submit({
         course_id: selectedCourseId,
@@ -114,15 +159,45 @@ export const StudentDashboard: React.FC = () => {
       })
     },
     onSuccess: (data) => {
-      setQuizResult(data)
-      setActiveQuiz(null)
-      // A graded submit changes the heatmap and the respondent count.
-      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
+      // One-shot: a stale id set must not be resubmittable.
+      finishQuiz(data)
     },
     onError: (err: unknown) => {
-      setQuizError(errorMessage(err, 'Failed to submit quiz'))
+      setQuizError(submitError(err))
     },
   })
+
+  /**
+   * Fetch the quiz once the job we queued finishes.
+   *
+   * This is the "start a lecture job mid-quiz, finish the quiz, nothing was
+   * regenerated or lost" property from REACT_ARCHITECTURE §6, and it holds for
+   * free: the draft is UI state, and a job completing only invalidates the
+   * graph/lecture keys. The Streamlit engine needed a dedicated `completed`
+   * record and a `drain_ready` to get this right.
+   */
+  const jobs = useJobList(selectedCourseId)
+  useEffect(() => {
+    const id = quizJobIdRef.current
+    if (id === null) return
+    const job = jobs.find((j) => j.id === id)
+    if (!job) return
+    if (job.status === 'ready') {
+      quizJobIdRef.current = null
+      void loadQuizMutation.mutate()
+    } else if (job.status === 'error' || job.status === 'cancelled') {
+      quizJobIdRef.current = null
+      setQuizError(job.error || 'Quiz generation failed.')
+    }
+  }, [jobs, loadQuizMutation])
+
+  // A course change invalidates the draft: panels/quiz.py:99-103.
+  useEffect(() => {
+    quizJobIdRef.current = null
+    setQuizError(null)
+    setQuizWarning(null)
+    clearQuiz()
+  }, [selectedCourseId, clearQuiz])
 
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -335,32 +410,38 @@ export const StudentDashboard: React.FC = () => {
                     Comprehension Quiz &amp; Gap Detection
                   </Typography>
                 </Box>
-                {!activeQuiz && !quizResult && (
+                {!draft && !quizResult && (
                   <Button
                     variant="contained"
                     color="secondary"
                     onClick={() => generateQuizMutation.mutate()}
                     disabled={generateQuizMutation.isPending}
                   >
-                    {generateQuizMutation.isPending ? 'Generating Questions...' : 'Start Quiz'}
+                    {generateQuizMutation.isPending ? 'Queueing...' : 'Start Quiz'}
                   </Button>
                 )}
               </Box>
 
+              {/* The cap is visible before generation, not discovered after. */}
+              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+                Up to {quizMaxQuestions()} questions, drawn evenly from across the course's concepts.
+              </Typography>
+
               {quizError && <ErrorAlert error={quizError} title="Quiz Error" />}
+              {quizWarning && <ErrorAlert error={quizWarning} title="Quiz cap not applied" />}
 
               {generateQuizMutation.isPending && (
-                <LoadingScreen message="LLM is analyzing lecture passages and synthesizing diagnostic questions..." />
+                <LoadingScreen message="Queueing quiz generation. The job appears in Background Tasks and the quiz opens itself when it is ready." />
               )}
 
               {/* Active Quiz Form */}
-              {activeQuiz && (
+              {draft && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Alert severity="info">
                     Answer the diagnostic questions below. Incorrect answers will trace prerequisites backwards along the DAG to form your personalised remediation plan.
                   </Alert>
 
-                  {activeQuiz.questions.map((q, idx) => (
+                  {draft.quiz.questions.map((q, idx) => (
                     <Box
                       key={q.id}
                       sx={{
@@ -379,17 +460,19 @@ export const StudentDashboard: React.FC = () => {
 
                       <FormControl component="fieldset">
                         <RadioGroup
-                          value={quizAnswers[q.id] || ''}
-                          onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                          value={draft.answers[q.id] || ''}
+                          onChange={(e) => selectAnswer(q.id, e.target.value)}
                         >
-                          {q.options.map((opt, optIdx) => (
-                            <FormControlLabel
-                              key={optIdx}
-                              value={opt}
-                              control={<Radio size="small" />}
-                              label={<Typography variant="body2">{opt}</Typography>}
-                            />
-                          ))}
+                          {(q.options?.length ? q.options : ['correct', 'incorrect', 'wrong']).map(
+                            (opt, optIdx) => (
+                              <FormControlLabel
+                                key={optIdx}
+                                value={opt}
+                                control={<Radio size="small" />}
+                                label={<Typography variant="body2">{opt}</Typography>}
+                              />
+                            ),
+                          )}
                         </RadioGroup>
                       </FormControl>
                     </Box>
@@ -400,7 +483,7 @@ export const StudentDashboard: React.FC = () => {
                     color="primary"
                     size="large"
                     onClick={() => submitQuizMutation.mutate()}
-                    disabled={submitQuizMutation.isPending || Object.keys(quizAnswers).length === 0}
+                    disabled={submitQuizMutation.isPending || Object.keys(draft.answers).length === 0}
                   >
                     {submitQuizMutation.isPending ? 'Grading...' : 'Submit Answers'}
                   </Button>
@@ -420,7 +503,10 @@ export const StudentDashboard: React.FC = () => {
                   >
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
                       Score: {quizResult.score} / {quizResult.total} (
-                      {Math.round((quizResult.score / quizResult.total) * 100)}%)
+                      {quizResult.total > 0
+                        ? Math.round((quizResult.score / quizResult.total) * 100)
+                        : 0}
+                      %)
                     </Typography>
                     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
                       Student: {quizResult.student_id} &bull; Quiz ID: #{quizResult.quiz_id}
@@ -514,6 +600,16 @@ export const StudentDashboard: React.FC = () => {
                             {f.concept}: {f.correct ? 'Correct' : 'Missed'}
                           </Typography>
                         </Box>
+                        {!f.correct && f.answer && (
+                          <Typography variant="body2" sx={{ fontSize: '0.85rem', mb: 0.5 }}>
+                            <strong>Correct answer: {f.answer}</strong>
+                          </Typography>
+                        )}
+                        {!f.correct && f.rationale && (
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                            Why your pick was wrong: {f.rationale}
+                          </Typography>
+                        )}
                         {f.explanation && (
                           <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
                             {f.explanation}
@@ -523,7 +619,7 @@ export const StudentDashboard: React.FC = () => {
                     ))}
                   </Box>
 
-                  <Button variant="outlined" onClick={() => setQuizResult(null)}>
+                  <Button variant="outlined" onClick={() => resetQuiz()}>
                     Done / Retake Later
                   </Button>
                 </Box>
