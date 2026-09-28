@@ -1,0 +1,648 @@
+import React, { useState } from 'react'
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  TextField,
+  LinearProgress,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  Alert,
+} from '@mui/material'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import QuizIcon from '@mui/icons-material/Quiz'
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CancelIcon from '@mui/icons-material/Cancel'
+import VideoLibraryIcon from '@mui/icons-material/VideoLibrary'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { courses as coursesApi } from '../api/courses'
+import { lectures as lecturesApi } from '../api/lectures'
+import { quizzes as quizzesApi } from '../api/quizzes'
+import { useAppStore } from '../store/useAppStore'
+import { StatusBadge } from '../components/common/StatusBadge'
+import { LoadingScreen } from '../components/common/LoadingScreen'
+import { ErrorAlert } from '../components/common/ErrorAlert'
+import { resolveClipUrl } from '../lib/media'
+import type { QuizOut, QuizSubmitOut } from '../api/types'
+
+
+export const StudentDashboard: React.FC = () => {
+  const queryClient = useQueryClient()
+  const { selectedCourseId, studentId, setStudentId } = useAppStore()
+
+  // Upload state
+  const [uploadTitle, setUploadTitle] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
+  // Quiz state
+  const [activeQuiz, setActiveQuiz] = useState<QuizOut | null>(null)
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({})
+  const [quizResult, setQuizResult] = useState<QuizSubmitOut | null>(null)
+  const [quizError, setQuizError] = useState<string | null>(null)
+
+  // Remediation playback state
+  const [playingClipUrl, setPlayingClipUrl] = useState<string | null>(null)
+
+  // Load course snapshot & lectures
+  const {
+    data: snapshot,
+    error: snapshotError,
+  } = useQuery({
+    queryKey: ['snapshot', selectedCourseId],
+    queryFn: () => (selectedCourseId ? coursesApi.snapshot(selectedCourseId) : null),
+    enabled: !!selectedCourseId,
+  })
+
+
+  const {
+    data: lectureList = [],
+    isLoading: isLoadingLectures,
+    error: lecturesError,
+    refetch: refetchLectures,
+  } = useQuery({
+    queryKey: ['lectures', selectedCourseId],
+    queryFn: () => (selectedCourseId ? lecturesApi.list(selectedCourseId) : []),
+    enabled: !!selectedCourseId,
+  })
+
+  // Mutations
+  const generateQuizMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedCourseId) throw new Error('No course selected')
+      setQuizError(null)
+      setQuizResult(null)
+      return quizzesApi.create(selectedCourseId, studentId)
+    },
+    onSuccess: (data) => {
+      setActiveQuiz(data)
+      setQuizAnswers({})
+    },
+    onError: (err: any) => {
+      setQuizError(err.message || 'Failed to generate quiz')
+    },
+  })
+
+  const submitQuizMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeQuiz || !selectedCourseId) throw new Error('No active quiz')
+      const answers = Object.entries(quizAnswers).map(([qid, sel]) => ({
+        question_id: Number(qid),
+        selected: sel,
+      }))
+      return quizzesApi.submit({
+        course_id: selectedCourseId,
+        student_id: studentId,
+        answers,
+      })
+    },
+    onSuccess: (data) => {
+      setQuizResult(data)
+      setActiveQuiz(null)
+      queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
+      queryClient.invalidateQueries({ queryKey: ['stats', selectedCourseId] })
+    },
+    onError: (err: any) => {
+      setQuizError(err.message || 'Failed to submit quiz')
+    },
+  })
+
+  const handleFileUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedCourseId || !selectedFile || !uploadTitle.trim()) return
+
+    setUploadError(null)
+    setUploadProgress(0)
+
+    try {
+      // Step 1: Create lecture row
+      const lecture = await lecturesApi.create({
+        course_id: selectedCourseId,
+        title: uploadTitle.trim(),
+      })
+
+      // Step 2: Stream media PUT with real XHR progress
+      await lecturesApi.uploadMedia(
+        lecture.id,
+        selectedFile,
+        (pct) => setUploadProgress(pct),
+      )
+
+      // Reset form
+      setUploadTitle('')
+      setSelectedFile(null)
+      setUploadProgress(null)
+      refetchLectures()
+      queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+    } catch (err: any) {
+      setUploadError(err.message || 'Upload failed')
+      setUploadProgress(null)
+    }
+  }
+
+  const handleTriggerConcepts = async (lectureId: number) => {
+    try {
+      await lecturesApi.extractConcepts(lectureId)
+      refetchLectures()
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+    } catch (err: any) {
+      alert(err.message)
+    }
+  }
+
+  const handleTriggerClips = async (lectureId: number) => {
+    try {
+      await lecturesApi.cutClips(lectureId)
+      refetchLectures()
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+    } catch (err: any) {
+      alert(err.message)
+    }
+  }
+
+  if (!selectedCourseId) {
+    return (
+      <Alert severity="info" sx={{ mt: 4 }}>
+        Please select a course from the header to view student materials.
+      </Alert>
+    )
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Header and Snapshot Overview */}
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 800 }}>
+              Student Portal: {selectedCourseId.toUpperCase()}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+              Upload lectures, take adaptive comprehension checks, and stream prerequisite remediation clips.
+            </Typography>
+          </Box>
+
+          <TextField
+            size="small"
+            label="Student ID"
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            sx={{ width: 180 }}
+          />
+        </Box>
+
+        {snapshotError && <ErrorAlert error={snapshotError} title="Failed to load course snapshot" />}
+
+        {snapshot && (
+          <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ p: 1.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Total Lectures
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+                  {snapshot.lectures.total} ({snapshot.lectures.ready} ready)
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ p: 1.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Extracted Concepts
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+                  {snapshot.concepts}
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ p: 1.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Prerequisite Graph
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: snapshot.graph.has ? '#10b981' : '#f59e0b' }}>
+                  {snapshot.graph.has ? `${snapshot.graph.edges} Edges` : 'Not Built'}
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ p: 1.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Video Clips Cut
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+                  {snapshot.clips.ok} / {snapshot.clips.cut} OK
+                </Typography>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+      </Box>
+
+      {/* Main Grid: Upload & Quiz */}
+      <Grid container spacing={3}>
+        {/* Upload Lecture Card */}
+        <Grid item xs={12} md={5}>
+          <Card>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                <CloudUploadIcon sx={{ color: 'primary.light' }} />
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Upload Lecture
+                </Typography>
+              </Box>
+
+              <form onSubmit={handleFileUpload}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    label="Lecture Title"
+                    placeholder="e.g. Lecture 1 — Introduction to Vectors"
+                    value={uploadTitle}
+                    onChange={(e) => setUploadTitle(e.target.value)}
+                    size="small"
+                    required
+                    fullWidth
+                  />
+
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    sx={{
+                      p: 1.5,
+                      borderStyle: 'dashed',
+                      borderColor: selectedFile ? '#6366f1' : 'rgba(255,255,255,0.2)',
+                    }}
+                  >
+                    {selectedFile ? selectedFile.name : 'Select Video / Audio File (.mp4, .mp3, .wav)'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="video/*,audio/*"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    />
+                  </Button>
+
+                  {uploadProgress !== null && (
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="caption">Uploading media stream...</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>{uploadProgress}%</Typography>
+                      </Box>
+                      <LinearProgress variant="determinate" value={uploadProgress} sx={{ height: 6, borderRadius: 3 }} />
+                    </Box>
+                  )}
+
+                  {uploadError && <ErrorAlert error={uploadError} title="Upload failed" />}
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!selectedFile || !uploadTitle.trim() || uploadProgress !== null}
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Upload &amp; Transcribe
+                  </Button>
+                </Box>
+              </form>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Adaptive Quiz Trigger & Display */}
+        <Grid item xs={12} md={7}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <QuizIcon sx={{ color: 'secondary.light' }} />
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Comprehension Quiz &amp; Gap Detection
+                  </Typography>
+                </Box>
+                {!activeQuiz && !quizResult && (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => generateQuizMutation.mutate()}
+                    disabled={generateQuizMutation.isPending}
+                  >
+                    {generateQuizMutation.isPending ? 'Generating Questions...' : 'Start Quiz'}
+                  </Button>
+                )}
+              </Box>
+
+              {quizError && <ErrorAlert error={quizError} title="Quiz Error" />}
+
+              {generateQuizMutation.isPending && (
+                <LoadingScreen message="LLM is analyzing lecture passages and synthesizing diagnostic questions..." />
+              )}
+
+              {/* Active Quiz Form */}
+              {activeQuiz && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Alert severity="info">
+                    Answer the diagnostic questions below. Incorrect answers will trace prerequisites backwards along the DAG to form your personalised remediation plan.
+                  </Alert>
+
+                  {activeQuiz.questions.map((q, idx) => (
+                    <Box
+                      key={q.id}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                      }}
+                    >
+                      <Typography variant="subtitle2" sx={{ color: 'secondary.light', mb: 0.5, fontWeight: 700 }}>
+                        Question {idx + 1} &bull; Concept: {q.concept}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, mb: 1.5 }}>
+                        {q.question}
+                      </Typography>
+
+                      <FormControl component="fieldset">
+                        <RadioGroup
+                          value={quizAnswers[q.id] || ''}
+                          onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                        >
+                          {q.options.map((opt, optIdx) => (
+                            <FormControlLabel
+                              key={optIdx}
+                              value={opt}
+                              control={<Radio size="small" />}
+                              label={<Typography variant="body2">{opt}</Typography>}
+                            />
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </Box>
+                  ))}
+
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    onClick={() => submitQuizMutation.mutate()}
+                    disabled={submitQuizMutation.isPending || Object.keys(quizAnswers).length === 0}
+                  >
+                    {submitQuizMutation.isPending ? 'Grading...' : 'Submit Answers'}
+                  </Button>
+                </Box>
+              )}
+
+              {/* Quiz Results & Remediation */}
+              {quizResult && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 2,
+                      background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      Score: {quizResult.score} / {quizResult.total} (
+                      {Math.round((quizResult.score / quizResult.total) * 100)}%)
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                      Student: {quizResult.student_id} &bull; Quiz ID: #{quizResult.quiz_id}
+                    </Typography>
+                  </Box>
+
+                  {/* Remediation sequence */}
+                  {quizResult.remediation.length > 0 && (
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                        Recommended Remediation Sequence (Topological Prerequisite Order)
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                        Review these prerequisite concepts in the order indicated to repair foundational comprehension gaps:
+                      </Typography>
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {quizResult.remediation.map((item, idx) => (
+                          <Box
+                            key={idx}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              p: 1.5,
+                              borderRadius: 1.5,
+                              backgroundColor: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.06)',
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Typography variant="subtitle2" sx={{ color: 'secondary.light', fontWeight: 700 }}>
+                                #{idx + 1}
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {item.concept}
+                              </Typography>
+                              {item.failed ? (
+                                <CancelIcon sx={{ color: 'error.main', fontSize: 18 }} />
+                              ) : (
+                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                  (Prerequisite foundation)
+                                </Typography>
+                              )}
+                            </Box>
+
+                            {item.clip_url || item.clip ? (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<PlayCircleOutlineIcon />}
+                                onClick={() => setPlayingClipUrl(resolveClipUrl(item.clip_url || item.clip))}
+                              >
+                                Watch Clip
+                              </Button>
+                            ) : (
+
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                Clip not ready
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* Feedback on questions */}
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
+                      Item Feedback &amp; Explanations
+                    </Typography>
+                    {quizResult.feedback.map((f) => (
+                      <Box
+                        key={f.question_id}
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1,
+                          mb: 1,
+                          backgroundColor: f.correct ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
+                          border: `1px solid ${f.correct ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          {f.correct ? (
+                            <CheckCircleIcon sx={{ color: 'success.main', fontSize: 18 }} />
+                          ) : (
+                            <CancelIcon sx={{ color: 'error.main', fontSize: 18 }} />
+                          )}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {f.concept}: {f.correct ? 'Correct' : 'Missed'}
+                          </Typography>
+                        </Box>
+                        {f.explanation && (
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                            {f.explanation}
+                          </Typography>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+
+                  <Button variant="outlined" onClick={() => setQuizResult(null)}>
+                    Done / Retake Later
+                  </Button>
+                </Box>
+              )}
+
+              {/* Video Player Modal/Inline when clip is clicked */}
+              {playingClipUrl && (
+                <Box
+                  sx={{
+                    mt: 3,
+                    p: 2,
+                    borderRadius: 2,
+                    backgroundColor: '#000',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <VideoLibraryIcon fontSize="small" /> Remediation Clip Stream (Byte-Range Capable)
+                    </Typography>
+                    <Button size="small" onClick={() => setPlayingClipUrl(null)} sx={{ color: '#fff' }}>
+                      Close Video
+                    </Button>
+                  </Box>
+                  <Box sx={{ position: 'relative', width: '100%', pt: '56.25%', borderRadius: 1, overflow: 'hidden' }}>
+                    <video
+                      controls
+                      autoPlay
+                      src={playingClipUrl}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                      }}
+                    />
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Lectures List for Course */}
+      <Box>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Lectures in {selectedCourseId.toUpperCase()}
+        </Typography>
+
+        {lecturesError && <ErrorAlert error={lecturesError} title="Failed to load lectures" />}
+        {isLoadingLectures && <LoadingScreen message="Loading lectures..." />}
+
+        {lectureList.length === 0 && !isLoadingLectures && (
+          <Card sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+            <Typography variant="body1">No lectures found for this course.</Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Use the upload form above to add your first lecture video or audio file.
+            </Typography>
+          </Card>
+        )}
+
+        {lectureList.length > 0 && (
+          <Card>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Media</TableCell>
+                  <TableCell>Created</TableCell>
+                  <TableCell align="right">Pipeline Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {lectureList.map((lec) => (
+                  <TableRow key={lec.id} hover>
+                    <TableCell sx={{ fontFamily: 'var(--font-mono)' }}>#{lec.id}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{lec.title}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={lec.status} />
+                    </TableCell>
+                    <TableCell>
+                      {lec.has_media ? (
+                        <CheckCircleIcon sx={{ color: 'success.main', fontSize: 18 }} />
+                      ) : (
+                        <CancelIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                      {new Date(lec.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleTriggerConcepts(lec.id)}
+                          sx={{ fontSize: '0.72rem', py: 0.25 }}
+                        >
+                          Extract Concepts
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() => handleTriggerClips(lec.id)}
+                          sx={{ fontSize: '0.72rem', py: 0.25 }}
+                        >
+                          Cut Clips
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
+      </Box>
+    </Box>
+  )
+}
