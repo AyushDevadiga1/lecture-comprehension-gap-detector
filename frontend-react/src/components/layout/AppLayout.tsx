@@ -4,6 +4,7 @@ import { Box, Container } from '@mui/material'
 import { Navbar } from './Navbar'
 import { JobDrawer } from '../common/JobDrawer'
 import { JobCompletionHost } from '../common/JobCompletionHost'
+import { AuthBanner } from '../common/AuthBanner'
 import { useAppStore } from '../../store/useAppStore'
 import { useJobFeedConnection } from '../../lib/useJobFeed'
 
@@ -18,6 +19,8 @@ export const AppLayout: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
+      {/* §6: a 401 is one banner, never a dead "no courses" state. */}
+      <AuthBanner />
       <Box component="main" sx={{ flexGrow: 1, py: { xs: 3, md: 5 } }}>
         <Container maxWidth="xl">
           <Outlet />

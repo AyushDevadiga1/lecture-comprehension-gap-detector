@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -27,9 +27,11 @@ import { useAppStore } from '../../store/useAppStore'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
 import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
+import { errorMessage } from '../../api/client'
 
 export const FacultyDashboard: React.FC = () => {
   const queryClient = useQueryClient()
+  const [buildError, setBuildError] = useState<string | null>(null)
   const { selectedCourseId } = useAppStore()
 
   // Fetch Course Graph
@@ -63,6 +65,9 @@ export const FacultyDashboard: React.FC = () => {
     onSuccess: () => {
       if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
     },
+    // This had no onError, which is why the wrong-verb bug was invisible: a
+    // failed rebuild just flickered the button and said nothing.
+    onError: (err: unknown) => setBuildError(errorMessage(err, 'Could not queue a graph rebuild')),
   })
 
   if (!selectedCourseId) {
@@ -89,12 +94,17 @@ export const FacultyDashboard: React.FC = () => {
         <Button
           variant="contained"
           startIcon={<PlayArrowIcon />}
-          onClick={() => buildGraphMutation.mutate()}
+          onClick={() => {
+            setBuildError(null)
+            buildGraphMutation.mutate()
+          }}
           disabled={buildGraphMutation.isPending}
         >
           {buildGraphMutation.isPending ? 'Queuing Graph Build...' : 'Rebuild Prerequisite DAG'}
         </Button>
       </Box>
+
+      {buildError && <ErrorAlert error={buildError} title="Graph rebuild failed" />}
 
       {/* Metric Cards */}
       <Grid container spacing={2}>

@@ -2,7 +2,7 @@
  * Domain wrapper — courses.
  * Feature components import from here; they never call client.get directly.
  */
-import { get, del } from './client'
+import { get, post, del } from './client'
 import type {
   CourseSummaryOut,
   CourseGraphOut,
@@ -24,10 +24,20 @@ export const courses = {
   snapshot: (courseId: string): Promise<CourseSnapshot> =>
     get(`/courses/${courseId}/snapshot`),
 
-  buildGraph: (courseId: string, lectureId?: number): Promise<CourseBuildOut> => {
-    const params = lectureId !== undefined ? `?lecture_id=${lectureId}` : ''
-    return get<CourseBuildOut>(`/courses/${courseId}/graph${params}`)
-  },
+  /**
+   * Queue a graph build. **POST**, not GET: `POST /courses/{id}/graph` is the
+   * build endpoint (202 + `job_id`) and the same path under GET is a *read* of
+   * an existing graph, which takes no `lecture_id` and 404s when absent.
+   *
+   * This was a `get()`, so "Rebuild Prerequisite DAG" either did nothing at all
+   * (a graph already existed, so the read succeeded, no job was created) or
+   * failed silently — the mutation had no `onError` either. The Streamlit engine
+   * had this right all along (`panels/ingest.py:119-120`).
+   */
+  buildGraph: (courseId: string, lectureId?: number): Promise<CourseBuildOut> =>
+    post<CourseBuildOut>(`/courses/${courseId}/graph`, undefined, {
+      lecture_id: lectureId,
+    }),
 
   delete: (courseId: string): Promise<CourseDeleteOut> =>
     del(`/courses/${courseId}`),

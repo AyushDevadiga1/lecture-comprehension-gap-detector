@@ -1,29 +1,9 @@
-import { QueryClient } from '@tanstack/react-query'
-
 /**
- * Build a QueryClient.
+ * The app-wide QueryClient.
  *
- * Exported as a factory (not just a singleton) so each test can get an isolated
- * cache: the app singleton is module state, and a test that shares it inherits
- * whatever the previous test left behind. `createTestQueryClient` in
- * `src/test/queries.ts` is the instance tests should use.
+ * Built by `createQueryClient()` in `lib/authBanner.ts` so the 401 interception
+ * is installed exactly once, at the single place every read passes through (§6).
+ * Re-declaring the defaults here would let the two drift.
  */
-export function createQueryClient(overrides?: Partial<QueryClient['getDefaultOptions']>) {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 10, // 10 seconds
-        gcTime: 1000 * 60 * 5, // 5 minutes
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-      mutations: {
-        retry: 0,
-      },
-      ...overrides,
-    },
-  })
-}
-
-/** The app-wide client. Production code uses this; tests do not. */
-export const queryClient = createQueryClient()
+export { createQueryClient } from './authBanner'
+export { queryClient } from './appClient'

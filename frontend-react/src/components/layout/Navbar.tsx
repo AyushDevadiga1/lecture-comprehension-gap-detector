@@ -33,7 +33,14 @@ export const Navbar: React.FC = () => {
   const { mode } = useFeedStatus(selectedCourseId)
   const isConnected = mode === 'stream'
 
-  const { data: courseList = [] } = useQuery({
+  // The error is read too, so a failed course list never renders as
+  // "No courses found" — that text reads as *your data is gone* rather than
+  // *you are not authorised*, and sends the reader hunting in the wrong place.
+  // The 401 case is covered by the AuthBanner; this covers everything else.
+  const {
+    data: courseList = [],
+    isError: coursesFailed,
+  } = useQuery({
     queryKey: queryKeys.courses(),
     queryFn: () => coursesApi.list(),
   })
@@ -136,7 +143,7 @@ export const Navbar: React.FC = () => {
               ))}
               {courseList.length === 0 && !selectedCourseId && (
                 <MenuItem value="" disabled>
-                  No courses found
+                  {coursesFailed ? 'Could not load courses' : 'No courses found'}
                 </MenuItem>
               )}
             </Select>
