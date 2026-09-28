@@ -20,9 +20,9 @@
  * `schedule` is injectable so the behaviour is testable without real frames.
  */
 
-export interface JobsSink {
+export interface JobsSink<T> {
   /** Offer a snapshot. May be deferred to the next frame. */
-  write(state: unknown): void
+  write(state: T): void
   /** Apply any pending snapshot now. */
   flush(): void
   /** Drop any pending snapshot and release the scheduled frame. */
@@ -41,11 +41,11 @@ export const frameScheduler: Scheduler = (cb) => {
   return () => clearTimeout(id)
 }
 
-export function createJobsSink(
-  apply: (state: unknown) => void,
+export function createJobsSink<T>(
+  apply: (state: T) => void,
   schedule: Scheduler = frameScheduler,
-): JobsSink {
-  let pending: unknown = null
+): JobsSink<T> {
+  let pending: T | null = null
   let cancel: (() => void) | null = null
 
   const flush = () => {

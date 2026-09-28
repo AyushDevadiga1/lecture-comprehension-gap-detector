@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { Box, Container } from '@mui/material'
 import { Navbar } from './Navbar'
 import { JobDrawer } from '../common/JobDrawer'
+import { JobCompletionHost } from '../common/JobCompletionHost'
 import { useAppStore } from '../../store/useAppStore'
 import { useJobFeedConnection } from '../../lib/useJobFeed'
 
@@ -14,7 +15,6 @@ export const AppLayout: React.FC = () => {
   // restarts any playing <video>. JobDrawer and Navbar read the cache directly.
   useJobFeedConnection(selectedCourseId)
 
-
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
@@ -24,6 +24,9 @@ export const AppLayout: React.FC = () => {
         </Container>
       </Box>
       <JobDrawer />
+      {/* Announced here, in the page body — never inside the progress surface. */}
+      <JobCompletionHost />
     </Box>
   )
 }
+

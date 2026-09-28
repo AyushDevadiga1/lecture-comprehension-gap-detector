@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { useState } from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useJobList } from './useJobFeed'
 import { queryKeys } from './queryKeys'
@@ -81,7 +81,9 @@ describe('a job tick does not re-render the page', () => {
     // through jobFeed: the transport has its own suite, and connecting here
     // would publish its own empty snapshot over the data under test.
     const emit = (changeToken: number, jobs: JobOut[]) =>
-      queryClient.setQueryData(queryKeys.jobs('ML'), { jobs, mode: 'stream', changeToken })
+      act(() => {
+        queryClient.setQueryData(queryKeys.jobs('ML'), { jobs, mode: 'stream', changeToken })
+      })
 
     emit(1, [job({ progress_pct: 10 })])
     await waitFor(() => expect(screen.getByTestId('drawer').textContent).toBe('1 job(s)'))

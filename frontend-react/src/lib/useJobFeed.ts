@@ -5,6 +5,8 @@ import type { FeedState } from './jobFeed'
 import { createJobsSink } from './jobsSink'
 import type { JobsSink } from './jobsSink'
 import { queryKeys } from './queryKeys'
+import { isTerminal, recordNewCompletions } from './jobCompletions'
+import { useCompletionStore } from '../store/useCompletionStore'
 import type { JobOut } from '../api/types'
 
 /**
@@ -54,16 +56,36 @@ let connectionRefs = 0
 export function useJobFeedConnection(courseId?: string | null): void {
   const queryClient = useQueryClient()
 
-  // Reassigned every render so the sink always writes through the live client,
-  // without making the connection itself depend on its identity.
-  const sinkRef = useRef<JobsSink | null>(null)
+  // Completion detection needs the previous snapshot. Held here, in the data
+  // layer, rather than in a component: a component that diffed the job list
+  // would have to subscribe to it, and would therefore re-render on every 1 Hz
+  // snapshot. Here it costs nothing.
+  const prevRef = useRef<JobOut[]>([])
+
+  const sinkRef = useRef<JobsSink<FeedState> | null>(null)
   if (!sinkRef.current) {
-    sinkRef.current = createJobsSink((state) => {
+    sinkRef.current = createJobsSink((state: FeedState) => {
       queryClient.setQueryData(queryKeys.jobs(courseId ?? ''), state)
+
+      const finished = recordNewCompletions(prevRef.current, state.jobs, (list) =>
+        useCompletionStore.getState().push(list),
+      )
+      prevRef.current = state.jobs
+
+      // The clips follow-up: a finished clip job must refresh its own list,
+      // which is not course-scoped and so is not covered by invalidateCourse.
+      for (const job of finished) {
+        if (job.kind === 'clips' && job.lecture_id != null) {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.clips(job.lecture_id) })
+        }
+      }
     })
   }
 
   useEffect(() => {
+    // A course change starts a different job set; nothing from the old one can
+    // be "newly completed".
+    prevRef.current = []
     connectionRefs += 1
     jobFeed.connect(courseId, (state) => sinkRef.current?.write(state))
     return () => {
@@ -93,7 +115,7 @@ export function useJobList(courseId?: string | null): JobOut[] {
 
 /** Jobs still running. A terminal job drops out here, after one render. */
 export function useActiveJobs(courseId?: string | null): JobOut[] {
-  return useJobList(courseId).filter((j) => !j.terminal)
+  return useJobList(courseId).filter((j) => !isTerminal(j))
 }
 
 /**

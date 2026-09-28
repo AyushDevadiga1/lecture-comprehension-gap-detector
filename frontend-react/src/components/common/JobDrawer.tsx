@@ -16,13 +16,17 @@ import CloseIcon from '@mui/icons-material/Close'
 import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from './StatusBadge'
 import { jobs as jobsApi } from '../../api/jobs'
-import { useJobList, useFeedStatus } from '../../lib/useJobFeed'
+import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 
 export const JobDrawer: React.FC = () => {
   const { jobDrawerOpen, setJobDrawerOpen, selectedCourseId } = useAppStore()
   // Reads the query cache. The drawer is the one component that *should* react
   // to a job tick, because it is where job progress is displayed.
-  const jobs = useJobList(selectedCourseId)
+  //
+  // Live jobs only: §1 requires a terminal job to leave this view after one
+  // render. Completions are announced once by <JobCompletionHost> instead, so
+  // the drawer no longer accumulates finished jobs for the whole session.
+  const jobs = useActiveJobs(selectedCourseId)
   const { mode, changeToken } = useFeedStatus(selectedCourseId)
   const isConnected = mode === 'stream'
 
