@@ -24,7 +24,7 @@
     "@tanstack/react-query-devtools": "^5.74.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.0",
+    "react-router-dom": "^7.18.4",
     "reactflow": "^11.11.4",
     "zustand": "^5.0.3"
   },
