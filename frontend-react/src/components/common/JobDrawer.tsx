@@ -12,15 +12,19 @@ import {
   Button,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useJobStore } from '../../store/useJobStore'
 
 import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from './StatusBadge'
 import { jobs as jobsApi } from '../../api/jobs'
+import { useJobList, useFeedStatus } from '../../lib/useJobFeed'
 
 export const JobDrawer: React.FC = () => {
-  const { jobDrawerOpen, setJobDrawerOpen } = useAppStore()
-  const { jobs, isConnected, lastUpdated } = useJobStore()
+  const { jobDrawerOpen, setJobDrawerOpen, selectedCourseId } = useAppStore()
+  // Reads the query cache. The drawer is the one component that *should* react
+  // to a job tick, because it is where job progress is displayed.
+  const jobs = useJobList(selectedCourseId)
+  const { mode, changeToken } = useFeedStatus(selectedCourseId)
+  const isConnected = mode === 'stream'
 
   const handleCancelJob = async (jobId: number) => {
     try {
@@ -62,9 +66,9 @@ export const JobDrawer: React.FC = () => {
         </IconButton>
       </Box>
 
-      {lastUpdated && (
+      {changeToken > 0 && (
         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 2 }}>
-          Last tick: {new Date(lastUpdated).toLocaleTimeString()}
+          Snapshot #{changeToken}
         </Typography>
       )}
 

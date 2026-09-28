@@ -66,6 +66,9 @@ export interface FeedState {
 
 export type FeedListener = (state: FeedState) => void
 
+/** Where snapshots go. The React binding is `createJobsSink` (see jobsSink.ts). */
+export type FeedSink = (state: FeedState) => void
+
 /** Seam so tests can drive time and transport without real sockets. */
 export interface JobFeedDeps {
   fetchImpl?: typeof fetch
@@ -89,6 +92,7 @@ const realSleep = (ms: number, signal: AbortSignal): Promise<void> =>
 export class JobFeed {
   private readonly deps: Required<JobFeedDeps>
   private listeners = new Set<FeedListener>()
+  private sink: FeedSink | null = null
   private controller: AbortController | null = null
   private loop: Promise<void> | null = null
   private courseId: string | null = null
@@ -115,12 +119,16 @@ export class JobFeed {
   }
 
   /**
-   * Open the feed for `courseId`. Idempotent for the same course: a second call
-   * with an unchanged course is a no-op, so two components asking for the feed
-   * produce one connection, not two.
+   * Open the feed for `courseId`, writing snapshots to `sink`.
+   *
+   * Idempotent for the same course: a second call with an unchanged course
+   * updates the sink and returns, so two components asking for the feed produce
+   * one connection, not two. A different course (or a different sink) tears the
+   * old connection down first.
    */
-  connect(courseId?: string | null): void {
+  connect(courseId?: string | null, sink?: FeedSink): void {
     const next = courseId || null
+    if (sink) this.sink = sink
     if (this.loop && this.courseId === next) return
     this.disconnect()
     this.courseId = next
@@ -133,6 +141,7 @@ export class JobFeed {
     this.controller = null
     this.loop = null
     this.courseId = null
+    this.sink = null
     this.publish([], 'starting')
   }
 
@@ -148,6 +157,7 @@ export class JobFeed {
     // Mirrors jobfeed.py:118-124 — an empty snapshot is *not* a change.
     if (jobs.length) next.changeToken = ++this.lastChange
     this.state = next
+    this.sink?.(next)
     for (const l of this.listeners) l(next)
   }
 

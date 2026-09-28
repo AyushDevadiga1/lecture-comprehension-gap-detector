@@ -4,13 +4,16 @@ import { Box, Container } from '@mui/material'
 import { Navbar } from './Navbar'
 import { JobDrawer } from '../common/JobDrawer'
 import { useAppStore } from '../../store/useAppStore'
-import { useJobFeed } from '../../lib/useJobFeed'
+import { useJobFeedConnection } from '../../lib/useJobFeed'
 
 export const AppLayout: React.FC = () => {
   const { selectedCourseId } = useAppStore()
 
-  // Maintain live SSE connection scoped to current course
-  useJobFeed(selectedCourseId)
+  // Connects the feed and reads nothing. §1: a component that renders <Outlet/>
+  // must not subscribe to job state, or every 1Hz tick re-renders the page and
+  // restarts any playing <video>. JobDrawer and Navbar read the cache directly.
+  useJobFeedConnection(selectedCourseId)
+
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

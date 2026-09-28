@@ -21,16 +21,20 @@ import LayersIcon from '@mui/icons-material/Layers'
 import { useQuery } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../api/courses'
 import { useAppStore } from '../../store/useAppStore'
-import { useJobStore } from '../../store/useJobStore'
+import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
+import { queryKeys } from '../../lib/queryKeys'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
   const { selectedCourseId, setSelectedCourseId, toggleJobDrawer } = useAppStore()
-  const isConnected = useJobStore((state) => state.isConnected)
-  const activeJobs = useJobStore((state) => state.activeJobs)
+  // Reads the query cache, not the feed. The badge and the status dot are the
+  // only Navbar elements that depend on job state.
+  const activeJobs = useActiveJobs(selectedCourseId)
+  const { mode } = useFeedStatus(selectedCourseId)
+  const isConnected = mode === 'stream'
 
   const { data: courseList = [] } = useQuery({
-    queryKey: ['courses'],
+    queryKey: queryKeys.courses(),
     queryFn: () => coursesApi.list(),
   })
 
