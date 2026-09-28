@@ -27,6 +27,18 @@ export class LecGapApiError extends Error {
   }
 }
 
+/**
+ * Human-readable message from anything thrown by this module (or by a
+ * component's own guard). Accepts `unknown` so a `catch (err)` needs no cast:
+ * a `LecGapApiError` surfaces its `detail` — the backend's `{detail}` envelope,
+ * never a traceback — and anything else degrades to the caller's fallback.
+ */
+export function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof LecGapApiError) return err.detail
+  if (err instanceof Error && err.message) return err.message
+  return fallback
+}
+
 function headers(extra?: HeadersInit): Headers {
   const h = new Headers(extra)
   h.set('Accept', 'application/json')

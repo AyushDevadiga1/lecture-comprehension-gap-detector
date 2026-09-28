@@ -29,6 +29,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { courses as coursesApi } from '../api/courses'
 import { lectures as lecturesApi } from '../api/lectures'
 import { quizzes as quizzesApi } from '../api/quizzes'
+import { errorMessage } from '../api/client'
 import { useAppStore } from '../store/useAppStore'
 import { StatusBadge } from '../components/common/StatusBadge'
 import { LoadingScreen } from '../components/common/LoadingScreen'
@@ -52,6 +53,10 @@ export const StudentDashboard: React.FC = () => {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({})
   const [quizResult, setQuizResult] = useState<QuizSubmitOut | null>(null)
   const [quizError, setQuizError] = useState<string | null>(null)
+
+  // Per-lecture row action errors (extract concepts / cut clips)
+  const [rowError, setRowError] = useState<string | null>(null)
+
 
   // Remediation playback state
   const [playingClipUrl, setPlayingClipUrl] = useState<string | null>(null)
@@ -90,8 +95,8 @@ export const StudentDashboard: React.FC = () => {
       setActiveQuiz(data)
       setQuizAnswers({})
     },
-    onError: (err: any) => {
-      setQuizError(err.message || 'Failed to generate quiz')
+    onError: (err: unknown) => {
+      setQuizError(errorMessage(err, 'Failed to generate quiz'))
     },
   })
 
@@ -114,8 +119,8 @@ export const StudentDashboard: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
       queryClient.invalidateQueries({ queryKey: ['stats', selectedCourseId] })
     },
-    onError: (err: any) => {
-      setQuizError(err.message || 'Failed to submit quiz')
+    onError: (err: unknown) => {
+      setQuizError(errorMessage(err, 'Failed to submit quiz'))
     },
   })
 
@@ -147,29 +152,31 @@ export const StudentDashboard: React.FC = () => {
       refetchLectures()
       queryClient.invalidateQueries({ queryKey: ['snapshot', selectedCourseId] })
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
-    } catch (err: any) {
-      setUploadError(err.message || 'Upload failed')
+    } catch (err: unknown) {
+      setUploadError(errorMessage(err, 'Upload failed'))
       setUploadProgress(null)
     }
   }
 
   const handleTriggerConcepts = async (lectureId: number) => {
+    setRowError(null)
     try {
       await lecturesApi.extractConcepts(lectureId)
       refetchLectures()
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      setRowError(errorMessage(err, 'Could not start concept extraction'))
     }
   }
 
   const handleTriggerClips = async (lectureId: number) => {
+    setRowError(null)
     try {
       await lecturesApi.cutClips(lectureId)
       refetchLectures()
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      setRowError(errorMessage(err, 'Could not start clip cutting'))
     }
   }
 
@@ -573,6 +580,7 @@ export const StudentDashboard: React.FC = () => {
         </Typography>
 
         {lecturesError && <ErrorAlert error={lecturesError} title="Failed to load lectures" />}
+        {rowError && <ErrorAlert error={rowError} title="Pipeline action failed" />}
         {isLoadingLectures && <LoadingScreen message="Loading lectures..." />}
 
         {lectureList.length === 0 && !isLoadingLectures && (
