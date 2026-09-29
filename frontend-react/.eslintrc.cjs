@@ -65,12 +65,31 @@ module.exports = {
     },
     {
       // REACT_ARCHITECTURE §4: "no module outside theme.ts may name a colour".
-      // The ported token table lands in Wave 2; enabling the rule before then
-      // would flag every hex in the current MUI theme. Enabled in that wave.
-      files: ['src/**/*.{ts,tsx,css}'],
-      excludedFiles: ['src/theme/**', 'src/index.css'],
+      // `src/theme/**` holds the tokens and is exempt; everything else must ask
+      // for one -- a MUI slot (`primary.main`), a custom property
+      // (`var(--lgc-*)`), or `tint()` from `src/theme/alpha`.
+      //
+      // The `(?<!&)` lookbehind keeps a hex inside an HTML entity from
+      // counting, and `{3,8}` covers #abc, #aabbcc and the 4/8-digit forms.
+      // Enabled with the ported token table; `src/theme/scan.test.ts` is the
+      // runtime twin, so a file added outside ESLint is still caught.
+      files: ['src/**/*.{ts,tsx}'],
+      excludedFiles: ['src/theme/**'],
       rules: {
-        'no-restricted-syntax': 'off',
+        'no-restricted-syntax': [
+          'error',
+          {
+            // esquery, not a bare regex: `no-restricted-syntax` selectors are
+            // AST patterns. A hex almost always sits *inside* a longer string
+            // (`color: '#fff'`), so the attribute value is matched as a
+            // substring. `Literal` covers plain strings and JSX attributes;
+            // `TemplateElement` covers a hex inside a template literal.
+            selector:
+              "Literal[value=/#[0-9a-fA-F]{3,8}/], TemplateElement[value=/#[0-9a-fA-F]{3,8}/]",
+            message:
+              'Colours belong in src/theme/. Use a token: primary.main, var(--lgc-*), or tint() from src/theme/alpha. See plan/REACT_ARCHITECTURE.md §4.',
+          },
+        ],
       },
     },
   ],
