@@ -21,6 +21,7 @@ import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 import { jobGuidance } from '../../lib/stages'
 import { EXPIRED_MESSAGE, STALLED_MESSAGE, jobHealth } from '../../lib/jobStalls'
 import { useNow } from '../../lib/useNow'
+import { gradient, tint } from '../../theme/alpha'
 
 export const JobDrawer: React.FC = () => {
   const { jobDrawerOpen, setJobDrawerOpen, selectedCourseId } = useAppStore()
@@ -54,8 +55,9 @@ export const JobDrawer: React.FC = () => {
       PaperProps={{
         sx: {
           width: { xs: '100%', sm: 460 },
-          backgroundColor: '#0f172a',
-          borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+          backgroundColor: 'background.paper',
+          borderLeft: '1px solid',
+          borderColor: 'divider',
           p: 3,
         },
       }}
@@ -106,25 +108,26 @@ export const JobDrawer: React.FC = () => {
                 alignItems: 'stretch',
                 p: 2,
                 borderRadius: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
+                backgroundColor: tint('surface-alt', 40),
+                border: '1px solid',
+                borderColor: 'divider',
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#e2e8f0' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                   #{job.id} &bull; {job.kind}
                 </Typography>
                 <StatusBadge status={job.status} />
               </Box>
 
               {job.title && (
-                <Typography variant="caption" sx={{ color: '#94a3b8', mb: 1 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1 }}>
                   {job.title} {job.course_id && `[${job.course_id}]`}
                 </Typography>
               )}
 
               {job.stage && (
-                <Typography variant="body2" sx={{ fontSize: '0.825rem', color: '#cbd5e1', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontSize: '0.825rem', color: 'text.primary', mb: 1 }}>
                   {jobGuidance(job.stage, health.elapsedS)}
                   {job.detail && ` — ${job.detail}`}
                 </Typography>
@@ -145,7 +148,7 @@ export const JobDrawer: React.FC = () => {
               {!job.terminal && (
                 <Box sx={{ my: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                       Progress
                     </Typography>
                     <Typography variant="caption" sx={{ fontWeight: 600 }}>
@@ -158,10 +161,10 @@ export const JobDrawer: React.FC = () => {
                     sx={{
                       height: 6,
                       borderRadius: 3,
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'divider',
                       '& .MuiLinearProgress-bar': {
                         borderRadius: 3,
-                        background: 'linear-gradient(90deg, #6366f1, #a855f7)',
+                        background: gradient('info', 'accent'),
                       },
                     }}
                   />
@@ -172,8 +175,8 @@ export const JobDrawer: React.FC = () => {
                 <Typography
                   variant="caption"
                   sx={{
-                    color: '#f87171',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: 'error.main',
+                    backgroundColor: tint('bad', 10),
                     p: 1,
                     borderRadius: 1,
                     mt: 1,

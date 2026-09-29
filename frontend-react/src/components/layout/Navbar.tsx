@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import {
   AppBar,
   Toolbar,
@@ -18,15 +18,18 @@ import BoltIcon from '@mui/icons-material/Bolt'
 import SchoolIcon from '@mui/icons-material/School'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import LayersIcon from '@mui/icons-material/Layers'
+import LightModeIcon from '@mui/icons-material/LightMode'
+import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useQuery } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../api/courses'
 import { useAppStore } from '../../store/useAppStore'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 import { queryKeys } from '../../lib/queryKeys'
+import { gradient } from '../../theme/alpha'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
-  const { selectedCourseId, setSelectedCourseId, toggleJobDrawer } = useAppStore()
+  const { selectedCourseId, setSelectedCourseId, toggleJobDrawer, base, toggleBase } = useAppStore()
   // Reads the query cache, not the feed. The badge and the status dot are the
   // only Navbar elements that depend on job state.
   const activeJobs = useActiveJobs(selectedCourseId)
@@ -34,7 +37,7 @@ export const Navbar: React.FC = () => {
   const isConnected = mode === 'stream'
 
   // The error is read too, so a failed course list never renders as
-  // "No courses found" — that text reads as *your data is gone* rather than
+  // "No courses found" â€” that text reads as *your data is gone* rather than
   // *you are not authorised*, and sends the reader hunting in the wrong place.
   // The 401 case is covered by the AuthBanner; this covers everything else.
   const {
@@ -56,14 +59,14 @@ export const Navbar: React.FC = () => {
               width: 36,
               height: 36,
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+              background: gradient('info', 'ok', 135),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
             }}
           >
-            <AccountTreeIcon sx={{ color: '#fff', fontSize: 20 }} />
+            <AccountTreeIcon sx={{ color: 'primary.contrastText', fontSize: 20 }} />
           </Box>
           <Box>
             <Typography
@@ -72,14 +75,14 @@ export const Navbar: React.FC = () => {
                 fontWeight: 800,
                 fontSize: '1.15rem',
                 letterSpacing: '-0.02em',
-                background: 'linear-gradient(90deg, #f8fafc 0%, #cbd5e1 100%)',
+                background: 'transparent',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
               LecGap
             </Typography>
-            <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.68rem', display: 'block', mt: -0.5 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', display: 'block', mt: -0.5 }}>
               Engine 2 &bull; Comprehension DAG
             </Typography>
           </Box>
@@ -93,7 +96,7 @@ export const Navbar: React.FC = () => {
             startIcon={<SchoolIcon fontSize="small" />}
             variant={location.pathname.startsWith('/student') ? 'contained' : 'text'}
             sx={{
-              color: location.pathname.startsWith('/student') ? '#fff' : 'text.secondary',
+              color: location.pathname.startsWith('/student') ? 'primary.contrastText' : 'text.secondary',
               backgroundColor: location.pathname.startsWith('/student') ? 'primary.main' : 'transparent',
             }}
           >
@@ -106,7 +109,7 @@ export const Navbar: React.FC = () => {
             startIcon={<LayersIcon fontSize="small" />}
             variant={location.pathname.startsWith('/faculty') ? 'contained' : 'text'}
             sx={{
-              color: location.pathname.startsWith('/faculty') ? '#fff' : 'text.secondary',
+              color: location.pathname.startsWith('/faculty') ? 'primary.contrastText' : 'text.secondary',
               backgroundColor: location.pathname.startsWith('/faculty') ? 'primary.main' : 'transparent',
             }}
           >
@@ -150,11 +153,19 @@ export const Navbar: React.FC = () => {
 
           </FormControl>
 
+          {/* Theme base. The choice is remembered and defaults to the OS
+              preference; see `resolveInitialBase`. */}
+          <Tooltip title={base === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
+            <IconButton onClick={toggleBase} color="inherit" sx={{ border: '1px solid', borderColor: 'divider' }}>
+              {base === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+
           {/* Jobs drawer toggle with active count */}
           <Tooltip title="View Background Jobs & Pipelines">
-            <IconButton onClick={toggleJobDrawer} color="inherit" sx={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+            <IconButton onClick={toggleJobDrawer} color="inherit" sx={{ border: '1px solid', borderColor: 'divider' }}>
               <Badge badgeContent={activeJobs.length} color="primary">
-                <BoltIcon sx={{ color: activeJobs.length > 0 ? '#38bdf8' : 'text.secondary' }} />
+                <BoltIcon sx={{ color: activeJobs.length > 0 ? 'info.main' : 'text.secondary' }} />
               </Badge>
             </IconButton>
           </Tooltip>
@@ -166,8 +177,8 @@ export const Navbar: React.FC = () => {
                 width: 10,
                 height: 10,
                 borderRadius: '50%',
-                backgroundColor: isConnected ? '#10b981' : '#f59e0b',
-                boxShadow: isConnected ? '0 0 10px #10b981' : 'none',
+                backgroundColor: isConnected ? 'success.main' : 'warning.main',
+                boxShadow: isConnected ? '0 0 10px var(--lgc-ok)' : 'none',
               }}
             />
           </Tooltip>

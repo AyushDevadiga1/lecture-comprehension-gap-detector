@@ -48,7 +48,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'small'
             width: 8,
             height: 8,
             borderRadius: '50%',
-            backgroundColor: '#38bdf8',
+            backgroundColor: 'info.main',
           }}
         />
       )}

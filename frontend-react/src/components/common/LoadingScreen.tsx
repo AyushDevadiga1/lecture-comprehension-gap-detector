@@ -23,7 +23,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         size={44}
         thickness={4}
         sx={{
-          color: '#6366f1',
+          color: 'primary.main',
           '& .MuiCircularProgress-circle': {
             strokeLinecap: 'round',
           },

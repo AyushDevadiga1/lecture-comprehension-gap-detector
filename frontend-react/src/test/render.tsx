@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
-import { theme } from '../theme/theme'
+import { buildTheme } from '../theme/muiTheme'
 import { createTestQueryClient } from './queries'
 
 /**
@@ -34,7 +34,7 @@ export function renderWithProviders(ui: ReactElement, options: RenderOptions = {
 
   const Providers = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={buildTheme()}>
         <CssBaseline />
         <MemoryRouter initialEntries={[route ?? '/']}>{children}</MemoryRouter>
       </ThemeProvider>

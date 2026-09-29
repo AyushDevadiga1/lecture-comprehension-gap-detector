@@ -1,86 +1,86 @@
+/**
+ * Global styles.
+ *
+ * **No colour literal appears in this file.** Every colour is a token, injected
+ * as a custom property by `src/theme/variables.ts` from the same table that
+ * builds the MUI theme. That is the rule REACT_ARCHITECTURE.md §4 states and
+ * the one `tests/test_theme.py::test_no_module_outside_theme_hardcodes_a_colour`
+ * enforces on the Python side; here it is enforced by the `no-restricted-syntax`
+ * rule in `.eslintrc.cjs` and re-checked by `src/theme/scan.test.ts`.
+ */
+
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --bg-primary: #0b0f19;
-  --bg-secondary: #111827;
-  --bg-card: rgba(17, 24, 39, 0.75);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(99, 102, 241, 0.25);
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --accent: #8b5cf6;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --text-main: #f3f4f6;
-  --text-muted: #9ca3af;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
 body {
+  /* Background and colour come from the tokens, not from here, so they cannot
+     disagree with the theme. `MuiCssBaseline` sets the same two values. */
+  background-color: var(--lgc-page);
+  color: var(--lgc-text);
   font-family: var(--font-sans);
-  background-color: var(--bg-primary);
-  color: var(--text-main);
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Glassmorphism helpers */
-.glass-panel {
-  background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
+code,
+pre {
+  font-family: var(--font-mono);
 }
 
-.glass-panel-glow {
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glow);
-  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.12);
-  border-radius: 12px;
+/* A scrollbar that reads against the page rather than the OS default. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lgc-border) transparent;
 }
 
-/* Custom modern scrollbar */
-::-webkit-scrollbar {
+*::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: #0b0f19;
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #1f2937;
+*::-webkit-scrollbar-thumb {
+  background-color: var(--lgc-border);
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--lgc-muted);
 }
 
-/* Code typography */
-code, pre {
-  font-family: var(--font-mono);
+@keyframes lgc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
-/* Pulse badge animation */
-@keyframes pulse-dot {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.8; }
-}
-
+/* A live indicator that is pulsing, not a colour in itself. */
 .pulse-indicator {
-  animation: pulse-dot 2s infinite ease-in-out;
+  animation: lgc-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-indicator {
+    animation: none;
+  }
 }

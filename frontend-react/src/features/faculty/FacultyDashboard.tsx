@@ -28,6 +28,7 @@ import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
 import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
 import { errorMessage } from '../../api/client'
+import { gradient } from '../../theme/alpha'
 
 export const FacultyDashboard: React.FC = () => {
   const queryClient = useQueryClient()
@@ -113,7 +114,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               DAG Structure
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: graphData?.is_dag ? '#10b981' : '#f59e0b' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: graphData?.is_dag ? 'success.main' : 'warning.main' }}>
               {graphData?.is_dag ? 'Valid DAG' : 'Cyclic / Pending'}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -141,7 +142,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Comprehension Gaps Tracked
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: '#ec4899' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: 'warning.main' }}>
               {statsData?.heatmap?.filter((h) => h.rate > 0.3)?.length ?? 0}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -155,7 +156,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Avg. Sequence Divergence
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: '#38bdf8' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: 'info.main' }}>
               {statsData?.divergence?.length
                 ? (statsData.divergence.reduce((acc, d) => acc + d.gap, 0) / statsData.divergence.length).toFixed(1)
                 : '0.0'}
@@ -337,7 +338,7 @@ export const FacultyDashboard: React.FC = () => {
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {item.concept}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: pct > 40 ? '#f87171' : 'text.secondary', fontWeight: 600 }}>
+                          <Typography variant="caption" sx={{ color: pct > 40 ? 'error.main' : 'text.secondary', fontWeight: 600 }}>
                             {item.wrong} / {item.attempts} missed ({pct}%)
                           </Typography>
                         </Box>
@@ -352,8 +353,8 @@ export const FacultyDashboard: React.FC = () => {
                               borderRadius: 4,
                               background:
                                 pct > 50
-                                  ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
-                                  : 'linear-gradient(90deg, #6366f1, #10b981)',
+                                  ? gradient('warn', 'bad')
+                                  : gradient('info', 'ok'),
                             },
                           }}
                         />

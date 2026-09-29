@@ -312,7 +312,7 @@ export const StudentDashboard: React.FC = () => {
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   Prerequisite Graph
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: snapshot.graph.has ? '#10b981' : '#f59e0b' }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: snapshot.graph.has ? 'success.main' : 'warning.main' }}>
                   {snapshot.graph.has ? `${snapshot.graph.edges} Edges` : 'Not Built'}
                 </Typography>
               </Card>
@@ -362,7 +362,7 @@ export const StudentDashboard: React.FC = () => {
                     sx={{
                       p: 1.5,
                       borderStyle: 'dashed',
-                      borderColor: selectedFile ? '#6366f1' : 'rgba(255,255,255,0.2)',
+                      borderColor: selectedFile ? 'primary.main' : 'divider',
                     }}
                   >
                     {selectedFile ? selectedFile.name : 'Select Video / Audio File (.mp4, .mp3, .wav)'}
@@ -633,7 +633,7 @@ export const StudentDashboard: React.FC = () => {
                     mt: 3,
                     p: 2,
                     borderRadius: 2,
-                    backgroundColor: '#000',
+                    backgroundColor: 'background.default',
                     border: '1px solid rgba(255,255,255,0.15)',
                   }}
                 >
@@ -641,7 +641,7 @@ export const StudentDashboard: React.FC = () => {
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
                       <VideoLibraryIcon fontSize="small" /> Remediation Clip Stream (Byte-Range Capable)
                     </Typography>
-                    <Button size="small" onClick={() => setPlayingClipUrl(null)} sx={{ color: '#fff' }}>
+                    <Button size="small" onClick={() => setPlayingClipUrl(null)} sx={{ color: 'primary.contrastText' }}>
                       Close Video
                     </Button>
                   </Box>
