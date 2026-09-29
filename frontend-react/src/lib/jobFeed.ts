@@ -128,9 +128,29 @@ export class JobFeed {
    */
   connect(courseId?: string | null, sink?: FeedSink): void {
     const next = courseId || null
-    if (sink) this.sink = sink
-    if (this.loop && this.courseId === next) return
+    if (this.loop && this.courseId === next) {
+      // Idempotent for the same course: swap the sink and keep the connection.
+      if (sink) this.sink = sink
+      return
+    }
+    // Tear the old connection down BEFORE installing the new sink.
+    //
+    // `disconnect()` clears `this.sink`, so doing it after the assignment threw
+    // the sink away: the feed connected, streamed, parsed and kept every job in
+    // its own `state`, and published to nobody. `this.sink?.(...)` in
+    // `publish()` was permanently a no-op, so nothing ever reached the React
+    // Query cache and the UI sat at "Disconnected" with an empty job list for
+    // the life of the page.
+    //
+    // The 17 tests in jobFeed.test.ts all missed it because they assert through
+    // `subscribe()` (the listener path) and connect without a sink. The sink is
+    // the only path the app uses.
+    //
+    // Order also matters for correctness, not just for survival: `disconnect()`
+    // publishes an empty 'starting' state, and that must reach the OUTGOING
+    // sink so a course change clears the previous course's jobs off screen.
     this.disconnect()
+    if (sink) this.sink = sink
     this.courseId = next
     this.controller = new AbortController()
     this.loop = this.run(this.controller.signal)
@@ -141,8 +161,12 @@ export class JobFeed {
     this.controller = null
     this.loop = null
     this.courseId = null
-    this.sink = null
+    // Publish BEFORE dropping the sink, so a consumer that installed one sees
+    // the reset. Nulling first meant `publish` reached the listeners but not the
+    // sink, so a course change left the outgoing sink holding the previous
+    // course's jobs until the next frame happened to overwrite them.
     this.publish([], 'starting')
+    this.sink = null
   }
 
   /** Resolves when the feed has fully stopped. Test seam. */

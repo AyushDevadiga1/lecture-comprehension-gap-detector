@@ -149,6 +149,82 @@ describe('JobFeed — the stream', () => {
     expect(live.mode).toBe('stream')
   })
 
+  it('delivers snapshots to the SINK, not only to subscribers', async () => {
+    // The gap that hid the 2026-09-29 dead-UI bug.
+    //
+    // Every other test in this file asserts through `subscribe()` and connects
+    // WITHOUT a sink. `publish()` fans out to both the sink and the listeners,
+    // so the listener path was green while the sink path — the only path the
+    // app uses, via useJobFeedConnection -> the React Query cache — was never
+    // executed. `connect()` used to assign `this.sink` and then call
+    // `disconnect()`, which nulls it, so the sink received nothing ever and the
+    // UI stayed "Disconnected" with an empty job list while the feed was
+    // happily streaming behind it.
+    const h = harness(async () =>
+      openSse([
+        'retry: 2000\n\n',
+        'event: jobs\n',
+        `data: ${JSON.stringify([job({ id: 11, progress_pct: 40 })])}\n\n`,
+      ]),
+    )
+    const seen: FeedState[] = []
+    h.feed.connect('ML', (s) => seen.push(s))
+    await settle()
+    await h.stop()
+
+    expect(seen.length).toBeGreaterThan(0)
+    const withJobs = seen.find((s) => s.jobs.length > 0)
+    expect(withJobs, 'the sink never received a snapshot with jobs').toBeDefined()
+    expect(withJobs!.jobs[0]!.id).toBe(11)
+    expect(withJobs!.mode).toBe('stream')
+  })
+
+  it('clears the outgoing sink on a course change, then feeds the new one', async () => {
+    // The other half of the ordering fix: `disconnect()` publishes an empty
+    // 'starting' state, and that has to reach the OUTGOING sink so the previous
+    // course's jobs do not stay on screen.
+    const h = harness(async () =>
+      openSse([
+        'event: jobs\n',
+        `data: ${JSON.stringify([job({ id: 3 })])}\n\n`,
+      ]),
+    )
+    const first: FeedState[] = []
+    const second: FeedState[] = []
+    h.feed.connect('ML', (s) => first.push(s))
+    await settle()
+    expect(first.some((s) => s.jobs.length > 0)).toBe(true)
+
+    h.feed.connect('prob', (s) => second.push(s))
+    await settle()
+    await h.stop()
+
+    // The outgoing sink is reset rather than left showing the old course.
+    const last = first[first.length - 1]!
+    expect(last.mode).toBe('starting')
+    expect(last.jobs).toEqual([])
+    // ...and the incoming sink is live.
+    expect(second.some((s) => s.mode === 'stream' || s.jobs.length > 0)).toBe(true)
+  })
+
+  it('replaces the sink on an idempotent reconnect for the same course', async () => {
+    const h = harness(async () => openSse())
+    const stale: FeedState[] = []
+    const fresh: FeedState[] = []
+    h.feed.connect('ML', (s) => stale.push(s))
+    await settle()
+    h.feed.connect('ML', (s) => fresh.push(s))
+    await settle()
+    await h.stop()
+
+    // A second component asking for the feed must not be silently ignored: the
+    // replacement sink is the live one from here on, and gets told about the
+    // teardown.
+    expect(stale.length).toBeGreaterThan(0)
+    expect(fresh.length).toBeGreaterThan(0)
+    expect(fresh[fresh.length - 1]!.jobs).toEqual([])
+  })
+
   it('reassembles a frame split across chunk boundaries', async () => {
     const payload = `data: ${JSON.stringify([job({ id: 9 })])}\n\n`
     const half = Math.floor(payload.length / 2)
