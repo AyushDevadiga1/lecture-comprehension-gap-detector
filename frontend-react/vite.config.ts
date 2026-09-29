@@ -1,5 +1,5 @@
-/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
+import { configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
@@ -50,5 +50,12 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // The live tier (`*.live.test.ts`) runs against a real spawned backend and
+    // is configured by vitest.live.config.ts. It must NOT be collected here:
+    // with no VITE_LECGAP_API_URL the client falls back to same-origin, every
+    // request goes to jsdom's localhost:3000, and the suite fails on
+    // ECONNREFUSED rather than on anything meaningful. Keeping the two tiers
+    // disjoint is what lets `npm run verify` stay fast and hermetic.
+    exclude: [...configDefaults.exclude, 'src/**/*.live.test.{ts,tsx}'],
   },
 })
