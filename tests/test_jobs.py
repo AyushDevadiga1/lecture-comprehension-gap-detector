@@ -9,7 +9,7 @@ in-memory SQLite so nothing touches the real DB or the network.
 """
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -32,6 +32,17 @@ def Session(monkeypatch):
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+
+    @event.listens_for(engine, "connect")
+    def _fk_on(dbapi_connection, connection_record):  # noqa: ARG001
+        # SQLite ships with foreign keys OFF, and db.py turns them ON for the
+        # real engine. A test engine that leaves them off cannot see a whole
+        # class of production bug: the 2026-09-29 extract failure was
+        # `IntegrityError: FOREIGN KEY constraint failed` on
+        # `DELETE FROM concepts`, thrown by the pragma, and this fixture
+        # silently made it unreproducible. Test the database the app runs on.
+        dbapi_connection.execute("PRAGMA foreign_keys=ON")
+
     models.Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine, expire_on_commit=False)
     for mod in (jobs_progress, jobs_transcribe, jobs_extract, jobs_clips,
@@ -170,6 +181,84 @@ def test_extract_worker_falls_back_when_structure_pass_fails(Session, monkeypatc
     jobs_extract.extract_concepts_worker(lid)
     with Session() as s:
         assert [c.name for c in s.query(models.Concept).all()] == ["Rescue"]
+
+
+def test_the_test_engine_enforces_foreign_keys(Session):
+    """The guard on the guard.
+
+    SQLite defaults `foreign_keys` to OFF, so a test engine that does not turn
+    it on cannot reproduce an `IntegrityError` the real engine raises. That is
+    not hypothetical: it is exactly why the 2026-09-29 extract crash survived a
+    710-test green suite. If this ever fails, every other FK assertion in this
+    file is vacuous.
+    """
+    from sqlalchemy.exc import IntegrityError
+
+    lid = _lecture(Session)
+    with Session() as s:
+        s.add(models.Concept(lecture_id=lid, course_id="c1", name="Kept"))
+        s.commit()
+        concept_id = s.query(models.Concept).one().id
+    with Session() as s:
+        s.add(models.Clip(lecture_id=lid, concept_id=concept_id,
+                          concept_name="Kept", start_s=0.0, end_s=1.0,
+                          path="clip.mp4"))
+        s.commit()
+    with pytest.raises(IntegrityError):
+        with Session() as s:
+            s.query(models.Concept).filter(models.Concept.lecture_id == lid).delete()
+            s.commit()
+
+
+def test_extract_worker_reextracting_a_lecture_with_clips_succeeds(Session, monkeypatch):
+    """The 2026-09-29 incident, as a regression test.
+
+    Re-extraction replaces a lecture's concepts, but `clips.concept_id` is a
+    real foreign key into `concepts` and `PRAGMA foreign_keys=ON`. Deleting the
+    concepts first therefore raised `IntegrityError: FOREIGN KEY constraint
+    failed` at the `DELETE FROM concepts` line — after the minutes-long LLM
+    stage, which is why it presented to a user as "the button hangs, then
+    nothing happens".
+
+    Clips must be DETACHED (`concept_id -> NULL`), not deleted: they carry
+    their own name/times/path, so the clip browser and playback keep working
+    and re-cutting clips re-links them.
+    """
+    lid = _lecture(Session, status="ready")
+    with Session() as s:
+        s.add(models.TranscriptSegment(lecture_id=lid, idx=0, start_s=0.0,
+                                       end_s=4.0, text="old transcript"))
+        s.add(models.Concept(lecture_id=lid, course_id="c1", name="Stale"))
+        s.commit()
+        stale_id = s.query(models.Concept).one().id
+        s.add(models.Clip(lecture_id=lid, concept_id=stale_id,
+                          concept_name="Stale", start_s=0.0, end_s=1.0,
+                          path="stale.mp4", ok=1))
+        s.commit()
+
+    structure = {
+        "passages": [{"title": "NNs", "kind": "explain", "start_s": 0.0,
+                      "end_s": 4.0, "summary": "s", "text": "text"}],
+        "concepts": [{"name": "Fresh", "implicit": False,
+                      "start_s": 0.0, "end_s": 4.0, "passage_index": 0}],
+        "links": [],
+    }
+    monkeypatch.setattr(jobs_extract, "extract_lecture_structure",
+                        lambda docs: structure)
+    monkeypatch.setattr(jobs_graph, "rebuild_course_graph",
+                        lambda c, lecture_id=None: None)
+
+    # must not raise: this call raised IntegrityError before the fix
+    jobs_extract.extract_concepts_worker(lid)
+
+    with Session() as s:
+        assert [c.name for c in s.query(models.Concept).all()] == ["Fresh"]
+        clips = s.query(models.Clip).all()
+        assert len(clips) == 1, "the clip row must survive re-extraction"
+        assert clips[0].concept_id is None, "the clip must be detached, not orphaned"
+        assert clips[0].concept_name == "Stale" and clips[0].path == "stale.mp4"
+        lec = s.get(models.Lecture, lid)
+        assert lec.status == "ready" and lec.error is None
 
 
 # ------------------------------------------------------------ clips job (St 5)

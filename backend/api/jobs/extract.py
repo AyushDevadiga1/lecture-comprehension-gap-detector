@@ -14,7 +14,7 @@ from typing import List
 from backend.api.jobs.common import PIPELINE_SEMAPHORE, client_error_message
 from backend.api.jobs.graph import rebuild_course_graph
 from backend.api.jobs.progress import _finish, job_scope, update_lecture_progress
-from backend.models.db import Concept, Lecture, LectureLink, Passage, SessionLocal
+from backend.models.db import Clip, Concept, Lecture, LectureLink, Passage, SessionLocal
 from backend.pipeline.extract_concepts import extract_spoken_concepts
 from backend.pipeline.passages import extract_lecture_structure
 from backend.pipeline.refine_timeline import refine_concept_times
@@ -85,6 +85,24 @@ def _extract_concepts_worker(lecture_id: int) -> None:
             _finish(lecture_id)
             return
         lecture.error = None  # a success supersedes any earlier failed run
+        # Order is forced by the schema, not by taste. `clips.concept_id` and
+        # `concepts.passage_id` are real foreign keys and `db.py` turns
+        # `PRAGMA foreign_keys` ON, so a child row must be detached before its
+        # parent is deleted or SQLite raises IntegrityError immediately.
+        #
+        # Clips are DETACHED, not deleted: a clip row carries its own
+        # concept_name / start_s / end_s / path, so the clip browser and
+        # playback keep working, and re-cutting clips re-links them to the new
+        # concept ids. Deleting them instead would throw away ffmpeg work the
+        # user can already see, for no correctness gain. `concept_id` is
+        # nullable for exactly this case.
+        #
+        # This was the real cause of the 2026-09-29 "wedged extract" incident:
+        # every re-extraction of a lecture that already had clips died here,
+        # after the minutes-long LLM stage, which reads as "the button hangs".
+        db.query(Clip).filter(Clip.lecture_id == lecture_id).update(
+            {Clip.concept_id: None}, synchronize_session=False,
+        )
         db.query(Concept).filter(Concept.lecture_id == lecture_id).delete()
         db.query(LectureLink).filter(LectureLink.lecture_id == lecture_id).delete()
         db.query(Passage).filter(Passage.lecture_id == lecture_id).delete()
