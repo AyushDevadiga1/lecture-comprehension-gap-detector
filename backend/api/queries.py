@@ -5,6 +5,8 @@ outside the jobs package because routes need these synchronously, not as
 background work.
 """
 
+from pathlib import Path
+
 from backend.api.schemas import QuizQuestionOut
 from backend.models.db import Clip, Lecture, SessionLocal, TranscriptSegment
 
@@ -45,8 +47,31 @@ def question_out(item) -> QuizQuestionOut:
     )
 
 
+def clip_media_url(clip_path, lecture_id):
+    """The canonical playback URL for a stored clip path.
+
+    One place, so no client has to reconstruct it. ``GET
+    /media/clips/{lecture_id}/{filename}`` is the only thing that actually serves
+    these bytes (``routes/media.py``), and it is Range-capable, so a URL is the
+    only correct thing to hand a browser.
+
+    Mirrors the ``_compute_url`` validator on ``ClipOut``; the two are asserted to
+    agree by ``tests/test_contract.py``.
+    """
+    if not clip_path or not lecture_id:
+        return None
+    return f"/media/clips/{lecture_id}/{Path(clip_path).name}"
+
+
 def clips_by_concept(course_id: str) -> dict:
-    """Concept name -> first ok clip path, for a course (via its lectures)."""
+    """Concept name -> first ok clip **URL** for a course (via its lectures).
+
+    Contract v2: this used to return ``Clip.path``, a server filesystem path,
+    which is why the React app carried a path-to-URL mapper and the Streamlit
+    client still carries ``media_url``. A filesystem path in a payload is a
+    contract-test failure (``plan/REACT_ARCHITECTURE.md`` §3), so the URL is
+    built here instead.
+    """
     with SessionLocal() as db:
         rows = (
             db.query(Clip).join(Lecture, Clip.lecture_id == Lecture.id)
@@ -55,5 +80,7 @@ def clips_by_concept(course_id: str) -> dict:
         )
     out: dict = {}
     for clip in rows:
-        out.setdefault(clip.concept_name, clip.path)
-    return out
+        url = clip_media_url(clip.path, clip.lecture_id)
+        if url and clip.concept_name not in out:
+            out[clip.concept_name] = url
+    return out

@@ -76,10 +76,14 @@ honestly.
 |---|---|---|---|
 | `GET /media/clips/{lecture_id}/{filename}` | path int + sanitized filename | `FileResponse` streaming with **Range** support (`Accept-Ranges: bytes`); serves from `data/processed/clips/{lecture_id}/` | 404; 422 |
 
-**Frontend mapping rule (v1):** clips/remediation payloads currently return the
-*server filesystem path* (`ClipOut.path`, `WatchItemOut.clip`). The frontend maps
-`path → /media/clips/{lecture_id}/{filename}` at the edge via one helper
-(`client.media_url`). Contract v2 (React engine) will emit URLs directly.
+**Frontend mapping rule (v2 — no mapping required):** clips and remediation
+payloads carry a **media URL** (`/media/clips/{lecture_id}/{filename}`), not a
+server filesystem path. Contract v2 closed this: `queries.clips_by_concept` and
+`queries.clip_media_url` build the URL, so the React client has no path→URL
+mapper (`frontend/client.py::media_url` remains only for the Streamlit engine,
+which still reads `ClipOut.path` for the clip-browser spans). The only sanctioned
+filesystem path in any payload is `ClipOut.path`, kept for that engine.
+`tests/test_contract.py` fails if another appears.
 
 ## 3. Response shapes (v1)
 
@@ -130,6 +134,25 @@ QuestionFeedback  question_id, concept, correct, selected?, answer?,
    generation for one course is refused with **409** rather than queued
    (Engine-2 precondition R4). `POST /quizzes` remains for API and smoke tests.
 4. Concurrent graph builds for one course are last-committer-wins (self-healing
-   via cache signature), so transiently a shorter graph may be served.
-5. `POST /courses/{id}/graph` without `lecture_id` publishes no progress. The
-   Streamlit engine always passes `lecture_id`.
+   via cache signature), so transiently a shorter graph may be served. Engine 2
+   added a per-course advisory lock in `job_registry.py` for the *job* path.
+5. `POST /courses/{id}/graph` without `lecture_id` publishes no progress. Pass
+   it when the build should appear against a specific lecture.
+
+## 6. Drift is a test failure
+
+`tests/test_contract.py` pins this document against the running app, so the
+table above cannot rot:
+
+- every documented `(method, path)` exists, **and** nothing undocumented is
+  served (drift in both directions);
+- no response schema contains a filesystem path (`ClipOut.path` excepted and
+  asserted as the exception);
+- `QuizQuestionOut` carries no answer key, and `GET /quizzes` does not grade;
+- `queries.clip_media_url` and the `ClipOut` validator agree on the URL they
+  produce, so the one canonical form cannot diverge from itself.
+
+The React types in `frontend-react/src/api/types.ts` are hand-written mirrors,
+not generated, and this gate pins the *schema* rather than that file — so those
+types still rely on a human keeping them honest. Generating them from the
+OpenAPI document is the real closure and is tracked for the parity stage.

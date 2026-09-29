@@ -223,9 +223,15 @@ class JobListOut(BaseModel):
 class WatchItemOut(BaseModel):
     concept: str
     failed: bool
-    # ``clip`` kept for Streamlit backward compat; React clients use ``clip_url``.
+    # Contract v2 (C4): this is now a *media URL*
+    # (/media/clips/{lecture_id}/{filename}), not a filesystem path. It was the
+    # stored Clip.path until `queries.clips_by_concept` started building the URL
+    # itself -- which is what let the React client delete its path-to-URL mapper
+    # (REACT_ARCHITECTURE.md §3: a filesystem path in a payload is a
+    # contract-test failure, not a runtime surprise). The name is kept so the
+    # Streamlit engine's payload shape is unchanged; read `clip_url`.
     clip: Optional[str] = None
-    clip_url: Optional[str] = None  # alias of clip, already a URL post C4
+    clip_url: Optional[str] = None  # alias of clip
 
     @model_validator(mode="after")
     def _sync_clip_url(self) -> "WatchItemOut":

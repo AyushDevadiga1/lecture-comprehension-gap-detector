@@ -1,12 +1,20 @@
 /**
- * API type definitions — generated from backend/api/schemas.py (contract v2).
+ * API type definitions — hand-written mirrors of `backend/api/schemas.py`
+ * (contract v2).
  *
- * Rule: every type here MUST match a Pydantic model in schemas.py.
- * Drift fails the OpenAPI snapshot test (C4 gate), not silent runtime breakage.
+ * These are **not** generated. `npm run gen:types` does not exist and never
+ * did, despite an earlier version of this header claiming otherwise; do not
+ * trust a claim here without checking the script exists.
+ *
+ * Rule: every type here MUST match a Pydantic model in schemas.py. Drift is
+ * now caught by `tests/test_contract.py` on the Python side, which pins the
+ * OpenAPI surface — but it pins the *schema*, not this file, so these types
+ * still need a human keeping them honest. Generating them from the OpenAPI
+ * snapshot is the real fix and is tracked for the parity stage.
  *
  * v2 additions over v1:
- *   - ClipOut.url  (canonical /media/clips/{id}/{file} URL — never a fs path)
- *   - WatchItemOut.clip_url (same)
+ *   - ClipOut.url  (canonical /media/clips/{id}/{file} URL)
+ *   - WatchItemOut.clip_url (same; `clip` is an alias, not a filesystem path)
  *   - JobOut, JobListOut, JobAcceptedOut  (Engine 2 / C2)
  */
 
@@ -191,9 +199,12 @@ export interface QuizSubmitIn {
 export interface WatchItemOut {
   concept: string
   failed: boolean
-  /** @deprecated — use `clip_url` (contract v2). */
+  /**
+   * @deprecated Use `clip_url`. Both carry the same media URL as of contract v2 —
+   * `clip` is retained only so the Streamlit engine's payload shape is unchanged.
+   */
   clip?: string | null
-  /** Canonical URL: /media/clips/{lecture_id}/{filename} */
+  /** Canonical: /media/clips/{lecture_id}/{filename} */
   clip_url?: string | null
 }
 

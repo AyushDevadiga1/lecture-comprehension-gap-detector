@@ -360,4 +360,17 @@ def test_query_clips_first_ok_wins(Session):
         s.add(models.Clip(lecture_id=a, concept_name="A", start_s=0.0, end_s=1.0,
                           path="later-good.mp4", ok=1))
         s.commit()
-    assert queries.clips_by_concept("c1") == {"A": "later-good.mp4"}
+    # Contract v2: the value is a media URL, not the stored filesystem path --
+    # a path in a payload is a contract-test failure (REACT_ARCHITECTURE §3).
+    # The `ok=0` row is still skipped, so the first *ok* clip still wins.
+    assert queries.clips_by_concept("c1") == {"A": f"/media/clips/{a}/later-good.mp4"}
+
+
+def test_query_clips_skips_a_row_that_cannot_form_a_url(Session):
+    """No lecture id means no URL; the row is skipped rather than half-linked."""
+    a = _lecture(Session, status="ready")
+    with Session() as s:
+        s.add(models.Clip(lecture_id=a, concept_name="A", start_s=0.0, end_s=1.0,
+                          path="", ok=1))
+        s.commit()
+    assert queries.clips_by_concept("c1") == {}

@@ -1030,8 +1030,12 @@ def test_get_remediation_returns_latest_sequence(api, monkeypatch):
     watch = [(x["concept"], x["failed"]) for x in body["remediation"]]
     # upstream A (has a clip) then the failed B — prerequisite first
     assert watch == [("A", False), ("B", True)]
-    # clips are attached for playback where they exist
-    assert body["remediation"][0]["clip"] == "clips/a.mp4"
+    # clips are attached for playback where they exist. Contract v2: a media
+    # URL, not the stored path -- a filesystem path in a payload is a
+    # contract-test failure (REACT_ARCHITECTURE §3), and it is what the React
+    # client's deleted path-to-URL mapper existed to convert.
+    assert body["remediation"][0]["clip"] == f"/media/clips/{lid}/a.mp4"
+    assert body["remediation"][0]["clip_url"] == f"/media/clips/{lid}/a.mp4"
     # the remediation endpoint never discloses the answer key or per-question
     # feedback — that stays on the post-submit response only (SECURITY_AUDIT #22)
     assert body["feedback"] == []

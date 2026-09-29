@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+﻿import React, { useEffect, useRef, useState } from 'react'
 import {
   Box,
   Typography,
@@ -45,7 +45,6 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
-import { resolveClipUrl } from '../../lib/media'
 
 
 export const StudentDashboard: React.FC = () => {
@@ -59,7 +58,7 @@ export const StudentDashboard: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Quiz state
-  // Quiz state lives in the draft store (§2): the selections are the user's,
+  // Quiz state lives in the draft store (Â§2): the selections are the user's,
   // the questions are re-readable from the server.
   const draft = useQuizStore((s) => draftForCourse(s, selectedCourseId))
   const quizResult = useQuizStore((s) => s.result)
@@ -120,7 +119,7 @@ export const StudentDashboard: React.FC = () => {
 
   /**
    * Fetch the generated quiz once its job is done. Reading `GET /quizzes` is
-   * cheap — no generation calls — so this also serves as "resume the quiz I was
+   * cheap â€” no generation calls â€” so this also serves as "resume the quiz I was
    * already taking" on reload.
    */
   const loadQuizMutation = useMutation({
@@ -172,7 +171,7 @@ export const StudentDashboard: React.FC = () => {
    * Fetch the quiz once the job we queued finishes.
    *
    * This is the "start a lecture job mid-quiz, finish the quiz, nothing was
-   * regenerated or lost" property from REACT_ARCHITECTURE §6, and it holds for
+   * regenerated or lost" property from REACT_ARCHITECTURE Â§6, and it holds for
    * free: the draft is UI state, and a job completing only invalidates the
    * graph/lecture keys. The Streamlit engine needed a dedicated `completed`
    * record and a `drain_ready` to get this right.
@@ -349,7 +348,7 @@ export const StudentDashboard: React.FC = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <TextField
                     label="Lecture Title"
-                    placeholder="e.g. Lecture 1 — Introduction to Vectors"
+                    placeholder="e.g. Lecture 1 â€” Introduction to Vectors"
                     value={uploadTitle}
                     onChange={(e) => setUploadTitle(e.target.value)}
                     size="small"
@@ -555,12 +554,12 @@ export const StudentDashboard: React.FC = () => {
                               )}
                             </Box>
 
-                            {item.clip_url || item.clip ? (
+                            {item.clip_url ? (
                               <Button
                                 size="small"
                                 variant="outlined"
                                 startIcon={<PlayCircleOutlineIcon />}
-                                onClick={() => setPlayingClipUrl(resolveClipUrl(item.clip_url || item.clip))}
+                                onClick={() => setPlayingClipUrl(item.clip_url ?? null)}
                               >
                                 Watch Clip
                               </Button>
