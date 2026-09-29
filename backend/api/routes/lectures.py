@@ -290,17 +290,32 @@ async def upload_lecture_media(
 
 
 @router.get("", response_model=List[LectureOut])
-def list_lectures(limit: int = 500, offset: int = 0) -> List[Lecture]:
+def list_lectures(limit: int = 500, offset: int = 0,
+                  course_id: Optional[str] = None) -> List[Lecture]:
     """Lecture list, paginated (M5) — the sidebar/frontend fetches this per
-    rerun, so bound the rows returned; defaults stay backward compatible."""
+    rerun, so bound the rows returned; defaults stay backward compatible.
+
+    `course_id` filters server-side. It is optional so the Streamlit client,
+    which calls this with no parameters and shows every lecture, is unaffected.
+
+    This parameter did not exist until 2026-09-29, and its absence was invisible:
+    FastAPI ignores unknown query parameters, so a client sending
+    `?course_id=ml` got a 200 and *every* lecture in the database. The React app
+    survived it only because `selectedCourseId` is still hardcoded to `'ml'` and
+    nothing else ever looked. Found by `npm run test:live`, which seeds a second
+    course precisely so that "all rows" and "this course's rows" differ.
+    """
     if limit < 1:
         raise HTTPException(status_code=400, detail="limit must be >= 1")
     if offset < 0:
         raise HTTPException(status_code=400, detail="offset must be >= 0")
     with SessionLocal() as db:
+        q = db.query(Lecture)
+        wanted = (course_id or "").strip()
+        if wanted:
+            q = q.filter(Lecture.course_id == wanted)
         return [_with_media(lec) for lec in (
-            db.query(Lecture)
-            .order_by(Lecture.id)
+            q.order_by(Lecture.id)
             .offset(offset)
             .limit(limit)
             .all()

@@ -30,27 +30,30 @@ describe('live: the real client reaches a real server', () => {
     expect(ml?.has_graph).toBe(true)
   })
 
-  it('lists lectures, and the course_id filter is NOT applied server-side', async () => {
+  it('scopes the lecture list to the requested course', async () => {
     const rows = await lectures.list('ml')
 
-    // FINDING (2026-09-29): `GET /lectures?course_id=ml` returns every lecture
-    // in the database â€” the seeded `prob` lecture comes back too. The wrapper
-    // sends course_id, so either the route drops the parameter or the client
-    // is expected to filter. The React app hardcodes `selectedCourseId = 'ml'`
-    // and never sees the difference, so this has been invisible; it becomes a
-    // real bug the moment a second course is selected.
+    // Found by this file on 2026-09-29: the route had no `course_id` parameter
+    // at all, and FastAPI ignores unknown query parameters, so this call
+    // returned every lecture in the database — the seeded `prob` lecture
+    // included. Invisible until now only because `selectedCourseId` is
+    // hardcoded to one course and nothing else ever looked.
     //
-    // Asserted as-is on purpose: this test's job is to record what the server
-    // actually does, so the day the filter is fixed, this fails and says so.
-    const byCourse = new Map(rows.map((l) => [l.course_id, l.title]))
-    expect(byCourse.get('ml')).toBeDefined()
-    expect(byCourse.get('prob')).toBeDefined()
-    expect(rows.filter((l) => l.course_id === 'ml').map((l) => l.title).sort()).toEqual([
-      'Linear Regression',
-      'Multiple Regression',
-    ])
-    for (const l of rows) expect(l.status).toBe('ready')
+    // The seed carries a second course precisely so that "all rows" and "this
+    // course's rows" are distinguishable; without it this assertion is vacuous.
+    const ids = rows.map((l) => l.id)
+    expect(rows.map((l) => l.title).sort()).toEqual(['Linear Regression', 'Multiple Regression'])
+    for (const l of rows) {
+      expect(l.course_id).toBe('ml')
+      expect(l.status).toBe('ready')
+    }
+
+    // And the other course is still reachable, and still separate.
+    const other = await lectures.list('prob')
+    expect(other.map((l) => l.title)).toEqual(['Bayes Theorem'])
+    expect(ids.some((id) => other.some((o) => o.id === id))).toBe(false)
   })
+
 
   it('returns a lectureâ€™s clips as playback URLs, never filesystem paths', async () => {
     const rows = await lectures.list('ml')

@@ -1493,6 +1493,49 @@ def test_list_lectures_respects_limit_offset(api):
     assert client.get("/lectures", params={"offset": -1}).status_code == 400
 
 
+def test_list_lectures_filters_by_course(api):
+    """`course_id` actually filters.
+
+    Until 2026-09-29 this route had no `course_id` parameter at all, and the
+    defect was invisible: FastAPI ignores unknown query parameters, so a client
+    asking for `?course_id=ml1` got a 200 and *every* lecture in the database.
+    The React client has been sending `course_id` on every call and receiving
+    unfiltered rows, which only went unnoticed because `selectedCourseId` is
+    hardcoded to one course.
+    """
+    client, Session = api
+    _add_lecture(Session, course_id="ml1", status="ready")
+    _add_lecture(Session, course_id="ml1", status="ready")
+    _add_lecture(Session, course_id="prob", status="ready")
+
+    assert len(client.get("/lectures").json()) == 3, "no filter = every course"
+    assert len(client.get("/lectures", params={"course_id": "ml1"}).json()) == 2
+    assert len(client.get("/lectures", params={"course_id": "prob"}).json()) == 1
+
+    rows = client.get("/lectures", params={"course_id": "ml1"}).json()
+    assert {r["course_id"] for r in rows} == {"ml1"}
+
+    # Unknown course is empty, not an error and not everything.
+    assert client.get("/lectures", params={"course_id": "nope"}).json() == []
+    # Blank/whitespace is treated as absent rather than as a literal course.
+    assert len(client.get("/lectures", params={"course_id": "  "}).json()) == 3
+
+
+def test_list_lectures_combines_course_filter_with_pagination(api):
+    """The filter must compose with limit/offset, not replace them."""
+    client, Session = api
+    for _ in range(3):
+        _add_lecture(Session, course_id="ml1", status="ready")
+    for _ in range(3):
+        _add_lecture(Session, course_id="prob", status="ready")
+
+    page = client.get(
+        "/lectures", params={"course_id": "ml1", "limit": 2, "offset": 1}
+    ).json()
+    assert len(page) == 2
+    assert {r["course_id"] for r in page} == {"ml1"}
+
+
 # ------------------------------------------------------- input bounds (schemas)
 
 def test_quiz_input_bounds_are_enforced(api):

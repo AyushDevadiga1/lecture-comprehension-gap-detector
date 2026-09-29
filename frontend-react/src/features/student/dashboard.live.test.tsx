@@ -145,18 +145,18 @@ describe('live: the SSE feed reaches the UI', () => {
     renderApp()
     await screen.findByText('Linear Regression')
 
-    // THREE rows, not two: `GET /lectures?course_id=ml` ignores course_id and
-    // returns the seeded `prob` lecture too (see read.live.test.ts). Two of the
-    // three are idle and one carries the running job, so exactly one
-    // "Extract Concepts" button may be disabled. This is the double-fire guard,
-    // driven by a real feed rather than a hand-built busy set.
+    // Two rows: the seeded `prob` lecture is correctly filtered out by
+    // `course_id` (it was returned in full until 2026-09-29, when this file
+    // found the route had no such parameter). One of the two carries the running
+    // job, so exactly one "Extract Concepts" button may be disabled. This is the
+    // double-fire guard, driven by a real feed rather than a hand-built busy set.
     await waitFor(() => {
       const buttons = screen.getAllByRole('button', { name: 'Extract Concepts' })
-      expect(buttons).toHaveLength(3)
+      expect(buttons).toHaveLength(2)
       const disabled = buttons.filter((b) => (b as HTMLButtonElement).disabled)
       const enabled = buttons.filter((b) => !(b as HTMLButtonElement).disabled)
       expect(disabled).toHaveLength(1)
-      expect(enabled).toHaveLength(2)
+      expect(enabled).toHaveLength(1)
     })
   })
 })
