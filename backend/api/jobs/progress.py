@@ -19,11 +19,15 @@ once a job has ended.
 
 from contextlib import contextmanager
 from datetime import datetime
+import logging
 import threading
 import time
 
 from backend.api import job_registry as registry
+from backend.api.jobs.common import client_error_message
 from backend.models.db import Lecture, SessionLocal
+
+_LOGGER = logging.getLogger("lecgap.jobs.progress")
 
 _progress_lock = threading.Lock()
 _lecture_progress: dict = {}
@@ -40,13 +44,61 @@ _scope = threading.local()
 
 @contextmanager
 def job_scope(job_id: int):
-    """Bind ``job_id`` for the enclosing worker run."""
+    """Bind ``job_id`` for the enclosing worker run.
+
+    Also the crash net. A worker that raises used to leave its job row
+    ``running`` with a frozen heartbeat *forever* — nothing called ``fail()`` —
+    and that is what the 2026-09-29 "every button is dead" report actually was.
+    See :func:`_settle_crash`.
+    """
     previous = getattr(_scope, "job_id", None)
     _scope.job_id = job_id
     try:
         yield
+    except Exception as exc:  # noqa: BLE001 — re-raised; this only settles state
+        _settle_crash(job_id, exc)
+        raise
     finally:
         _scope.job_id = previous
+
+
+def _settle_crash(job_id: int, exc: BaseException) -> None:
+    """Turn an unhandled worker crash into a settled, honest ``error`` row.
+
+    Without this, a worker that raised mid-persistence left three lies on the
+    books at once: the job stayed ``running`` with a heartbeat frozen at the
+    crash instant; ``useBusyLectureIds`` therefore kept the lecture busy and
+    disabled its buttons for the whole six-hour ``JOB_DEADLINE_S`` backstop;
+    and because a dead worker stops refreshing ``heartbeat_at``, the
+    change-gated SSE snapshot stopped changing, so the UI never even learned
+    the job had died. ``GET /jobs?active_only=true`` kept listing it.
+
+    ``job_scope`` is the single choke point every worker passes through (which
+    is why the ~20 ``update_lecture_progress`` call sites need no change), so
+    this is the one place that has to be right.
+
+    Best-effort by design: it runs while an exception is propagating and must
+    never raise a second one.
+    """
+    if job_id is None:
+        return
+    try:
+        row = registry.get_job(job_id) or {}
+        msg = client_error_message(exc, f"{row.get('kind') or 'Job'} job")
+        fail(row.get("lecture_id"), job_id, msg)
+        lecture_id = row.get("lecture_id")
+        if lecture_id is None:
+            return
+        with SessionLocal() as db:
+            lecture = db.get(Lecture, lecture_id)
+            # Never regress a lecture that already reached `ready`.
+            if lecture is None or lecture.status == "ready":
+                return
+            lecture.status = "error"
+            lecture.error = msg
+            db.commit()
+    except Exception:  # noqa: BLE001 — settling must not mask the real failure
+        _LOGGER.exception("failed to settle crashed job %s", job_id)
 
 
 def _active_job_id():

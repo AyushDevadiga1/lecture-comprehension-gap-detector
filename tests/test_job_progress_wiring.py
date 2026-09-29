@@ -21,7 +21,7 @@ from backend.api.jobs.progress import (
     job_scope,
     update_lecture_progress,
 )
-from backend.models.db import Job, SessionLocal, init_db
+from backend.models.db import Job, Lecture, SessionLocal, init_db
 
 
 @pytest.fixture(autouse=True)
@@ -31,12 +31,15 @@ def clean():
     init_db()
     with SessionLocal() as db:
         db.query(Job).delete()
+        # cascades to the lecture's own children
+        db.query(Lecture).delete()
         db.commit()
     with progress_mod._progress_lock:
         progress_mod._lecture_progress.clear()
     yield
     with SessionLocal() as db:
         db.query(Job).delete()
+        db.query(Lecture).delete()
         db.commit()
     with progress_mod._progress_lock:
         progress_mod._lecture_progress.clear()
@@ -250,3 +253,103 @@ def test_graph_route_returns_the_job_id():
     src = inspect.getsource(courses.build_course_graph)
     assert "registry.create_job(" in src
     assert "job_id=job_id" in src
+
+
+# --------------------------------------------------- a crashing worker settles
+
+def test_a_crashing_worker_does_not_leave_its_job_running():
+    """The 2026-09-29 incident's real shape.
+
+    A worker that raised used to leave its job `running` with a frozen
+    heartbeat forever, because nothing called `fail()`. That is what kept the
+    lecture in `useBusyLectureIds` — disabling its buttons for the whole
+    six-hour `JOB_DEADLINE_S` backstop — and why the report was "every button
+    is dead" while every test passed.
+    """
+    job_id = registry.create_job("extract", course_id="ml", lecture_id=1)
+    with pytest.raises(RuntimeError):
+        with job_scope(job_id):
+            update_lecture_progress(1, "extracting", 70, "Persisting...")
+            raise RuntimeError("sqlite3.IntegrityError: FOREIGN KEY constraint failed")
+
+    j = registry.get_job(job_id)
+    assert j["status"] == "error", "a crashed worker must settle its row"
+    assert j["terminal"] is True
+    assert j["error"]
+
+
+def test_a_crashing_worker_reports_a_sanitized_message():
+    """Client-visible text must not leak driver internals or a traceback."""
+    job_id = registry.create_job("extract", course_id="ml", lecture_id=1)
+    with pytest.raises(RuntimeError):
+        with job_scope(job_id):
+            raise RuntimeError("ffmpeg stderr: /tmp/xyz/groq-key-ABCD leaked")
+
+    err = registry.get_job(job_id)["error"] or ""
+    assert "ABCD" not in err and "groq" not in err.lower()
+    assert "server logs" in err
+
+
+def test_a_crashing_worker_flags_the_lecture():
+    job_id = registry.create_job("extract", course_id="ml", lecture_id=1)
+    with SessionLocal() as db:
+        lec = Lecture(course_id="ml", title="L1", status="extracting")
+        db.add(lec)
+        db.commit()
+        lid = lec.id
+
+    with pytest.raises(RuntimeError):
+        with job_scope(job_id):
+            raise RuntimeError("boom")
+
+    with SessionLocal() as db:
+        lec = db.get(Lecture, lid)
+        assert lec.status == "error" and "boom" not in (lec.error or "").lower()
+    # and the legacy in-memory entry is pruned, so the read falls back to the row
+    assert get_lecture_progress(lid)["status"] == "error"
+
+
+def test_a_crash_never_regresses_a_ready_lecture():
+    """A crash after the lecture already reached `ready` must not un-ready it."""
+    job_id = registry.create_job("extract", course_id="ml", lecture_id=1)
+    with SessionLocal() as db:
+        lec = Lecture(course_id="ml", title="L1", status="ready", error=None)
+        db.add(lec)
+        db.commit()
+        lid = lec.id
+
+    with pytest.raises(RuntimeError):
+        with job_scope(job_id):
+            raise RuntimeError("boom after success")
+
+    with SessionLocal() as db:
+        assert db.get(Lecture, lid).status == "ready"
+    assert registry.get_job(job_id)["status"] == "error"
+
+
+def test_a_crash_is_always_reraised():
+    """The crash net settles state; it must not swallow the failure, or a
+    broken worker would look like a clean run to the server log."""
+    with pytest.raises(ValueError):
+        with job_scope(registry.create_job("extract", course_id="ml", lecture_id=1)):
+            raise ValueError("visible")
+
+
+def test_a_crash_outside_any_job_scope_still_propagates():
+    """Workers called with no `job_id` (every legacy test) must be unaffected."""
+    with pytest.raises(ValueError):
+        with job_scope(None):
+            raise ValueError("no job")
+
+
+def test_a_settling_failure_does_not_mask_the_crash(monkeypatch):
+    """`_settle_crash` runs while an exception is propagating; if IT raises,
+    the original failure must still be the one that escapes."""
+
+    def _boom(*a, **kw):
+        raise RuntimeError("registry is down")
+
+    monkeypatch.setattr(progress_mod.registry, "get_job", _boom)
+    with pytest.raises(ValueError, match="the real failure"):
+        with job_scope(registry.create_job("extract", course_id="ml", lecture_id=1)):
+            raise ValueError("the real failure")
