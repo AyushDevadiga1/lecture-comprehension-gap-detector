@@ -1,8 +1,41 @@
 # NEXT SESSION — start here
 
+> # ⛔ READ THIS FIRST: the task below is WRONG and has been done and refuted
+>
+> Everything from "## The bug to fix" onwards describes a **SQLite write-lock
+> deadlock** that never happened. It was a **foreign-key violation**, and the
+> three "wedged" jobs crashed instantly rather than blocking. **F1 and F2 fix
+> nothing** — the throttle was never exhausted, measured `in_use == 0` straight
+> after a crash. **F3 is still worth doing** as a double-click guard.
+>
+> **All of it has since been fixed, on `engine2/scaffold`:**
+>
+> | Commit | What it actually was |
+> |---|---|
+> | `425388c` | `IntegrityError` on `DELETE FROM concepts` — `clips.concept_id` is a real FK and `PRAGMA foreign_keys=ON`. Detach the clips before deleting their concepts. Also: the test engine now enforces FKs, which is *why* 710 tests missed it. |
+> | `ed8086d` | `job_scope` had no `except`, so a crashed worker stayed `running` with a frozen heartbeat forever. |
+> | `de74a02` | **`JobFeed.connect()` assigned `this.sink` then called `disconnect()`, which nulls it.** The job feed never delivered a single snapshot to the UI. This is the actual "every button is dead". |
+> | `c097be6` | `npm run test:live` — a real uvicorn, a real throwaway DB, real components. It is what found `de74a02`. |
+>
+> `plan/WEDGE_DIAGNOSIS_2026-09-29.md` carries the full refutation with evidence.
+>
+> ## What is left
+>
+> 1. **Playwright.** The one thing jsdom cannot prove: that a real browser reads
+>    a streaming body through Vite's dev proxy. `test:live` proves the stream is
+>    correct and reaches the components, in Node.
+> 2. **F3** — a per-lecture 409 on `POST /lectures/{id}/concepts`. Still
+>    unwired; `acquire_course`/`release_course`/`CourseBusy` exist and are called
+>    from nowhere.
+> 3. **The app is still unverified by a human.** Nobody has watched a real job
+>    advance in a real browser.
+
 > **Paste this into the new session:**
 >
 > `Read C:\Users\hp\Desktop\lecture-comprehension-gap-detector\plan\NEXT_SESSION_PROMPT.md and follow it exactly.`
+
+Everything below is the prompt as it was written before the refutation. It is
+kept so the record is honest, but **do not act on it** — read the box above.
 
 Everything below is the prompt itself. It is written to be pasted whole, so it
 repeats what the other docs say on purpose — a new session should not have to

@@ -4,23 +4,38 @@
 > `plan/NEXT_SESSION_PROMPT.md` instead** — it is the self-contained entry point
 > and carries the current task.
 >
-> ## ⚠ STOP. The app has NOT been verified working.
+> ## ⚠ STOP. The app has NOT been verified working by a human.
 >
 > On 2026-09-29 a person was asked to run the app and reported that **every button
 > was dead**: no status updates, no job progress, quizzes, extraction and clips
-> all unresponsive. 297 passing React tests and 710 passing Python tests said the
-> opposite. Both were true.
+> all unresponsive. 297 passing React tests and 710 passing Python tests said
+> the opposite. Both were true.
 >
-> **The cause has since been diagnosed — see
-> `plan/WEDGE_DIAGNOSIS_2026-09-29.md`.** It is not the frontend: three `extract`
-> jobs wedged on a SQLite write lock, each holding one of the three
-> `LECGAP_MAX_PIPELINE_JOBS` permits, and `_PipelineThrottle.__enter__` waits
-> with no timeout, so every later pipeline request blocked forever. The frontend
-> is untested against a live server, so a green suite is not evidence either way.
+> **The cause was found later the same day, and it was two independent bugs.**
+> Neither was the write-lock deadlock first suspected. See
+> `plan/WEDGE_DIAGNOSIS_2026-09-29.md` for the full refutation.
 >
-> The immediate task is three specified-but-unwritten fixes (F1 periodic reaper,
-> F2 bounded throttle acquire, F3 per-lecture lock) in the diagnosis document.
-> Do not start Wave 3 until they are in.
+> 1. **A foreign-key violation, not a lock.** `clips.concept_id` references
+>    `concepts.id` and `PRAGMA foreign_keys=ON`; `extract.py` deleted a lecture's
+>    concepts before its clips, so every re-extraction of a lecture that already
+>    had clips raised `IntegrityError` — *after* the minutes-long LLM stage,
+>    which is why it read as "the button hangs". The 710 Python tests missed it
+>    because the shared test engine did not enable foreign keys.
+> 2. **The job feed never reached the UI at all.** `JobFeed.connect()` assigned
+>    `this.sink` and then called `disconnect()`, which nulls it, so
+>    `publish()`'s `this.sink?.(next)` was a permanent no-op. The drawer read
+>    "Disconnected" forever. The 297 React tests missed it because they all
+>    assert through `feed.subscribe()` and connect *without* a sink — a
+>    different code path from the one the app uses.
+>
+> Both are fixed (`425388c`, `ed8086d`, `de74a02`). The lesson that outlives them
+> is in §0 below: the entire job-feed path was mocked, so a green suite was
+> evidence of nothing. `npm run test:live` (`c097be6`) now boots a real backend
+> against a real throwaway database and is what caught bug 2.
+>
+> **Still not done:** no human has watched this app work. Wave 3 remains gated on
+> that, and Playwright is the one verification jsdom cannot substitute for.
+
 
 ## 0. The most important structural gap
 

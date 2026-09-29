@@ -1,5 +1,82 @@
 # DIAGNOSED 2026-09-29 — the wedge, with the evidence
 
+> # ⛔ REFUTED 2026-09-29 (later the same day). F1 and F2 below fix nothing.
+>
+> **The central claim of this document is wrong.** There was no SQLite write
+> lock, no deadlock, and no wedged throttle. The three `extract` jobs **crashed
+> instantly** and were then left `running` forever, which looks identical to
+> "blocked" from outside.
+>
+> ## What actually happened
+>
+> The real traceback, from a uvicorn log, was:
+>
+> ```
+> sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) FOREIGN KEY constraint failed
+> [SQL: DELETE FROM concepts WHERE concepts.lecture_id = ?]
+> [parameters: (1,)]
+>   backend/api/jobs/extract.py:88
+> ```
+>
+> `clips.concept_id` is a real foreign key into `concepts.id` and `db.py:61`
+> sets `PRAGMA foreign_keys=ON`. Lecture 1 had **24 clips pointing at its 24
+> concepts** (cut by job 11 one minute before the first extract). `extract.py`
+> deleted the concepts first, so the clips' FK dangled and the statement failed
+> immediately. Every re-extraction of a lecture with clips died there.
+>
+> ## Why the throttle diagnosis was wrong
+>
+> §2 read "0.00 s of CPU over 5 s" as *blocked, not computing*. A **crashed**
+> worker produces the same reading. §3 then attributed the dead buttons to
+> `_PipelineThrottle.__enter__` waiting with no timeout — but the throttle was
+> never exhausted, because `__exit__` unwinds correctly when a worker raises.
+> Measured directly after a crash: **`PIPELINE_SEMAPHORE.in_use == 0`**.
+>
+> So:
+>
+> - **F1 (periodic reaper) — no longer required for this.** Not harmful, and it
+>   is still defensible hardening for a genuinely killed process, but it was not
+>   the fix and it would not have prevented the incident.
+> - **F2 (bounded throttle acquire) — dropped.** It guards a failure mode that
+>   does not exist. The throttle already released correctly on every path.
+> - **F3 (per-lecture 409) — still worth doing**, as a double-click guard, but
+>   it would have *masked* the crash rather than fixed it.
+>
+> ## What the real fixes were
+>
+> Both landed on `engine2/scaffold`:
+>
+> - `425388c` — detach the lecture's clips (`concept_id -> NULL`) before deleting
+>   its concepts. Plus: the test engine now sets `PRAGMA foreign_keys=ON`, which
+>   is *why* 710 passing tests missed this. The suite was running against a laxer
+>   database than the app.
+> - `ed8086d` — `job_scope` settles a crashing worker as `error` instead of
+>   leaving it `running` with a frozen heartbeat forever.
+>
+> ## And the reason it *looked* like "every button is dead"
+>
+> A second, independent bug: `JobFeed.connect()` assigned `this.sink` and then
+> called `disconnect()`, which nulls it. So `publish()`'s `this.sink?.(next)` was
+> a permanent no-op and **the job feed never delivered a single snapshot to the
+> UI**. The drawer read "Disconnected / No background jobs registered yet" for
+> the life of the page. Fixed in `de74a02`.
+>
+> All 297 React tests missed it because every one of them asserts through
+> `feed.subscribe()` and connects without a sink — a different code path from the
+> one the app uses.
+>
+> ## Why it took a live tier to find
+>
+> `npm run test:live` (added in `c097be6`) boots a real uvicorn against a real
+> throwaway database and asserts that the drawer shows a job that exists only
+> there, delivered over a real SSE stream. No fake transport can make that
+> assertion, because a fake cannot be wrong in the way the sink path was.
+>
+> **The original text of this document is kept below unchanged**, as the record
+> of what was believed and why. It is evidence about how a partial log invites
+> the wrong conclusion — the `0.00 s CPU` inference in §2 is the exact trap.
+> Sections 3, 4 and 5 are marked inline where they are refuted.
+
 > **The task is `plan/NEXT_SESSION_PROMPT.md`.** This document is the evidence
 > behind it. If you were sent here directly, read the prompt file first, then
 > come back for the detail behind F1–F3.
@@ -9,6 +86,9 @@
 > cause is identified. **The fix is not written yet** — it is specified in §5.
 
 ## 1. What was actually running
+
+> **§1 is accurate.** The backend, the SSE endpoint and the job registry all
+> worked. Keep this section.
 
 The backend was up and healthy throughout:
 
@@ -24,7 +104,23 @@ GET /courses -> 2 courses, with real data
 about once a second. **The backend, the SSE endpoint and the job registry are all
 working.** Vite's proxy was never implicated.
 
-## 2. The actual state: three wedged jobs holding every permit
+## 2. The actual state: three crashed jobs, left `running`
+
+> **§2 is REFUTED — read this before the paragraph below.** The jobs were not
+> blocked on the SQLite write lock. They raised `IntegrityError` at
+> `extract.py:88` and died; the last paragraph of this section mistook "0.00 s
+> of CPU" for *blocked* when a **crashed** worker reads identically. The three
+> observations are all correct and all reproduce; only the conclusion was wrong.
+>
+> The specific error, recovered later from a uvicorn log, is
+> `FOREIGN KEY constraint failed` on `DELETE FROM concepts WHERE
+> lecture_id = ?`, because `clips.concept_id` references `concepts.id` and
+> `PRAGMA foreign_keys=ON`. Lecture 1 had 24 clips pointing at its 24 concepts.
+>
+> What survives from this section, and matters: the jobs stopped refreshing
+> `heartbeat_at` — for a *dead* worker rather than a blocked one — so the
+> change-gated SSE snapshot stopped changing and the UI never learned anything
+> had happened. That part was right and is still true.
 
 `GET /jobs?active_only=true` returned exactly three jobs, all identical:
 
@@ -63,6 +159,21 @@ needs a thread dump to confirm** — see §6.
 
 ## 3. Why everything else broke: the throttle has no timeout
 
+> **§3 is REFUTED. Do not implement this.** The throttle was never exhausted.
+> `_PipelineThrottle.__exit__` releases when a worker raises, because the
+> `with` block unwinds — measured after a real crash:
+> `PIPELINE_SEMAPHORE.in_use == 0`.
+>
+> The reasoning below assumed a job that *never exits* its `with` block. No such
+> job existed; the three jobs exited by raising. The missing-timeout is a real
+> latent weakness (a genuinely stuck worker would queue everything behind it
+> silently) but it is **not** what happened, and F2 as specified here would have
+> changed nothing while looking like a fix.
+>
+> What actually made the UI look dead is in the top box: the job feed never
+> delivered a snapshot to the UI at all, plus a crash that produced no visible
+> outcome.
+
 `LECGAP_MAX_PIPELINE_JOBS=3`, and three jobs were wedged. `_PipelineThrottle.__enter__`
 (`backend/api/jobs/common.py:47-56`) does:
 
@@ -78,7 +189,19 @@ indefinitely with no error and no timeout. That is the "hugely delayed" in the
 original report: new actions were not failing, they were queueing behind a
 permanently full semaphore.
 
+> The "hugely delayed" symptom is real but has a different cause: the crash
+> happens at 70%, *after* the minutes-long LLM structure pass, so each click
+> looked stuck for minutes and then produced nothing. That is also why three jobs
+> were created within 90 seconds — a user clicking again because nothing
+> appeared.
+
 ## 4. Why nothing self-healed
+
+> **§4 is CORRECT and still the reason the jobs stayed `running`.** The cause was
+> a crash rather than a wedge, but the effect is the same: `recover_orphans()`
+> only runs at import, so nothing settled a job that died after boot. Fixed by
+> `ed8086d`, which settles a crashing worker immediately instead of waiting for
+> a restart.
 
 `recover_orphans()` runs **only at import time** (`backend/main.py:30-35`). It
 cannot reap a job that wedges *after* boot.
@@ -100,9 +223,21 @@ The `_as_utc` change was made and then reverted; `job_registry.py` is unmodified
 
 ## 5. The fix, specified but not yet written
 
+> **§5 is SUPERSEDED. F2 is dropped and F1 is not required.** The fixes that
+> actually landed are in the top box (`425388c`, `ed8086d`, `de74a02`) and none
+> of them is the one specified here. F3 is still a reasonable double-click guard
+> and remains undone. The text below is kept as the record of what was planned.
+
 Three changes, in dependency order. **Nothing below is done.**
 
 ### F1 — a periodic reaper, not a boot-only one (the core fix)
+
+> **Not the core fix.** No throttle permit needed freeing; there was nothing to
+> unblock. Still defensible as hardening for a process that is killed outright,
+> and the §4 observation (nothing reaps after boot) is real — but `ed8086d`
+> already covers the case that actually occurred, by settling the job at the
+> moment it crashes rather than waiting up to 15 minutes for a reaper.
+
 Run `recover_orphans()` on an interval (a daemon thread started at import, ~60 s)
 as well as at boot. A job whose heartbeat is older than `ORPHAN_AFTER_S` becomes
 `orphaned`, which is the honest state — nothing is executing it.
@@ -113,6 +248,12 @@ reaper cannot interrupt a running worker, it can only stop *reporting* it and st
 counting it. To actually free the permit, pair it with:
 
 ### F2 — a bounded acquire on the throttle
+
+> **DROPPED. This guards a failure mode that does not exist.** The throttle
+> released correctly on every path, including the crash that caused the
+> incident (`in_use == 0` measured afterwards). Implementing this would have
+> looked like progress and fixed nothing.
+
 Give `_PipelineThrottle.__enter__` a timeout (or convert it to
 `acquire(blocking=False)` + a bounded wait) and have the **workers** translate a
 failed acquire into a job error rather than waiting silently. A job that cannot
