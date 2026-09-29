@@ -1,4 +1,12 @@
-# Manual verification attempt — 2026-09-29, and why it is INCONCLUSIVE
+# Manual verification attempt — 2026-09-29
+
+> **Partly superseded.** The diagnosis below was reached in a later attempt; see
+> `plan/WEDGE_DIAGNOSIS_2026-09-29.md` for the real cause, and
+> `plan/NEXT_SESSION_PROMPT.md` for the current task. The six-step procedure
+> further down is still the best available way to check the app end to end, and
+> the log analysis in the middle is still worth reading — it explains why that
+> first attempt was inconclusive, and it is a good illustration of how easy it is
+> to conclude the wrong thing from a partial log.
 
 > **Read this before trusting any statement in the handoff about the app
 > "working".** The last person to open the app reported that **every button was

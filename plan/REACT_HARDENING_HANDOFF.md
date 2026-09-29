@@ -1,23 +1,26 @@
 # React hardening — handoff for the next session
 
-> ## ⚠ STOP. The app has NOT been verified working, and the one attempt to
-> ## check it was inconclusive.
+> **If you were pointed at this file, start with
+> `plan/NEXT_SESSION_PROMPT.md` instead** — it is the self-contained entry point
+> and carries the current task.
 >
-> On 2026-09-29 a person was asked to run the app. They reported that **every
-> button was dead** — no status updates, no job progress, quizzes, extraction and
-> clips all unresponsive. That is the current state of knowledge. Do not describe
-> this app as working, and do not start feature work on the assumption that it
-> does.
+> ## ⚠ STOP. The app has NOT been verified working.
 >
-> **Read `plan/MANUAL_VERIFICATION_2026-09-29.md` first.** It holds the backend
-> log, the three competing explanations, and a six-step procedure that settles it
-> in about five minutes without touching any code.
+> On 2026-09-29 a person was asked to run the app and reported that **every button
+> was dead**: no status updates, no job progress, quizzes, extraction and clips
+> all unresponsive. 297 passing React tests and 710 passing Python tests said the
+> opposite. Both were true.
 >
-> The short version: the backend started cleanly, but **the log contains no
-> proxied requests at all**, which means the React app at :5173 was probably never
-> actually loaded — the browser appears to have hit :8000 directly. That is the
-> likeliest story, not a proven one, and there is a real possibility the test
-> ran while no backend was listening because I killed the one I had started.
+> **The cause has since been diagnosed — see
+> `plan/WEDGE_DIAGNOSIS_2026-09-29.md`.** It is not the frontend: three `extract`
+> jobs wedged on a SQLite write lock, each holding one of the three
+> `LECGAP_MAX_PIPELINE_JOBS` permits, and `_PipelineThrottle.__enter__` waits
+> with no timeout, so every later pipeline request blocked forever. The frontend
+> is untested against a live server, so a green suite is not evidence either way.
+>
+> The immediate task is three specified-but-unwritten fixes (F1 periodic reaper,
+> F2 bounded throttle acquire, F3 per-lecture lock) in the diagnosis document.
+> Do not start Wave 3 until they are in.
 
 ## 0. The most important structural gap
 

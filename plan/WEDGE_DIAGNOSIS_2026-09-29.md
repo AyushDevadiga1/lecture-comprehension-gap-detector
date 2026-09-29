@@ -1,5 +1,9 @@
 # DIAGNOSED 2026-09-29 — the wedge, with the evidence
 
+> **The task is `plan/NEXT_SESSION_PROMPT.md`.** This document is the evidence
+> behind it. If you were sent here directly, read the prompt file first, then
+> come back for the detail behind F1–F3.
+
 > This supersedes the "inconclusive" conclusion in
 > `plan/MANUAL_VERIFICATION_2026-09-29.md`. The app was reached this time and the
 > cause is identified. **The fix is not written yet** — it is specified in §5.
