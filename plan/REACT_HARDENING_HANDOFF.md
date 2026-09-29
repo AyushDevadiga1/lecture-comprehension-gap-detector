@@ -27,17 +27,41 @@ are all on this branch.
 | Branch | `engine2/scaffold` — **all work lands here** |
 | `main` | `5e0a434` — **do not touch.** It is the clean stable baseline |
 | Branch base | `886b845`, i.e. **3 commits behind `main`**. Unchanged on purpose |
-| Commits on branch | 17 (6 pre-existing + 12 from Waves 0 and 1) |
+| Commits on branch | 20 (6 pre-existing + 12 from Waves 0/1, 1 handoff, 4 from Wave 2) |
 | Working tree | clean |
-| React | **204 tests** across 16 files, `npm run verify` green, no warnings |
-| Python | **701 passed**, `data/lecgap.db` byte-identical before/after |
+| React | **297 tests** across 18 files, `npm run verify` green, no warnings |
+| Python | **710 passed**, `data/lecgap.db` byte-identical before/after |
 | Wave 0 (tooling) | **done** |
 | Wave 1 (correctness) | **done** — all 8 defects closed |
-| Wave 2 (colour system) | **next** |
-| Waves 3–4 (parity, E2E, cutover) | not started |
+| Wave 2 (colour system) | **done** — tokens ported, theme generated, drift gated |
+| Wave 3 (feature parity) | **next** |
+| Wave 4 (E2E, cutover) | not started |
 
 Re-check: `cd frontend-react && npm run verify` ·
 `& "D:\Anaconda3\envs\lecgap\python.exe" -m pytest tests -q`
+
+## 1a. Where the app actually is
+
+A blunt inventory, because "the React app works" is not a state you can assume
+after 20 commits of fixes.
+
+**Working, and covered by tests:** the app shell and routing; the course picker;
+two-step upload with real XHR progress; the job feed (auth, reconnect, poll
+fallback, coalescing, completion announcement, stall detection, busy-disable); the
+quiz (cap, async generation, draft, submit, remediation playback, feedback); the
+faculty metric cards, edge table with evidence, divergence table and heatmap bars;
+error surfacing and the 401 banner; the generated colour system and its guards.
+
+**Known-absent, deliberately not yet built (Wave 3):** the DAG *visualisation*
+(react-flow is installed and unused — the faculty view is a flat edge table);
+the per-lecture timeline and coverage view; the `/usage` quota row (no React call
+exists at all); the clip browser; stalled-lecture triage; course and lecture
+deletes; duplicate-upload detection; the new-course bootstrap (so
+`selectedCourseId` is still hardcoded to `'ml'`); 10 wrapped-but-uncalled API
+endpoints; light/dark has a toggle but **has never been rendered by a human**.
+
+**Never run by a person.** No browser, no `uvicorn`, no real SSE round trip — see
+§8.
 
 ## 2. The invariants — do not break these
 
@@ -51,9 +75,13 @@ Re-check: `cd frontend-react && npm run verify` ·
    terminal row forever, so `diffCompletions` compares snapshots.
 3. **Every queueing endpoint returns its `job_id`**, and the feed is the only
    thing that knows `/jobs/stream` exists.
-4. **One colour system.** Panels ask for semantic tokens, never hex. *This is
-   Wave 2 — the React app currently ships a second, untested palette and
-   violates this today.*
+4. **One colour system.** Panels ask for semantic tokens, never hex. **Enforced in
+   two layers since Wave 2:** an ESLint `no-restricted-syntax` rule, and
+   `src/theme/scan.test.ts`, which also covers `index.css` and asserts that the
+   MUI background, the `var(--lgc-page)` property and the `page` token are one
+   value. `tests/test_theme_parity.py` then asserts the TypeScript table and
+   `frontend/theme.py` are equal, token for token, and that their *derived*
+   colours agree.
 5. **No filesystem paths in payloads.** The React client has no path→URL mapper.
    Guarded on both sides: `tests/test_contract.py` and
    `src/api/contract.test.ts`.
@@ -136,96 +164,93 @@ implementation.
    decision worried about does not arise from this backend, so a per-frame cap is
    cheap insurance rather than a fix.
 
-## 6. Wave 2 — the next task, in full
+## 6. Wave 3 — the next task
 
-**Goal: the React app stops shipping a second, untested colour palette.**
+Goal: the React dashboard reaches parity with the Streamlit one, so
+`plan/FRONTEND_REACT_ROADMAP.md` §6 can be walked item by item.
 
-`frontend/theme.py` is the system of record: 21 tokens × 2 palettes, plus
-`readable_on()` and the node ramp, pinned by 26 property tests in
-`tests/test_theme.py`. `frontend-react/src/theme/theme.ts` currently hand-writes
-~20 hexes, a *disjoint* palette, and does not even use the `page` token
-(`#0b0f19` vs the real `#0e1117`). So the app has two palettes and the untested
-one is shipping.
+**Order matters.** The DAG first, because it is the feature the Engine 2 plan
+calls genuinely hard to copy and the reason the rebuild exists; the rest is
+breadth.
 
-Decided with the user: **port the tokens and the contrast logic to TS and pin
-them with Vitest parity tests** — not a build-time generated JSON. The cross-check
-that keeps the two from drifting is part of the job (W2.4).
+### W3.1 — the react-flow DAG
+`graphImportance` ported to TS. Four fidelity traps, all from Python semantics:
 
-### W2.1 — tokens + contrast + node colours
-- Port all 21 tokens × 2 palettes **verbatim** from `frontend/theme.py`.
-- Port `channels` (throws on non-hex — a test pins that), `luminance`,
-  `contrast_ratio`, `hsl`, `palette`, `readable_on` (tie → `ink_light`),
-  `node_fill`, `node_pair`.
-- **Two traps in `hsl`:** Python's `colorsys.hls_to_rgb` is **HLS, not HSL** —
-  argument order `(h, l, s)`. And `Math.round` is provably identical to Python's
-  banker's rounding across the whole ramp (verified: zero channels land on an
-  exact `.5`), so it is safe.
-- **Identity-mode node colours need a synchronous SHA-256.** `crypto.subtle` is
-  async and `nodeFill` is called during render, so use `@noble/hashes`. Without
-  it every identity-mode colour changes and the golden tables break.
-  Only digest bytes **0** (hue) and **2** (saturation) are used; sat ∈ [0.45, 0.63).
-- Order ramp: teal `175°` → coral `8°`.
+- **no `localeCompare`.** Python's `str(a) < str(b)` is a code-point compare;
+  locale order flips `"a"` against `"B"`. Use `(a < b ? -1 : a > b ? 1 : 0)`.
+- split on `/\s+/`, not `' '` — Python's `str.split()` splits on any whitespace run.
+- Unicode-aware `isalpha` — a name like `"A1 B2"` must not read as ALL-CAPS.
+- `[...name].length`, not `.length` — Python counts code points.
 
-### W2.2 — rebuild the MUI theme from the tokens
-- Delete every hex in `src/theme/theme.ts`; build `createTheme` from
-  `palette(base)`.
-- Generate `index.css` custom properties **from the palette**, so `MuiCssBaseline`'s
-  body background and `palette(base).page` cannot diverge — the React analogue of
-  `test_the_declared_theme_matches_the_palette`.
-- Light/dark toggle: store + `localStorage` + `prefers-color-scheme` default.
-  This settles **OPEN decision #2**.
+Scoring is additive: `degree` per incident edge, **+2.0** for two or more words,
+**+1.0** for length ≥ 18, **−2.5** if every letter is uppercase, **−1.0** for
+length ≤ 6. The ALL-CAPS penalty is what ranks SQL keyword fragments lowest, and
+the multi-word bonus is what counters it.
 
-### W2.3 — Vitest parity + enable the scanner
-Port `tests/test_theme.py` tests 1–19, including the two sweeps worth writing as
-`it.each`: the **72-hue** `readable_on` sweep (worst measured: 5.73 dark / 7.46
-light) and the **24-hue** node-vs-canvas sweep (1.317 dark / 1.348 light). Add
-golden hex tables — the agent measured the order ramp (11 ranks) and an 8-name
-identity corpus, so drift is a literal diff. Tightest constraint in the system:
-dark `bad` on `surface_alt` = **4.70**, only 0.20 over the 4.5 floor.
+Then the full control set from `render.py::dag_svg`: zoom 0.5–2.0 (the renderer
+clamps at 3.0 — trust the code, the comment is stale), an edge-type multiselect
+over `source_method`, a "Concepts shown" significance slider, colour-by
+order/identity, the legend, a "links drawn" metric, both notices, the empty-state
+placeholder, and a `resize: vertical` container.
 
-Then **enable the hex scanner rule** in `.eslintrc.cjs` (currently pinned `off`).
+The edge tooltip is the payoff: confidence + `source_method` + the **verbatim
+evidence**, i.e. the professor's exact sentence. React Flow's `title` prop is why
+this is easier than the pyvis path, which had to hand-escape every
+attacker-influenced string. Settles **OPEN decision #3**.
 
-### W2.4 — keep the two palettes from drifting
-You chose porting over generation, so a cross-check is what makes "one colour
-system" an enforced fact. Options: a Vitest that shells out to read
-`frontend/theme.py`, or a small Python test that parses `src/theme/tokens.ts` and
-compares. **Verify the guard fails** before trusting it.
+### W3.2 — timeline and coverage
+`lecture_html` ported. The subtle part is the coverage percentage: it is the
+**union of merged spans**, one rect per merged run, so gaps stay visible — a
+single rect would overstate coverage. Band label ink is measured per band, never
+fixed. `_support_sentence` returns the *shortest* transcript segment mentioning
+the concept, whitespace-collapsed, truncated to 160 chars.
 
-## 7. Later waves, briefly
+### W3.3 — quota row
+`/usage` has no React call at all yet. Goes in `AppLayout` (both dashboards),
+30 s TTL, and the "this lecture ≈ N requests" line needs the active transcribe
+job's `duration_s` from the job list.
 
-- **W3.1** react-flow DAG. `graphImportance` ported to TS — four fidelity traps:
-  **no `localeCompare`** (Python sorts by code point, and locale order flips
-  `"a"`/`"B"`); split on `/\s+/` not `' '`; Unicode-aware `isalpha`; and
-  `[...name].length` not `.length`. Then zoom 0.5–2.0, edge-type multiselect,
-  significance slider, colour-by toggle, legend, "links drawn", both notices, the
-  empty placeholder, `resize: vertical`. Edge tooltip = confidence +
-  `source_method` + **evidence** — the professor's exact sentence, the one
-  feature Engine 2's plan calls genuinely hard to copy. Settles **OPEN #3**.
-- **W3.2** timeline + coverage. Note the coverage % is the *merged-span* union,
-  one rect per merged run so gaps stay visible, and **band label ink is measured
-  per band**, never fixed.
-- **W3.3** quota row from `/usage` — no React call exists yet. Goes in
-  `AppLayout` (both dashboards), 30 s TTL, reads the active transcribe job's
-  `duration_s`.
-- **W3.4** library: clip browser, stalled-row triage, course/lecture deletes,
-  duplicate-upload dialog, `normalizeCourseId` + the new-course bootstrap (kills
-  the hardcoded `selectedCourseId: 'ml'`).
-- **W3.5** wire or delete the 10 wrapped-but-uncalled endpoints.
+### W3.4 — library and ingest
+Clip browser by lecture; stalled-row triage (resumable vs abandoned, `rerun`,
+bulk delete); course and lecture deletes; duplicate-upload dialog
+(`duplicate_lecture` — two-clause OR, `Path.stem` strips only the last
+extension); `normalizeCourseId` / `validCourseId` / `isCanonicalKey` and the
+new-course bootstrap that replaces the hardcoded `'ml'`.
+
+### W3.5 — wire or delete the dead API surface
+10 wrapped endpoints are called by nothing. Each gets a button or goes.
+
+## 7. Two lessons from this campaign worth keeping
+
+1. **A staged deletion bleeds into the next commit.** `git rm` stages
+   immediately, so a later `git add <specific paths>` did not undo it, and the
+   deletion of `src/theme/theme.ts` landed in the *tokens* commit — which
+   therefore imported a file it had deleted, and could not build. Caught by
+   checking `git cat-file -e` per commit. Now: after staging a subset, check
+   `git diff --cached --name-status` lists exactly what you meant, and verify
+   each commit builds in isolation (`git stash push --keep-index`).
+2. **`Set-Content -Encoding utf8` corrupts non-ASCII from PowerShell 5.1** — it
+   rewrites em-dashes as `?`. It bit twice, once silently inside a source file.
+   Use the editor for any file containing an em-dash or a `→`.
+
+## 8. Later waves, briefly
+
 - **W4.1** Playwright. **OPEN #5.**
-- **W4.2** §6 parity checklist, then the README (it currently overclaims a DAG
-  that does not exist yet).
+- **W4.2** §6 parity checklist, then the README (it still overclaims a DAG that
+  does not exist yet).
 
-Bundle size is already 572 kB (177 kB gzipped) and react-flow will add to it —
+Bundle size is 572 kB (177 kB gzipped) and react-flow will add to it —
 `manualChunks` or route lazy-loading should land with the DAG.
 
-## 8. Not yet confirmed by a human
+## 9. Not yet confirmed by a human
 
-Two things are unit-tested and reasoned but have not been seen by a person:
+Three things are unit-tested and reasoned but nobody has looked at them:
 
 1. **The live SSE round-trip against a real server.** The feed is tested with an
-   injected transport, not a real socket. Worth one manual run with the backend
-   up: open `/student`, start a job, and confirm the drawer updates and the
-   status dot goes green.
-2. **The 401 banner's real-world appearance.** Test covers the logic; nobody has
-   looked at it. Set `LECGAP_API_KEY` on the server and load the app without
-   `VITE_LECGAP_API_KEY`.
+   injected transport, not a real socket. Start the backend, open `/student`,
+   start a job, and confirm the drawer updates and the status dot goes green.
+2. **The 401 banner's real appearance.** Set `LECGAP_API_KEY` on the server and
+   load the app without `VITE_LECGAP_API_KEY`.
+3. **The light theme.** The toggle exists and the tokens are contrast-pinned, but
+   `buildTheme('light')` has never been rendered. `color-mix()` (used by
+   `tint()`) also needs a browser check — jsdom does not compute it.
