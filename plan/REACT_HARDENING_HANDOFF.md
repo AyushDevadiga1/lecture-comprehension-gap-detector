@@ -1,5 +1,44 @@
 # React hardening — handoff for the next session
 
+> ## ⚠ STOP. The app has NOT been verified working, and the one attempt to
+> ## check it was inconclusive.
+>
+> On 2026-09-29 a person was asked to run the app. They reported that **every
+> button was dead** — no status updates, no job progress, quizzes, extraction and
+> clips all unresponsive. That is the current state of knowledge. Do not describe
+> this app as working, and do not start feature work on the assumption that it
+> does.
+>
+> **Read `plan/MANUAL_VERIFICATION_2026-09-29.md` first.** It holds the backend
+> log, the three competing explanations, and a six-step procedure that settles it
+> in about five minutes without touching any code.
+>
+> The short version: the backend started cleanly, but **the log contains no
+> proxied requests at all**, which means the React app at :5173 was probably never
+> actually loaded — the browser appears to have hit :8000 directly. That is the
+> likeliest story, not a proven one, and there is a real possibility the test
+> ran while no backend was listening because I killed the one I had started.
+
+## 0. The most important structural gap
+
+297 React tests pass and the app was still reported broken. The reason is that
+**the entire job-feed path is mocked**. `JobFeed` takes `fetchImpl`, `sleep`,
+`setTimer` and `clearTimer` as constructor seams, and `mockFetch` replaces
+`globalThis.fetch`. The suite proves the *policy* and proves nothing about:
+
+- Vite's dev proxy actually **streaming** `/jobs/stream` to a browser;
+- the real server's SSE framing (`retry: 2000`, `event: jobs`, `: keep-alive`,
+  a change-gated **full-array** snapshot) being parsed;
+- `requestAnimationFrame` coalescing in a real browser — jsdom has it, a
+  throttled or backgrounded tab does not fire it;
+- a browser being able to read a streaming `fetch` body through a proxy at all;
+- anything being reachable on :8000 from :5173.
+
+**Bring Playwright forward.** Until one E2E test drives a real job against a real
+server, the app's central claim — live progress without restarting the page — is
+unverified. Do not start Wave 3 features before step 4 of the manual procedure
+below passes.
+
 > **Committed on purpose.** `WORKLOG.md` is git-ignored and will not be in a fresh
 > clone or a new agent's context. This file is the durable version. Everything
 > below was **verified on 2026-09-28**, and where a number could go stale the
@@ -31,11 +70,12 @@ are all on this branch.
 | Working tree | clean |
 | React | **297 tests** across 18 files, `npm run verify` green, no warnings |
 | Python | **710 passed**, `data/lecgap.db` byte-identical before/after |
+| **Runs in a browser?** | **UNVERIFIED — see the box at the top.** Reported broken 2026-09-29; test run was inconclusive. |
 | Wave 0 (tooling) | **done** |
 | Wave 1 (correctness) | **done** — all 8 defects closed |
 | Wave 2 (colour system) | **done** — tokens ported, theme generated, drift gated |
-| Wave 3 (feature parity) | **next** |
-| Wave 4 (E2E, cutover) | not started |
+| Wave 3 (feature parity) | **blocked** until the app is proven to run |
+| Wave 4 (E2E, cutover) | **needs to come forward** — it is the missing verification |
 
 Re-check: `cd frontend-react && npm run verify` ·
 `& "D:\Anaconda3\envs\lecgap\python.exe" -m pytest tests -q`
@@ -106,6 +146,38 @@ cd ..\..
 & $py -m pytest tests -q
 ```
 
+**To run the app** (see `plan/MANUAL_VERIFICATION_2026-09-29.md` for the full
+procedure — this is only the starting state):
+
+```powershell
+# terminal 1 — must print "Application startup complete", then leave it alone
+& $py -m uvicorn backend.main:app --port 8000
+
+# terminal 2
+cd frontend-react
+npm run dev
+```
+
+Then open **`http://localhost:5173/student`**.
+
+| URL | What it is |
+|---|---|
+| `http://localhost:5173/student` | **the React app** — this is the one to use |
+| `http://localhost:8000` | the FastAPI backend — **no UI, just a 404 and a favicon** |
+| `http://localhost:8000/docs` | Swagger, the API surface only |
+| `http://localhost:8501` | the legacy Streamlit engine, if started |
+
+**No `.env` is needed in `frontend-react/`.** The root `.env` has `GROQ_API_KEY`
+and no `LECGAP_API_KEY`, so the backend runs unguarded and the client needs no
+key. `frontend-react/.env.example` documents the optional vars
+(`VITE_LECGAP_API_KEY`, `VITE_LECGAP_API_URL`, `VITE_LECGAP_QUIZ_MAX_QUESTIONS`,
+`VITE_LECGAP_THEME_BASE`) — copy it to `.env` only to change one.
+
+**Do not kill a process the other person is using.** On 2026-09-29 a uvicorn
+instance was started for a manual test, judged not-up after 12s, and then killed
+while the user was still trying to run the app. If you start a server, either
+leave it running and say so in your summary, or do not start one.
+
 ## 4. Traps — each one cost real time
 
 1. **Use the pinned interpreter**, not the one on `PATH`. `python` on PATH is
@@ -166,7 +238,11 @@ implementation.
 
 ## 6. Wave 3 — the next task
 
-Goal: the React dashboard reaches parity with the Streamlit one, so
+**Blocked until the app is proven to load and the feed is proven live.** See
+`plan/MANUAL_VERIFICATION_2026-09-29.md` and complete its steps 1–4 first, and
+bring at least a Playwright smoke test forward from Wave 4 so this cannot recur.
+
+Goal once unblocked: the React dashboard reaches parity with the Streamlit one, so
 `plan/FRONTEND_REACT_ROADMAP.md` §6 can be walked item by item.
 
 **Order matters.** The DAG first, because it is the feature the Engine 2 plan
@@ -244,13 +320,24 @@ Bundle size is 572 kB (177 kB gzipped) and react-flow will add to it —
 
 ## 9. Not yet confirmed by a human
 
-Three things are unit-tested and reasoned but nobody has looked at them:
+**Nothing has been confirmed by a human.** The 2026-09-29 attempt failed to
+establish even that the app loads — see the top of this file. The list below is
+what remains, in the order it should be checked:
 
-1. **The live SSE round-trip against a real server.** The feed is tested with an
-   injected transport, not a real socket. Start the backend, open `/student`,
-   start a job, and confirm the drawer updates and the status dot goes green.
-2. **The 401 banner's real appearance.** Set `LECGAP_API_KEY` on the server and
-   load the app without `VITE_LECGAP_API_KEY`.
-3. **The light theme.** The toggle exists and the tokens are contrast-pinned, but
-   `buildTheme('light')` has never been rendered. `color-mix()` (used by
-   `tint()`) also needs a browser check — jsdom does not compute it.
+1. **Does the app load at all**, and is the course list populated from the real
+   database? (Manual-verification steps 1–4.)
+2. **Does `/jobs/stream` deliver frames** — proven without a browser via
+   `curl.exe -N --max-time 5 http://127.0.0.1:8000/jobs/stream`, which
+   isolates the backend from the proxy from React.
+3. **The live SSE round-trip through Vite's proxy**, and the Navbar dot reaching
+   green.
+4. **A video survives a running job** — the §10 gate, and the entire point of the
+   rebuild. Play a remediation clip, start *Extract Concepts*, keep watching.
+5. **The quiz cap applies** — *Start Quiz* must generate at most 15 questions.
+   The `ml` course has 153 concepts, and 153 is the signature of the cap not
+   being sent.
+6. **The 401 banner's appearance** — set `LECGAP_API_KEY` on the server, load
+   without `VITE_LECGAP_API_KEY`.
+7. **The light theme** — the toggle exists and the tokens are contrast-pinned,
+   but `buildTheme('light')` has never been rendered. `color-mix()` (used by
+   `tint()`) also needs a browser check, since jsdom does not compute it.
