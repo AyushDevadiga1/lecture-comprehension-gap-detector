@@ -6,6 +6,8 @@ import { createJobsSink } from './jobsSink'
 import type { JobsSink } from './jobsSink'
 import { queryKeys } from './queryKeys'
 import { isTerminal, recordNewCompletions } from './jobCompletions'
+import { isLive } from './jobStalls'
+import { useNow } from './useNow'
 import { useCompletionStore } from '../store/useCompletionStore'
 import type { JobOut } from '../api/types'
 
@@ -113,9 +115,29 @@ export function useJobList(courseId?: string | null): JobOut[] {
   return useJobs(courseId).jobs
 }
 
-/** Jobs still running. A terminal job drops out here, after one render. */
+/**
+ * Jobs still running and still worth showing.
+ *
+ * Terminal jobs are out (announced once by `JobCompletionHost`), and a job
+ * watched past the six-hour backstop is dropped too — that is C0's fix for the
+ * six-hour spinner, applied where the spinner actually was.
+ */
 export function useActiveJobs(courseId?: string | null): JobOut[] {
-  return useJobList(courseId).filter((j) => !isTerminal(j))
+  const jobs = useJobList(courseId).filter((j) => !isTerminal(j))
+  const now = useNow(jobs.length > 0)
+  return jobs.filter((j) => isLive(j, now))
+}
+
+/**
+ * Lecture ids with work in flight, so a panel can disable its actions and the
+ * C0 rule holds: no double-fired work.
+ */
+export function useBusyLectureIds(courseId?: string | null): Set<number> {
+  const busy = new Set<number>()
+  for (const job of useActiveJobs(courseId)) {
+    if (job.lecture_id != null) busy.add(job.lecture_id)
+  }
+  return busy
 }
 
 /**

@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  Alert,
   Drawer,
   Box,
   Typography,
@@ -17,6 +18,9 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from './StatusBadge'
 import { jobs as jobsApi } from '../../api/jobs'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
+import { jobGuidance } from '../../lib/stages'
+import { EXPIRED_MESSAGE, STALLED_MESSAGE, jobHealth } from '../../lib/jobStalls'
+import { useNow } from '../../lib/useNow'
 
 export const JobDrawer: React.FC = () => {
   const { jobDrawerOpen, setJobDrawerOpen, selectedCourseId } = useAppStore()
@@ -29,6 +33,10 @@ export const JobDrawer: React.FC = () => {
   const jobs = useActiveJobs(selectedCourseId)
   const { mode, changeToken } = useFeedStatus(selectedCourseId)
   const isConnected = mode === 'stream'
+
+  // Ticks only while a job is in flight, so a dead worker — whose frozen
+  // heartbeat stops the SSE stream entirely — can still be called out.
+  const now = useNow(jobs.length > 0)
 
   const handleCancelJob = async (jobId: number) => {
     try {
@@ -87,7 +95,9 @@ export const JobDrawer: React.FC = () => {
         </Box>
       ) : (
         <List sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {jobs.map((job) => (
+          {jobs.map((job) => {
+            const health = jobHealth(job, now)
+            return (
             <ListItem
               key={job.id}
               disableGutters
@@ -115,9 +125,21 @@ export const JobDrawer: React.FC = () => {
 
               {job.stage && (
                 <Typography variant="body2" sx={{ fontSize: '0.825rem', color: '#cbd5e1', mb: 1 }}>
-                  Stage: <strong>{job.stage}</strong>
+                  {jobGuidance(job.stage, health.elapsedS)}
                   {job.detail && ` — ${job.detail}`}
                 </Typography>
+              )}
+
+              {health.health === 'stalled' && (
+                <Alert severity="warning" sx={{ mb: 1, fontSize: '0.8rem' }}>
+                  {STALLED_MESSAGE}
+                </Alert>
+              )}
+
+              {health.health === 'expired' && (
+                <Alert severity="info" sx={{ mb: 1, fontSize: '0.8rem' }}>
+                  {EXPIRED_MESSAGE}
+                </Alert>
               )}
 
               {!job.terminal && (
@@ -163,7 +185,7 @@ export const JobDrawer: React.FC = () => {
                 </Typography>
               )}
 
-              {!job.terminal && (
+              {!job.terminal && health.health !== 'expired' && (
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
                   <Button
                     size="small"
@@ -177,9 +199,11 @@ export const JobDrawer: React.FC = () => {
                 </Box>
               )}
             </ListItem>
-          ))}
+            )
+          })}
         </List>
       )}
     </Drawer>
   )
 }
+

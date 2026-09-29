@@ -19,8 +19,11 @@ import type { JobOut } from '../api/types'
  * actually drops the job, and the announcement is actually shown and dismissed.
  */
 
-const job = (over: Partial<JobOut> = {}): JobOut =>
-  ({
+const job = (over: Partial<JobOut> = {}): JobOut => {
+  // Timestamps must be recent: a job with no heartbeat older than the six-hour
+  // backstop is (correctly) dropped from the live view.
+  const now = new Date().toISOString()
+  return {
     id: 1,
     kind: 'transcribe',
     status: 'running',
@@ -30,10 +33,13 @@ const job = (over: Partial<JobOut> = {}): JobOut =>
     stage: 'transcribing',
     detail: 'working',
     progress_pct: 40,
-    created_at: '2026-09-28T00:00:00Z',
+    created_at: now,
+    started_at: now,
+    heartbeat_at: now,
     terminal: false,
     ...over,
-  }) as JobOut
+  } as JobOut
+}
 
 function LiveViews() {
   const active = useActiveJobs('ML')

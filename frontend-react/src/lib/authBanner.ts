@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
+import type { DefaultOptions } from '@tanstack/react-query'
 import { LecGapApiError } from '../api/client'
 
 /**
@@ -37,7 +38,15 @@ const UNAUTHORIZED =
   'The backend requires an API key. Set VITE_LECGAP_API_KEY in frontend-react/.env ' +
   '(and LECGAP_API_KEY on the server) — the app cannot reach the API without it.'
 
-export function createQueryClient(): QueryClient {
+/**
+ * `defaults` lets a caller (notably a test asserting on a failure) skip the
+ * app's single retry. The retry is right in production — a dropped connection
+ * should not blank a panel — but a test that deliberately provokes a 401 should
+ * not sit out React Query's ~1s backoff to reach its assertion.
+ */
+export function createQueryClient(
+  defaults?: Partial<DefaultOptions>,
+): QueryClient {
   // `QueryCache({ onError })` / `MutationCache({ onError })` is the documented
   // v5 interception point. (Subscribing to the cache and filtering for an
   // "error" event does not work — v5's notify events are added/removed/updated/
@@ -60,6 +69,7 @@ export function createQueryClient(): QueryClient {
         refetchOnWindowFocus: false,
       },
       mutations: { retry: 0 },
+      ...defaults,
     },
   })
 }

@@ -12,6 +12,7 @@ import {
   TableHead,
   TableRow,
   TableCell,
+  Tooltip,
   TableBody,
   Radio,
   RadioGroup,
@@ -38,7 +39,7 @@ import {
   quizMaxQuestions,
   submitError,
 } from '../../lib/quiz'
-import { useJobList } from '../../lib/useJobFeed'
+import { useJobList, useBusyLectureIds } from '../../lib/useJobFeed'
 import { useQuizStore, draftForCourse } from '../../store/useQuizStore'
 import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
@@ -177,6 +178,7 @@ export const StudentDashboard: React.FC = () => {
    * record and a `drain_ready` to get this right.
    */
   const jobs = useJobList(selectedCourseId)
+  const busyLectureIds = useBusyLectureIds(selectedCourseId)
   useEffect(() => {
     const id = quizJobIdRef.current
     if (id === null) return
@@ -717,23 +719,49 @@ export const StudentDashboard: React.FC = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleTriggerConcepts(lec.id)}
-                          sx={{ fontSize: '0.72rem', py: 0.25 }}
-                        >
-                          Extract Concepts
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="secondary"
-                          onClick={() => handleTriggerClips(lec.id)}
-                          sx={{ fontSize: '0.72rem', py: 0.25 }}
-                        >
-                          Cut Clips
-                        </Button>
+                        {(() => {
+                          // C0's rule, enforced: while a job is in flight for
+                          // this lecture the actions are disabled, so a
+                          // double-click cannot queue duplicate work.
+                          const busy = busyLectureIds.has(lec.id)
+                          return (
+                            <>
+                              <Tooltip
+                                title={busy ? 'A job is already running for this lecture' : ''}
+                                disableHoverListener={!busy}
+                              >
+                                <span>
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    disabled={busy}
+                                    onClick={() => handleTriggerConcepts(lec.id)}
+                                    sx={{ fontSize: '0.72rem', py: 0.25 }}
+                                  >
+                                    Extract Concepts
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                              <Tooltip
+                                title={busy ? 'A job is already running for this lecture' : ''}
+                                disableHoverListener={!busy}
+                              >
+                                <span>
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="secondary"
+                                    disabled={busy}
+                                    onClick={() => handleTriggerClips(lec.id)}
+                                    sx={{ fontSize: '0.72rem', py: 0.25 }}
+                                  >
+                                    Cut Clips
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            </>
+                          )
+                        })()}
                       </Box>
                     </TableCell>
                   </TableRow>
