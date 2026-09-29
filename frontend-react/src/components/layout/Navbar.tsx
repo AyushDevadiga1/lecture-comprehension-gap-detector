@@ -37,7 +37,7 @@ export const Navbar: React.FC = () => {
   const isConnected = mode === 'stream'
 
   // The error is read too, so a failed course list never renders as
-  // "No courses found" â€” that text reads as *your data is gone* rather than
+  // "No courses found" — that text reads as *your data is gone* rather than
   // *you are not authorised*, and sends the reader hunting in the wrong place.
   // The 401 case is covered by the AuthBanner; this covers everything else.
   const {

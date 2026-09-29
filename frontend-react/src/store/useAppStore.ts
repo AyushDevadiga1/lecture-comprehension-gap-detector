@@ -17,7 +17,7 @@ import { DEFAULT_BASE } from '../theme/tokens'
  *   - each client **follows its own OS**, so a user whose OS is light gets a
  *     light app.
  *
- * OPEN decision #2 in `plan/REACT_ARCHITECTURE.md` (Â§11), resolved as the
+ * OPEN decision #2 in `plan/REACT_ARCHITECTURE.md` (§11), resolved as the
  * second: an explicit choice, remembered in `localStorage`, defaulting to
  * `prefers-color-scheme`, falling back to the shipped default. A build-time env
  * var is honoured first so a deployment can pin it.
@@ -38,7 +38,7 @@ const readStored = (): Base | null => {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     return raw === 'light' || raw === 'dark' ? raw : null
   } catch {
-    // Private mode / disabled storage. Not a failure â€” fall through.
+    // Private mode / disabled storage. Not a failure — fall through.
     return null
   }
 }

@@ -11,9 +11,9 @@ import { courses as coursesApi } from '../api/courses'
 import { mockFetch } from '../test/fetchMock'
 
 /**
- * Â§6 and the roadmap's non-negotiables: "401 = one banner, never a dead 'no
+ * §6 and the roadmap's non-negotiables: "401 = one banner, never a dead 'no
  * courses' state". Before this, a key-guarded backend 401'd the course query
- * and the Navbar rendered "No courses found" â€” which reads as *your data is
+ * and the Navbar rendered "No courses found" — which reads as *your data is
  * gone*, not *you are not authorised*.
  */
 
@@ -28,7 +28,7 @@ describe('the 401 banner', () => {
     mockFetch([{ path: '/courses', status: 401, json: { detail: 'Unauthorized' } }])
     const qc = createQueryClient({ queries: { retry: false } })
 
-    // Through the real wrapper, because that is what throws a LecGapApiError â€”
+    // Through the real wrapper, because that is what throws a LecGapApiError —
     // the handler keys on the typed error, not on a status code it re-reads.
     await qc.fetchQuery({ queryKey: ['courses'], queryFn: () => coursesApi.list() }).catch(() => {})
 

@@ -1,5 +1,5 @@
 ﻿/**
- * LIVE tier â€” the read path, against a real backend and a real database.
+ * LIVE tier — the read path, against a real backend and a real database.
  *
  * The mocked suite proves policy. This proves plumbing: that the response the
  * server actually sends, parsed by the real client, reaches a real component
@@ -7,8 +7,8 @@
  * an `IntegrityError` on every click while 297 frontend and 710 backend tests
  * stayed green, because none of them involved a server.
  *
- * What is asserted here is deliberately literal â€” sentinel names from
- * `scripts/seed_live_db.py` â€” so a failure names the exact row that went
+ * What is asserted here is deliberately literal — sentinel names from
+ * `scripts/seed_live_db.py` — so a failure names the exact row that went
  * missing instead of "something rendered".
  */
 
@@ -55,7 +55,7 @@ describe('live: the real client reaches a real server', () => {
   })
 
 
-  it('returns a lectureâ€™s clips as playback URLs, never filesystem paths', async () => {
+  it('returns a lecture’s clips as playback URLs, never filesystem paths', async () => {
     const rows = await lectures.list('ml')
     const withClips = rows.find((l) => l.title === 'Linear Regression')!
     const batch = await lectures.clips(withClips.id)
@@ -64,7 +64,7 @@ describe('live: the real client reaches a real server', () => {
     expect(names).toEqual(['Linear Regression', 'Slope'])
     for (const c of batch.clips) {
       // A filesystem path in a payload is a contract failure
-      // (ARCHITECTURE Â§3): the backend must hand over a URL a browser can fetch.
+      // (ARCHITECTURE §3): the backend must hand over a URL a browser can fetch.
       expect(c.url).toMatch(/^\/media\/clips\//)
       expect(c.url).not.toContain('\\')
     }
@@ -104,7 +104,7 @@ describe('live: the SSE feed parses a real stream', () => {
     expect(seen).toMatch(/retry:\s*\d+/)
     expect(seen).toContain('event: jobs')
 
-    // The payload is a FULL ARRAY, change-gated â€” not one row per event. Twelve
+    // The payload is a FULL ARRAY, change-gated — not one row per event. Twelve
     // jobs starting together arrive as one snapshot; a client that assumed
     // per-row events would break here and nowhere else.
     const dataLine = seen.split('\n').find((l) => l.startsWith('data: '))
