@@ -72,4 +72,9 @@ frontend-react/.e2e/
 frontend-react/test-results/
 frontend-react/playwright-report/
 
+# Screenshots from `npm run shots`. Regenerated on demand, reviewed by a person,
+# then deleted. Never committed: they are a review artefact, not source, and a
+# stale PNG in the tree is worse than no PNG, because it looks like evidence.
+frontend-react/screenshots/
+
 

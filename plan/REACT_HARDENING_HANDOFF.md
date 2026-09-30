@@ -227,6 +227,41 @@ leave it running and say so in your summary, or do not start one.
 9. **A raw `|` inside a markdown table cell silently splits the column.** A table
    row here needs exactly four `|`.
 10. **`.env` holds a live `GROQ_API_KEY`.** Never commit it.
+11. **Review outputs, then delete them.** Anything a tier *generates* for a human
+    to look at is scratch, and it goes once it has been looked at. Screenshots
+    (`npm run shots` → `frontend-react/screenshots/`), Playwright traces and
+    reports (`test-results/`, `playwright-report/`), the throwaway E2E database
+    (`.e2e/`) — all gitignored, all regenerated on demand. **Never commit them.**
+    A stale PNG in the tree is worse than no PNG, because it looks like evidence
+    while showing an interface that may since have changed. If a screenshot is
+    worth keeping as documentation, it belongs in a commit message or a plan
+    document, referenced by what it showed — not left lying in a folder where the
+    next session will read it as current.
+
+## 4a. What the automated tiers cannot see
+
+Added 2026-09-29, after a bug proved it.
+
+| Tier | Proves | Blind to |
+|---|---|---|
+| `npm run verify` (317 vitest) | policy, wiring, guard rails | everything real — the transport is faked |
+| `npm run test:live` (12) | real backend, real DB, real components | appearance; the browser is jsdom |
+| `npm run test:e2e` (3) | a real browser, a real proxy, a real stream | appearance; assertions, not eyes |
+| `pytest` (734) | the backend | the frontend entirely |
+
+**Behaviour is well covered. Appearance is not covered at all**, and one concrete
+proof that the gap is real rather than theoretical: `7efdc4c` fixed a bug that
+rendered a job created seconds earlier as **330 minutes old**, because
+`_iso` relabelled a naive UTC timestamp as local time and the machine is +05:30.
+All 734 Python tests, 317 vitest, 12 live and 3 E2E were green while the job
+drawer displayed a wrong number. They assert that a value *exists*, never that a
+*number* is right, and no number is visible to an assertion.
+
+So: **visual and numeric correctness is a human responsibility.** Use
+`npm run shots` to regenerate the screenshots, look at them, and delete them
+(trap 11). Do not describe the app as working on the strength of the test counts
+— that is the mistake this file was originally written to prevent, and it has now
+been made once already.
 
 ## 5. Why the design is what it is — the four findings
 

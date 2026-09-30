@@ -60,6 +60,11 @@ writeFileSync(path.join(path.dirname(DB), 'backend.url'), BACKEND_URL, 'utf8')
 
 export default defineConfig({
   testDir: './e2e',
+  // `shots.spec.ts` is a review tool, not a gate. Left in, every `npm run
+  // test:e2e` would regenerate `screenshots/`, so the folder would quietly fill
+  // with images nobody looked at — the exact accumulation trap 11 in the
+  // handoff warns about. `npm run shots` runs it via playwright.shots.config.ts.
+  testIgnore: '**/shots.spec.ts',
   // A real SSE stream plus a dev server: give it room, and never run the
   // browser specs in parallel against one backend's rows.
   timeout: 90_000,
