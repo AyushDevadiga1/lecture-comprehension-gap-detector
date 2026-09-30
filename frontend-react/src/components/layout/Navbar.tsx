@@ -154,16 +154,34 @@ export const Navbar: React.FC = () => {
           </FormControl>
 
           {/* Theme base. The choice is remembered and defaults to the OS
-              preference; see `resolveInitialBase`. */}
+              preference; see `resolveInitialBase`.
+
+              `aria-label` on both icon buttons below is load-bearing, not
+              decoration. A MUI `Tooltip` does NOT give its child an accessible
+              name — it sets `aria-describedby` while open, and the title is
+              otherwise unreachable — so an `IconButton` wrapping only an icon
+              with no `aria-label` is an unnamed control: invisible to a screen
+              reader, and unaddressable by role in a test. The E2E tier found
+              this by timing out on `getByRole('button', { name: ... })`. */}
           <Tooltip title={base === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
-            <IconButton onClick={toggleBase} color="inherit" sx={{ border: '1px solid', borderColor: 'divider' }}>
+            <IconButton
+              onClick={toggleBase}
+              color="inherit"
+              aria-label={base === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              sx={{ border: '1px solid', borderColor: 'divider' }}
+            >
               {base === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
 
           {/* Jobs drawer toggle with active count */}
           <Tooltip title="View Background Jobs & Pipelines">
-            <IconButton onClick={toggleJobDrawer} color="inherit" sx={{ border: '1px solid', borderColor: 'divider' }}>
+            <IconButton
+              onClick={toggleJobDrawer}
+              color="inherit"
+              aria-label="View Background Jobs & Pipelines"
+              sx={{ border: '1px solid', borderColor: 'divider' }}
+            >
               <Badge badgeContent={activeJobs.length} color="primary">
                 <BoltIcon sx={{ color: activeJobs.length > 0 ? 'info.main' : 'text.secondary' }} />
               </Badge>

@@ -65,3 +65,11 @@ opencode.json
 # Security audit run artifacts (never commit)
 security-audits/
 
+# Playwright E2E tier artifacts. `.e2e/` holds a throwaway seeded SQLite database
+# and the backend.url file the dev-server proxy reads; test-results/ and
+# playwright-report/ are regenerated on every run. None of it is source.
+frontend-react/.e2e/
+frontend-react/test-results/
+frontend-react/playwright-report/
+
+

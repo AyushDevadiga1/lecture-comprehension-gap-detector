@@ -19,7 +19,13 @@ then *verifies* the engine actually bound where it was asked to. If it did not,
 the process refuses to serve rather than quietly using real data.
 
 Usage:
-    python scripts/run_live_server.py <sqlite-file> <port>
+    python scripts/run_live_server.py <sqlite-file> <port> [--seed]
+
+`--seed` populates the database first, in this process, before uvicorn starts.
+Playwright launches `webServer` *before* `globalSetup`, so an external seed step
+is a race: the backend comes up on an empty file whose parent directory may not
+even exist yet. Seeding in-process makes the ordering explicit instead of
+relying on which hook happens to run first.
 """
 
 import os
@@ -29,15 +35,34 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 LIVE_DB = (REPO / "data" / "lecgap.db").resolve()
 
-if len(sys.argv) != 3:
+if len(sys.argv) not in (3, 4):
     print(__doc__)
     raise SystemExit(2)
 
 DB = Path(sys.argv[1]).resolve()
 PORT = int(sys.argv[2])
+SEED = "--seed" in sys.argv[3:]
 
 if DB == LIVE_DB:
     raise SystemExit(f"REFUSING TO RUN: {DB} is the live database.")
+
+if SEED:
+    # The seed script creates the parent directory and the schema, and refuses
+    # the live database on its own. Run it as a subprocess so it gets a clean
+    # interpreter state and its own engine.
+    import subprocess
+
+    DB.parent.mkdir(parents=True, exist_ok=True)
+    r = subprocess.run(
+        [sys.executable, str(Path(__file__).with_name("seed_live_db.py")), str(DB)],
+        cwd=str(REPO),
+        capture_output=True,
+        text=True,
+    )
+    sys.stdout.write(r.stdout)
+    sys.stderr.write(r.stderr)
+    if r.returncode != 0:
+        raise SystemExit(f"seed_live_db.py failed with exit code {r.returncode}")
 
 # Before ANY backend import. backend.models.db builds its engine at import time.
 os.environ["LECGAP_DATABASE_URL"] = f"sqlite:///{DB.as_posix()}"
