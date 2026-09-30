@@ -214,10 +214,29 @@ def _serialize(job: Job) -> dict:
 
 
 def _iso(dt):
+    """Serialise a stored timestamp for the wire.
+
+    SQLite drops tzinfo on DATETIME columns, so a value read back is naive --
+    and it was written as UTC (`utcnow`, on every Job column). The trap is that
+    `naive.astimezone()` does not mean "this was UTC", it means "assume this is
+    LOCAL time", so serialising without relabelling first shifts every timestamp
+    by the machine's UTC offset.
+
+    Measured on a +05:30 box: a job created seconds earlier was reported to the
+    browser as **330 minutes old**, which is what the job drawer showed. The
+    stall detector and the six-hour `JOB_DEADLINE_S` backstop inherit the same
+    shift, so they misfire by 5.5 hours as well.
+
+    Routed through `_as_utc` deliberately: the read path and the write path are
+    the same rule about the same column, and they had already drifted apart once.
+    `WEDGE_DIAGNOSIS_2026-09-29.md` §4 established the rule (stored values are
+    UTC wall-clock, drift 0.0 minutes) and fixed the read side; the write side
+    was never checked, and only surfaced by looking at a screenshot.
+    """
     if dt is None:
         return None
     try:
-        return dt.astimezone().isoformat()
+        return _as_utc(dt).astimezone().isoformat()
     except (AttributeError, ValueError):
         return str(dt)
 

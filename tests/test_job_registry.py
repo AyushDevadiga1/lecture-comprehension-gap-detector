@@ -49,6 +49,75 @@ def test_create_job_persists_and_is_readable():
         assert db.get(Job, job_id) is not None
 
 
+# ------------------------------------------------- timestamps on the wire
+
+def test_serialised_timestamps_denote_the_instant_that_was_stored():
+    """The 330-minute bug, pinned.
+
+    SQLite drops tzinfo on DATETIME columns, so a stored timestamp reads back
+    naive -- and it was written as UTC. `naive.astimezone()` does not mean "this
+    was UTC", it means "assume local time", so serialising without relabelling
+    first shifted every timestamp by the machine's UTC offset.
+
+    Found by looking at a screenshot, not by a test: on a +05:30 box the job
+    drawer showed a job created seconds earlier as **330m 36s elapsed**. The
+    stall detector and the six-hour deadline inherited the same shift. Every
+    assertion in the repo still passed, because they assert that a job *exists*
+    or that some text is present -- never that a number is the right number.
+    """
+    truth = datetime(2026, 9, 30, 16, 25, 21, tzinfo=timezone.utc)
+    stored_naive = truth.replace(tzinfo=None)  # what SQLite actually keeps
+
+    wire = registry._iso(stored_naive)
+    back = datetime.fromisoformat(wire).astimezone(timezone.utc)
+
+    assert back == truth, (
+        f"the wire format moved the instant by "
+        f"{(back - truth).total_seconds()}s; a browser reads this as the job's age"
+    )
+
+
+def test_serialised_timestamps_survive_a_real_round_trip():
+    """End to end: create a job, read it back, and ask how old it is."""
+    job_id = registry.create_job("extract", course_id="ml", lecture_id=1)
+    wire = registry.get_job(job_id)["created_at"]
+
+    age_s = abs(
+        (datetime.now(timezone.utc)
+         - datetime.fromisoformat(wire).astimezone(timezone.utc)).total_seconds()
+    )
+    assert age_s < 60, (
+        f"a job created now serialised as {age_s:.0f}s old "
+        f"(local offset is {datetime.now().astimezone().utcoffset()})"
+    )
+
+
+def test_iso_and_as_utc_agree_about_naive_values():
+    """The guard on the guard.
+
+    `_as_utc` (the read path) and `_iso` (the write path) encode the same rule
+    about the same column. They had already drifted once -- the diagnosis of
+    2026-09-29 fixed the read side and never looked at the write side -- so the
+    rule is asserted once, in one place, rather than trusted to two copies of it.
+    """
+    naive = datetime(2026, 1, 2, 3, 4, 5)  # a stored value, tzinfo dropped
+    assert registry._as_utc(naive).utcoffset() == timezone.utc.utcoffset(None)
+    assert datetime.fromisoformat(
+        registry._iso(naive)
+    ).astimezone(timezone.utc) == datetime(2026, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+
+
+def test_iso_leaves_an_aware_datetime_alone():
+    """An already-aware value must not be shifted a second time."""
+    aware = datetime(2026, 9, 30, 16, 25, 21, tzinfo=timezone.utc)
+    assert datetime.fromisoformat(registry._iso(aware)) == aware
+
+
+def test_iso_still_passes_through_none_and_junk():
+    assert registry._iso(None) is None
+    assert registry._iso("not a datetime") == "not a datetime"
+
+
 def test_progress_updates_are_visible():
     job_id = registry.create_job("transcribe", course_id="ml", lecture_id=1)
     registry.update_job(job_id, stage="transcribing", progress_pct=40,
