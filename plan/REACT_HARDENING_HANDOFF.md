@@ -4,37 +4,33 @@
 > `plan/NEXT_SESSION_PROMPT.md` instead** — it is the self-contained entry point
 > and carries the current task.
 >
-> ## ⚠ STOP. The app has NOT been verified working by a human.
+> ## ⚠ STOP. Nobody has watched this app work, and the tests cannot tell you.
 >
 > On 2026-09-29 a person was asked to run the app and reported that **every button
 > was dead**: no status updates, no job progress, quizzes, extraction and clips
-> all unresponsive. 297 passing React tests and 710 passing Python tests said
-> the opposite. Both were true.
->
-> **The cause was found later the same day, and it was two independent bugs.**
-> Neither was the write-lock deadlock first suspected. See
+> all unresponsive. That was real, and it had **two independent causes**, neither
+> of them the write-lock deadlock first suspected. See
 > `plan/WEDGE_DIAGNOSIS_2026-09-29.md` for the full refutation.
 >
 > 1. **A foreign-key violation, not a lock.** `clips.concept_id` references
 >    `concepts.id` and `PRAGMA foreign_keys=ON`; `extract.py` deleted a lecture's
 >    concepts before its clips, so every re-extraction of a lecture that already
 >    had clips raised `IntegrityError` — *after* the minutes-long LLM stage,
->    which is why it read as "the button hangs". The 710 Python tests missed it
->    because the shared test engine did not enable foreign keys.
+>    which is why it read as "the button hangs". The Python tests missed it
+>    because the shared test engine did not enable foreign keys. Fixed in
+>    `425388c`.
 > 2. **The job feed never reached the UI at all.** `JobFeed.connect()` assigned
 >    `this.sink` and then called `disconnect()`, which nulls it, so
 >    `publish()`'s `this.sink?.(next)` was a permanent no-op. The drawer read
->    "Disconnected" forever. The 297 React tests missed it because they all
->    assert through `feed.subscribe()` and connect *without* a sink — a
->    different code path from the one the app uses.
+>    "Disconnected" forever. The React tests missed it because they all assert
+>    through `feed.subscribe()` and connect *without* a sink — a different code
+>    path from the one the app uses. Fixed in `de74a02`.
 >
-> Both are fixed (`425388c`, `ed8086d`, `de74a02`). The lesson that outlives them
-> is in §0 below: the entire job-feed path was mocked, so a green suite was
-> evidence of nothing. `npm run test:live` (`c097be6`) now boots a real backend
-> against a real throwaway database and is what caught bug 2.
->
-> **Still not done:** no human has watched this app work. Wave 3 remains gated on
-> that, and Playwright is the one verification jsdom cannot substitute for.
+> Both are fixed, and `npm run test:e2e` now drives a real browser against a real
+> backend to prove the feed reaches the UI. **What is still missing is a person.**
+> See §4a for the specific things no automated tier can check — and note that a
+> wrong *number* slipped through 1,066 passing tests until someone looked at a
+> screenshot.
 
 
 ## 0. The most important structural gap
@@ -79,24 +75,54 @@ are all on this branch.
 
 ## 1. Where things stand
 
+Updated 2026-09-29, after the session that fixed the two undiagnosed bugs.
+
 | | |
 |---|---|
 | Branch | `engine2/scaffold` — **all work lands here** |
 | `main` | `5e0a434` — **do not touch.** It is the clean stable baseline |
 | Branch base | `886b845`, i.e. **3 commits behind `main`**. Unchanged on purpose |
-| Commits on branch | 20 (6 pre-existing + 12 from Waves 0/1, 1 handoff, 4 from Wave 2) |
-| Working tree | clean |
-| React | **297 tests** across 18 files, `npm run verify` green, no warnings |
-| Python | **710 passed**, `data/lecgap.db` byte-identical before/after |
-| **Runs in a browser?** | **UNVERIFIED — see the box at the top.** Reported broken 2026-09-29; test run was inconclusive. |
-| Wave 0 (tooling) | **done** |
-| Wave 1 (correctness) | **done** — all 8 defects closed |
-| Wave 2 (colour system) | **done** — tokens ported, theme generated, drift gated |
-| Wave 3 (feature parity) | **blocked** until the app is proven to run |
-| Wave 4 (E2E, cutover) | **needs to come forward** — it is the missing verification |
+| Working tree | clean (only `output.txt` untracked) |
+| Python | **734 passed**, `data/lecgap.db` byte-identical before/after |
+| React (mocked) | **317 tests** across 19 files, `npm run verify` green |
+| React (live tier) | **12 passed** — `npm run test:live`, real uvicorn + throwaway DB |
+| E2E tier | **3 passed** — `npm run test:e2e`, real Chromium through Vite's proxy |
+| Visual review | `npm run shots` → 6 PNGs, gitignored, **delete after review** |
+| **Verified in a real browser?** | **Yes, behaviourally** — 3 E2E specs. **Appearance: no.** See §4a. |
+| Wave 0/1/2 | **done** |
+| Wave 3 (feature parity) | **still gated** on a human confirming the app |
 
-Re-check: `cd frontend-react && npm run verify` ·
-`& "D:\Anaconda3\envs\lecgap\python.exe" -m pytest tests -q`
+Re-check all four tiers:
+
+```powershell
+cd frontend-react
+npm run verify        # 317 mocked
+npm run test:live     # 12, real backend
+npm run test:e2e      # 3, real browser
+cd ..\..
+& "D:\Anaconda3\envs\lecgap\python.exe" -m pytest tests -q    # 734
+```
+
+### What this session changed
+
+Ten commits on top of the previous twenty. In order:
+
+| Commit | What |
+|---|---|
+| `425388c` | **FK fix.** Re-extraction died on `IntegrityError`; detach the lecture's clips first. Also: the test engine now sets `PRAGMA foreign_keys=ON`, which is *why* 710 tests missed it. |
+| `ed8086d` | **Crash net.** `job_scope` had no `except`, so a crashed worker stayed `running` with a frozen heartbeat forever. |
+| `de74a02` | **The dead-UI bug.** `JobFeed.connect()` assigned `this.sink` then called `disconnect()`, which nulls it. The feed never delivered a snapshot to the UI. |
+| `c097be6` | **Live tier.** Real uvicorn, real throwaway DB, real components. What found `de74a02`. |
+| `9cb6ad4` | **Docs refutation.** F1/F2 target a failure mode that does not exist. |
+| `782ff14` | `GET /lectures` had no `course_id` parameter and ignored the one it was sent. |
+| `2f15d5b` | 17 mojibake sequences, incl. one user-visible `placeholder`. |
+| `4031f6b` | **E2E tier.** Real browser reads the SSE stream through Vite's proxy. |
+| `446b33e` | F3 wired: the per-course lock now actually guards the pipeline. |
+| `7b87f36` | **Clip browser.** The clips existed and nothing could show them. |
+| `7efdc4c` | **Timestamp bug.** `_iso` relabelled naive UTC as local; the UI showed 330 minutes for a 26-second job. Found by looking. |
+| `bea0698` | `npm run shots`, and the rule that generated output is review-then-delete. |
+
+`main` is untouched. Nothing was pushed.
 
 ## 1a. Where the app actually is
 

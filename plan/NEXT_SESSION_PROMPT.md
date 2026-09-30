@@ -1,34 +1,43 @@
 # NEXT SESSION — start here
 
-> # ⛔ READ THIS FIRST: the task below is WRONG and has been done and refuted
+> # ⛔ THE TASK BELOW IS DONE. It was also WRONG. Read this box, not the rest.
 >
 > Everything from "## The bug to fix" onwards describes a **SQLite write-lock
 > deadlock** that never happened. It was a **foreign-key violation**, and the
 > three "wedged" jobs crashed instantly rather than blocking. **F1 and F2 fix
 > nothing** — the throttle was never exhausted, measured `in_use == 0` straight
-> after a crash. **F3 is still worth doing** as a double-click guard.
+> after a crash. F3 is done too.
 >
-> **All of it has since been fixed, on `engine2/scaffold`:**
+> **All of it has since been fixed, on `engine2/scaffold` (10 commits):**
 >
 > | Commit | What it actually was |
 > |---|---|
-> | `425388c` | `IntegrityError` on `DELETE FROM concepts` — `clips.concept_id` is a real FK and `PRAGMA foreign_keys=ON`. Detach the clips before deleting their concepts. Also: the test engine now enforces FKs, which is *why* 710 tests missed it. |
+> | `425388c` | `IntegrityError` on `DELETE FROM concepts` — `clips.concept_id` is a real FK and `PRAGMA foreign_keys=ON`. Detach the clips before deleting their concepts. The test engine now enforces FKs, which is *why* 710 tests missed it. |
 > | `ed8086d` | `job_scope` had no `except`, so a crashed worker stayed `running` with a frozen heartbeat forever. |
 > | `de74a02` | **`JobFeed.connect()` assigned `this.sink` then called `disconnect()`, which nulls it.** The job feed never delivered a single snapshot to the UI. This is the actual "every button is dead". |
 > | `c097be6` | `npm run test:live` — a real uvicorn, a real throwaway DB, real components. It is what found `de74a02`. |
+> | `4031f6b` | `npm run test:e2e` — a real browser reads the SSE stream through Vite's proxy. |
+> | `446b33e` | F3 wired: the per-course lock now actually guards the pipeline (was defined, tested, and called from nowhere). |
+> | `7b87f36` | Clip browser — the clips existed and nothing could show them. |
+> | `7efdc4c` | **Timestamp bug.** `_iso` relabelled a naive UTC timestamp as local, so the UI showed "330m 36s elapsed" for a 26-second job. |
 >
 > `plan/WEDGE_DIAGNOSIS_2026-09-29.md` carries the full refutation with evidence.
+> `plan/REACT_HARDENING_HANDOFF.md` §1 has the current numbers and §4a what the
+> automated tiers cannot see.
 >
 > ## What is left
 >
-> 1. **Playwright.** The one thing jsdom cannot prove: that a real browser reads
->    a streaming body through Vite's dev proxy. `test:live` proves the stream is
->    correct and reaches the components, in Node.
-> 2. **F3** — a per-lecture 409 on `POST /lectures/{id}/concepts`. Still
->    unwired; `acquire_course`/`release_course`/`CourseBusy` exist and are called
->    from nowhere.
-> 3. **The app is still unverified by a human.** Nobody has watched a real job
->    advance in a real browser.
+> 1. **A human has to run the app.** Behaviour is verified in a real browser by
+>    the E2E tier; appearance and legibility are not verified at all, and no
+>    agent can verify them. Run `npm run shots` and look.
+> 2. **The §10 gate** — a playing `<video>` surviving a job tick. This is the
+>    app's whole reason for existing and is still unproven. Needs a tiny real
+>    media file in the E2E seed.
+> 3. **Wave 3** — react-flow DAG, timeline/coverage, quota row, and the 10
+>    wrapped endpoints that are still called by nothing.
+>
+> `main` is untouched at `5e0a434`. Nothing pushed. The working tree is clean
+> apart from `output.txt`.
 
 > **Paste this into the new session:**
 >
@@ -64,18 +73,33 @@ is in the three documents above.
 
 ## Where things actually stand
 
-Waves 0 (tooling), 1 (correctness) and 2 (colour system) are built: 26 commits,
-297 React tests, 710 Python tests, clean build. Waves 3–4 (feature parity, E2E)
-are **not started and are blocked**.
+**Updated 2026-09-29.** The task below is done. Ten commits landed on
+`engine2/scaffold`; `main` is untouched at `5e0a434`.
 
-The backend was healthy when last checked: `/health` 200, `/courses` returns `ml`
-(4 lectures, 196 concepts) and `prob`, and `/jobs/stream` streams `retry: 2000`
-then change-gated full-array snapshots then `: keep-alive` about once a second.
-Vite's proxy and the LLM are both fine — a live Groq call returns HTTP 200 in
-1.26 s. **Do not go looking in the frontend first.** The last session lost time
-doing exactly that.
+All four tiers are green: **734 pytest**, **317 vitest**, **12 live** (real
+uvicorn + throwaway DB), **3 E2E** (real Chromium through Vite's proxy).
+
+What was actually wrong, both now fixed:
+
+- **A foreign-key violation**, not a write lock. `extract.py` deleted a
+  lecture's concepts before its clips, and `clips.concept_id` references
+  `concepts.id` with `PRAGMA foreign_keys=ON`, so every re-extraction of a
+  lecture that already had clips died. `425388c`.
+- **The job feed never reached the UI.** `JobFeed.connect()` assigned
+  `this.sink` and then called `disconnect()`, which nulls it — a permanent
+  no-op. This was the actual "every button is dead". `de74a02`.
+
+F1 and F2 below are **dropped**; do not implement them. F3 is done
+(`446b33e`). For the full reasoning see the refutation box in
+`plan/WEDGE_DIAGNOSIS_2026-09-29.md`.
 
 ## The bug to fix
+
+> ⚠ **REFUTED — kept only as the historical record.** Three `extract` jobs did
+> not wedge on a SQLite write lock; they **crashed instantly** and were left
+> `running` forever. The throttle was never exhausted (`in_use == 0` measured
+> straight after a crash). The inference that produced this whole theory was
+> reading "0.00 s of CPU" as *blocked* when a **crashed** worker looks identical.
 
 Three `extract` jobs wedged on a SQLite write lock. Each held one of the three
 `LECGAP_MAX_PIPELINE_JOBS=3` permits, and `_PipelineThrottle.__enter__` in
