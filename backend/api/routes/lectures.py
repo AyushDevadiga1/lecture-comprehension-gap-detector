@@ -54,8 +54,38 @@ def _safe_filename(name: str) -> str:
     return f"{stem}{ext}"
 
 
+def _locked_runner(fn, course_id: str):
+    """Wrap a worker so the course lock is held for the work, not the request.
+
+    The obvious wiring — acquire in the route, release when the route returns —
+    is worthless here, and worth spelling out why. A `BackgroundTask` runs
+    *after* the response is sent, so a lock released at the end of the route
+    would be free again before a single row is written. The second request
+    would be admitted, and both jobs would run concurrently, which is the exact
+    failure the lock exists to prevent.
+
+    So the lock is taken in the route (to reject a concurrent request with an
+    honest 409) and released here, in a `finally`, when the work is genuinely
+    over. `finally` rather than a plain call because the worker can raise: a lock
+    released only on the happy path is a lock that leaks on the first crash,
+    which is the failure mode this whole exercise is about.
+
+    A closure rather than a new parameter on every worker, so the four worker
+    signatures — and their tests — stay exactly as they were.
+    """
+
+    def _run(*args, job_id=None):
+        try:
+            fn(*args, job_id=job_id)
+        finally:
+            registry.release_course(course_id)
+
+    return _run
+
+
 def _enqueue(background_tasks, fn, *, kind: str, lecture_id: int,
-             course_id: str, title: str, args: tuple = ()) -> int:
+             course_id: str, title: str, args: tuple = (),
+             course_lock: bool = False) -> int:
     """Register a durable job, then schedule the worker bound to it (C3).
 
     The job row is created *before* the worker is scheduled, so a UI can attach
@@ -63,12 +93,41 @@ def _enqueue(background_tasks, fn, *, kind: str, lecture_id: int,
     thread publishes its first stage. The worker receives the id and binds it
     for the run (see `backend.api.jobs.progress.job_scope`).
 
+    With ``course_lock`` the per-course advisory lock is taken first, and a
+    concurrent request is refused with 409 rather than silently queued. That is
+    the change that would have prevented the 2026-09-29 incident, in which one
+    user clicked *Extract Concepts* three times inside ninety seconds and got
+    three concurrent workers on one lecture. Note it is per COURSE, not per
+    lecture: `acquire_course` is the primitive that exists, and it is stricter.
+    With `LECGAP_MAX_PIPELINE_JOBS=3` there is room for three courses at once;
+    within one course, one heavy job.
+
     Returns the job id, which every caller puts on its own response (`job_id`),
     so a client that never polls /jobs can still follow the work it started.
     """
-    job_id = registry.create_job(kind, course_id=course_id,
-                                 lecture_id=lecture_id, title=title)
-    background_tasks.add_task(fn, *args, job_id=job_id)
+    lock_taken = False
+    if course_lock:
+        try:
+            registry.acquire_course(course_id)
+            lock_taken = True
+        except registry.CourseBusy:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"Course '{course_id}' already has a heavy job running. "
+                    "Wait for it to finish, or reload /jobs for its progress."
+                ),
+            )
+    try:
+        job_id = registry.create_job(kind, course_id=course_id,
+                                     lecture_id=lecture_id, title=title)
+        task = _locked_runner(fn, course_id) if lock_taken else fn
+        background_tasks.add_task(task, *args, job_id=job_id)
+    except Exception:
+        # Never leave the lock held by a request that never scheduled its work.
+        if lock_taken:
+            registry.release_course(course_id)
+        raise
     return job_id
 
 
@@ -421,7 +480,7 @@ def rerun_lecture(
     job_id = _enqueue(background_tasks, jobs.process_lecture, kind="transcribe",
                       lecture_id=lecture_id, course_id=course_id_for_job,
                       title=title_for_job or f"Lecture #{lecture_id}",
-                      args=(lecture_id, whisper_backend))
+                      args=(lecture_id, whisper_backend), course_lock=True)
     return _with_media(delivered, job_id=job_id)
 
 
@@ -448,7 +507,7 @@ def run_concept_extraction(
     job_id = _enqueue(background_tasks, jobs.extract_concepts_worker, kind="extract",
                       lecture_id=lecture_id_out, course_id=course_id_for_job,
                       title=title_for_job or f"Concepts for #{lecture_id_out}",
-                      args=(lecture_id_out,))
+                      args=(lecture_id_out,), course_lock=True)
     with SessionLocal() as db:
         lecture = db.get(Lecture, lecture_id_out)
         _ = lecture.segments  # force-load before session closes
@@ -494,7 +553,7 @@ def cut_lecture_clips(
     job_id = _enqueue(background_tasks, jobs.cut_clips_worker, kind="clips",
                       lecture_id=lecture_id_out, course_id=course_id_for_job,
                       title=title_for_job or f"Clips for #{lecture_id_out}",
-                      args=(lecture_id_out,))
+                      args=(lecture_id_out,), course_lock=True)
     return ClipBatchOut(lecture_id=lecture_id_out, status="queued", job_id=job_id)
 
 
