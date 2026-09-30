@@ -105,6 +105,60 @@ describe('live: the student dashboard renders real server data', () => {
   })
 })
 
+describe('live: the clip browser', () => {
+  it('lists a lecture’s real clips with their real time ranges', async () => {
+    renderApp()
+    await screen.findByText('Linear Regression')
+
+    // The seed cuts two clips for lecture 1, both ok. `ClipBrowser` defaults to
+    // the first lecture, so these appear without any interaction.
+    expect(await screen.findByText('Clip Library')).toBeInTheDocument()
+
+    // Asserted on the time ranges, not the concept names: "Linear Regression"
+    // and "Slope" are also in the lecture table, so they prove nothing here.
+    // These chips exist only in the clip list.
+    await waitFor(() => {
+      expect(body()).toMatch(/0:00\s*.\s*0:06/)
+      expect(body()).toMatch(/0:06\s*.\s*0:12/)
+      expect(body()).toContain('2 playable')
+    })
+  })
+
+  it('gives the player a canonical media URL, never a filesystem path', async () => {
+    renderApp()
+    await screen.findByText('Linear Regression')
+    await screen.findByText('Clip Library')
+
+    const firstClip = await screen.findByText(/0:00\s*.\s*0:06/)
+    // MUI renders a ListItemButton as role="button"; walk up to it from the chip.
+    const row = firstClip.closest('[role="button"]') as HTMLElement
+    expect(row, 'the clip row is not clickable').toBeTruthy()
+    row.click()
+
+    // The seed stores `clips/1/linear.mp4` as the path; the backend hands over
+    // `/media/clips/1/linear.mp4`. Clicking must surface the URL —
+    // ARCHITECTURE §3: no path in the payload, and the React client has no
+    // path→URL mapper, so if a path ever reached here there would be nothing to
+    // render.
+    await waitFor(() => {
+      const video = document.querySelector('video')
+      expect(video).toBeTruthy()
+      const src = video!.getAttribute('src') ?? ''
+      expect(src.startsWith('/media/clips/')).toBe(true)
+      // Note what is deliberately NOT asserted: `expect(src).not.toContain(
+      // 'clips/1/')`. The stored path and the canonical URL share a filename, so
+      // `/media/clips/1/linear.mp4` contains the substring `clips/1/` and that
+      // check fails on correct output. What distinguishes them is the prefix,
+      // and that the src is not the bare stored path.
+      expect(src).not.toBe('clips/1/linear.mp4')
+      expect(src).not.toContain('\\')
+    })
+    // The document-level guard does work, because attribute values are not part
+    // of textContent: a raw `clips/1/linear.mp4` anywhere in the text is a leak.
+    expect(body()).not.toContain('clips/1/')
+  })
+})
+
 describe('live: the SSE feed reaches the UI', () => {
   it('shows the seeded in-flight job, delivered over a real stream', async () => {
     renderApp()

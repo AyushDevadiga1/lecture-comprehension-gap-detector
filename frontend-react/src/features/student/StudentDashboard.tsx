@@ -45,6 +45,7 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
+import { ClipBrowser } from './ClipBrowser'
 
 
 export const StudentDashboard: React.FC = () => {
@@ -769,6 +770,13 @@ export const StudentDashboard: React.FC = () => {
             </Table>
           </Card>
         )}
+      </Box>
+
+      {/* Clip Library — every clip cut for one lecture, listed and playable.
+          Sits after the lecture list because it browses one of those lectures,
+          and the picker above is where the default selection comes from. */}
+      <Box sx={{ mt: 4 }}>
+        <ClipBrowser lectures={lectureList} onCutClips={handleTriggerClips} />
       </Box>
     </Box>
   )

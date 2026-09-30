@@ -89,6 +89,33 @@ test.describe('the app in a real browser, through the real proxy', () => {
     expect(errors, `page logged errors:\n${errors.join('\n')}`).toEqual([])
   })
 
+  test('the clip browser lists real clips and gives the player a real URL', async ({ page }) => {
+    // The other half of the display story: clips existed in the database and
+    // `GET /lectures/{id}/clips` worked, but nothing in the UI called it —
+    // playback was only reachable through the quiz remediation path. A user
+    // who had cut 24 clips had no browser for them.
+    await page.goto('/student')
+
+    await expect(page.getByText('Clip Library')).toBeVisible()
+    // Two seeded clips, both ok. Asserted on the time ranges because the
+    // concept names also appear in the lecture table above.
+    await expect(page.getByText('0:00 – 0:06')).toBeVisible()
+    await expect(page.getByText('0:06 – 0:12')).toBeVisible()
+    await expect(page.getByText('2 playable')).toBeVisible()
+
+    await page.getByText('0:00 – 0:06').click()
+
+    const video = page.locator('video')
+    await expect(video).toHaveCount(1)
+    // Canonical URL, never the stored filesystem path (ARCHITECTURE §3).
+    await expect(video).toHaveAttribute('src', /^\/media\/clips\//)
+    // The player element itself is wired to the media route; the bytes are not
+    // asserted because the seeded clip files are deliberately absent, and this
+    // test is about the client's URL contract, not about ffmpeg.
+    const src = await video.getAttribute('src')
+    expect(src).not.toContain('\\')
+  })
+
   test('a browser can read the streaming endpoint through the proxy', async ({ page }) => {
     // The narrower claim, isolated from the app: fetch /jobs/stream from inside
     // the page (so it is same-origin and therefore proxied) and read the body
