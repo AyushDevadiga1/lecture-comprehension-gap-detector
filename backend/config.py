@@ -21,10 +21,6 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Shared artifact tree (one formula, defined once; routes + jobs reference it).
-MEDIA_ROOT_DIR = REPO_ROOT / "data" / "raw"
-CLIPS_BASE_DIR = REPO_ROOT / "data" / "processed" / "clips"
-
 
 # ------------------------------------------------------------- typed getters
 
@@ -54,6 +50,30 @@ def get_float(name: str, default: float) -> float:
 
 def get_bool(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes"}
+
+
+# ------------------------------------------------------------ artifact trees
+
+# Shared artifact tree (one formula, defined once; routes + jobs reference it).
+MEDIA_ROOT_DIR = REPO_ROOT / "data" / "raw"
+
+
+def clips_base_dir() -> Path:
+    """Root of the cut-clip tree, resolved at call time.
+
+    Exists for the same reason as :func:`database_url` below. ``CLIPS_BASE_DIR``
+    is imported as a frozen module constant by the media route, the clip job and
+    two course routes, so a process that wants its clips somewhere else — the
+    Playwright tier, serving a real clip out of a throwaway tree so a test can
+    never write into the developer's ``data/processed/clips/`` — has to be able
+    to say so before its first import, and to check afterwards that it took.
+    """
+    return Path(
+        get_str("LECGAP_CLIPS_BASE_DIR") or (REPO_ROOT / "data" / "processed" / "clips")
+    )
+
+
+CLIPS_BASE_DIR = clips_base_dir()
 
 
 # ------------------------------------------------------- lazy (call-time) keys

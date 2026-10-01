@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from backend.config import (
+    clips_base_dir,
     get_bool,
     get_float,
     get_int,
@@ -22,6 +23,7 @@ REPO = Path(__file__).resolve().parents[1]
 # Import-time keys, their default, and type.
 IMPORT_TIME_KEYS = {
     "LECGAP_DATABASE_URL": None,
+    "LECGAP_CLIPS_BASE_DIR": None,
     "LECGAP_MAX_UPLOAD_MB": 2048,
     "LECGAP_MAX_PIPELINE_JOBS": 3,
     "LECGAP_GROQ_MODEL": "openai/gpt-oss-20b",
@@ -47,6 +49,7 @@ IMPORT_TIME_KEYS = {
 LAZY_KEYS = {
     "LECGAP_API_KEY",
     "LECGAP_DATABASE_URL",  # also exported as the frozen constant DATABASE_URL
+    "LECGAP_CLIPS_BASE_DIR",  # likewise CLIPS_BASE_DIR
     "GROQ_API_KEY",
     "LECGAP_LLM_REASONING",
     "LECGAP_SNAP_SILENCE",
@@ -150,6 +153,37 @@ def test_database_url_is_lazy_and_honours_late_override(monkeypatch):
     assert database_url() == f"sqlite:///{REPO_ROOT / 'data' / 'lecgap.db'}"
     monkeypatch.setenv("LECGAP_DATABASE_URL", "sqlite:///somewhere/other.db")
     assert database_url() == "sqlite:///somewhere/other.db"
+
+
+def test_clips_base_dir_is_lazy_and_honours_late_override(monkeypatch):
+    """The clip tree must resolve at call time, like the database path.
+
+    The Playwright tier writes real clip files so the §10 gate can play one in a
+    real browser. `CLIPS_BASE_DIR` is a frozen module constant imported by the
+    media route and the clip job, so the tier has to redirect the tree *before*
+    the backend is imported or it writes into the developer's real
+    `data/processed/clips/` — the same class of accident the database guard in
+    `seed_live_db.py` refuses to allow, and the reason this is a getter.
+    """
+    from backend.config import REPO_ROOT
+
+    monkeypatch.delenv("LECGAP_CLIPS_BASE_DIR", raising=False)
+    assert clips_base_dir() == REPO_ROOT / "data" / "processed" / "clips"
+    monkeypatch.setenv("LECGAP_CLIPS_BASE_DIR", "C:/somewhere/else/clips")
+    assert clips_base_dir().as_posix() == "C:/somewhere/else/clips"
+
+
+def test_clips_base_dir_falls_back_on_an_empty_value(monkeypatch):
+    """A blank env var must mean 'unset', not 'the repo root'.
+
+    An empty string is what a shell leaves behind for an unset variable, and
+    `Path('')` resolves to the current working directory — which would put real
+    clip output somewhere nobody expects.
+    """
+    from backend.config import REPO_ROOT
+
+    monkeypatch.setenv("LECGAP_CLIPS_BASE_DIR", "   ")
+    assert clips_base_dir() == REPO_ROOT / "data" / "processed" / "clips"
 
 
 def test_whisper_backend_override_distinguishes_unset_from_value(monkeypatch):
