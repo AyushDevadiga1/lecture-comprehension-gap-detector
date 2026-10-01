@@ -27,10 +27,19 @@
 >    path from the one the app uses. Fixed in `de74a02`.
 >
 > Both are fixed, and `npm run test:e2e` now drives a real browser against a real
-> backend to prove the feed reaches the UI. **What is still missing is a person.**
-> See §4a for the specific things no automated tier can check — and note that a
-> wrong *number* slipped through 1,066 passing tests until someone looked at a
-> screenshot.
+> backend to prove the feed reaches the UI.
+>
+> **Since then: the §10 gate is closed too.** `e2e/video.e2e.spec.ts` plays a real
+> video — real bytes, real range request, real proxy, real Chromium — while a real
+> `cut_clips` job publishes real progress over the real stream, and asserts the
+> `<video>` was never remounted, never paused, and never had its playhead reset.
+> That is the one claim the whole rebuild exists for, and it had never been
+> asserted. It needed a committed media fixture (`0fc9ccd`) and a clip tree a
+> test could safely write to (`8a5f539`).
+>
+> **What is still missing is a person.** See §4a — appearance and legibility are
+> verified by nothing, and note that a wrong *number* slipped through 1,069
+> passing tests until someone looked at a screenshot.
 
 
 ## 0. The most important structural gap
@@ -48,15 +57,17 @@
 - a browser being able to read a streaming `fetch` body through a proxy at all;
 - anything being reachable on :8000 from :5173.
 
-**Bring Playwright forward.** Until one E2E test drives a real job against a real
-server, the app's central claim — live progress without restarting the page — is
-unverified. Do not start Wave 3 features before step 4 of the manual procedure
-below passes.
+**Closed 2026-10-01.** All four bullets are now answered by `npm run test:e2e`:
+a real browser reads a real proxied stream, `requestAnimationFrame` coalescing
+runs under a real page, and a real job drives the UI end to end. The §10 gate
+extends it to real playback. **Keep Playwright in front of new work** — the
+reason this section had to exist is that three tiers were green over a dead app.
 
 > **Committed on purpose.** `WORKLOG.md` is git-ignored and will not be in a fresh
 > clone or a new agent's context. This file is the durable version. Everything
-> below was **verified on 2026-09-28**, and where a number could go stale the
-> command to re-check it is given rather than the number.
+> below was **verified on 2026-09-28** unless a row says otherwise, and where a
+> number could go stale the command to re-check it is given rather than the
+> number.
 
 ## 0. Read this first, it changes where the spec is
 
@@ -75,7 +86,7 @@ are all on this branch.
 
 ## 1. Where things stand
 
-Updated 2026-09-29, after the session that fixed the two undiagnosed bugs.
+Updated 2026-10-01, after the session that closed the §10 gate.
 
 | | |
 |---|---|
@@ -83,14 +94,16 @@ Updated 2026-09-29, after the session that fixed the two undiagnosed bugs.
 | `main` | `5e0a434` — **do not touch.** It is the clean stable baseline |
 | Branch base | `886b845`, i.e. **3 commits behind `main`**. Unchanged on purpose |
 | Working tree | clean (only `output.txt` untracked) |
-| Python | **734 passed**, `data/lecgap.db` byte-identical before/after |
+| Python | **736 passed**, `data/lecgap.db` byte-identical before/after |
 | React (mocked) | **317 tests** across 19 files, `npm run verify` green |
 | React (live tier) | **12 passed** — `npm run test:live`, real uvicorn + throwaway DB |
-| E2E tier | **3 passed** — `npm run test:e2e`, real Chromium through Vite's proxy |
+| E2E tier | **4 passed** — `npm run test:e2e`, real Chromium through Vite's proxy |
+| **§10 gate** | **closed** — a real `<video>` survives real job ticks. See `2617fe6` |
+| Gate control | `npm run verify:video-gate` — breaks playback, requires the gate to fail |
 | Visual review | `npm run shots` → 6 PNGs, gitignored, **delete after review** |
-| **Verified in a real browser?** | **Yes, behaviourally** — 3 E2E specs. **Appearance: no.** See §4a. |
+| **Verified in a real browser?** | **Yes, behaviourally** — 4 E2E specs. **Appearance: no.** See §4a. |
 | Wave 0/1/2 | **done** |
-| Wave 3 (feature parity) | **still gated** on a human confirming the app |
+| Wave 3 (feature parity) | **unblocked**, pending a human confirming the app — §6 |
 
 Re-check all four tiers:
 
@@ -98,29 +111,22 @@ Re-check all four tiers:
 cd frontend-react
 npm run verify        # 317 mocked
 npm run test:live     # 12, real backend
-npm run test:e2e      # 3, real browser
+npm run test:e2e      # 4, real browser
+npm run verify:video-gate   # the §10 gate, proven able to fail
 cd ..\..
-& "D:\Anaconda3\envs\lecgap\python.exe" -m pytest tests -q    # 734
+& "D:\Anaconda3\envs\lecgap\python.exe" -m pytest tests -q    # 736
 ```
 
 ### What this session changed
 
-Ten commits on top of the previous twenty. In order:
+Four commits on top of the previous twenty. In order:
 
 | Commit | What |
 |---|---|
-| `425388c` | **FK fix.** Re-extraction died on `IntegrityError`; detach the lecture's clips first. Also: the test engine now sets `PRAGMA foreign_keys=ON`, which is *why* 710 tests missed it. |
-| `ed8086d` | **Crash net.** `job_scope` had no `except`, so a crashed worker stayed `running` with a frozen heartbeat forever. |
-| `de74a02` | **The dead-UI bug.** `JobFeed.connect()` assigned `this.sink` then called `disconnect()`, which nulls it. The feed never delivered a snapshot to the UI. |
-| `c097be6` | **Live tier.** Real uvicorn, real throwaway DB, real components. What found `de74a02`. |
-| `9cb6ad4` | **Docs refutation.** F1/F2 target a failure mode that does not exist. |
-| `782ff14` | `GET /lectures` had no `course_id` parameter and ignored the one it was sent. |
-| `2f15d5b` | 17 mojibake sequences, incl. one user-visible `placeholder`. |
-| `4031f6b` | **E2E tier.** Real browser reads the SSE stream through Vite's proxy. |
-| `446b33e` | F3 wired: the per-course lock now actually guards the pipeline. |
-| `7b87f36` | **Clip browser.** The clips existed and nothing could show them. |
-| `7efdc4c` | **Timestamp bug.** `_iso` relabelled naive UTC as local; the UI showed 330 minutes for a 26-second job. Found by looking. |
-| `bea0698` | `npm run shots`, and the rule that generated output is review-then-delete. |
+| `8a5f539` | **`LECGAP_CLIPS_BASE_DIR`.** The gate needs real clip bytes, and there was nowhere safe to put them: `CLIPS_BASE_DIR` pointed at the repo's own `data/processed/clips/`, where 117 real clips live. Same pattern and reason as `database_url()`. |
+| `0fc9ccd` | **Real media in the E2E seed.** A committed 58 KiB 12-second H.264/AAC clip. Until now the seeded clip rows pointed at files that did not exist, which is why the specs could only assert a URL was well-formed. Verified 200 + 206 with a correct `content-range`. |
+| `2617fe6` | **The §10 gate.** A real `<video>` plays through real job ticks, asserted on the media element itself: same DOM node, playhead never rewound, never paused, no `loadstart`/`emptied`/`seeking`, real frames decoded. Plus a negative control. |
+| `b7cd4f3` | The shots spec no longer calls a black clip player "expected". It is now a fault worth seeing. |
 
 `main` is untouched. Nothing was pushed.
 
@@ -134,18 +140,33 @@ two-step upload with real XHR progress; the job feed (auth, reconnect, poll
 fallback, coalescing, completion announcement, stall detection, busy-disable); the
 quiz (cap, async generation, draft, submit, remediation playback, feedback); the
 faculty metric cards, edge table with evidence, divergence table and heatmap bars;
-error surfacing and the 401 banner; the generated colour system and its guards.
+error surfacing and the 401 banner; the clip browser; the generated colour system
+and its guards; and **video playback surviving a job tick** (§10, in a real
+browser).
 
 **Known-absent, deliberately not yet built (Wave 3):** the DAG *visualisation*
 (react-flow is installed and unused — the faculty view is a flat edge table);
 the per-lecture timeline and coverage view; the `/usage` quota row (no React call
-exists at all); the clip browser; stalled-lecture triage; course and lecture
-deletes; duplicate-upload detection; the new-course bootstrap (so
-`selectedCourseId` is still hardcoded to `'ml'`); 10 wrapped-but-uncalled API
-endpoints; light/dark has a toggle but **has never been rendered by a human**.
+exists at all); stalled-lecture triage; course and lecture deletes;
+duplicate-upload detection; the new-course bootstrap (so `selectedCourseId` is
+still hardcoded to `'ml'`); 10 wrapped-but-uncalled API endpoints; light/dark has a
+toggle but **has never been rendered by a human**.
 
-**Never run by a person.** No browser, no `uvicorn`, no real SSE round trip — see
-§8.
+**Never run by a person.** No `uvicorn`, no dev server, no human eye on the
+rendered result — see §9.
+
+### 1b. Playback survives a job tick — but not structurally
+
+Worth knowing before anyone "tidies" this, because the mechanism is load-bearing
+and fragile rather than guaranteed.
+
+`StudentDashboard` calls `useJobList`, so it genuinely re-renders on every job
+tick. `ClipBrowser` is a plain, unmemoized child, so the tick walks straight
+through to the component that owns the `<video>`. Playback survives only because
+`key={playing.id}` lets React reconcile onto the existing DOM node and `src` is
+unchanged, so the browser is never asked to reload. Nothing enforces that except
+`e2e/video.e2e.spec.ts` — memoising the wrong component, or keying that element
+by anything volatile, restarts playback silently and passes every other tier.
 
 ## 2. The invariants — do not break these
 
@@ -154,6 +175,8 @@ endpoints; light/dark has a toggle but **has never been rendered by a human**.
    rAF-coalesced sink; `useJobFeedConnection` *connects and reads nothing*.
    `AppLayout` renders `<Outlet/>` and must never subscribe to job state — there
    is a static test (`src/lib/rerender.test.tsx`) that fails if it does.
+   **Note the limit of that test:** it counts renders, and render counts are not
+   playback. `e2e/video.e2e.spec.ts` is the behavioural half of this invariant.
 2. **A finished job is announced once, by the page body.** Not from inside the
    progress surface. "Finished" is a *transition*: the SSE feed re-sends the
    terminal row forever, so `diffCompletions` compares snapshots.
@@ -272,8 +295,9 @@ Added 2026-09-29, after a bug proved it.
 |---|---|---|
 | `npm run verify` (317 vitest) | policy, wiring, guard rails | everything real — the transport is faked |
 | `npm run test:live` (12) | real backend, real DB, real components | appearance; the browser is jsdom |
-| `npm run test:e2e` (3) | a real browser, a real proxy, a real stream | appearance; assertions, not eyes |
-| `pytest` (734) | the backend | the frontend entirely |
+| `npm run test:e2e` (4) | a real browser, a real proxy, a real stream, real playback | appearance; assertions, not eyes |
+| `npm run verify:video-gate` | that the §10 gate can actually fail | everything else |
+| `pytest` (736) | the backend | the frontend entirely |
 
 **Behaviour is well covered. Appearance is not covered at all**, and one concrete
 proof that the gap is real rather than theoretical: `7efdc4c` fixed a bug that
@@ -288,6 +312,21 @@ So: **visual and numeric correctness is a human responsibility.** Use
 (trap 11). Do not describe the app as working on the strength of the test counts
 — that is the mistake this file was originally written to prevent, and it has now
 been made once already.
+
+### A gate nobody has seen fail
+
+Related, and learned the hard way: a test that has never failed is a test whose
+failure mode is unknown. Every tier above was green over a dead app more than
+once. So the §10 gate ships with a negative control —
+`npm run verify:video-gate` injects an unstable `key` on the `<video>` (the
+smallest edit that forces a remount and a restart), runs the real spec, restores
+the file, and **requires the gate to fail**.
+
+Two details worth copying if you add another gate. It distinguishes "caught it"
+from "the harness broke": a `webServer` that never started also exits non-zero,
+so it requires Playwright's status to be `failed` *and* the reporter to have
+named the spec. And it refuses to run if its anchor line has been refactored,
+rather than passing by never testing anything.
 
 ## 5. Why the design is what it is — the four findings
 
@@ -317,11 +356,11 @@ implementation.
 
 ## 6. Wave 3 — the next task
 
-**Blocked until the app is proven to load and the feed is proven live.** See
-`plan/MANUAL_VERIFICATION_2026-09-29.md` and complete its steps 1–4 first, and
-bring at least a Playwright smoke test forward from Wave 4 so this cannot recur.
+**Unblocked except for human eyes.** The feed is proven live and the §10 gate is
+closed, so the two preconditions this section used to carry are met. What remains
+is a person running the app and looking at it — see §9.
 
-Goal once unblocked: the React dashboard reaches parity with the Streamlit one, so
+Goal: the React dashboard reaches parity with the Streamlit one, so
 `plan/FRONTEND_REACT_ROADMAP.md` §6 can be walked item by item.
 
 **Order matters.** The DAG first, because it is the feature the Engine 2 plan
@@ -399,24 +438,36 @@ Bundle size is 572 kB (177 kB gzipped) and react-flow will add to it —
 
 ## 9. Not yet confirmed by a human
 
-**Nothing has been confirmed by a human.** The 2026-09-29 attempt failed to
-establish even that the app loads — see the top of this file. The list below is
-what remains, in the order it should be checked:
+**Nothing has been confirmed by a human, ever.** The 2026-09-29 attempt failed to
+establish even that the app loads — see the top of this file.
 
-1. **Does the app load at all**, and is the course list populated from the real
-   database? (Manual-verification steps 1–4.)
+What has changed since: items 1–4 below are now answered by the automated tiers
+against real data and a real browser, including a real playing video surviving a
+real job (`2617fe6`). That is a genuine improvement on "unverified", and it is
+**not** the same as "a person has looked at it" — these tiers run against a
+58 KiB synthetic clip and three seeded lectures, not the real dataset.
+
+Remaining, in the order it should be checked:
+
+1. **Does the app load, with the developer's real data?** Not the seed. Steps 1–4
+   of `plan/MANUAL_VERIFICATION_2026-09-29.md`, against `data/lecgap.db`.
 2. **Does `/jobs/stream` deliver frames** — proven without a browser via
    `curl.exe -N --max-time 5 http://127.0.0.1:8000/jobs/stream`, which
    isolates the backend from the proxy from React.
 3. **The live SSE round-trip through Vite's proxy**, and the Navbar dot reaching
    green.
-4. **A video survives a running job** — the §10 gate, and the entire point of the
-   rebuild. Play a remediation clip, start *Extract Concepts*, keep watching.
+4. ~~**A video survives a running job**~~ — **done, `2617fe6`.** Worth re-running
+   by eye once against a real clip, since the automated gate uses a synthetic one
+   and a 12-second clip cannot show a stall or a seek the way a 60-second lecture
+   cut would.
 5. **The quiz cap applies** — *Start Quiz* must generate at most 15 questions.
    The `ml` course has 153 concepts, and 153 is the signature of the cap not
-   being sent.
+   being sent. Still unverified by anything, automated or otherwise.
 6. **The 401 banner's appearance** — set `LECGAP_API_KEY` on the server, load
    without `VITE_LECGAP_API_KEY`.
 7. **The light theme** — the toggle exists and the tokens are contrast-pinned,
    but `buildTheme('light')` has never been rendered. `color-mix()` (used by
    `tint()`) also needs a browser check, since jsdom does not compute it.
+8. **Legibility and layout at real volumes** — three seeded lectures and a 58 KiB
+   clip hide everything about how 153 concepts, 51 clips or a 400-character
+   concept name actually render. `npm run shots` and look; the DAG will be worse.

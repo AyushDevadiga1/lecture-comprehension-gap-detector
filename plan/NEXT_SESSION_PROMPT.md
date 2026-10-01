@@ -8,7 +8,7 @@
 > nothing** — the throttle was never exhausted, measured `in_use == 0` straight
 > after a crash. F3 is done too.
 >
-> **All of it has since been fixed, on `engine2/scaffold` (10 commits):**
+> **All of it has since been fixed, on `engine2/scaffold` (14 commits):**
 >
 > | Commit | What it actually was |
 > |---|---|
@@ -20,6 +20,9 @@
 > | `446b33e` | F3 wired: the per-course lock now actually guards the pipeline (was defined, tested, and called from nowhere). |
 > | `7b87f36` | Clip browser — the clips existed and nothing could show them. |
 > | `7efdc4c` | **Timestamp bug.** `_iso` relabelled a naive UTC timestamp as local, so the UI showed "330m 36s elapsed" for a 26-second job. |
+> | `8a5f539` | `LECGAP_CLIPS_BASE_DIR` — a test tier needed somewhere safe to put real clip bytes. |
+> | `0fc9ccd` | The E2E seed ships a **real 12s H.264 clip**. Until now the clip rows pointed at files that did not exist. |
+> | `2617fe6` | **The §10 gate is closed.** A real `<video>` plays through real job ticks in a real browser, plus a negative control proving the gate can fail. |
 >
 > `plan/WEDGE_DIAGNOSIS_2026-09-29.md` carries the full refutation with evidence.
 > `plan/REACT_HARDENING_HANDOFF.md` §1 has the current numbers and §4a what the
@@ -27,18 +30,16 @@
 >
 > ## What is left
 >
-> 1. **A human has to run the app.** Behaviour is verified in a real browser by
->    the E2E tier; appearance and legibility are not verified at all, and no
->    agent can verify them. Run `npm run shots` and look.
-> 2. **The §10 gate** — a playing `<video>` surviving a job tick. This is the
->    app's whole reason for existing and is still unproven. Needs a tiny real
->    media file in the E2E seed.
-> 3. **Wave 3** — react-flow DAG, timeline/coverage, quota row, and the 10
+> 1. **A human still has to run the app.** Behaviour is now covered end to end
+>    in a real browser, but *appearance* is not verified by anything. Run
+>    `npm run shots` and look. The one thing no tier can check: whether a clip
+>    reads as legible and the layout holds at real data volumes.
+> 2. **Wave 3** — react-flow DAG, timeline/coverage, quota row, and the 10
 >    wrapped endpoints that are still called by nothing.
 >
 > `main` is untouched at `5e0a434`. Nothing pushed. The working tree is clean
 > apart from `output.txt`.
-
+>
 > **Paste this into the new session:**
 >
 > `Read C:\Users\hp\Desktop\lecture-comprehension-gap-detector\plan\NEXT_SESSION_PROMPT.md and follow it exactly.`
@@ -73,11 +74,12 @@ is in the three documents above.
 
 ## Where things actually stand
 
-**Updated 2026-09-29.** The task below is done. Ten commits landed on
+**Updated 2026-10-01.** The task below is done. Fourteen commits landed on
 `engine2/scaffold`; `main` is untouched at `5e0a434`.
 
-All four tiers are green: **734 pytest**, **317 vitest**, **12 live** (real
-uvicorn + throwaway DB), **3 E2E** (real Chromium through Vite's proxy).
+All four tiers are green: **736 pytest**, **317 vitest**, **12 live** (real
+uvicorn + throwaway DB), **4 E2E** (real Chromium through Vite's proxy). The
+fourth E2E spec is the §10 gate: a real `<video>` playing through real job ticks.
 
 What was actually wrong, both now fixed:
 
@@ -175,11 +177,14 @@ From the handoff; the sharpest ones repeated here.
 
 ## Do not
 
-- Do not start **Wave 3** (react-flow DAG, timeline, quota row, library). It is
-  blocked until the app is proven to run and the fixes above are in.
 - Do not describe the app as working on the strength of the test count. 297 React
   tests and 710 Python tests passed while the app was unusable, because every feed
-  test injects a fake transport. **Bring Playwright forward**, not to Wave 4.
+  test injects a fake transport. Playwright has been brought forward; keep it there.
+- Do not treat the §10 gate as proof the app is *finished*. It proves one thing —
+  playback survives a job tick — and it was found by a negative control
+  (`npm run verify:video-gate`) that breaks the product on purpose and requires the
+  gate to fail. Run that control before trusting any new gate you add; a gate nobody
+  has seen fail proves nothing.
 - Do not merge to `main` or push, unless explicitly told.
 
 ## First thing to do
@@ -189,15 +194,27 @@ Ask me to run the app and report what happens, using the procedure in
 `npm run dev` both running, open **`http://localhost:5173/student`** — *not*
 `:8000`, which is FastAPI and has no UI — confirm the Navbar dot reads **"SSE
 Live"**, then click **Extract Concepts once** and watch a single job card
-advance. Report back what you see before you change any code.
+advance.
 
-## Two notes on the current state
+Then the one thing no tier can do: **`npm run shots` and look at the images.**
+Behaviour is now covered in a real browser; appearance is not covered at all.
+Judging whether a clip is legible, whether the layout holds, whether anything is
+squashed or overlapping — that is the remaining gap, and it needs eyes.
+
+## Three notes on the current state
 
 - The three wedged jobs were **manually** marked `orphaned` to unblock the app.
   That was a manual intervention, not a fix. The database is clean; the code is
   not.
 - A timezone "fix" to `job_registry._as_utc` was written and then **reverted** —
-  it was based on a misreading of the stored timestamps. `git diff backend/` is
-  empty. The reasoning, including why it was wrong, is in
-  `plan/WEDGE_DIAGNOSIS_2026-09-29.md` §4, because the next session will see the
-  same naive-looking timestamps and may repeat the mistake.
+  it was based on a misreading of the stored timestamps. The reasoning, including
+  why it was wrong, is in `plan/WEDGE_DIAGNOSIS_2026-09-29.md` §4, because the next
+  session will see the same naive-looking timestamps and may repeat the mistake.
+- **Video playback survives a job tick, but it is not structural.** `StudentDashboard`
+  calls `useJobList`, so it really does re-render on every tick, and `ClipBrowser` is
+  a plain unmemoized child. Playback survives because `key={playing.id}` makes React
+  reuse the existing DOM node and `src` never changes — so no reload is issued. That
+  is a real mechanism, not a guarantee. Anyone who memoises the wrong component, or
+  keys that `<video>` by anything volatile, restarts playback silently. The gate in
+  `e2e/video.e2e.spec.ts` exists to catch exactly that, and it is the first test in
+  the repo that can.
