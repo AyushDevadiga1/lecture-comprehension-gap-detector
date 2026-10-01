@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:e2e": "playwright test",
+    "verify:video-gate": "node scripts/verify_video_gate.mjs",
     "shots": "playwright test --config playwright.shots.config.ts",
     "lint": "eslint . --ext ts,tsx,cjs --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx,cjs --fix",
