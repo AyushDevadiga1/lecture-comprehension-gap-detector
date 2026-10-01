@@ -25,9 +25,10 @@
  * "Review outputs, then delete them" rule in
  * `plan/REACT_HARDENING_HANDOFF.md`.
  *
- * The seeded clip files are deliberately absent, so the clip player renders
- * black. That is expected: this tier is about the client's URL contract and the
- * layout, not about ffmpeg.
+ * The clip player shows a real decoded frame (ffmpeg's `testsrc` pattern, which
+ * moves, so a single screenshot shows whether playback advanced). It renders
+ * black only if something has broken the media route or the fixture is missing
+ * — which is now worth seeing, rather than the expected outcome it used to be.
  */
 
 import { expect, test } from '@playwright/test'
