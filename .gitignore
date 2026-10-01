@@ -26,6 +26,14 @@ data/models/*
 *.webm
 *.mkv
 
+# ...except the E2E tier's one fixture clip, which is committed on purpose.
+# `*.mp4` above keeps 1.5 GB of real lecture media out of the repo, and a
+# blanket exemption would put it back. This one file is the input the §10 gate
+# plays in a real browser, so the test cannot silently degrade into asserting
+# on a 404 -- it has to be in the tree, at a known size, on every machine.
+# Named, not globbed: a stray clip dropped beside it stays ignored.
+!frontend-react/e2e/fixtures/clip.mp4
+
 # Local DB
 *.db
 *.sqlite3

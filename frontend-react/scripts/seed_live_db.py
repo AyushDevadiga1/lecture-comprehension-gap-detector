@@ -16,6 +16,22 @@ Usage:
 
 Run with the project interpreter (D:\\Anaconda3\\envs\\lecgap\\python.exe) so the
 schema and the engine pragmas match the running app exactly.
+
+## Media
+
+The seed also writes real clip files, because a row pointing at bytes that do
+not exist can only ever assert that a URL is well-formed. The §10 gate -- a
+playing `<video>` surviving a job tick -- needs an actual decodable video, and
+the only honest way to get one is to serve one. So `frontend-react/e2e/fixtures/
+clip.mp4` is copied to `<clips base>/<lecture id>/<name>.mp4` for each seeded
+clip, and the clip row's stored `path` names the copy.
+
+The tree it writes into comes from `LECGAP_CLIPS_BASE_DIR`, which
+`run_live_server.py` points at the same throwaway directory as the database. The
+default (the repo's own `data/processed/clips/`) is refused here, for the same
+reason the live database is: a test writing real bytes into real lecture media,
+under a lecture id from a throwaway database, is the accident this script
+exists to prevent.
 """
 
 import os
@@ -41,6 +57,18 @@ if len(sys.argv) != 2:
 
 TARGET = Path(sys.argv[1]).resolve()
 LIVE_DB = (REPO / "data" / "lecgap.db").resolve()
+LIVE_CLIPS = (REPO / "data" / "processed" / "clips").resolve()
+
+# Where the seeded clip BYTES go. Defaults to a `clips/` beside the throwaway
+# database, so the two artefacts of a test run live together and neither can be
+# left behind pointing at the other's tree. run_live_server.py sets the env var
+# explicitly for the same directory, so the server and the seed agree even when
+# this default is not what it used.
+CLIPS_DIR = Path(
+    os.environ.get("LECGAP_CLIPS_BASE_DIR") or (TARGET.parent / "clips")
+).resolve()
+
+FIXTURE_CLIP = REPO / "frontend-react" / "e2e" / "fixtures" / "clip.mp4"
 
 # The refusal has to come FIRST — before the env var, before any import, and
 # above all before the `unlink` that clears a stale target file. A first version
@@ -55,7 +83,33 @@ if TARGET == LIVE_DB:
         "path under a temp directory instead."
     )
 
+# The same argument for the clip tree, one directory over. Nothing else guards
+# it: data/processed/clips/{3,4,5} hold 117 real cut clips, and a seeded lecture
+# id happens to collide with one of them. Point LEGCAP_CLIPS_BASE_DIR at a
+# throwaway tree.
+if CLIPS_DIR == LIVE_CLIPS or LIVE_CLIPS in CLIPS_DIR.parents:
+    raise SystemExit(
+        f"REFUSING TO RUN: clip tree {CLIPS_DIR} is inside the real one at "
+        f"{LIVE_CLIPS}.\n"
+        "Seeding writes real media bytes for each clip row, and the live "
+        "tier must never touch real lecture media. Set "
+        "LECGAP_CLIPS_BASE_DIR to a path under a temp directory."
+    )
+
+if not FIXTURE_CLIP.is_file():
+    raise SystemExit(
+        f"REFUSING TO RUN: the E2E media fixture is missing ({FIXTURE_CLIP}).\n"
+        "It is committed to the repo and is what lets the §10 gate play a "
+        "real video. Regenerate with:\n"
+        '  ffmpeg -y -f lavfi -i "testsrc=size=320x180:rate=15:duration=12" \\\n'
+        '    -f lavfi -i "sine=frequency=330:duration=12" -c:v libx264 \\\n'
+        '    -preset veryslow -crf 34 -pix_fmt yuv420p -g 30 -c:a aac -b:a 16k '
+        '-ac 1 -movflags +faststart \\\n'
+        "    frontend-react/e2e/fixtures/clip.mp4"
+    )
+
 os.environ["LECGAP_DATABASE_URL"] = f"sqlite:///{TARGET}"
+os.environ["LECGAP_CLIPS_BASE_DIR"] = str(CLIPS_DIR)
 
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
@@ -91,6 +145,22 @@ def assert_engine_is_not_the_live_db() -> None:
         )
     print(f"  target : {TARGET}")
     print(f"  engine : {bound}")
+
+
+def write_clip_media(lecture_id: int, filename: str) -> str:
+    """Copy the fixture clip into this lecture's clip dir; return its path.
+
+    The stored `Clip.path` is relative (`clips/<id>/<name>.mp4`) because the
+    canonical URL the client renders is derived from the basename plus the
+    lecture id, and nothing needs the absolute path. So the file is written
+    where `CLIPS_BASE_DIR / str(lecture_id) / name` resolves, which is exactly
+    what `GET /media/clips/{lecture_id}/{filename}` reads.
+    """
+    out_dir = CLIPS_DIR / str(lecture_id)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dest = out_dir / filename
+    dest.write_bytes(FIXTURE_CLIP.read_bytes())
+    return f"clips/{lecture_id}/{filename}"
 
 
 def seed(target: Path) -> None:
@@ -160,12 +230,22 @@ def seed(target: Path) -> None:
         # Clips that point at their concepts — the exact shape that made
         # `DELETE FROM concepts` raise IntegrityError on re-extraction. If the
         # FK fix ever regresses, the live re-extract test catches it.
+        #
+        # The media is REAL: `write_clip_media` puts an actual decodable mp4
+        # where `/media/clips/<id>/<name>.mp4` will look for it. Until now these
+        # rows pointed at files that did not exist, which is why the E2E spec
+        # could only assert a URL was well-formed and had to say in a comment
+        # that the bytes were absent. Both clips get the same 12-second fixture,
+        # so the two players are distinguishable by URL but not by content —
+        # the gate is about playback surviving, not about content.
         db.add_all(
             [
                 Clip(lecture_id=ml1.id, concept_id=c1.id, concept_name="Linear Regression",
-                     start_s=0.0, end_s=6.0, path="clips/1/linear.mp4", ok=1, error=None),
+                     start_s=0.0, end_s=6.0,
+                     path=write_clip_media(ml1.id, "linear.mp4"), ok=1, error=None),
                 Clip(lecture_id=ml1.id, concept_id=c2.id, concept_name="Slope",
-                     start_s=6.0, end_s=12.0, path="clips/1/slope.mp4", ok=1, error=None),
+                     start_s=6.0, end_s=12.0,
+                     path=write_clip_media(ml1.id, "slope.mp4"), ok=1, error=None),
             ]
         )
 
@@ -198,6 +278,8 @@ def seed(target: Path) -> None:
 
     print(f"seeded {target}")
     print(f"  lectures=3 concepts=4 edges=2 clips=2 graph_nodes=4 jobs=2 (1 ready, 1 running)")
+    print(f"  clips  : {CLIPS_DIR} (from "
+          f"{FIXTURE_CLIP.name}, {FIXTURE_CLIP.stat().st_size // 1024} KiB)")
 
 
 if __name__ == "__main__":
