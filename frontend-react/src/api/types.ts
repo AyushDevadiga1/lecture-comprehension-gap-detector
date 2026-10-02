@@ -115,6 +115,8 @@ export interface CourseBuildOut {
 
 // Snapshot (GET /courses/{id}/snapshot)
 export interface CourseSnapshot {
+  /** Present in every backend response but was missing from this type. */
+  course_id: string
   exists: boolean
   lectures: {
     total: number
@@ -225,6 +227,24 @@ export interface QuizSubmitOut {
   total: number
   remediation: WatchItemOut[]
   feedback: QuestionFeedbackOut[]
+}
+
+/**
+ * Response shape of `GET /students/{id}/remediation`.
+ *
+ * This is *structurally* a `QuizSubmitOut` but the remediation endpoint does
+ * NOT populate `feedback` — that field is only filled by `POST /quizzes/submit`.
+ * Using a separate type prevents callers from accidentally reading `.feedback`
+ * on a remediation response and getting an empty array with no compiler warning.
+ *
+ * `score` and `total` reflect the most-recent quiz attempt for this student.
+ */
+export interface RemediationOut {
+  quiz_id: number
+  student_id: string
+  score: number
+  total: number
+  remediation: WatchItemOut[]
 }
 
 // ── Jobs (Engine 2 / C2) ──────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ import type {
   QuizOut,
   QuizSubmitIn,
   QuizSubmitOut,
+  RemediationOut,
   JobAcceptedOut,
 } from './types'
 
@@ -45,6 +46,16 @@ export const quizzes = {
   submit: (submission: QuizSubmitIn): Promise<QuizSubmitOut> =>
     post<QuizSubmitOut>('/quizzes/submit', submission),
 
-  getRemediation: (studentId: string, courseId: string): Promise<QuizSubmitOut> =>
-    get<QuizSubmitOut>(`/students/${studentId}/remediation`, { course_id: courseId }),
+  /**
+   * Fetch the dependency-ordered remediation plan for a student's last quiz.
+   *
+   * Returns `RemediationOut` (not `QuizSubmitOut`): the backend's remediation
+   * endpoint does **not** populate `feedback` — that field is only present on
+   * the post-submit response. Using a separate type makes this contract explicit
+   * at the call site.
+   *
+   * 404 when the student has no quiz responses for the course yet.
+   */
+  getRemediation: (studentId: string, courseId: string): Promise<RemediationOut> =>
+    get<RemediationOut>(`/students/${studentId}/remediation`, { course_id: courseId }),
 }
