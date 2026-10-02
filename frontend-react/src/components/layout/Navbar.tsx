@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React, { useEffect } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -48,6 +48,27 @@ export const Navbar: React.FC = () => {
     queryFn: () => coursesApi.list(),
   })
 
+  // Auto-select the first available course when no course is stored yet (fresh
+  // install, private-mode, or the stored id was cleared). This runs once per
+  // course-list load so it does not race with a deliberate user deselect.
+  useEffect(() => {
+    if (selectedCourseId == null && courseList.length > 0) {
+      setSelectedCourseId(courseList[0]!.course_id)
+    }
+  }, [courseList, selectedCourseId, setSelectedCourseId])
+
+  // If the stored course no longer exists on the server (deleted between
+  // sessions), fall back to the first available one. Prevents a permanently
+  // broken state where every query silently fires with a 404-producing id.
+  useEffect(() => {
+    if (
+      selectedCourseId != null &&
+      courseList.length > 0 &&
+      !courseList.some((c) => c.course_id === selectedCourseId)
+    ) {
+      setSelectedCourseId(courseList[0]!.course_id)
+    }
+  }, [courseList, selectedCourseId, setSelectedCourseId])
 
   return (
     <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -75,7 +96,9 @@ export const Navbar: React.FC = () => {
                 fontWeight: 800,
                 fontSize: '1.15rem',
                 letterSpacing: '-0.02em',
-                background: 'transparent',
+                // gradient() returns a CSS gradient string; without a non-transparent
+                // background, -webkit-text-fill-color: transparent renders nothing.
+                background: gradient('info', 'ok', 135),
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
