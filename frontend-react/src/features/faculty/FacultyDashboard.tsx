@@ -71,6 +71,24 @@ export const FacultyDashboard: React.FC = () => {
     onError: (err: unknown) => setBuildError(errorMessage(err, 'Could not queue a graph rebuild')),
   })
 
+  /**
+   * True root concepts: nodes with in-degree 0 (no incoming edges).
+   *
+   * The topological_order includes ALL nodes sorted by dependency depth, so
+   * displaying its length as "Root Concepts" was wrong — it was actually the
+   * total concept count in sequence. Roots are the natural starting points for
+   * the course: concepts that nothing else is a prerequisite of.
+   *
+   * Falls back to node_count if there are no edges yet (a freshly-built or
+   * edge-free graph where every node is effectively a root).
+   */
+  const rootConcepts = React.useMemo(() => {
+    if (!graphData) return 0
+    if (graphData.edges.length === 0) return graphData.node_count
+    const hasIncoming = new Set(graphData.edges.map((e) => e.target))
+    return graphData.nodes.filter((n) => !hasIncoming.has(n)).length
+  }, [graphData])
+
   if (!selectedCourseId) {
     return (
       <Alert severity="info" sx={{ mt: 4 }}>
@@ -126,13 +144,13 @@ export const FacultyDashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{ p: 2 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Topological Root Concepts
+              Root Concepts
             </Typography>
             <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
-              {graphData?.topological_order?.length ?? 0}
+              {rootConcepts}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Prerequisite sequence
+              No prerequisites (in-degree 0)
             </Typography>
           </Card>
         </Grid>
