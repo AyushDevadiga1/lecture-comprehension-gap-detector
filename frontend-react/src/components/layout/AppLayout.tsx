@@ -5,6 +5,7 @@ import { Navbar } from './Navbar'
 import { JobDrawer } from '../common/JobDrawer'
 import { JobCompletionHost } from '../common/JobCompletionHost'
 import { AuthBanner } from '../common/AuthBanner'
+import { ErrorBoundary } from '../common/ErrorBoundary'
 import { useAppStore } from '../../store/useAppStore'
 import { useJobFeedConnection } from '../../lib/useJobFeed'
 
@@ -23,7 +24,17 @@ export const AppLayout: React.FC = () => {
       <AuthBanner />
       <Box component="main" sx={{ flexGrow: 1, py: { xs: 3, md: 5 } }}>
         <Container maxWidth="xl">
-          <Outlet />
+          {/* The per-route boundary. A dashboard that throws while rendering
+              costs you the dashboard and nothing else: the navbar stays, the job
+              drawer stays, and the drawer is usually where the answer is.
+              `resetKeys` re-arms it on a course change, so one transient throw
+              does not poison the route for the rest of the session. */}
+          <ErrorBoundary
+            title="This page failed to render"
+            resetKeys={[selectedCourseId]}
+          >
+            <Outlet />
+          </ErrorBoundary>
         </Container>
       </Box>
       <JobDrawer />
