@@ -1,5 +1,6 @@
 import React from 'react'
 import { Alert, AlertTitle, Button, Box } from '@mui/material'
+import { tint } from '../../theme/alpha'
 
 interface ErrorAlertProps {
   error: Error | string | null
@@ -21,8 +22,13 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
       severity="error"
       sx={{
         mb: 3,
-        border: '1px solid rgba(239, 68, 68, 0.3)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        // `bad`, not a hardcoded red. `severity="error"` already paints
+        // from `palette.error.main`, which is the `bad` token — so this used to
+        // overlay a different red on top of MUI's own, and drifted from it
+        // whenever the palette moved. `tint()` keeps the alpha and loses the
+        // second palette.
+        border: `1px solid ${tint('bad', 30)}`,
+        backgroundColor: tint('bad', 10),
         backdropFilter: 'blur(8px)',
       }}
       action={

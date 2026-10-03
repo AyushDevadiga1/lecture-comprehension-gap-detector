@@ -73,6 +73,16 @@ module.exports = {
       // counting, and `{3,8}` covers #abc, #aabbcc and the 4/8-digit forms.
       // Enabled with the ported token table; `src/theme/scan.test.ts` is the
       // runtime twin, so a file added outside ESLint is still caught.
+      //
+      // The hex half of this rule used to be the *whole* rule, which made it a
+      // guard against a notation rather than against colours — and 16 rgba()
+      // literals sat in Navbar, ErrorAlert, FacultyDashboard and
+      // StudentDashboard while `npm run lint` stayed green. `theme/alpha.ts`
+      // had already said in a docstring that "rgba(255,255,255,0.06) is a named
+      // colour just as much as a hex", so the CSS colour *functions* are now
+      // matched too. Two of those literals were live bugs: a white wash is
+      // invisible in light mode, and #6366f1 is the off-palette indigo
+      // `muiTheme.ts` documents having deleted.
       files: ['src/**/*.{ts,tsx}'],
       excludedFiles: ['src/theme/**'],
       rules: {
@@ -80,12 +90,25 @@ module.exports = {
           'error',
           {
             // esquery, not a bare regex: `no-restricted-syntax` selectors are
-            // AST patterns. A hex almost always sits *inside* a longer string
+            // AST patterns. A colour almost always sits *inside* a longer string
             // (`color: '#fff'`), so the attribute value is matched as a
             // substring. `Literal` covers plain strings and JSX attributes;
-            // `TemplateElement` covers a hex inside a template literal.
-            selector:
-              "Literal[value=/#[0-9a-fA-F]{3,8}/], TemplateElement[value=/#[0-9a-fA-F]{3,8}/]",
+            // `TemplateElement` covers a colour inside a template literal.
+            //
+            // Hex first, then every CSS colour function. No commas inside the
+            // alternation: a top-level comma separates esquery selectors, and
+            // one inside the regex would be ambiguous to parse.
+            //
+            // Named keywords (`white`, `red`) are deliberately NOT matched. They
+            // are too easy to hit in prose, fixture data and test descriptions
+            // to be worth the false positives; `transparent`, `inherit` and
+            // `currentColor` are not palette values anyway.
+            selector: [
+              "Literal[value=/(?<!&)#[0-9a-fA-F]{3,8}/]",
+              'TemplateElement[value=/(?<!&)#[0-9a-fA-F]{3,8}/]',
+              'Literal[value=/\\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|light-dark)\\s*\\(/]',
+              'TemplateElement[value=/\\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|light-dark)\\s*\\(/]',
+            ].join(', '),
             message:
               'Colours belong in src/theme/. Use a token: primary.main, var(--lgc-*), or tint() from src/theme/alpha. See plan/REACT_ARCHITECTURE.md §4.',
           },

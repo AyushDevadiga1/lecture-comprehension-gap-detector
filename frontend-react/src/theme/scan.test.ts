@@ -26,6 +26,32 @@ import { contrastRatio } from './tokens'
  */
 const HEX = /(?<!&)#[0-9a-fA-F]{3,8}\b/g
 
+/**
+ * The CSS colour *functions* — the second notation a hex-only scan missed.
+ *
+ * This regex was `HEX` alone, which made both it and the ESLint rule guards
+ * against a spelling rather than against colours: sixteen `rgba()` literals sat
+ * in Navbar, ErrorAlert, FacultyDashboard and StudentDashboard with both guards
+ * green. `theme/alpha.ts` had already stated that "`rgba(255,255,255,0.06)` is a
+ * named colour just as much as a hex" and shipped `tint()` as the only
+ * sanctioned way to fade a token, so the notation was understood and simply not
+ * enforced.
+ *
+ * Kept deliberately in step with the `no-restricted-syntax` selector in
+ * `.eslintrc.cjs` — same function list, same `\b`, no comma inside the
+ * alternation. Named keywords (`white`, `red`) are out of scope in both: too
+ * easy to hit in prose and fixture data to be worth the false positives, and
+ * `transparent` / `inherit` / `currentColor` are not palette values.
+ *
+ * Unlike the ESLint rule this one is a raw-text scan, so it also matches inside
+ * a comment. That is the stricter direction and the useful one here: a comment
+ * that quotes an `rgba(` is a note about a colour, and is worth looking at.
+ */
+const COLOUR_FUNCTION = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|light-dark)\s*\(/g
+
+/** Every notation that names a colour. Named keywords are excluded — see above. */
+const COLOUR = new RegExp(`${HEX.source}|${COLOUR_FUNCTION.source}`, 'g')
+
 const THEME_DIR = 'src/theme/'
 
 /**
@@ -71,14 +97,31 @@ describe('no module names a colour', () => {
     expect(isThemeModule('../lib/quiz.ts')).toBe(false)
   })
 
-  it('src/index.css has no hex literal', () => {
+  it('src/index.css has no colour literal', () => {
     const hit = Object.entries(modules).find(([k]) => display(k) === 'index.css')
     expect(hit, 'index.css should be in the scan').toBeTruthy()
     const offenders: string[] = []
     hit![1].split('\n').forEach((line, i) => {
-      for (const m of line.matchAll(HEX)) offenders.push(`index.css:${i + 1} ${m[0]}`)
+      for (const m of line.matchAll(COLOUR)) offenders.push(`index.css:${i + 1} ${m[0]}`)
     })
     expect(offenders).toEqual([])
+  })
+
+  it('the guard actually catches the notation it was widened to', () => {
+    // A guard that matches nothing is indistinguishable from no guard, and the
+    // reason this file's hex pattern went stale is that nothing ever proved it
+    // still fired. One positive per notation, and one near-miss per notation
+    // that must NOT trip it.
+    expect([...'#ff0000'.matchAll(COLOUR)]).toHaveLength(1)
+    for (const notation of ['rgba(1,2,3,0.5)', 'rgb(1 2 3)', 'hsl(0,1%,50%)', 'hwb(0 0% 0%)', 'oklch(0.7 0.1 200)']) {
+      expect([...notation.matchAll(COLOUR)].length, notation).toBe(1)
+    }
+    // `color-mix` is the sanctioned spelling, but only from src/theme/ — so the
+    // pattern must match it (to catch a call site elsewhere) while a file in
+    // src/theme/ is exempt. `&amp;` must not read as a hex.
+    expect([...'color-mix(in srgb, red 10%, transparent)'.matchAll(COLOUR)]).toHaveLength(1)
+    expect([...'rgbify()'.matchAll(COLOUR)]).toHaveLength(0)
+    expect([...'&amp;'.matchAll(COLOUR)]).toHaveLength(0)
   })
 
   for (const [key, src] of Object.entries(modules)) {
@@ -88,7 +131,7 @@ describe('no module names a colour', () => {
     it(`${display(key)} names no colour`, () => {
       const offenders: string[] = []
       src.split('\n').forEach((line, i) => {
-        for (const m of line.matchAll(HEX)) {
+        for (const m of line.matchAll(COLOUR)) {
           offenders.push(`${display(key)}:${i + 1} ${m[0]}`)
         }
       })

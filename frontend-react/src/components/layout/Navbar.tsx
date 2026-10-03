@@ -25,7 +25,7 @@ import { courses as coursesApi } from '../../api/courses'
 import { useAppStore } from '../../store/useAppStore'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 import { queryKeys } from '../../lib/queryKeys'
-import { gradient } from '../../theme/alpha'
+import { gradient, tint } from '../../theme/alpha'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
@@ -84,7 +84,7 @@ export const Navbar: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+              boxShadow: `0 4px 12px ${tint('info', 40)}`,
             }}
           >
             <AccountTreeIcon sx={{ color: 'primary.contrastText', fontSize: 20 }} />
@@ -153,7 +153,10 @@ export const Navbar: React.FC = () => {
               onChange={(e) => setSelectedCourseId(e.target.value)}
               sx={{
                 borderRadius: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                // A wash of `text`, not a hardcoded white at 4%.
+                // A white wash is invisible the moment anyone flips to the light
+                // base — white on a white select is no wash at all.
+                backgroundColor: tint('text', 4),
                 '& .MuiSelect-select': { py: 1, fontWeight: 600 },
               }}
             >

@@ -28,7 +28,7 @@ import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
 import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
 import { errorMessage } from '../../api/client'
-import { gradient } from '../../theme/alpha'
+import { gradient, tint } from '../../theme/alpha'
 
 export const FacultyDashboard: React.FC = () => {
   const queryClient = useQueryClient()
@@ -366,7 +366,7 @@ export const FacultyDashboard: React.FC = () => {
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            backgroundColor: tint('text', 8),
                             '& .MuiLinearProgress-bar': {
                               borderRadius: 4,
                               background:

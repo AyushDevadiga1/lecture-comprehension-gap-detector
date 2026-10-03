@@ -45,6 +45,7 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
+import { tint } from '../../theme/alpha'
 import { ClipBrowser } from './ClipBrowser'
 
 
@@ -449,8 +450,8 @@ export const StudentDashboard: React.FC = () => {
                       sx={{
                         p: 2,
                         borderRadius: 2,
-                        backgroundColor: 'rgba(255,255,255,0.02)',
-                        border: '1px solid rgba(255,255,255,0.06)',
+                        backgroundColor: tint('text', 2),
+                        border: `1px solid ${tint('text', 6)}`,
                       }}
                     >
                       <Typography variant="subtitle2" sx={{ color: 'secondary.light', mb: 0.5, fontWeight: 700 }}>
@@ -499,8 +500,18 @@ export const StudentDashboard: React.FC = () => {
                     sx={{
                       p: 2.5,
                       borderRadius: 2,
-                      background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)',
-                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      // Was `indigo 15% -> purple 15%`, two hardcoded hexes that
+                      // shared nothing with the palette. `accent` is currently a
+                      // byte-for-byte duplicate of `info` in BOTH palettes
+                      // (theme/tokens.ts:93-94 and 124-125), so the two-stop
+                      // gradient it asked for does not exist as a token pair —
+                      // `palette.secondary` is indistinguishable from
+                      // `palette.primary`, and the `gradient('info','accent')`
+                      // at JobDrawer.tsx:167 is already a flat no-op. Rendering
+                      // the honest flat wash beats rendering a gradient that
+                      // only looks like one.
+                      background: tint('info', 15),
+                      border: `1px solid ${tint('info', 30)}`,
                     }}
                   >
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -535,8 +546,8 @@ export const StudentDashboard: React.FC = () => {
                               justifyContent: 'space-between',
                               p: 1.5,
                               borderRadius: 1.5,
-                              backgroundColor: 'rgba(255,255,255,0.03)',
-                              border: '1px solid rgba(255,255,255,0.06)',
+                              backgroundColor: tint('text', 3),
+                              border: `1px solid ${tint('text', 6)}`,
                             }}
                           >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -588,8 +599,13 @@ export const StudentDashboard: React.FC = () => {
                           p: 1.5,
                           borderRadius: 1,
                           mb: 1,
-                          backgroundColor: f.correct ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
-                          border: `1px solid ${f.correct ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                          // `ok`/`bad`, so a right answer is green in *both* bases.
+                          // The old pair was one fixed light-mode green and one
+                          // fixed light-mode red — a second palette that ignored
+                          // `base` entirely, on the surface most likely to be
+                          // read at a glance.
+                          backgroundColor: f.correct ? tint('ok', 5) : tint('bad', 5),
+                          border: `1px solid ${f.correct ? tint('ok', 20) : tint('bad', 20)}`,
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -635,7 +651,7 @@ export const StudentDashboard: React.FC = () => {
                     p: 2,
                     borderRadius: 2,
                     backgroundColor: 'background.default',
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    border: `1px solid ${tint('text', 15)}`,
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
