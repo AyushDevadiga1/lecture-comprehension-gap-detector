@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../api/courses'
 import { useAppStore } from '../../store/useAppStore'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
+import { feedStatus } from '../../lib/feedStatus'
 import { queryKeys } from '../../lib/queryKeys'
 import { gradient, tint } from '../../theme/alpha'
 
@@ -34,7 +35,11 @@ export const Navbar: React.FC = () => {
   // only Navbar elements that depend on job state.
   const activeJobs = useActiveJobs(selectedCourseId)
   const { mode } = useFeedStatus(selectedCourseId)
-  const isConnected = mode === 'stream'
+  // One description of the feed, shared with the drawer. This used to be
+  // `mode === 'stream'`, which reported a feed that had *given up* as
+  // "Connecting to SSE Stream…" — forever, and indistinguishably from a slow
+  // start. See lib/feedStatus.ts.
+  const feed = feedStatus(mode)
 
   // The error is read too, so a failed course list never renders as
   // "No courses found" — that text reads as *your data is gone* rather than
@@ -214,15 +219,25 @@ export const Navbar: React.FC = () => {
             </IconButton>
           </Tooltip>
 
-          {/* SSE Connection dot indicator */}
-          <Tooltip title={isConnected ? 'SSE Live Connection Active' : 'Connecting to SSE Stream...'}>
+          {/* Feed connection indicator. The dot is decorative; the tooltip carries the
+              meaning, and `aria-label` repeats it so the state is not trapped in
+              a hover — a screen reader gets "Feed status: <detail>" rather than
+              silence. */}
+          <Tooltip title={feed.detail}>
             <Box
+              role="status"
+              aria-label={`Feed status: ${feed.detail}`}
               sx={{
                 width: 10,
                 height: 10,
                 borderRadius: '50%',
-                backgroundColor: isConnected ? 'success.main' : 'warning.main',
-                boxShadow: isConnected ? '0 0 10px var(--lgc-ok)' : 'none',
+                backgroundColor:
+                  feed.tone === 'ok'
+                    ? 'success.main'
+                    : feed.tone === 'degraded'
+                      ? 'warning.main'
+                      : 'text.disabled',
+                boxShadow: feed.tone === 'ok' ? '0 0 10px var(--lgc-ok)' : 'none',
               }}
             />
           </Tooltip>

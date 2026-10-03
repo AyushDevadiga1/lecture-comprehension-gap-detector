@@ -11,6 +11,7 @@ import {
   ListItem,
   Chip,
   Button,
+  Tooltip,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
@@ -18,6 +19,7 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from './StatusBadge'
 import { jobs as jobsApi } from '../../api/jobs'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
+import { feedStatus } from '../../lib/feedStatus'
 import { jobGuidance } from '../../lib/stages'
 import { EXPIRED_MESSAGE, STALLED_MESSAGE, jobHealth } from '../../lib/jobStalls'
 import { useNow } from '../../lib/useNow'
@@ -33,7 +35,10 @@ export const JobDrawer: React.FC = () => {
   // the drawer no longer accumulates finished jobs for the whole session.
   const jobs = useActiveJobs(selectedCourseId)
   const { mode, changeToken } = useFeedStatus(selectedCourseId)
-  const isConnected = mode === 'stream'
+  // `poll` and `unavailable` used to share the label "Disconnected", so a feed
+  // that had given up was indistinguishable from one that was merely not
+  // streaming — see lib/feedStatus.ts.
+  const feed = feedStatus(mode)
 
   // Ticks only while a job is in flight, so a dead worker — whose frozen
   // heartbeat stops the SSE stream entirely — can still be called out.
@@ -67,13 +72,15 @@ export const JobDrawer: React.FC = () => {
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
             Background Tasks
           </Typography>
-          <Chip
-            size="small"
-            label={isConnected ? 'SSE Live' : 'Disconnected'}
-            color={isConnected ? 'success' : 'default'}
-            variant="outlined"
-            sx={{ fontSize: '0.7rem' }}
-          />
+          <Tooltip title={feed.detail}>
+            <Chip
+              size="small"
+              label={feed.label}
+              color={feed.tone === 'ok' ? 'success' : feed.tone === 'degraded' ? 'warning' : 'default'}
+              variant="outlined"
+              sx={{ fontSize: '0.7rem', cursor: 'help' }}
+            />
+          </Tooltip>
         </Box>
         <IconButton onClick={() => setJobDrawerOpen(false)} size="small">
           <CloseIcon fontSize="small" />
@@ -87,6 +94,16 @@ export const JobDrawer: React.FC = () => {
       )}
 
       <Divider sx={{ mb: 2 }} />
+
+      {/* A feed that has given up, stated plainly. The chip above carries the
+          same information for someone who notices it; this is for someone who
+          opens the drawer to find out why the progress bars stopped moving.
+          Without it, a stale list is indistinguishable from an idle course. */}
+      {feed.tone === 'down' && (
+        <Alert severity="warning" sx={{ mb: 2, fontSize: '0.8rem' }}>
+          {feed.detail}
+        </Alert>
+      )}
 
       {jobs.length === 0 ? (
         <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
