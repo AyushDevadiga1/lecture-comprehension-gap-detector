@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { jobFeed } from './jobFeed'
 import type { FeedState } from './jobFeed'
 import { createJobsSink } from './jobsSink'
-import type { JobsSink } from './jobsSink'
 import { queryKeys } from './queryKeys'
 import { isTerminal, recordNewCompletions } from './jobCompletions'
 import { isLive } from './jobStalls'
@@ -64,9 +63,33 @@ export function useJobFeedConnection(courseId?: string | null): void {
   // snapshot. Here it costs nothing.
   const prevRef = useRef<JobOut[]>([])
 
-  const sinkRef = useRef<JobsSink<FeedState> | null>(null)
-  if (!sinkRef.current) {
-    sinkRef.current = createJobsSink((state: FeedState) => {
+  useEffect(() => {
+    // A course change starts a different job set; nothing from the old one can
+    // be "newly completed".
+    prevRef.current = []
+    connectionRefs += 1
+
+    /**
+     * The sink is built HERE, inside the effect, rather than once per component
+     * in a ref — because it has to close over the course this connection is
+     * actually for.
+     *
+     * Built once in a ref, it captured the *first* render's `courseId`, and on a
+     * first visit that is `null`: the Navbar auto-selects the first course only
+     * after `GET /courses` resolves. So the feed reconnected with
+     * `course_id=ml` while the sink went on writing every snapshot to
+     * `['jobs', '']`, and every reader — `useJobs('ml')`, the Navbar badge, the
+     * drawer — read `['jobs', 'ml']`, found nothing, and fell back to
+     * `EMPTY_STATE`, which is hardcoded `mode: 'starting'`. The drawer said
+     * "Connecting" and listed no jobs, forever, on a backend that was streaming
+     * correctly the whole time.
+     *
+     * That is the app's central claim failing on every first visit, and no
+     * unit test could see it: they all start with a course already selected.
+     * Only the Playwright tier boots a real browser against a real `/courses`,
+     * which is why four e2e tests were red before this.
+     */
+    const sink = createJobsSink((state: FeedState) => {
       queryClient.setQueryData(queryKeys.jobs(courseId ?? ''), state)
 
       const finished = recordNewCompletions(prevRef.current, state.jobs, (list) =>
@@ -82,14 +105,8 @@ export function useJobFeedConnection(courseId?: string | null): void {
         }
       }
     })
-  }
 
-  useEffect(() => {
-    // A course change starts a different job set; nothing from the old one can
-    // be "newly completed".
-    prevRef.current = []
-    connectionRefs += 1
-    jobFeed.connect(courseId, (state) => sinkRef.current?.write(state))
+    jobFeed.connect(courseId, (state) => sink.write(state))
     return () => {
       connectionRefs -= 1
       if (connectionRefs === 0) jobFeed.disconnect()
