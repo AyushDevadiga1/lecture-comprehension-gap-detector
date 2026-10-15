@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react'
+﻿import React, { useEffect, useRef, useState, Suspense } from 'react'
 import {
   Box,
   Typography,
@@ -45,7 +45,13 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
-import { DagView } from '../../components/graph/DagView'
+// Lazy: reactflow is ~190 KB minified and this view sits below the fold.
+// The page paints and becomes interactive first; the graph chunk streams in
+// after. The fallback reuses the loading screen so the two loading states
+// (query vs chunk) read as one.
+const DagView = React.lazy(() =>
+  import('../../components/graph/DagView').then((m) => ({ default: m.DagView })),
+)
 import { tint } from '../../theme/alpha'
 import { ClipBrowser } from './ClipBrowser'
 
@@ -818,7 +824,9 @@ export const StudentDashboard: React.FC = () => {
         {graphError && <ErrorAlert error={graphError} title="Failed to load graph" />}
         {isLoadingGraph && <LoadingScreen message="Loading prerequisite graph..." />}
         {graphData && (
-          <DagView key={selectedCourseId} graph={graphData} idPrefix="student-graph" />
+          <Suspense fallback={<LoadingScreen message="Loading prerequisite graph..." />}>
+            <DagView key={selectedCourseId} graph={graphData} idPrefix="student-graph" />
+          </Suspense>
         )}
       </Box>
 

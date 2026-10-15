@@ -71,6 +71,25 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // One chunk per slow-moving vendor family, so an app-code deploy does
+        // not invalidate the bytes that did not change — and so the >500 kB
+        // warning answers itself with a layout instead of a bigger limit.
+        // reactflow is deliberately absent: it arrives in its own async chunk
+        // behind the DagView Suspense boundary (see StudentDashboard).
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-mui': [
+            '@mui/material',
+            '@mui/icons-material',
+            '@emotion/react',
+            '@emotion/styled',
+          ],
+          'vendor-query': ['@tanstack/react-query', 'zustand'],
+        },
+      },
+    },
   },
   test: {
     globals: true,
