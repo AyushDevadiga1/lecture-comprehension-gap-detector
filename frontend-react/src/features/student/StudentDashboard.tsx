@@ -45,6 +45,7 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
+import { DagView } from '../../components/graph/DagView'
 import { tint } from '../../theme/alpha'
 import { ClipBrowser } from './ClipBrowser'
 
@@ -88,6 +89,18 @@ export const StudentDashboard: React.FC = () => {
   } = useQuery({
     queryKey: queryKeys.snapshot(selectedCourseId ?? ''),
     queryFn: () => (selectedCourseId ? coursesApi.snapshot(selectedCourseId) : null),
+    enabled: !!selectedCourseId,
+  })
+
+  // The prerequisite DAG payload. Same query the faculty view runs; the
+  // drawing itself is DagView, shared by both dashboards.
+  const {
+    data: graphData,
+    isLoading: isLoadingGraph,
+    error: graphError,
+  } = useQuery({
+    queryKey: queryKeys.graph(selectedCourseId ?? ''),
+    queryFn: () => (selectedCourseId ? coursesApi.graph(selectedCourseId) : null),
     enabled: !!selectedCourseId,
   })
 
@@ -785,6 +798,27 @@ export const StudentDashboard: React.FC = () => {
               </TableBody>
             </Table>
           </Card>
+        )}
+      </Box>
+
+      {/* Course graph — the prerequisite DAG, drawn rather than listed.
+          Sits between the lectures that produced it and the clips cut from
+          those lectures. `key` resets the view's control state on a course
+          switch so a filter chosen for one course never silently scopes
+          another. */}
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+          Course graph
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+          Prerequisites sit above what they unlock. Drag to pan, scroll to
+          zoom, click a concept for its links and evidence.
+        </Typography>
+
+        {graphError && <ErrorAlert error={graphError} title="Failed to load graph" />}
+        {isLoadingGraph && <LoadingScreen message="Loading prerequisite graph..." />}
+        {graphData && (
+          <DagView key={selectedCourseId} graph={graphData} idPrefix="student-graph" />
         )}
       </Box>
 
