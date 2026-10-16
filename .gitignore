@@ -69,6 +69,7 @@ improve-codebase-architecture-skill/
 
 # Local agent configs
 opencode.json
+.freebuff
 
 # Security audit run artifacts (never commit)
 security-audits/
