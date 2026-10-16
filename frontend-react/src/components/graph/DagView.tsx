@@ -1,10 +1,11 @@
 import React from 'react'
-import ReactFlow, { Background, Handle, Position } from 'reactflow'
-import type { Edge as FlowEdge, Node as FlowNode, NodeProps } from 'reactflow'
+import ReactFlow, { Background, Handle, MiniMap, Position } from 'reactflow'
+import type { Edge as FlowEdge, Node as FlowNode, NodeProps, ReactFlowInstance } from 'reactflow'
 import 'reactflow/dist/style.css'
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   Checkbox,
@@ -48,7 +49,10 @@ import { tint, token } from '../../theme/alpha'
  *   - hover evidence becomes **click evidence**: selecting a node lists its
  *     incident edges with confidence, method and recorded evidence;
  *   - pan/zoom are the canvas's own (drag to pan, scroll to zoom, fit on load),
- *     so there is no zoom slider and no `<Controls>` chrome to theme.
+ *     so there is no zoom slider and no `<Controls>` chrome to theme; a
+ *     minimap (nodes in their own fills) plus an explicit Reset view button
+ *     cover spatial context and the way back, which is the whole of the
+ *     chrome this view needs.
  *
  * Colours: node fills and ink come from `nodeColors` (token-derived at
  * runtime, never literals — the colour guard only sees the variable, which is
@@ -222,6 +226,11 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
   const [colorBy, setColorBy] = React.useState<ColourBy>('order')
   const [methods, setMethods] = React.useState<string[] | null>(null)
   const [selected, setSelected] = React.useState<string | null>(null)
+  // The canvas instance, for the reset-view affordance only. Captured via
+  // onInit rather than a ReactFlowProvider so this component stays
+  // self-contained: providers are app-level decisions (see AppProviders), and
+  // a graph view should not impose one on its host page.
+  const [flow, setFlow] = React.useState<ReactFlowInstance | null>(null)
 
   const methodsPresent = React.useMemo(() => {
     const found = sortedUnique(edges.map((e) => e.source_method || 'classifier'))
@@ -387,6 +396,17 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Links drawn {drawnCount} / {edges.length}
         </Typography>
+
+        {/* The way back from an arbitrary pan/zoom. fitView is the same
+            framing the canvas loads with, so reset means "show me the graph
+            as it opened" — discoverable, unlike a gesture. */}
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => flow?.fitView({ padding: 0.2 })}
+        >
+          Reset view
+        </Button>
       </Box>
 
       <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -419,6 +439,7 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
+          onInit={setFlow}
           onNodeClick={(_, node) =>
             setSelected((cur) => (cur === node.id ? null : node.id))
           }
@@ -433,6 +454,15 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
           disableKeyboardA11y
         >
           <Background color={token('graph_edge')} gap={24} />
+          {/* Spatial context for large graphs: nodes paint in their own
+              fills, so the map reads the same as the canvas. The stock
+              minimap chrome is unthemed for this pass, like the rest of
+              reactflow's stylesheet (see the module docstring). */}
+          <MiniMap
+            nodeColor={(n) => (n.data as ConceptNodeData).fill ?? token('surface')}
+            pannable
+            zoomable
+          />
         </ReactFlow>
       </Box>
 

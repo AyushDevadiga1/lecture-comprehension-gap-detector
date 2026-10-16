@@ -292,4 +292,20 @@ describe('DagView', () => {
     })
     expect(await nodeButton(/Slope/)).toBeInTheDocument()
   })
+
+  it('renders a minimap and a reset-view affordance', async () => {
+    const user = userEvent.setup()
+    renderDag()
+
+    // The map paints nodes in their own fills — spatial context that reads
+    // the same as the canvas.
+    await screen.findByRole('button', { name: /Slope/ })
+    expect(document.querySelector('.react-flow__minimap')).not.toBeNull()
+
+    // Reset is a visible button, not an inferred gesture: clicking it must
+    // neither throw nor disturb the drawing.
+    await user.click(screen.getByRole('button', { name: 'Reset view' }))
+    expect(await nodeButton(/Slope/)).toBeInTheDocument()
+    expect(screen.getByText(/12 shown/)).toBeInTheDocument()
+  })
 })
