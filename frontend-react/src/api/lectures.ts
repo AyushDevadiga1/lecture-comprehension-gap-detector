@@ -51,7 +51,7 @@ export const lectures = {
   uploadMedia: (
     lectureId: number,
     file: File,
-    onProgress: (pct: number) => void,
+    onProgress: (pct: number | null) => void,
     signal?: AbortSignal,
     whisperBackend?: string,
   ): Promise<LectureOut> => {

@@ -129,7 +129,7 @@ describe('putStream', () => {
   it('reports a percentage when the total is known', () => {
     const x = withFakeXhr()
     try {
-      const seen: number[] = []
+      const seen: Array<number | null> = []
       void putStream('/lectures/1/media', new Blob(['hi']), (p) => seen.push(p)).catch(() => {})
       x.last().progress(50, 100)
       expect(seen).toEqual([50])
@@ -138,16 +138,47 @@ describe('putStream', () => {
     }
   })
 
-  it('does not report a bogus percentage when the total is unknown', () => {
-    // lengthComputable is false for a File body in most browsers. Reporting
-    // loaded/total with total=0 gives Infinity or NaN, which is worse than
-    // simply not claiming progress.
+  it('falls back to the body’s own size when the total is unknown', () => {
+    // lengthComputable is false for a File body in most browsers. The old
+    // behaviour reported nothing and the bar sat at 0% for the whole upload;
+    // the Blob always knows its size, so the percentage is still honest.
+    const x = withFakeXhr()
+    try {
+      const seen: Array<number | null> = []
+      void putStream('/lectures/1/media', new Blob(['x'.repeat(100)]), (p) =>
+        seen.push(p),
+      ).catch(() => {})
+      x.last().progress(25, undefined)
+      expect(seen).toEqual([25])
+    } finally {
+      x.restore()
+    }
+  })
+
+  it('reports indeterminate when neither total nor size exists', () => {
+    // A zero-length body has no honest percentage — loaded/0 is Infinity, and
+    // a frozen 0% reads as stalled work. `null` renders an indeterminate bar.
     const x = withFakeXhr()
     try {
       const onProgress = vi.fn()
-      void putStream('/lectures/1/media', new Blob(['hi']), onProgress).catch(() => {})
-      x.last().progress(1234, undefined)
-      expect(onProgress).not.toHaveBeenCalled()
+      void putStream('/lectures/1/media', new Blob([]), onProgress).catch(() => {})
+      x.last().progress(10, undefined)
+      expect(onProgress).toHaveBeenCalledTimes(1)
+      expect(onProgress).toHaveBeenCalledWith(null)
+    } finally {
+      x.restore()
+    }
+  })
+
+  it('never reports above 100, whatever the transport claims', () => {
+    const x = withFakeXhr()
+    try {
+      const seen: Array<number | null> = []
+      void putStream('/lectures/1/media', new Blob(['x'.repeat(100)]), (p) =>
+        seen.push(p),
+      ).catch(() => {})
+      x.last().progress(9999, undefined)
+      expect(seen).toEqual([100])
     } finally {
       x.restore()
     }

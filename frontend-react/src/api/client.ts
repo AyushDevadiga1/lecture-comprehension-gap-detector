@@ -149,7 +149,13 @@ export async function del<T>(path: string): Promise<T> {
 export function putStream(
   path: string,
   body: Blob | File,
-  onProgress: (pct: number) => void,
+  /**
+   * Percentage 0–100, or `null` when no honest percentage exists. The UI
+   * renders `null` as an indeterminate bar rather than a frozen 0% — a bar
+   * that never moves is a lie about stalled work, and a spinner says
+   * "working, unmeasured", which is the truth.
+   */
+  onProgress: (pct: number | null) => void,
   signal?: AbortSignal,
 ): Promise<LectureOutRaw> {
   return new Promise((resolve, reject) => {
@@ -166,12 +172,21 @@ export function putStream(
     }
 
     xhr.upload.onprogress = (e) => {
-      // lengthComputable is false for a File body in most browsers; without a
-      // total there is no honest percentage, so report loaded bytes as progress
-      // rather than freezing the bar at a stale value.
       if (e.lengthComputable && e.total > 0) {
         onProgress(Math.round((e.loaded / e.total) * 100))
+        return
       }
+      // `lengthComputable` is false for a File body in most browsers — but
+      // the Blob always knows its own size, so the percentage is still honest.
+      // Clamped: a transport that reports more bytes than the body holds must
+      // not render 137%.
+      if (body.size > 0) {
+        onProgress(Math.min(100, Math.round((e.loaded / body.size) * 100)))
+        return
+      }
+      // Zero-length body: no honest percentage exists. `null`, not 0 — the
+      // caller renders indeterminate rather than a frozen bar.
+      onProgress(null)
     }
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {

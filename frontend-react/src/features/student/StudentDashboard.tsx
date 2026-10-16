@@ -65,7 +65,16 @@ export const StudentDashboard: React.FC = () => {
   // Upload state
   const [uploadTitle, setUploadTitle] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  /**
+   * Upload progress. `null` = idle; a number = measured percent; `'streaming'`
+   * = bytes are flowing but unmeasurable (or nothing has reported yet). The
+   * third state is the honest one the old code lacked: previously the bar was
+   * set to 0 and only ever moved on computable events, so a whole upload sat
+   * at 0% in every browser that reports lengthComputable: false for File
+   * bodies. An indeterminate bar says "working, unmeasured"; a frozen 0%
+   * says "stalled".
+   */
+  const [uploadProgress, setUploadProgress] = useState<number | 'streaming' | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Quiz state
@@ -231,7 +240,7 @@ export const StudentDashboard: React.FC = () => {
     if (!selectedCourseId || !selectedFile || !uploadTitle.trim()) return
 
     setUploadError(null)
-    setUploadProgress(0)
+    setUploadProgress('streaming')
 
     try {
       // Step 1: Create lecture row
@@ -244,7 +253,7 @@ export const StudentDashboard: React.FC = () => {
       await lecturesApi.uploadMedia(
         lecture.id,
         selectedFile,
-        (pct) => setUploadProgress(pct),
+        (pct) => setUploadProgress(pct === null ? 'streaming' : pct),
       )
 
       // Reset form
@@ -436,9 +445,15 @@ export const StudentDashboard: React.FC = () => {
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography variant="caption">Uploading media stream...</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 600 }}>{uploadProgress}%</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                          {uploadProgress === 'streaming' ? 'Uploading…' : `${uploadProgress}%`}
+                        </Typography>
                       </Box>
-                      <LinearProgress variant="determinate" value={uploadProgress} sx={{ height: 6, borderRadius: 3 }} />
+                      <LinearProgress
+                        variant={uploadProgress === 'streaming' ? 'indeterminate' : 'determinate'}
+                        value={typeof uploadProgress === 'number' ? uploadProgress : 0}
+                        sx={{ height: 6, borderRadius: 3 }}
+                      />
                     </Box>
                   )}
 
