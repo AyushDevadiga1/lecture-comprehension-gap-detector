@@ -76,13 +76,50 @@ function resolveGlobPath(key: string): string {
 const isThemeModule = (key: string): boolean => resolveGlobPath(key).includes(THEME_DIR)
 const display = (key: string): string => resolveGlobPath(key).replace(/^src\//, '')
 
-describe('no module names a colour', () => {
-  const modules = import.meta.glob('../**/*.{ts,tsx,css}', {
-    query: '?raw',
-    import: 'default',
-    eager: true,
-  }) as Record<string, string>
+/**
+ * Every source file, raw. Hoisted to module scope so both guards below scan
+ * the same snapshot: the colour-literal scan and the token-name scan.
+ */
+const modules = import.meta.glob('../**/*.{ts,tsx,css}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
 
+/**
+ * Token names named at call sites: `token('x')`, `tint('x', n)` and both
+ * arguments of `gradient('x', 'y')`.
+ *
+ * Operates on the whole source rather than line by line, so a call split
+ * across lines is still parsed. Only string literals are collected — a
+ * dynamically built name cannot be checked statically and is skipped, never
+ * guessed at. Kept beside the colour patterns because it is the same guard
+ * facing the other way: the colour scan proves no module spells a colour, and
+ * this proves every token a module *names* is one the table defines.
+ */
+function tokenNamesIn(src: string): string[] {
+  const names: string[] = []
+  // No space between the name and the paren: real call sites never have one
+  // (prettier would join it), while prose does — "a single bare token
+  // ("update", "filter")" in a docstring is the case that taught this. The
+  // colour scan deliberately matches inside comments; this one must not, or
+  // every docstring that mentions the helpers becomes a false positive.
+  const calls = /\b(?:token|tint|gradient)\(([^)]*)\)/g
+  const literal = /['"]([A-Za-z0-9_-]+)['"]/g
+  for (const call of src.matchAll(calls)) {
+    for (const str of call[1].matchAll(literal)) names.push(str[1])
+  }
+  return names
+}
+
+/** Suffixes the palette actually defines, e.g. `graph-edge` for `--lgc-graph-edge`. */
+function knownTokenSuffixes(): Set<string> {
+  return new Set(
+    Object.keys(cssVariablesFor('dark')).map((v) => v.replace(/^--lgc-/, '')),
+  )
+}
+
+describe('no module names a colour', () => {
   it('there are files to scan', () => {
     expect(Object.keys(modules).length).toBeGreaterThan(10)
   })
@@ -135,6 +172,46 @@ describe('no module names a colour', () => {
           offenders.push(`${display(key)}:${i + 1} ${m[0]}`)
         }
       })
+      expect(offenders).toEqual([])
+    })
+  }
+})
+
+describe('every named token exists', () => {
+  it('the extractor reads all three helpers, both gradient arguments, either quote', () => {
+    expect(tokenNamesIn(`token('page')`)).toEqual(['page'])
+    expect(tokenNamesIn(`tint("text", 4)`)).toEqual(['text'])
+    expect(tokenNamesIn(`gradient('warn', 'bad')`)).toEqual(['warn', 'bad'])
+    // snake_case is the table spelling; kebab is what call sites also use.
+    // Both are accepted here because varName normalises either way.
+    expect(tokenNamesIn(`token('graph_edge')`)).toEqual(['graph_edge'])
+    expect(tokenNamesIn(`token('surface-alt')`)).toEqual(['surface-alt'])
+    // A dynamically built name cannot be checked statically: skipped, and the
+    // skip is visible rather than silent.
+    expect(tokenNamesIn('token(prefix + suffix)')).toEqual([])
+    expect(tokenNamesIn('no calls here')).toEqual([])
+  })
+
+  it('a misspelled token is reported, not silently skipped', () => {
+    // The guard's value is entirely in this direction: without it, a typo
+    // emits var(--lgc-<typo>), which no stylesheet defines, and the property
+    // falls back to its initial value with no error anywhere.
+    const known = knownTokenSuffixes()
+    const bad = 'graph_edeg'.replace(/_/g, '-')
+    expect(known.has('graph-edge')).toBe(true)
+    expect(known.has(bad)).toBe(false)
+  })
+
+  for (const [key, src] of Object.entries(modules)) {
+    if (isThemeModule(key)) continue
+    if (key.includes('.test.')) continue
+
+    it(`${display(key)} names only defined tokens`, () => {
+      const known = knownTokenSuffixes()
+      const offenders = tokenNamesIn(src)
+        .map((name) => name.replace(/_/g, '-'))
+        .filter((name) => !known.has(name))
+        .map((name) => `${display(key)}: unknown token '${name}'`)
       expect(offenders).toEqual([])
     })
   }
