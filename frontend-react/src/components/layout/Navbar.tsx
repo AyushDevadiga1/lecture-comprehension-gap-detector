@@ -77,19 +77,28 @@ export const Navbar: React.FC = () => {
 
   return (
     <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 4 } }}>
+      <Toolbar
+        sx={{
+          justifyContent: 'space-between',
+          px: { xs: 2, md: 4 },
+          minHeight: { xs: 60, md: 68 },
+        }}
+      >
         {/* Brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '8px',
+              width: 38,
+              height: 38,
+              borderRadius: '10px',
               background: gradient('info', 'ok', 135),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: `0 4px 12px ${tint('info', 40)}`,
+              boxShadow: `0 4px 14px ${tint('info', 35)}`,
+              // A hairline light ring so the tile reads as an object on both
+              // bases — ink-light is near-white in dark and white in light.
+              border: `1px solid ${tint('ink-light', 35)}`,
             }}
           >
             <AccountTreeIcon sx={{ color: 'primary.contrastText', fontSize: 20 }} />
@@ -99,8 +108,9 @@ export const Navbar: React.FC = () => {
               variant="h6"
               sx={{
                 fontWeight: 800,
-                fontSize: '1.15rem',
-                letterSpacing: '-0.02em',
+                fontSize: '1.2rem',
+                lineHeight: 1.05,
+                letterSpacing: '-0.025em',
                 // gradient() returns a CSS gradient string; without a non-transparent
                 // background, -webkit-text-fill-color: transparent renders nothing.
                 background: gradient('info', 'ok', 135),
@@ -110,7 +120,18 @@ export const Navbar: React.FC = () => {
             >
               LecGap
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', display: 'block', mt: -0.5 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '0.64rem',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                display: 'block',
+                mt: 0.25,
+              }}
+            >
               Engine 2 &bull; Comprehension DAG
             </Typography>
           </Box>
@@ -147,7 +168,7 @@ export const Navbar: React.FC = () => {
 
         {/* Right Tools: Course Selector + Jobs Drawer Trigger */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
+          <FormControl size="small" sx={{ minWidth: 170 }}>
             <InputLabel id="course-select-label" sx={{ color: 'text.secondary' }}>
               Course
             </InputLabel>
@@ -157,7 +178,7 @@ export const Navbar: React.FC = () => {
               label="Course"
               onChange={(e) => setSelectedCourseId(e.target.value)}
               sx={{
-                borderRadius: 2,
+                borderRadius: '10px',
                 // A wash of `text`, not a hardcoded white at 4%.
                 // A white wash is invisible the moment anyone flips to the light
                 // base — white on a white select is no wash at all.

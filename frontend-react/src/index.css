@@ -40,6 +40,34 @@ pre {
   font-family: var(--font-mono);
 }
 
+/* Display headings read better balanced; browsers without support ignore it. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* ------------------------------------------------------------------ focus
+ * Keyboard users get a teal ring derived from the `info` token (generated in
+ * `theme/variables.ts`, so no colour is named here). Text inputs show their
+ * focus as the MUI field ring instead — a second outline around the same
+ * control would just be noise. */
+:focus-visible {
+  outline: 2px solid var(--lgc-focus-ring);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/* Selection is a wash of `info` behind whatever ink the page already has —
+ * legible in both bases without a second rule. */
+::selection {
+  background-color: var(--lgc-selection);
+}
+
 /* A scrollbar that reads against the page rather than the OS default. */
 * {
   scrollbar-width: thin;
@@ -64,6 +92,59 @@ pre {
   background-color: var(--lgc-muted);
 }
 
+/* Range inputs — the clip timeline and the volume slider inside the video
+   player. The inline style paints the fill; the thumb has to be rebuilt here
+   because `appearance: none` otherwise removes it entirely in WebKit. */
+.lgc-seek {
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.lgc-seek::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+  border-radius: 3px;
+}
+
+.lgc-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--lgc-accent);
+  border: 2px solid var(--lgc-surface);
+  box-shadow: 0 1px 3px var(--lgc-text);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.lgc-seek::-moz-range-track {
+  height: 100%;
+  background: transparent;
+  border-radius: 3px;
+}
+
+.lgc-seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--lgc-accent);
+  border: 2px solid var(--lgc-surface);
+  box-shadow: 0 1px 3px var(--lgc-text);
+  cursor: pointer;
+}
+
+.lgc-seek:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.lgc-seek:focus-visible {
+  outline: 2px solid var(--lgc-focus-ring);
+  outline-offset: 3px;
+}
+
 @keyframes lgc-pulse {
   0%,
   100% {
@@ -82,5 +163,19 @@ pre {
 @media (prefers-reduced-motion: reduce) {
   .pulse-indicator {
     animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* The theme layer adds short transitions to buttons, cards and fields for
+     affordance; a user who has asked the OS for less motion gets none of them. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

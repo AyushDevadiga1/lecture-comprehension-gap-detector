@@ -14,21 +14,21 @@ import {
   TableCell,
   Tooltip,
   TableBody,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
   Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
 } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import QuizIcon from '@mui/icons-material/Quiz'
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
-import VideoLibraryIcon from '@mui/icons-material/VideoLibrary'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../api/courses'
 import { lectures as lecturesApi } from '../../api/lectures'
+import type { LectureOut } from '../../api/types'
 import { quizzes as quizzesApi } from '../../api/quizzes'
 import { errorMessage } from '../../api/client'
 import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
@@ -45,6 +45,8 @@ import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
+import { SectionIcon } from '../../components/common/SectionIcon'
+import { Rise } from '../../components/common/Rise'
 // Lazy: reactflow is ~190 KB minified and this view sits below the fold.
 // The page paints and becomes interactive first; the graph chunk streams in
 // after. The fallback reuses the loading screen so the two loading states
@@ -52,8 +54,8 @@ import { ErrorAlert } from '../../components/common/ErrorAlert'
 const DagView = React.lazy(() =>
   import('../../components/graph/DagView').then((m) => ({ default: m.DagView })),
 )
-import { tint } from '../../theme/alpha'
 import { ClipBrowser } from './ClipBrowser'
+import { QuizPanel } from './QuizPanel'
 
 
 export const StudentDashboard: React.FC = () => {
@@ -83,6 +85,9 @@ export const StudentDashboard: React.FC = () => {
 
   // Per-lecture row action errors (extract concepts / cut clips)
   const [rowError, setRowError] = useState<string | null>(null)
+
+  /** The session a removal is pending confirmation for. */
+  const [removeTarget, setRemoveTarget] = useState<LectureOut | null>(null)
 
 
   // Remediation playback state
@@ -273,6 +278,28 @@ export const StudentDashboard: React.FC = () => {
     }
   }
 
+  /**
+   * Remove a session — and with it everything derived from it.
+   *
+   * Uploading the wrong course into a playlist (a SQL session in a
+   * deep-learning list) is a real failure mode, and the backend already
+   * cascades: DELETE /lectures/{id} drops the row plus its segments,
+   * concepts, clips, passages and links. So this is confirmation UI over an
+   * endpoint that exists — the dialog is here because the operation is
+   * irreversible and the derived work would have to be redone from scratch.
+   */
+  const handleRemoveLecture = async () => {
+    if (!removeTarget) return
+    setRowError(null)
+    try {
+      await lecturesApi.delete(removeTarget.id)
+      setRemoveTarget(null)
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
+    } catch (err: unknown) {
+      setRowError(errorMessage(err, 'Could not remove this session'))
+    }
+  }
+
   if (!selectedCourseId) {
     return (
       <Alert severity="info" sx={{ mt: 4 }}>
@@ -309,44 +336,52 @@ export const StudentDashboard: React.FC = () => {
         {snapshot && (
           <Grid container spacing={2} sx={{ mt: 2 }}>
             <Grid item xs={12} sm={6} md={3}>
+              <Rise delay={0}>
               <Card sx={{ p: 1.5 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Total Lectures
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
                   {snapshot.lectures.total} ({snapshot.lectures.ready} ready)
                 </Typography>
               </Card>
+              </Rise>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
+              <Rise delay={0.05}>
               <Card sx={{ p: 1.5 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Extracted Concepts
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
                   {snapshot.concepts}
                 </Typography>
               </Card>
+              </Rise>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
+              <Rise delay={0.1}>
               <Card sx={{ p: 1.5 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Prerequisite Graph
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: snapshot.graph.has ? 'success.main' : 'warning.main' }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: snapshot.graph.has ? 'success.main' : 'warning.main' }}>
                   {snapshot.graph.has ? `${snapshot.graph.edges} Edges` : 'Not Built'}
                 </Typography>
               </Card>
+              </Rise>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
+              <Rise delay={0.15}>
               <Card sx={{ p: 1.5 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Video Clips Cut
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
                   {snapshot.clips.ok} / {snapshot.clips.cut} OK
                 </Typography>
               </Card>
+              </Rise>
             </Grid>
           </Grid>
         )}
@@ -359,7 +394,9 @@ export const StudentDashboard: React.FC = () => {
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <CloudUploadIcon sx={{ color: 'primary.light' }} />
+                <SectionIcon>
+                  <CloudUploadIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+                </SectionIcon>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   Upload Lecture
                 </Typography>
@@ -421,284 +458,25 @@ export const StudentDashboard: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Adaptive Quiz Trigger & Display */}
+        {/* Adaptive Quiz Trigger & Display — the flow itself lives in
+            QuizPanel: idle → generating → answering → graded. */}
         <Grid item xs={12} md={7}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <QuizIcon sx={{ color: 'secondary.light' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Comprehension Quiz &amp; Gap Detection
-                  </Typography>
-                </Box>
-                {!draft && !quizResult && (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => generateQuizMutation.mutate()}
-                    disabled={generateQuizMutation.isPending}
-                  >
-                    {generateQuizMutation.isPending ? 'Queueing...' : 'Start Quiz'}
-                  </Button>
-                )}
-              </Box>
-
-              {/* The cap is visible before generation, not discovered after. */}
-              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-                Up to {quizMaxQuestions()} questions, drawn evenly from across the course's concepts.
-              </Typography>
-
-              {quizError && <ErrorAlert error={quizError} title="Quiz Error" />}
-              {quizWarning && <ErrorAlert error={quizWarning} title="Quiz cap not applied" />}
-
-              {generateQuizMutation.isPending && (
-                <LoadingScreen message="Queueing quiz generation. The job appears in Background Tasks and the quiz opens itself when it is ready." />
-              )}
-
-              {/* Active Quiz Form */}
-              {draft && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Alert severity="info">
-                    Answer the diagnostic questions below. Incorrect answers will trace prerequisites backwards along the DAG to form your personalised remediation plan.
-                  </Alert>
-
-                  {draft.quiz.questions.map((q, idx) => (
-                    <Box
-                      key={q.id}
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        backgroundColor: tint('text', 2),
-                        border: `1px solid ${tint('text', 6)}`,
-                      }}
-                    >
-                      <Typography variant="subtitle2" sx={{ color: 'secondary.light', mb: 0.5, fontWeight: 700 }}>
-                        Question {idx + 1} &bull; Concept: {q.concept}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, mb: 1.5 }}>
-                        {q.question}
-                      </Typography>
-
-                      <FormControl component="fieldset">
-                        <RadioGroup
-                          value={draft.answers[q.id] || ''}
-                          onChange={(e) => selectAnswer(q.id, e.target.value)}
-                        >
-                          {(q.options?.length ? q.options : ['correct', 'incorrect', 'wrong']).map(
-                            (opt, optIdx) => (
-                              <FormControlLabel
-                                key={optIdx}
-                                value={opt}
-                                control={<Radio size="small" />}
-                                label={<Typography variant="body2">{opt}</Typography>}
-                              />
-                            ),
-                          )}
-                        </RadioGroup>
-                      </FormControl>
-                    </Box>
-                  ))}
-
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={() => submitQuizMutation.mutate()}
-                    disabled={submitQuizMutation.isPending || Object.keys(draft.answers).length === 0}
-                  >
-                    {submitQuizMutation.isPending ? 'Grading...' : 'Submit Answers'}
-                  </Button>
-                </Box>
-              )}
-
-              {/* Quiz Results & Remediation */}
-              {quizResult && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box
-                    sx={{
-                      p: 2.5,
-                      borderRadius: 2,
-                      // Was `indigo 15% -> purple 15%`, two hardcoded hexes that
-                      // shared nothing with the palette. `accent` is currently a
-                      // byte-for-byte duplicate of `info` in BOTH palettes
-                      // (theme/tokens.ts:93-94 and 124-125), so the two-stop
-                      // gradient it asked for does not exist as a token pair —
-                      // `palette.secondary` is indistinguishable from
-                      // `palette.primary`, and the `gradient('info','accent')`
-                      // at JobDrawer.tsx:167 is already a flat no-op. Rendering
-                      // the honest flat wash beats rendering a gradient that
-                      // only looks like one.
-                      background: tint('info', 15),
-                      border: `1px solid ${tint('info', 30)}`,
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      Score: {quizResult.score} / {quizResult.total} (
-                      {quizResult.total > 0
-                        ? Math.round((quizResult.score / quizResult.total) * 100)
-                        : 0}
-                      %)
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                      Student: {quizResult.student_id} &bull; Quiz ID: #{quizResult.quiz_id}
-                    </Typography>
-                  </Box>
-
-                  {/* Remediation sequence */}
-                  {quizResult.remediation.length > 0 && (
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                        Recommended Remediation Sequence (Topological Prerequisite Order)
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                        Review these prerequisite concepts in the order indicated to repair foundational comprehension gaps:
-                      </Typography>
-
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {quizResult.remediation.map((item, idx) => (
-                          <Box
-                            key={idx}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              p: 1.5,
-                              borderRadius: 1.5,
-                              backgroundColor: tint('text', 3),
-                              border: `1px solid ${tint('text', 6)}`,
-                            }}
-                          >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Typography variant="subtitle2" sx={{ color: 'secondary.light', fontWeight: 700 }}>
-                                #{idx + 1}
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                {item.concept}
-                              </Typography>
-                              {item.failed ? (
-                                <CancelIcon sx={{ color: 'error.main', fontSize: 18 }} />
-                              ) : (
-                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                  (Prerequisite foundation)
-                                </Typography>
-                              )}
-                            </Box>
-
-                            {item.clip_url ? (
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                startIcon={<PlayCircleOutlineIcon />}
-                                onClick={() => setPlayingClipUrl(item.clip_url ?? null)}
-                              >
-                                Watch Clip
-                              </Button>
-                            ) : (
-
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                Clip not ready
-                              </Typography>
-                            )}
-                          </Box>
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
-
-                  {/* Feedback on questions */}
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-                      Item Feedback &amp; Explanations
-                    </Typography>
-                    {quizResult.feedback.map((f) => (
-                      <Box
-                        key={f.question_id}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 1,
-                          mb: 1,
-                          // `ok`/`bad`, so a right answer is green in *both* bases.
-                          // The old pair was one fixed light-mode green and one
-                          // fixed light-mode red — a second palette that ignored
-                          // `base` entirely, on the surface most likely to be
-                          // read at a glance.
-                          backgroundColor: f.correct ? tint('ok', 5) : tint('bad', 5),
-                          border: `1px solid ${f.correct ? tint('ok', 20) : tint('bad', 20)}`,
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                          {f.correct ? (
-                            <CheckCircleIcon sx={{ color: 'success.main', fontSize: 18 }} />
-                          ) : (
-                            <CancelIcon sx={{ color: 'error.main', fontSize: 18 }} />
-                          )}
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                            {f.concept}: {f.correct ? 'Correct' : 'Missed'}
-                          </Typography>
-                        </Box>
-                        {!f.correct && f.answer && (
-                          <Typography variant="body2" sx={{ fontSize: '0.85rem', mb: 0.5 }}>
-                            <strong>Correct answer: {f.answer}</strong>
-                          </Typography>
-                        )}
-                        {!f.correct && f.rationale && (
-                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                            Why your pick was wrong: {f.rationale}
-                          </Typography>
-                        )}
-                        {f.explanation && (
-                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                            {f.explanation}
-                          </Typography>
-                        )}
-                      </Box>
-                    ))}
-                  </Box>
-
-                  <Button variant="outlined" onClick={() => resetQuiz()}>
-                    Done / Retake Later
-                  </Button>
-                </Box>
-              )}
-
-              {/* Video Player Modal/Inline when clip is clicked */}
-              {playingClipUrl && (
-                <Box
-                  sx={{
-                    mt: 3,
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: 'background.default',
-                    border: `1px solid ${tint('text', 15)}`,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <VideoLibraryIcon fontSize="small" /> Remediation Clip Stream (Byte-Range Capable)
-                    </Typography>
-                    <Button size="small" onClick={() => setPlayingClipUrl(null)} sx={{ color: 'primary.contrastText' }}>
-                      Close Video
-                    </Button>
-                  </Box>
-                  <Box sx={{ position: 'relative', width: '100%', pt: '56.25%', borderRadius: 1, overflow: 'hidden' }}>
-                    <video
-                      controls
-                      autoPlay
-                      src={playingClipUrl}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  </Box>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
+          <QuizPanel
+            maxQuestions={quizMaxQuestions()}
+            generatePending={generateQuizMutation.isPending}
+            onGenerate={() => generateQuizMutation.mutate()}
+            draft={draft}
+            result={quizResult}
+            onSelectAnswer={selectAnswer}
+            onSubmit={() => submitQuizMutation.mutate()}
+            submitPending={submitQuizMutation.isPending}
+            onReset={() => resetQuiz()}
+            error={quizError}
+            warning={quizWarning}
+            clipUrl={playingClipUrl}
+            onCloseClip={() => setPlayingClipUrl(null)}
+            onWatchClip={setPlayingClipUrl}
+          />
         </Grid>
       </Grid>
 
@@ -777,6 +555,23 @@ export const StudentDashboard: React.FC = () => {
                                   </Button>
                                 </span>
                               </Tooltip>
+
+                              <Tooltip title="Remove this session and everything derived from it">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    aria-label={`Remove ${lec.title}`}
+                                    onClick={() => {
+                                      setRowError(null)
+                                      setRemoveTarget(lec)
+                                    }}
+                                    sx={{ border: '1px solid', borderColor: 'divider' }}
+                                  >
+                                    <DeleteOutlineIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
                               <Tooltip
                                 title={busy ? 'A job is already running for this lecture' : ''}
                                 disableHoverListener={!busy}
@@ -836,6 +631,39 @@ export const StudentDashboard: React.FC = () => {
       <Box sx={{ mt: 4 }}>
         <ClipBrowser lectures={lectureList} onCutClips={handleTriggerClips} />
       </Box>
+
+      {/* Removal is irreversible, so it is confirmed — and the dialog says
+          exactly what travels with it. */}
+      <Dialog
+        open={removeTarget != null}
+        onClose={() => setRemoveTarget(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Remove this session?</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            <strong>{removeTarget?.title}</strong> will be removed from{' '}
+            {selectedCourseId?.toUpperCase()}.
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Everything derived from it goes too: the transcript, its extracted concepts
+            and topics, every clip cut from it, and its quiz coverage. This cannot be
+            undone.
+          </Typography>
+          {rowError && (
+            <Alert severity="error" sx={{ mt: 1.5 }}>
+              {rowError}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setRemoveTarget(null)}>Cancel</Button>
+          <Button variant="contained" color="error" onClick={handleRemoveLecture} autoFocus>
+            Remove session
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

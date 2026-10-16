@@ -78,24 +78,36 @@ export interface Palette {
  * in `.streamlit/config.toml`. Surfaces step up in lightness so a card reads as
  * a card; text steps down from near-white. Every value is contrast-checked in
  * `tests/test_theme.py` rather than eyeballed.
+ *
+ * The brand palette comes from `frontend-react/references/color_scheme.txt`,
+ * which is a *light* scheme — so the dark base is its espresso counterpart:
+ * `deepEspresso` (#2c2520) is the card surface itself, the page steps down to a
+ * near-black warm brown, `text` is the alabaster inverted, and `info`/`accent`
+ * sit on `deepSeaTeal`'s hue (~174°) lightened until it clears AA on the
+ * darkest surface it can land on (#14b8a6 — the reference value itself is only
+ * readable on light backgrounds).
+ *
+ * Unchanged deliberately: `ink_light`/`ink_dark` and `node_light`/`node_sat`.
+ * The golden node tables in `theme.test.ts` are measured from the Python with
+ * exactly these four values, so they are pinned by more than taste.
  */
 const DARK_PALETTE: Palette = {
   base: DARK,
-  page: '#0e1117',
-  surface: '#161b22',
-  surface_alt: '#1c2330',
-  border: '#30363d',
-  text: '#e6edf3',
-  muted: '#9aa7b4',
+  page: '#15110d',
+  surface: '#2c2520', // deepEspresso
+  surface_alt: '#362e26',
+  border: '#453b31',
+  text: '#f6f1e9',
+  muted: '#a99e91',
   ok: '#57d364',
   warn: '#e3b341',
-  bad: '#f85149',
-  info: '#58a6ff',
-  accent: '#58a6ff',
-  graph_bg: '#161b22',
-  graph_edge: '#6e7681',
-  track: '#2f3742',
-  tick: '#6e7681',
+  bad: '#ff7b72', // #f85149 failed AA on the warmer (brighter) surface_alt
+  info: '#14b8a6',
+  accent: '#14b8a6',
+  graph_bg: '#15110d', // the page: a recessed canvas inside an espresso card
+  graph_edge: '#8f8577',
+  track: '#453b31',
+  tick: '#857b6e',
   covered: '#2ea043',
   ink_light: '#f6f8fb',
   ink_dark: '#0a0e14',
@@ -104,7 +116,17 @@ const DARK_PALETTE: Palette = {
 }
 
 /**
- * Light is present so the app is not silently broken if someone flips the theme.
+ * Light is the theme the reference palette (`references/color_scheme.txt`)
+ * actually describes, and it is what most clients resolve to
+ * (`resolveInitialBase` follows `prefers-color-scheme`). Four of the six
+ * reference values land verbatim — `warmAlabaster` page, `pureCream` surface,
+ * `tealLight` bands, `deepEspresso` text, `deepSeaTeal` accent.
+ *
+ * `sandDrift` (#eae3d8) is the one value used as a *source* rather than a
+ * literal: as `border`/`track` it sits only 1.08:1 against `surface_alt`, just
+ * under the 1.1:1 decorative floor the suites enforce, so it is darkened 6% to
+ * #dcd5cb (1.24:1) — same hue family, measured rather than eyeballed.
+ *
  * The status hues are a step darker than their usual web values *precisely*
  * because they must clear 4.5:1 on the darkest surface they can land on
  * (`surface_alt`), not just on white — the familiar #1a7f37 / #9a6700 / #0969da
@@ -112,21 +134,21 @@ const DARK_PALETTE: Palette = {
  */
 const LIGHT_PALETTE: Palette = {
   base: LIGHT,
-  page: '#ffffff',
-  surface: '#f6f8fa',
-  surface_alt: '#eaeef2',
-  border: '#d0d7de',
-  text: '#1f2328',
-  muted: '#59636e',
+  page: '#faf7f2', // warmAlabaster
+  surface: '#ffffff', // pureCream
+  surface_alt: '#e2efef', // tealLight: table headers, hover bands
+  border: '#dcd5cb', // sandDrift darkened 6% (see above)
+  text: '#2c2520', // deepEspresso
+  muted: '#6e6459',
   ok: '#16642c',
   warn: '#8a5b00',
-  bad: '#cf222e',
-  info: '#0b5cad',
-  accent: '#0b5cad',
-  graph_bg: '#f6f8fa',
-  graph_edge: '#656e76',
-  track: '#d0d6de',
-  tick: '#767f8a',
+  bad: '#c0212a',
+  info: '#0f766e', // deepSeaTeal
+  accent: '#0f766e', // deepSeaTeal
+  graph_bg: '#ffffff',
+  graph_edge: '#7a7167',
+  track: '#dcd5cb',
+  tick: '#6f675d',
   covered: '#1a7f37',
   ink_light: '#ffffff',
   ink_dark: '#0b1220',

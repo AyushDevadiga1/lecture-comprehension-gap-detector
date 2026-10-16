@@ -9,7 +9,7 @@ maxUploadSize = 2048
 # the palette, the DAG canvas and every ink choice re-derive from it.
 [theme]
 base = "dark"
-backgroundColor = "#0e1117"
-secondaryBackgroundColor = "#161b22"
-textColor = "#e6edf3"
-primaryColor = "#58a6ff"
+backgroundColor = "#15110d"
+secondaryBackgroundColor = "#2c2520"
+textColor = "#f6f1e9"
+primaryColor = "#14b8a6"

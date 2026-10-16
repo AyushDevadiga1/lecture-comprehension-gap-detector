@@ -11,16 +11,30 @@
  * baked at build time instead of read from `--lgc-*`.
  */
 
+/**
+ * The custom property a token name spells.
+ *
+ * Token names are `snake_case` in the table (`graph_edge`, `ink_light`) but the
+ * custom properties `variables.ts` registers are kebab-cased
+ * (`--lgc-graph-edge`). Both spellings therefore have to meet somewhere, and
+ * this is that place — before it existed, `token('graph_edge')` emitted
+ * `var(--lgc-graph_edge)`, which no stylesheet defines, so the declaration was
+ * invalid at computed-value time and the property fell back to its initial
+ * value. That is exactly how the DAG's prerequisite links vanished while the
+ * nodes stayed visible: `stroke` fell back to `none`.
+ */
+const varName = (name: string): string => `var(--lgc-${name.replace(/_/g, '-')})`
+
 /** `tint('ok', 8)` -> an 8% wash of the `ok` token over whatever is behind it. */
 export const tint = (token: string, percent = 20): string =>
-  `color-mix(in srgb, var(--lgc-${token}) ${percent}%, transparent)`
+  `color-mix(in srgb, ${varName(token)} ${percent}%, transparent)`
 
 /** The token itself, for `sx` values that need a string. */
-export const token = (name: string): string => `var(--lgc-${name})`
+export const token = (name: string): string => varName(name)
 
 /**
  * A two-stop gradient between tokens, e.g. the heatmap's
  * `info -> ok` for a healthy concept and `warn -> bad` for a struggling one.
  */
 export const gradient = (from: string, to: string, angle = 90): string =>
-  `linear-gradient(${angle}deg, var(--lgc-${from}), var(--lgc-${to}))`
+  `linear-gradient(${angle}deg, ${varName(from)}, ${varName(to)})`

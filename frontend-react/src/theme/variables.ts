@@ -39,6 +39,14 @@ export function cssVariablesFor(base?: Base | string | null): Record<string, str
     '--lgc-covered': p.covered,
     '--lgc-ink-light': p.ink_light,
     '--lgc-ink-dark': p.ink_dark,
+    // Derived values — the only place a second colour value is allowed to
+    // exist, and even here it is a mix *of a token*, not a hue. `index.css`
+    // needs a focus ring and a selection wash, but the "no module names a
+    // colour" rule (ESLint + `scan.test.ts`) forbids `color-mix()` outside
+    // `src/theme/`, so they are generated here with the rest and written to the
+    // document root by the one writer, `applyCssVariables`.
+    '--lgc-focus-ring': 'color-mix(in srgb, var(--lgc-info) 45%, transparent)',
+    '--lgc-selection': 'color-mix(in srgb, var(--lgc-info) 25%, transparent)',
   }
 }
 

@@ -22,7 +22,7 @@ import type { SelectChangeEvent } from '@mui/material/Select'
 import type { CourseGraphOut, GraphEdgeOut } from '../../api/types'
 import { rankConcepts } from '../../lib/graphImportance'
 import { nodeColors } from '../../theme/nodeColors'
-import { token } from '../../theme/alpha'
+import { tint, token } from '../../theme/alpha'
 
 /**
  * The course prerequisite DAG, drawn with reactflow.
@@ -107,16 +107,16 @@ function ConceptNode({ data }: NodeProps<ConceptNodeData>) {
       sx={{
         backgroundColor: data.fill,
         color: data.ink,
-        borderRadius: 2,
-        px: 1.5,
-        py: 1,
-        minWidth: 150,
-        maxWidth: 190,
+        borderRadius: 1.5,
+        px: 1,
+        py: 0.6,
+        minWidth: 130,
+        maxWidth: 150,
         display: 'flex',
         alignItems: 'center',
         gap: 1,
         border: '1px solid',
-        borderColor: 'divider',
+        borderColor: tint('text', 8),
         cursor: 'pointer',
         boxShadow: data.pressed ? '0 0 0 2px var(--lgc-info)' : 'none',
         '&:focus-visible': {
@@ -298,7 +298,7 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
         // Decorative paths: no click behaviour reads them, so they must not
         // be buttons. (Focusable edges get role=button plus an auto label.)
         focusable: false,
-        style: { stroke: token('graph_edge'), strokeWidth: 1.5 },
+        style: { stroke: token('graph_edge'), strokeWidth: 1 },
       })),
     [shownEdges],
   )
@@ -404,7 +404,7 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
       <Box
         aria-label="Course prerequisite graph"
         sx={{
-          height: 480,
+          height: 500,
           border: '1px solid',
           borderColor: 'divider',
           borderRadius: 2,

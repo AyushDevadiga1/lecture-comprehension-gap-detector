@@ -21,7 +21,7 @@ export const NotFound: React.FC = () => {
         variant="h1"
         sx={{
           fontSize: '6rem',
-          fontWeight: 900,
+          fontWeight: 800,
           background: gradient('info', 'ok', 135),
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',

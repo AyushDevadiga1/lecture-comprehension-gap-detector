@@ -26,9 +26,12 @@ import { courses as coursesApi } from '../../api/courses'
 import { useAppStore } from '../../store/useAppStore'
 import { LoadingScreen } from '../../components/common/LoadingScreen'
 import { ErrorAlert } from '../../components/common/ErrorAlert'
+import { SectionIcon } from '../../components/common/SectionIcon'
+import { Rise } from '../../components/common/Rise'
 import { queryKeys, invalidateCourse } from '../../lib/queryKeys'
 import { errorMessage } from '../../api/client'
 import { gradient, tint } from '../../theme/alpha'
+
 
 export const FacultyDashboard: React.FC = () => {
   const queryClient = useQueryClient()
@@ -128,53 +131,80 @@ export const FacultyDashboard: React.FC = () => {
       {/* Metric Cards */}
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Rise delay={0}>
+          <Card sx={{
+            p: 2,
+            height: '100%',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+          }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               DAG Structure
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: graphData?.is_dag ? 'success.main' : 'warning.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: graphData?.is_dag ? 'success.main' : 'warning.main' }}>
               {graphData?.is_dag ? 'Valid DAG' : 'Cyclic / Pending'}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {graphData ? `${graphData.node_count} nodes, ${graphData.edge_count} edges` : '—'}
             </Typography>
           </Card>
+          </Rise>
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Rise delay={0.05}>
+          <Card sx={{
+            p: 2,
+            height: '100%',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+          }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Root Concepts
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
               {rootConcepts}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               No prerequisites (in-degree 0)
             </Typography>
           </Card>
+          </Rise>
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Rise delay={0.1}>
+          <Card sx={{
+            p: 2,
+            height: '100%',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+          }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Comprehension Gaps Tracked
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: 'warning.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'warning.main' }}>
               {statsData?.heatmap?.filter((h) => h.rate > 0.3)?.length ?? 0}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Concepts with &gt;30% failure rate
             </Typography>
           </Card>
+          </Rise>
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Rise delay={0.15}>
+          <Card sx={{
+            p: 2,
+            height: '100%',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+          }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Avg. Sequence Divergence
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: 'info.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'info.main' }}>
               {statsData?.divergence?.length
                 ? (statsData.divergence.reduce((acc, d) => acc + d.gap, 0) / statsData.divergence.length).toFixed(1)
                 : '0.0'}
@@ -183,14 +213,18 @@ export const FacultyDashboard: React.FC = () => {
               Step gap (taught vs learned)
             </Typography>
           </Card>
+          </Rise>
         </Grid>
       </Grid>
 
       {/* DAG Edges with Spoken Evidence */}
+      <Rise delay={0.2}>
       <Card>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-            <AccountTreeIcon sx={{ color: 'primary.light' }} />
+            <SectionIcon>
+              <AccountTreeIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+            </SectionIcon>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
               Prerequisite Dependencies &amp; Spoken Evidence
             </Typography>
@@ -269,15 +303,19 @@ export const FacultyDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
+      </Rise>
 
       {/* Taught vs. Learned Divergence & Heatmap */}
       <Grid container spacing={3}>
         {/* Divergence Table */}
         <Grid item xs={12} md={6}>
+          <Rise delay={0.25}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <TrendingUpIcon sx={{ color: 'secondary.light' }} />
+                <SectionIcon>
+                  <TrendingUpIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+                </SectionIcon>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   Taught vs. Learned Order Divergence
                 </Typography>
@@ -327,14 +365,18 @@ export const FacultyDashboard: React.FC = () => {
               )}
             </CardContent>
           </Card>
+          </Rise>
         </Grid>
 
         {/* Heatmap of Comprehension Failures */}
         <Grid item xs={12} md={6}>
+          <Rise delay={0.3}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <WarningAmberIcon sx={{ color: 'warning.light' }} />
+                <SectionIcon tone="warn">
+                  <WarningAmberIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+                </SectionIcon>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   Comprehension Gap Heatmap
                 </Typography>
@@ -383,6 +425,7 @@ export const FacultyDashboard: React.FC = () => {
               )}
             </CardContent>
           </Card>
+          </Rise>
         </Grid>
       </Grid>
     </Box>

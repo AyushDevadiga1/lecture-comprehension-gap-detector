@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LIVE tier — the app rendering itself from a real backend.
  *
  * `read.live.test.ts` proves the client can talk to a server. This proves the
@@ -22,7 +22,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { App } from '../../App'
 import { renderWithProviders } from '../../test/render'
 import { createQueryClient } from '../../lib/authBanner'
@@ -57,6 +57,23 @@ function renderApp() {
 
 const body = () => document.body.textContent ?? ''
 
+/**
+ * Wait for the seeded lecture table — this suite's "the data has arrived" gate.
+ *
+ * These calls were `screen.findByText('Linear Regression')`, which matches
+ * *anywhere* on the page, and the seed names a clip "Linear Regression" too.
+ * So the query raced the clip library: it failed with "found multiple
+ * elements" as soon as both resolved, and with "unable to find" when neither
+ * had yet — the same assertion flipping between two error shapes across runs
+ * (and which test tripped flipped with it). Scoped to the table it says what it
+ * actually means, and no assertion is loosened: the same element, the same
+ * exact text.
+ */
+async function seededLectures() {
+  const table = await screen.findByRole('table')
+  return within(table).findByText('Linear Regression')
+}
+
 beforeEach(() => {
   // zustand is module-global; without a reset the drawer keeps whatever state
   // the previous test left it in.
@@ -69,13 +86,13 @@ describe('live: the student dashboard renders real server data', () => {
 
     // Seeded titles. If they appear, the response really came from the live
     // backend and really was rendered by the real component.
-    expect(await screen.findByText('Linear Regression')).toBeInTheDocument()
+    expect(await seededLectures()).toBeInTheDocument()
     expect(await screen.findByText('Multiple Regression')).toBeInTheDocument()
   })
 
   it('shows the snapshot counts the seeded database actually implies', async () => {
     renderApp()
-    await screen.findByText('Linear Regression')
+    await seededLectures()
 
     // Seed for 'ml': 2 lectures both ready, 3 concepts, a 2-edge graph,
     // 2 clips of which both are ok. Each string is the literal the component
@@ -93,7 +110,7 @@ describe('live: the student dashboard renders real server data', () => {
 
   it('never renders a filesystem path from a clip payload', async () => {
     renderApp()
-    await screen.findByText('Linear Regression')
+    await seededLectures()
 
     // ARCHITECTURE §3: no path→URL mapper on the client. The seed stores
     // 'clips/1/linear.mp4'; if that string reached the DOM the contract is
@@ -108,7 +125,7 @@ describe('live: the student dashboard renders real server data', () => {
 describe('live: the clip browser', () => {
   it('lists a lecture’s real clips with their real time ranges', async () => {
     renderApp()
-    await screen.findByText('Linear Regression')
+    await seededLectures()
 
     // The seed cuts two clips for lecture 1, both ok. `ClipBrowser` defaults to
     // the first lecture, so these appear without any interaction.
@@ -126,7 +143,7 @@ describe('live: the clip browser', () => {
 
   it('gives the player a canonical media URL, never a filesystem path', async () => {
     renderApp()
-    await screen.findByText('Linear Regression')
+    await seededLectures()
     await screen.findByText('Clip Library')
 
     const firstClip = await screen.findByText(/0:00\s*.\s*0:06/)
@@ -197,7 +214,7 @@ describe('live: the SSE feed reaches the UI', () => {
 
   it('disables actions only on the lecture that has a job in flight', async () => {
     renderApp()
-    await screen.findByText('Linear Regression')
+    await seededLectures()
 
     // Two rows: the seeded `prob` lecture is correctly filtered out by
     // `course_id` (it was returned in full until 2026-09-29, when this file

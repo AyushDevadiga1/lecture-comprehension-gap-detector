@@ -1,6 +1,7 @@
 import { createTheme } from '@mui/material/styles'
 import type { Theme } from '@mui/material/styles'
 import { palette, readableOn } from './tokens'
+import { gradient, tint, token } from './alpha'
 import type { Base, Palette as TokenPalette } from './tokens'
 
 /**
@@ -8,7 +9,8 @@ import type { Base, Palette as TokenPalette } from './tokens'
  *
  * REACT_ARCHITECTURE.md §4: the theme is *generated* from the tokens
  * `frontend/theme.py` pins, so the React engine does not grow a second palette.
- * Nothing in this file names a colour: every value below is `p.<token>`.
+ * Nothing in this file names a colour: every value below is `p.<token>`, or a
+ * `tint()`/`token()`/`gradient()` derived from `var(--lgc-*)`.
  *
  * The previous version hardcoded ~20 hexes, used an indigo/purple ramp that
  * shares no value with the Python palette, and set `background.default` to
@@ -20,6 +22,30 @@ import type { Base, Palette as TokenPalette } from './tokens'
  * `#f6f8fb` on the dark `info` token is 2.37:1, and `ink_dark` on the light
  * `warn` token is 3.19:1. Both below AA. `readableOn` is the whole reason this
  * module exists -- the ink is picked per colour rather than per palette.
+ *
+ * ## The aesthetic layer
+ *
+ * Everything below `shape` exists because MUI's shipped defaults are a second,
+ * unopinionated design system: Roboto (the theme never set `typography` at
+ * all, so every component that asks for a typography variant got Helvetica),
+ * square-ish 4px radii, a grey material-elevation shadow that reads as a smudge
+ * on a warm cream page, and a primary button with no resting shadow.
+ *
+ * The rules it follows, so it stays a *theme* rather than a pile of sx:
+ *
+ *   - **Type**: Inter everywhere (the family `index.html` actually loads),
+ *     display headings at 800 with tight tracking, body at a comfortable 1.6
+ *     line-height. Weights only go as high as the font file supports.
+ *   - **Shape**: 10px controls, 16px cards/dialogs — two steps, not one per
+ *     component, so silhouettes rhyme.
+ *   - **Elevation**: no grey. Shadows are a wash of the *ink* token
+ *     (`tint('ink-dark', n)`), which is near-black in both bases, so a card
+ *     lifts the same way in light and dark without a single `rgba()` literal —
+ *     which the ESLint colour rule would (correctly) reject anyway.
+ *   - **Focus**: every interactive surface gets a visible teal ring derived
+ *     from `info`, because a keyboard user currently has no idea where they are.
+ *   - Motion is short (120–200ms) and only on properties that don't trigger
+ *     layout; `prefers-reduced-motion` disables it globally in `index.css`.
  */
 
 /** One slot: `main` from a token, `contrastText` measured against it. */
@@ -42,12 +68,32 @@ function buildPalette(p: TokenPalette) {
   } as const
 }
 
+/** The shared type ramp — see the note above about Roboto. */
+const typography = {
+  fontFamily:
+    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  h1: { fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 },
+  h2: { fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.15 },
+  h3: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
+  h4: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.25 },
+  h5: { fontWeight: 700, letterSpacing: '-0.015em', lineHeight: 1.3 },
+  h6: { fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.4 },
+  subtitle1: { fontWeight: 600, lineHeight: 1.5 },
+  subtitle2: { fontWeight: 600, letterSpacing: '0.01em', lineHeight: 1.4 },
+  body1: { lineHeight: 1.6 },
+  body2: { lineHeight: 1.55 },
+  button: { fontWeight: 600, letterSpacing: '0.01em' },
+  caption: { letterSpacing: '0.02em', lineHeight: 1.45 },
+  overline: { fontWeight: 700, letterSpacing: '0.09em' },
+}
+
 export function buildTheme(base?: Base | string | null): Theme {
   const p = palette(base)
 
   return createTheme({
     palette: buildPalette(p),
     shape: { borderRadius: 10 },
+    typography,
 
     // The body background comes from the same `page` token as everything else.
     // This is the React analogue of
@@ -69,18 +115,157 @@ export function buildTheme(base?: Base | string | null): Theme {
           root: { backgroundImage: 'none' },
         },
       },
-      MuiButton: {
+
+      // ---------------------------------------------------------------- cards
+      // The dashboards are built almost entirely from <Card>, so this one
+      // override carries most of the surface language: a hairline sand border
+      // (warm) plus a layered ink wash instead of MUI's grey material shadow.
+      MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: 8,
-            textTransform: 'none',
-            fontWeight: 600,
+            borderRadius: 16,
+            border: `1px solid ${token('border')}`,
+            boxShadow: `0 1px 2px ${tint('ink-dark', 5)}, 0 12px 32px ${tint('ink-dark', 5)}`,
           },
         },
       },
+
+      // --------------------------------------------------------------- buttons
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 10,
+            textTransform: 'none',
+            fontWeight: 600,
+            paddingInline: 16,
+            minHeight: 38,
+            transition: 'background-color 160ms ease, box-shadow 160ms ease, transform 120ms ease',
+            '&:active': { transform: 'translateY(0.5px)' },
+            '&:focus-visible': {
+              outline: `2px solid ${tint('info', 55)}`,
+              outlineOffset: 2,
+            },
+          },
+          contained: {
+            boxShadow: 'none',
+            '&:hover': { boxShadow: `0 4px 14px ${tint('ink-dark', 16)}` },
+          },
+          outlined: {
+            borderColor: token('border'),
+            '&:hover': {
+              borderColor: token('info'),
+              backgroundColor: tint('info', 6),
+            },
+          },
+          text: {
+            '&:hover': { backgroundColor: tint('info', 8) },
+          },
+          sizeLarge: { paddingInline: 24, minHeight: 44, fontSize: '1rem' },
+          sizeSmall: { paddingInline: 12, minHeight: 32 },
+        },
+      },
+
       MuiChip: {
         styleOverrides: {
-          root: { borderRadius: 6, fontWeight: 500 },
+          root: { borderRadius: 8, fontWeight: 600 },
+        },
+      },
+
+      // ---------------------------------------------------------------- inputs
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: 10,
+            backgroundColor: tint('text', 3),
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: token('border') },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: tint('info', 55) },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: token('info') },
+            '&.Mui-focused': { boxShadow: `0 0 0 3px ${tint('info', 18)}` },
+          },
+        },
+      },
+      MuiInputLabel: {
+        styleOverrides: { root: { fontWeight: 500 } },
+      },
+
+      // ----------------------------------------------------------------- chrome
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            // A translucent surface + blur: content scrolls under the sticky bar
+            // with a soft cream/espresso fog instead of a hard cut.
+            backgroundColor: tint('surface', 84),
+            backgroundImage: 'none',
+            color: token('text'),
+            borderBottom: `1px solid ${token('border')}`,
+            boxShadow: `0 1px 3px ${tint('ink-dark', 8)}`,
+            backdropFilter: 'saturate(160%) blur(12px)',
+          },
+        },
+      },
+      MuiDrawer: {
+        styleOverrides: {
+          paper: {
+            backgroundColor: token('surface'),
+            backgroundImage: 'none',
+            borderLeft: `1px solid ${token('border')}`,
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: 16,
+            border: `1px solid ${token('border')}`,
+            boxShadow: `0 1px 2px ${tint('ink-dark', 6)}, 0 24px 64px ${tint('ink-dark', 14)}`,
+          },
+        },
+      },
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            borderRadius: 8,
+            fontSize: '0.78rem',
+            fontWeight: 500,
+            padding: '6px 10px',
+            // Inverted ink pair: both values are tokens, so both bases get a
+            // legible tooltip without a second rule.
+            backgroundColor: token('text'),
+            color: token('page'),
+            boxShadow: `0 4px 14px ${tint('ink-dark', 20)}`,
+          },
+        },
+      },
+
+      // ---------------------------------------------------------------- tables
+      MuiTableCell: {
+        styleOverrides: {
+          root: { borderBottomColor: token('border') },
+          head: {
+            backgroundColor: token('surface-alt'),
+            color: token('text'),
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          },
+        },
+      },
+
+      // -------------------------------------------------------------- progress
+      // A token gradient, so the bar reads as brand rather than as stock MUI.
+      MuiLinearProgress: {
+        styleOverrides: {
+          root: {
+            borderRadius: 999,
+            height: 8,
+            backgroundColor: tint('text', 8),
+            overflow: 'hidden',
+          },
+          bar: {
+            borderRadius: 999,
+            backgroundImage: gradient('info', 'ok'),
+          },
         },
       },
     },
