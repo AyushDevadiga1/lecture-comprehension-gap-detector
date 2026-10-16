@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DagView } from './DagView'
 import type { CourseGraphOut } from '../../api/types'
@@ -307,5 +307,160 @@ describe('DagView', () => {
     await user.click(screen.getByRole('button', { name: 'Reset view' }))
     expect(await nodeButton(/Slope/)).toBeInTheDocument()
     expect(screen.getByText(/12 shown/)).toBeInTheDocument()
+  })
+
+  it('draws arrowheads so link direction reads', async () => {
+    renderDag()
+    await screen.findByRole('button', { name: /Slope/ })
+
+    // React Flow renders one <marker> def per distinct arrowhead; without
+    // markerEnd the canvas is directionless lines and prerequisites read
+    // either way.
+    expect(document.querySelector('marker')).not.toBeNull()
+  })
+
+  it('selecting a concept dims everything unrelated and lights its links', async () => {
+    renderDag()
+    fireEvent.click(await nodeButton(/Slope/))
+
+    const opacityOf = (id: string) =>
+      document.querySelector(`[data-id="${id}"]`)?.getAttribute('style') ?? ''
+    // Slope plus its two neighbours stay; 'B' (unrelated, lowest score) recedes.
+    expect(opacityOf('Slope')).toContain('opacity: 1')
+    expect(opacityOf('update')).toContain('opacity: 1')
+    expect(opacityOf('B')).toContain('opacity: 0.35')
+
+    // Both incident edges carry the accent stroke now.
+    const hot = [...document.querySelectorAll('.react-flow__edge-path')].filter((p) =>
+      (p.getAttribute('style') ?? '').includes('lgc-accent'),
+    )
+    expect(hot).toHaveLength(2)
+  })
+
+  it('find-concept selects the first match and says how many there were', async () => {
+    const user = userEvent.setup()
+    renderDag()
+
+    await user.click(screen.getByRole('textbox', { name: 'Find concept' }))
+    await user.keyboard('slo')
+    await user.keyboard('{Enter}')
+
+    // Selected (evidence panel) and announced (single match → no note needed).
+    expect(await screen.findByText('Slope → Linear Regression')).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('find-concept reports multiple matches and hidden matches honestly', async () => {
+    const user = userEvent.setup()
+    renderDag()
+
+    // 'a' matches several shown concepts — first wins, count stated.
+    await user.click(screen.getByRole('textbox', { name: 'Find concept' }))
+    await user.keyboard('a')
+    await user.keyboard('{Enter}')
+    expect(await screen.findByRole('status')).toHaveTextContent(/matches — showing/)
+
+    // Cut to 7, hiding HAVING; searching for it must point at the slider,
+    // not pretend nothing matches.
+    const slider = screen.getByRole('slider', { name: 'Concepts shown' })
+    slider.focus()
+    await user.keyboard('{ArrowLeft}')
+    await waitFor(() => {
+      expect(screen.getByText(/7 shown/)).toBeInTheDocument()
+    })
+    const box = screen.getByRole('textbox', { name: 'Find concept' })
+    await user.clear(box)
+    await user.type(box, 'hav')
+    await user.keyboard('{Enter}')
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent(/hidden concept.*raise Concepts shown/)
+    })
+  })
+
+  it('explains its own encoding in a legend', () => {
+    renderDag()
+    expect(screen.getByText(/Badge = learner step/)).toBeInTheDocument()
+  })
+
+  it('splits evidence into needs-first vs unlocks', async () => {
+    renderDag()
+    fireEvent.click(await nodeButton(/Slope/))
+
+    // update → Slope must come first; Slope → Linear unlocks after.
+    const needsHead = screen.getByText(/NEEDS FIRST \(1\)/)
+    const unlocksHead = screen.getByText(/UNLOCKS \(1\)/)
+    expect(within(needsHead.parentElement!).getByText('update → Slope')).toBeInTheDocument()
+    expect(
+      within(unlocksHead.parentElement!).getByText('Slope → Linear Regression'),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps learner-step badges stable when the limit cut moves', async () => {
+    const user = userEvent.setup()
+    renderDag()
+
+    // Slope is learner step 2 of 12 with the full graph drawn...
+    expect(await nodeButton(/Slope/)).toHaveAttribute(
+      'aria-label',
+      'Slope, learner step 2',
+    )
+
+    // ...and still step 2 of 12 after the cut to 7. Badges name positions in
+    // the topological order, not positions among the drawn — renumbering on
+    // every filter move would make steps meaningless across views.
+    const slider = screen.getByRole('slider', { name: 'Concepts shown' })
+    slider.focus()
+    await user.keyboard('{ArrowLeft}')
+    await waitFor(() => {
+      expect(screen.getByText(/7 shown/)).toBeInTheDocument()
+    })
+    expect(await nodeButton(/Slope/)).toHaveAttribute(
+      'aria-label',
+      'Slope, learner step 2',
+    )
+  })
+
+  it('drops the evidence panel when its node is filtered out, restores on return', async () => {
+    const user = userEvent.setup()
+    renderDag()
+
+    // 'filter' draws at 12 but not at 7. Selecting it, then cutting, must
+    // not leave an evidence card for a ghost — and raising the limit back
+    // must restore it without re-clicking, because the selection itself was
+    // never destroyed, only hidden.
+    fireEvent.click(await nodeButton(/^filter, learner step/))
+    expect(screen.getByText(/learner step 10 of 12/)).toBeInTheDocument()
+
+    const slider = screen.getByRole('slider', { name: 'Concepts shown' })
+    slider.focus()
+    await user.keyboard('{ArrowLeft}')
+    await waitFor(() => {
+      expect(screen.getByText(/7 shown/)).toBeInTheDocument()
+    })
+    expect(screen.queryByText(/learner step 10 of 12/)).not.toBeInTheDocument()
+
+    await user.keyboard('{ArrowRight}')
+    await waitFor(() => {
+      expect(screen.getByText(/12 shown/)).toBeInTheDocument()
+    })
+    expect(await screen.findByText(/learner step 10 of 12/)).toBeInTheDocument()
+  })
+
+  it('ellipsises long names instead of breaking the row pitch', async () => {
+    const longName = 'A concept name far too long for any node box to hold intact'
+    renderDag({
+      nodes: [longName],
+      edges: [],
+      node_count: 1,
+      edge_count: 0,
+      topological_order: [longName],
+    })
+
+    // Full name survives in title and aria-label; the visible label truncates
+    // so the fixed row pitch holds no matter what the backend names things.
+    // (title lives on the label inside the node root, not on the root.)
+    const node = await screen.findByRole('button', { name: new RegExp(longName) })
+    const label = within(node).getByText(longName)
+    expect(label).toHaveAttribute('title', longName)
   })
 })

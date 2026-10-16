@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactFlow, { Background, Handle, MiniMap, Position } from 'reactflow'
+import ReactFlow, { Background, Handle, MarkerType, MiniMap, Position } from 'reactflow'
 import type { Edge as FlowEdge, Node as FlowNode, NodeProps, ReactFlowInstance } from 'reactflow'
 import 'reactflow/dist/style.css'
 import {
@@ -17,6 +17,7 @@ import {
   OutlinedInput,
   Select,
   Slider,
+  TextField,
   Typography,
 } from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material/Select'
@@ -48,6 +49,13 @@ import { tint, token } from '../../theme/alpha'
  *     the topological order), not from `dag_svg`;
  *   - hover evidence becomes **click evidence**: selecting a node lists its
  *     incident edges with confidence, method and recorded evidence;
+ *   - selecting also focuses the canvas: unrelated nodes dim to 0.35 and the
+ *     selected concept's own links widen in accent, so the click answers
+ *     "what does this depend on" visually, not only in the panel;
+ *   - edges carry arrowheads (direction was unreadable without them);
+ *   - a find-concept box selects and centres the first case-insensitive
+ *     substring match among shown nodes — the only way to locate one node
+ *     in 150 — and says plainly when matches are hidden by the limit cut;
  *   - pan/zoom are the canvas's own (drag to pan, scroll to zoom, fit on load),
  *     so there is no zoom slider and no `<Controls>` chrome to theme; a
  *     minimap (nodes in their own fills) plus an explicit Reset view button
@@ -150,7 +158,23 @@ function ConceptNode({ data }: NodeProps<ConceptNodeData>) {
           {data.rankLabel}
         </Box>
       )}
-      <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.25 }}>
+      {/* Ellipsis, never overflow: a 60-char concept name must not stretch
+          its node and break the fixed row pitch. The full name survives in
+          `title` and in the node's aria-label. flex:1 + minWidth:0 is what
+          lets text truncate inside a flex row. */}
+      <Typography
+        variant="body2"
+        title={data.label}
+        sx={{
+          fontWeight: 600,
+          lineHeight: 1.25,
+          flex: 1,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {data.label}
       </Typography>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
@@ -161,6 +185,33 @@ function ConceptNode({ data }: NodeProps<ConceptNodeData>) {
 // Module scope (not exported): reactflow warns on an inline `nodeTypes` object
 // because a fresh identity remounts every node on each render.
 const nodeTypes = { concept: ConceptNode }
+
+/** One incident edge: endpoints, method, confidence, recorded evidence. */
+const EdgeRow: React.FC<{ edge: GraphEdgeOut }> = ({ edge: e }) => (
+  <Box sx={{ py: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+      {e.source} → {e.target}
+    </Typography>
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5, flexWrap: 'wrap' }}>
+      <Chip
+        size="small"
+        label={
+          e.source_method === 'transcript' ? 'spoken in lecture' : 'classifier-inferred'
+        }
+        color={e.source_method === 'transcript' ? 'info' : 'default'}
+        variant="outlined"
+      />
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+        confidence {(e.confidence ?? 0).toFixed(2)}
+      </Typography>
+    </Box>
+    {e.evidence && (
+      <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+        “{e.evidence}”
+      </Typography>
+    )}
+  </Box>
+)
 
 const X_GAP = 200
 const Y_GAP = 110
@@ -226,6 +277,8 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
   const [colorBy, setColorBy] = React.useState<ColourBy>('order')
   const [methods, setMethods] = React.useState<string[] | null>(null)
   const [selected, setSelected] = React.useState<string | null>(null)
+  const [query, setQuery] = React.useState('')
+  const [searchNote, setSearchNote] = React.useState<string | null>(null)
   // The canvas instance, for the reset-view affordance only. Captured via
   // onInit rather than a ReactFlowProvider so this component stays
   // self-contained: providers are app-level decisions (see AppProviders), and
@@ -253,6 +306,32 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
   }, [order])
 
   const keptSet = React.useMemo(() => new Set(kept), [kept])
+
+  /**
+   * The selection the canvas can actually show. State stays raw — filtering
+   * must never destroy it, or raising the slider back would lose the
+   * reader's place — but everything *displayed* (focus dimming, evidence,
+   * pressed ring) reads this: a selected concept that a filter cut is
+   * invisible, so showing its panel would be an evidence card for a ghost.
+   */
+  const shownSelected =
+    selected != null && keptSet.has(selected) ? selected : null
+
+  /**
+   * Focus mode: the selected concept plus everything one link away, or null
+   * when nothing is selected. Nodes outside the set dim to 0.35 and their
+   * edges thin out, so a click answers "what does this depend on" visually
+   * instead of only in the evidence panel below.
+   */
+  const focusSet = React.useMemo(() => {
+    if (shownSelected == null) return null
+    const set = new Set<string>([shownSelected])
+    for (const e of edges) {
+      if (e.source === shownSelected && keptSet.has(e.target)) set.add(e.target)
+      if (e.target === shownSelected && keptSet.has(e.source)) set.add(e.source)
+    }
+    return set
+  }, [shownSelected, edges, keptSet])
   const shownEdges = React.useMemo(
     () =>
       edges.filter(
@@ -285,31 +364,43 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
           selectable: false,
           focusable: false,
           position: pos,
+          // Focus mode lives here rather than in CSS: opacity follows the
+          // focus set computed above, so unrelated concepts recede the
+          // moment one is selected.
+          style: { opacity: focusSet == null || focusSet.has(name) ? 1 : 0.35 },
           data: {
             label: name,
             fill,
             ink,
             rankLabel: rank == null ? null : String(rank + 1),
-            pressed: selected === name,
+            pressed: shownSelected === name,
             select: () => setSelected((cur) => (cur === name ? null : name)),
           },
         }
       }),
-    [kept, rankOf, order.length, colorBy, positions, selected],
+    [kept, rankOf, order.length, colorBy, positions, shownSelected, focusSet],
   )
 
   const flowEdges: FlowEdge[] = React.useMemo(
     () =>
-      shownEdges.map((e, i) => ({
-        id: `${e.source}→${e.target}#${i}`,
-        source: e.source,
-        target: e.target,
-        // Decorative paths: no click behaviour reads them, so they must not
-        // be buttons. (Focusable edges get role=button plus an auto label.)
-        focusable: false,
-        style: { stroke: token('graph_edge'), strokeWidth: 1 },
-      })),
-    [shownEdges],
+      shownEdges.map((e, i) => {
+        // The selected concept's own links read first: accent, wider, with a
+        // matching head. Everything else stays the quiet graph edge.
+        const hot =
+          selected != null && (e.source === selected || e.target === selected)
+        const stroke = hot ? token('accent') : token('graph_edge')
+        return {
+          id: `${e.source}→${e.target}#${i}`,
+          source: e.source,
+          target: e.target,
+          // Decorative paths: no click behaviour reads them, so they must not
+          // be buttons. (Focusable edges get role=button plus an auto label.)
+          focusable: false,
+          style: { stroke, strokeWidth: hot ? 2.5 : 1 },
+          markerEnd: { type: MarkerType.ArrowClosed, color: stroke },
+        }
+      }),
+    [shownEdges, selected],
   )
 
   const drawnCount = React.useMemo(() => {
@@ -323,9 +414,64 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
   }, [edges, keptSet, wanted])
 
   const incident = React.useMemo(() => {
-    if (selected == null) return []
-    return edges.filter((e) => e.source === selected || e.target === selected)
-  }, [edges, selected])
+    if (shownSelected == null) return []
+    return edges.filter((e) => e.source === shownSelected || e.target === shownSelected)
+  }, [edges, shownSelected])
+
+  /**
+   * Both directions, separately. An edge A → B means "A first": for the
+   * selected concept X, the `target === X` rows are what X *needs first* and
+   * the `source === X` rows are what X *unlocks*. The flat list this replaces
+   * answered "connected to what" but not "study which first" — which is the
+   * question the panel exists for. (A self-loop lands in both groups; the
+   * backend should not emit them, and showing one twice is more honest than
+   * hiding it.)
+   */
+  const needsFirst = React.useMemo(
+    () => incident.filter((e) => e.target === shownSelected),
+    [incident, shownSelected],
+  )
+  const unlocks = React.useMemo(
+    () => incident.filter((e) => e.source === shownSelected),
+    [incident, shownSelected],
+  )
+
+  /**
+   * Find-concept: first case-insensitive substring match among the *shown*
+   * nodes, selected and centred. Scoped to shown nodes on purpose — matching
+   * a hidden concept and silently rewriting the limit would surprise; the
+   * note says exactly where to look instead.
+   */
+  const runSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = query.trim().toLowerCase()
+    if (!q) {
+      setSearchNote(null)
+      return
+    }
+    const hits = kept.filter((n) => n.toLowerCase().includes(q))
+    if (hits.length === 0) {
+      const hiddenHits = nodes.filter(
+        (n) => n.toLowerCase().includes(q) && !keptSet.has(n),
+      )
+      setSelected(null)
+      setSearchNote(
+        hiddenHits.length > 0
+          ? `"${query.trim()}" matches ${hiddenHits.length} hidden concept(s) — raise Concepts shown.`
+          : `No concept matches "${query.trim()}".`,
+      )
+      return
+    }
+    const pick = hits[0]!
+    setSelected(pick)
+    setSearchNote(
+      hits.length > 1
+        ? `${hits.length} matches — showing ${pick}.`
+        : null,
+    )
+    const pos = positions.get(pick)
+    if (pos) flow?.setCenter(pos.x + 90, pos.y + 28, { zoom: 1.1, duration: 300 })
+  }
 
   if (nodes.length === 0) {
     return (
@@ -397,6 +543,24 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
           Links drawn {drawnCount} / {edges.length}
         </Typography>
 
+        {/* Find-concept: the only way to locate one node in 150. */}
+        <Box
+          component="form"
+          onSubmit={runSearch}
+          sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
+        >
+          <TextField
+            size="small"
+            label="Find concept"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            sx={{ width: 200 }}
+          />
+          <Button size="small" variant="outlined" type="submit">
+            Go
+          </Button>
+        </Box>
+
         {/* The way back from an arbitrary pan/zoom. fitView is the same
             framing the canvas loads with, so reset means "show me the graph
             as it opened" — discoverable, unlike a gesture. */}
@@ -408,6 +572,17 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
           Reset view
         </Button>
       </Box>
+
+      {/* Legend: what the badges, arrows and dimming mean. */}
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+        Badge = learner step · arrow = prerequisite link · click a concept for
+        its links and evidence · selecting dims everything unrelated.
+      </Typography>
+      {searchNote && (
+        <Typography variant="caption" role="status" sx={{ color: 'text.secondary', mt: -1 }}>
+          {searchNote}
+        </Typography>
+      )}
 
       <Typography variant="body2" sx={{ fontWeight: 600 }}>
         {graph.node_count} concepts in total · {kept.length} shown ·{' '}
@@ -466,16 +641,17 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
         </ReactFlow>
       </Box>
 
-      {/* Click evidence — what hover showed in the Streamlit SVG. */}
-      {selected != null && (
+      {/* Click evidence — what hover showed in the Streamlit SVG, split by
+          direction: what the concept needs first vs what it unlocks. */}
+      {shownSelected != null && (
         <Card>
           <CardContent>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-              {selected}
-              {rankOf(selected) != null && (
+              {shownSelected}
+              {rankOf(shownSelected) != null && (
                 <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
                   {' '}
-                  · learner step {rankOf(selected)! + 1} of {order.length}
+                  · learner step {rankOf(shownSelected)! + 1} of {order.length}
                 </Typography>
               )}
             </Typography>
@@ -484,33 +660,26 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
                 No prerequisite links touch this concept in the current filter.
               </Typography>
             )}
-            {incident.map((e, i) => (
-              <Box key={i} sx={{ py: 1, borderTop: i ? '1px solid' : 'none', borderColor: 'divider' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {e.source} → {e.target}
+            {needsFirst.length > 0 && (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                  NEEDS FIRST ({needsFirst.length}) — study these before {shownSelected}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5, flexWrap: 'wrap' }}>
-                  <Chip
-                    size="small"
-                    label={
-                      e.source_method === 'transcript'
-                        ? 'spoken in lecture'
-                        : 'classifier-inferred'
-                    }
-                    color={e.source_method === 'transcript' ? 'info' : 'default'}
-                    variant="outlined"
-                  />
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    confidence {(e.confidence ?? 0).toFixed(2)}
-                  </Typography>
-                </Box>
-                {e.evidence && (
-                  <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                    “{e.evidence}”
-                  </Typography>
-                )}
+                {needsFirst.map((e, i) => (
+                  <EdgeRow key={`need-${i}`} edge={e} />
+                ))}
               </Box>
-            ))}
+            )}
+            {unlocks.length > 0 && (
+              <Box sx={{ mt: needsFirst.length > 0 ? 2 : 1 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                  UNLOCKS ({unlocks.length}) — these need {shownSelected}
+                </Typography>
+                {unlocks.map((e, i) => (
+                  <EdgeRow key={`unlock-${i}`} edge={e} />
+                ))}
+              </Box>
+            )}
           </CardContent>
         </Card>
       )}
