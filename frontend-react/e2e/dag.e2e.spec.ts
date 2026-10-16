@@ -56,9 +56,11 @@ test.describe('the course graph draws and answers clicks', () => {
     await expect(page.getByText(/acyclic/)).toBeVisible()
 
     // Click evidence: the spoken edge carries its sentence, the inferred one
-    // its method. This is what hover showed in the Streamlit SVG.
+    // its method. This is what hover showed in the Streamlit SVG. Grouped by
+    // direction: what Slope needs first vs what it unlocks.
     await slope.click()
     await expect(page.getByText('Linear Regression → Slope')).toBeVisible()
+    await expect(page.getByText(/NEEDS FIRST/)).toBeVisible()
     await expect(page.getByText('spoken in lecture')).toBeVisible()
     await expect(page.getByText(/coefficient on x/)).toBeVisible()
 
@@ -86,6 +88,23 @@ test.describe('the course graph draws and answers clicks', () => {
     await page.goto('/student')
     await expect(page.getByText('Learner order', { exact: false }).first()).toBeVisible()
     await expect(page.getByText('Multiple Regression').first()).toBeVisible()
+
+    expect(errors, `page logged errors:\n${errors.join('\n')}`).toEqual([])
+  })
+
+  test('find-concept locates a node and opens its evidence', async ({ page }) => {
+    const errors = watchConsole(page)
+
+    await page.goto('/student')
+    await expect(page.getByRole('button', { name: /^Slope, learner step/ })).toBeVisible()
+
+    // Case-insensitive substring; centers the match and selects it, which is
+    // what the evidence assertion below proves (selection drives the panel).
+    await page.getByRole('textbox', { name: 'Find concept' }).fill('slo')
+    await page.keyboard.press('Enter')
+
+    await expect(page.getByText('Linear Regression → Slope')).toBeVisible()
+    await expect(page.getByText('spoken in lecture')).toBeVisible()
 
     expect(errors, `page logged errors:\n${errors.join('\n')}`).toEqual([])
   })
