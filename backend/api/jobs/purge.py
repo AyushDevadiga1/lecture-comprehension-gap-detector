@@ -9,6 +9,7 @@ from backend.models.db import (
     ConceptItem,
     GraphEdge,
     GraphNode,
+    Job,
     Lecture,
     LectureLink,
     Passage,
@@ -24,7 +25,10 @@ def purge_course(course_id: str) -> int:
     Covers both lecture-scoped rows (segments, concepts, passages, links,
     clips) and the course-scoped tables that outlive lecture deletion
     (graph nodes/edges, quiz questions, quiz responses) — the exact gap that
-    left stale smoke-test courses behind. Idempotent.
+    left stale smoke-test courses behind. Job rows are included too: without
+    them a deleted course's finished (and in-flight) jobs linger in the feed,
+    and the next server restart orphans the running ones against lectures that
+    no longer exist. Idempotent.
     """
     with SessionLocal() as db:
         lect_ids = [
@@ -41,6 +45,9 @@ def purge_course(course_id: str) -> int:
             synchronize_session=False
         )
         db.query(GraphNode).filter(GraphNode.course_id == course_id).delete(
+            synchronize_session=False
+        )
+        db.query(Job).filter(Job.course_id == course_id).delete(
             synchronize_session=False
         )
         for lid in lect_ids:

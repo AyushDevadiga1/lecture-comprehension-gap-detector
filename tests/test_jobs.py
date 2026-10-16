@@ -427,6 +427,31 @@ def test_purge_course_clears_every_scoped_table(Session):
         assert s.query(models.QuizResponse).count() == 0
 
 
+def test_purge_course_removes_job_rows_but_only_its_own(Session):
+    """Deleting a course must take its job rows with it.
+
+    Finished (and in-flight) jobs otherwise linger in the feed for a course
+    that no longer exists, and the next restart orphans the running ones
+    against lectures that are gone. Scoping matters both ways: another
+    course's jobs must survive the purge.
+    """
+    a = _lecture(Session, status="ready")
+    with Session() as s:
+        s.add(models.Job(kind="extract", status="ready", course_id="c1",
+                         lecture_id=a, title="done work"))
+        s.add(models.Job(kind="extract", status="running", course_id="c1",
+                         lecture_id=a, title="live work"))
+        s.add(models.Job(kind="extract", status="running", course_id="c2",
+                         lecture_id=a, title="other course"))
+        s.commit()
+
+    assert jobs_purge.purge_course("c1") == 1
+
+    with Session() as s:
+        remaining = [j.title for j in s.query(models.Job).all()]
+        assert remaining == ["other course"]
+
+
 # ------------------------------------------------------------- query helpers
 
 def test_query_lecture_segments_are_time_ordered_across_lectures(Session):
