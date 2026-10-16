@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Skeleton,
 } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -634,7 +635,21 @@ export const StudentDashboard: React.FC = () => {
         {graphError && <ErrorAlert error={graphError} title="Failed to load graph" />}
         {isLoadingGraph && <LoadingScreen message="Loading prerequisite graph..." />}
         {graphData && (
-          <Suspense fallback={<LoadingScreen message="Loading prerequisite graph..." />}>
+          // The chunk fallback is scoped to the graph card's own shape — a
+          // skeleton, not the full LoadingScreen. On a slow connection the
+          // lecture table above stays visually present and interactive while
+          // the graph chunk streams in; a page-level spinner would cover work
+          // the reader could already be doing.
+          <Suspense
+            fallback={
+              <Skeleton
+                variant="rounded"
+                height={480}
+                role="status"
+                aria-label="Loading prerequisite graph"
+              />
+            }
+          >
             <DagView key={selectedCourseId} graph={graphData} idPrefix="student-graph" />
           </Suspense>
         )}
