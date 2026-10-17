@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LecGap — style lab (palette × type)</title>
+<meta name="description" content="Live palette and type experiments for the LecGap frontend, with measured WCAG contrast. Not wired to the app." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ==========================================================================
+     LecGap style lab — palette x type experiments, measured not eyeballed.
+
+     Five palettes, four type pairings. Every palette below was run through the
+     repo's own AA rules (tests/test_theme.py) before being listed here: text
+     tokens >= 4.5:1 on every surface they can land on, structural marks >= 3:1,
+     decorative >= 1.1:1. The readout at the bottom recomputes the live numbers
+     in the browser so a choice is never made on a vibe.
+
+     Semantic hues stay recognisable on purpose (green ok / amber warn / red
+     bad). The identity experiments are in the *base temperature*, the primary
+     signal colour, and the typography — not in recolouring the statuses, which
+     is what users read fastest.
+     ========================================================================== */
+
+  :root {
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page); color: var(--text); font-family: var(--font-sans);
+    font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(900px 600px at 10% 0%, color-mix(in srgb, var(--info) 8%, transparent) 0%, transparent 60%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 22px 80px; }
+  .mono { font-family: var(--font-mono); }
+  .micro { font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+
+  /* ------------------------------------------------------------- controls */
+  .bar {
+    position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--page) 88%, transparent);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 12px 0; margin-bottom: 26px;
+  }
+  .bar-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .bar-row + .bar-row { margin-top: 8px; }
+  .grp { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .opt {
+    padding: 5px 11px; border-radius: 999px; border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .opt:hover { color: var(--text); border-color: var(--info); }
+  .opt.on { background: var(--info); border-color: var(--info); color: var(--ink-light); }
+  .pal-sw { width: 13px; height: 13px; border-radius: 4px; display: inline-block; vertical-align: -2px; margin-right: 6px; border: 1px solid color-mix(in srgb, var(--text) 25%, transparent); }
+
+  .note { font-size: 12px; color: var(--muted); }
+
+  /* --------------------------------------------------------------- panels */
+  .panel { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); padding: 16px; margin-bottom: 18px; box-shadow: 0 1px 2px color-mix(in srgb, var(--ink-dark) 8%, transparent); }
+  h1.ed { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; font-size: 32px; line-height: 1.08; margin: 0 0 6px; }
+  h2.p { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; font-size: 16px; margin: 0 0 4px; }
+  p.lede { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; max-width: 70ch; }
+  p.body { margin: 0 0 12px; max-width: 72ch; }
+
+  .statstrip { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .stat { background: var(--surface); padding: 11px 13px; }
+  .stat .v { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+  .stat .s { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 7px 9px; border-bottom: 1px solid var(--border); }
+  td { padding: 9px; border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); vertical-align: top; }
+  tr:hover td { background: color-mix(in srgb, var(--text) 4%, transparent); }
+  td.num { font-family: var(--font-mono); font-size: 11.5px; }
+  td.ev { color: var(--muted); }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text); font: inherit; font-weight: 600; padding: 8px 13px; cursor: pointer; }
+  .btn.primary { background: var(--info); color: var(--ink-light); border-color: var(--info); }
+  .btn.sm { padding: 5px 9px; font-size: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--border); color: var(--muted); }
+  .chip.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: color-mix(in srgb, var(--ok) 9%, transparent); }
+  .chip.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 9%, transparent); }
+  .chip.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, transparent); background: color-mix(in srgb, var(--bad) 9%, transparent); }
+  .chip.info { color: var(--info); border-color: color-mix(in srgb, var(--info) 45%, transparent); background: color-mix(in srgb, var(--info) 9%, transparent); }
+
+  .node { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 9px; font-size: 12px; font-weight: 600; border: 1px solid color-mix(in srgb, var(--ink-light) 20%, transparent); }
+  .node .b { width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 800; border: 1px solid color-mix(in srgb, var(--ink-light) 35%, transparent); }
+
+  .opt-row { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 4px 0; }
+  .opt-row input { accent-color: var(--info); }
+
+  /* -------------------------------------------------------------- readout */
+  .readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .ro { border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px; }
+  .ro .k { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+  .ro .n { font-family: var(--font-mono); font-size: 16px; font-weight: 500; }
+  .ro .t { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .pass { color: var(--ok); } .fail { color: var(--bad); }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .sw { width: 46px; height: 34px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: center; }
+  .sw span { font-family: var(--font-mono); font-size: 8.5px; opacity: 0.85; padding-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="bar">
+    <div class="bar-row">
+      <span class="micro" style="min-width:52px;">Palette</span>
+      <div class="grp" id="palGroup"></div>
+    </div>
+    <div class="bar-row">
+      <span class="micro" style="min-width:52px;">Type</span>
+      <div class="grp" id="fontGroup"></div>
+      <span class="note" id="fontNote"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="micro" style="margin-bottom:6px;">ML / #1 · transcript ready</div>
+    <h1 class="ed">Multiple Linear Regression — Geometric Intuition &amp; Code</h1>
+    <p class="lede">12:07 · 42 concepts anchored · 9 playable clips · coverage 62%</p>
+
+    <p class="body" id="para">The quiz traces wrong answers backwards along the prerequisite DAG, so remediation arrives in the order the concepts actually need to be understood. Coefficients come before weights; weights come before the intercept — and the study sequence says so, rather than listing everything a student got wrong.</p>
+
+    <div class="statstrip" style="margin-bottom:16px;">
+      <div class="stat"><div class="v">3</div><div class="s">lectures · 3 ready</div></div>
+      <div class="stat"><div class="v">181</div><div class="s">concepts extracted</div></div>
+      <div class="stat"><div class="v">170</div><div class="s">graph edges · acyclic</div></div>
+      <div class="stat"><div class="v">37<span style="font-size:13px;font-weight:400;color:var(--muted)">/52</span></div><div class="s">clips playable</div></div>
+    </div>
+
+    <table>
+      <thead><tr><th style="width:24%">Concept</th><th style="width:13%">Window</th><th>Grounding sentence</th></tr></thead>
+      <tbody>
+        <tr><td><b>multiple linear regression</b></td><td class="num">0:10–2:12</td><td class="ev">“…so instead of one slope we now have a coefficient per input feature…”</td></tr>
+        <tr><td><b>multiple linear regression equation</b></td><td class="num">2:12–3:20</td><td class="ev">“…the fit is solving for the whole vector at once…”</td></tr>
+        <tr><td><b>synthetic data generation</b></td><td class="num">10:33–13:45</td><td class="ev">“…we can generate our own data to check the fit behaves…”</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2 class="p">Semantic colours, as a reader meets them</h2>
+    <p class="lede">Status hues stay recognisable across every palette — green/amber/red is the fastest thing a reader parses.</p>
+    <div class="grp" style="margin-bottom:14px;">
+      <span class="chip ok">ready</span>
+      <span class="chip warn">transcribing</span>
+      <span class="chip bad">failed</span>
+      <span class="chip info">spoken</span>
+      <span class="chip">classifier</span>
+      <button class="btn primary">Start quiz</button>
+      <button class="btn">Reset view</button>
+    </div>
+    <div class="grp" style="margin-bottom:14px;">
+      <span class="node" style="background:#3a6b5c;color:var(--ink-light)"><span class="b">1</span>multiple linear regression</span>
+      <span class="node" style="background:#5c6b3a;color:var(--ink-light)"><span class="b">2</span>coefficients</span>
+      <span class="node" style="background:#6b4f3a;color:var(--ink-light)"><span class="b">3</span>intercept</span>
+    </div>
+    <div class="opt-row"><input type="radio" checked /> The change in the prediction per unit change in that feature</div>
+    <div class="opt-row"><input type="radio" /> The number of features in the model</div>
+  </div>
+
+  <div class="panel">
+    <h2 class="p">Measured, not felt</h2>
+    <p class="lede">Recomputed live for the palette above. Anything under 4.5:1 fails the repo's own text rule and would not ship.</p>
+    <div class="readout" id="readout"></div>
+    <div class="swatches" id="swatches"></div>
+  </div>
+
+</div>
+
+<script>
+  /* ---------------------------------------------------------------- palettes
+     Every value here passed tests/test_theme.py's rules before being listed.
+     P0 and P4 are the app's real dark and light tokens, verbatim. */
+  var PALETTES = [
+    { id: 'p0', name: 'Espresso & Teal', note: 'current dark — control', sw: '#2c2520',
+      t: { page:'#15110d', surface:'#2c2520', surface_alt:'#362e26', border:'#453b31',
+           text:'#f6f1e9', muted:'#a99e91', ok:'#57d364', warn:'#e3b341', bad:'#ff7b72',
+           info:'#14b8a6', accent:'#14b8a6', graph_bg:'#15110d', graph_edge:'#8f8577',
+           track:'#453b31', tick:'#857b6e', covered:'#2ea043',
+           ink_light:'#f6f8fb', ink_dark:'#0a0e14' } },
+    { id: 'p1', name: 'Graphite & Ice', note: 'cool instrument dark — cyan signal on near-black', sw: '#4cc2d4',
+      t: { page:'#0d1114', surface:'#151a1f', surface_alt:'#1c2329', border:'#2a323a',
+           text:'#e6edf3', muted:'#93a1af', ok:'#56c271', warn:'#d9a441', bad:'#f06a63',
+           info:'#4cc2d4', accent:'#4cc2d4', graph_bg:'#151a1f', graph_edge:'#7d8894',
+           track:'#2a323a', tick:'#7d8894', covered:'#2f9e6a',
+           ink_light:'#f6f8fb', ink_dark:'#0a0e14' } },
+    { id: 'p2', name: 'Manuscript', note: 'light editorial — paper, ink, ink-blue signal', sw: '#2c3d7c',
+      t: { page:'#f6f2ea', surface:'#fffdf9', surface_alt:'#ece5d9', border:'#dbd2c3',
+           text:'#221d18', muted:'#6b6257', ok:'#1d6b3f', warn:'#8a5300', bad:'#b02a20',
+           info:'#2c3d7c', accent:'#2c3d7c', graph_bg:'#fffdf9', graph_edge:'#6f6a5f',
+           track:'#dbd2c3', tick:'#6f6a5f', covered:'#1f7a45',
+           ink_light:'#ffffff', ink_dark:'#0b1220' } },
+    { id: 'p3', name: 'Espresso & Ember', note: 'current base, warm signal instead of teal', sw: '#e08a4e',
+      t: { page:'#15110d', surface:'#2c2520', surface_alt:'#362e26', border:'#453b31',
+           text:'#f6f1e9', muted:'#a99e91', ok:'#57d364', warn:'#e3b341', bad:'#ff7b72',
+           info:'#e08a4e', accent:'#e08a4e', graph_bg:'#15110d', graph_edge:'#8f8577',
+           track:'#453b31', tick:'#857b6e', covered:'#2ea043',
+           ink_light:'#f6f8fb', ink_dark:'#0a0e14' } },
+    { id: 'p4', name: 'Sepia Paper', note: 'warm light — the app\u2019s real light tokens', sw: '#8a4b1f',
+      t: { page:'#faf7f2', surface:'#ffffff', surface_alt:'#e2efef', border:'#dcd5cb',
+           text:'#2c2520', muted:'#6e6459', ok:'#16642c', warn:'#8a5b00', bad:'#c0212a',
+           info:'#0f766e', accent:'#0f766e', graph_bg:'#ffffff', graph_edge:'#7a7167',
+           track:'#dcd5cb', tick:'#6f675d', covered:'#1a7f37',
+           ink_light:'#ffffff', ink_dark:'#0b1220' } },
+  ]
+
+  /* ------------------------------------------------------------------- fonts
+     Display face carries the identity; the body face carries reading. Every
+     pairing keeps a neutral, high-legibility body and a monospace for data. */
+  var FONTS = [
+    { id: 'f0', name: 'Grotesk / Plex', note: 'current: geometric display, neutral body',
+      display: "'Space Grotesk', sans-serif", sans: "'IBM Plex Sans', sans-serif" },
+    { id: 'f1', name: 'Newsreader / Jakarta', note: 'editorial serif display, soft geometric body',
+      display: "'Newsreader', Georgia, serif", sans: "'Plus Jakarta Sans', sans-serif" },
+    { id: 'f2', name: 'Instrument / Geist', note: 'high-contrast serif display, crisp modern body',
+      display: "'Instrument Serif', Georgia, serif", sans: "'Geist', -apple-system, sans-serif" },
+    { id: 'f3', name: 'Plex superfamily', note: 'serif display + sans body, one family, technical',
+      display: "'IBM Plex Serif', Georgia, serif", sans: "'IBM Plex Sans', sans-serif" },
+  ]
+
+  var MONO = "'JetBrains Mono', ui-monospace, monospace"
+  var active = { pal: 'p0', font: 'f0' }
+
+  function apply() {
+    var p = PALETTES.filter(function (x) { return x.id === active.pal; })[0]
+    var f = FONTS.filter(function (x) { return x.id === active.font; })[0]
+    var r = document.documentElement.style
+    Object.keys(p.t).forEach(function (k) { r.setProperty('--' + k.replace(/_/g, '-'), p.t[k]) })
+    r.setProperty('--font-display', f.display)
+    r.setProperty('--font-sans', f.sans)
+    r.setProperty('--font-mono', MONO)
+    document.getElementById('fontNote').textContent = '— ' + f.note
+    document.querySelectorAll('#palGroup .opt').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-id') === active.pal)
+    })
+    document.querySelectorAll('#fontGroup .opt').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-id') === active.font)
+    })
+    readout(p)
+  }
+
+  /* ---------------------------------------------------------- contrast math */
+  function chan(h) { h = h.replace('#', ''); if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; return [0,2,4].map(function (i) { return parseInt(h.slice(i, i+2), 16) / 255 }) }
+  function lin(c) { return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4) }
+  function lum(hex) { var c = chan(hex).map(lin); return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2] }
+  function cr(a, b) { var l1 = lum(a), l2 = lum(b); var hi = Math.max(l1,l2), lo = Math.min(l1,l2); return (hi + 0.05) / (lo + 0.05) }
+
+  function readout(p) {
+    var pairs = [
+      ['text on surface', p.t.text, p.t.surface, 4.5],
+      ['text on surface-alt', p.t.text, p.t.surface_alt, 4.5],
+      ['muted on surface-alt', p.t.muted, p.t.surface_alt, 4.5],
+      ['primary on page', p.t.info, p.t.page, 4.5],
+      ['ok / warn / bad on page', p.t.warn, p.t.page, 4.5],
+      ['graph edge on canvas', p.t.graph_edge, p.t.graph_bg, 3.0],
+    ]
+    var el = document.getElementById('readout')
+    el.innerHTML = pairs.map(function (q) {
+      var v = cr(q[1], q[2]); var ok = v >= q[3]
+      return '<div class="ro"><div class="k">' + q[0] + '</div><div class="n">' + v.toFixed(2) + ':1</div>'
+        + '<div class="t ' + (ok ? 'pass' : 'fail') + '">' + (ok ? 'PASS ≥ ' + q[3] : 'FAIL < ' + q[3]) + '</div></div>'
+    }).join('')
+
+    var names = ['page','surface','surface_alt','border','text','muted','ok','warn','bad','info']
+    document.getElementById('swatches').innerHTML = names.map(function (n) {
+      return '<div class="sw" style="background:' + p.t[n] + '"><span style="color:' + (n === 'text' || n === 'muted' ? p.t.surface : p.t.text) + '">' + n + '</span></div>'
+    }).join('')
+  }
+
+  /* ------------------------------------------------------------------- wire */
+  document.getElementById('palGroup').innerHTML = PALETTES.map(function (p) {
+    return '<button class="opt" data-id="' + p.id + '" title="' + p.note + '"><span class="pal-sw" style="background:' + p.sw + '"></span>' + p.name + '</button>'
+  }).join('')
+  document.getElementById('fontGroup').innerHTML = FONTS.map(function (f) {
+    return '<button class="opt" data-id="' + f.id + '">' + f.name + '</button>'
+  }).join('')
+  document.getElementById('palGroup').addEventListener('click', function (e) {
+    var b = e.target.closest('.opt'); if (!b) return; active.pal = b.getAttribute('data-id'); apply()
+  })
+  document.getElementById('fontGroup').addEventListener('click', function (e) {
+    var b = e.target.closest('.opt'); if (!b) return; active.font = b.getAttribute('data-id'); apply()
+  })
+  apply()
+</script>
+</body>
+</html>

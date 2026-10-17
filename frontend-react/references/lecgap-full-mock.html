@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LecGap — full application mock (all backend functions)</title>
+<meta name="description" content="Complete static mock of the LecGap app: every view, every backend function, one concern per screen. Not wired to the app." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================================
+   LecGap — FULL MOCK. Every backend function, one view per concern.
+
+   Type: Newsreader (display) + Plus Jakarta Sans (body) + JetBrains Mono (data)
+   Palette: the app's real tokens — espresso/teal dark, warm-alabaster light.
+
+   Views map 1:1 to backend surface:
+     overview    GET /courses, /courses/{id}/snapshot, /usage, in_flight
+     lectures    POST /lectures, PUT /lectures/{id}/media, DELETE /lectures/{id},
+                 POST /lectures/{id}/concepts, /clips, /rerun, triage split
+     map         GET /courses/{id}/graph, POST /courses/{id}/graph
+     lecture     GET /lectures/{id} (+/progress), coverage timeline
+     quiz        POST /quizzes/jobs, GET /quizzes, POST /quizzes/submit, 409/404
+     remediation GET /students/{id}/remediation
+     clips       GET /lectures/{id}/clips, GET /media/clips/{id}/{file}
+     analytics   GET /courses/{id}/stats (root concepts, gaps), DAG
+     heatmap     stats.heatmap
+     divergence  stats.divergence, taught/learned order
+     coverage    faculty lecture timeline
+     jobs        GET /jobs, /jobs/stream, POST /jobs/{id}/cancel
+     system      /usage detail, /health, feed mode, 401 banner
+   Overlays: job drawer (live), upload dialog (progress+cancel+duplicate),
+             delete confirmations, completion toast, 401 banner.
+   ========================================================================== */
+
+:root[data-theme="dark"]{
+  --page:#15110d; --surface:#2c2520; --surface-alt:#362e26; --border:#453b31;
+  --text:#f6f1e9; --muted:#a99e91; --ok:#57d364; --warn:#e3b341; --bad:#ff7b72;
+  --info:#14b8a6; --graph-edge:#8f8577; --track:#453b31; --tick:#857b6e; --covered:#2ea043;
+  --ink-light:#f6f8fb; --ink-dark:#0a0e14;
+  --wash:color-mix(in srgb,var(--text) 5%,transparent);
+  --side:color-mix(in srgb,var(--surface) 50%,var(--page));
+}
+:root[data-theme="light"]{
+  --page:#faf7f2; --surface:#ffffff; --surface-alt:#e2efef; --border:#dcd5cb;
+  --text:#2c2520; --muted:#6e6459; --ok:#16642c; --warn:#8a5b00; --bad:#c0212a;
+  --info:#0f766e; --graph-edge:#7a7167; --track:#dcd5cb; --tick:#6f675d; --covered:#1a7f37;
+  --ink-light:#ffffff; --ink-dark:#0b1220;
+  --wash:color-mix(in srgb,var(--text) 5%,transparent);
+  --side:color-mix(in srgb,var(--surface) 70%,var(--page));
+}
+:root{--disp:'Newsreader',Georgia,serif;--sans:'Plus Jakarta Sans',-apple-system,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--page);color:var(--text);font-family:var(--sans);font-size:13.5px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 600px at 12% -5%,color-mix(in srgb,var(--info) 8%,transparent),transparent 60%)}
+.mono{font-family:var(--mono)}
+.micro{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+h1,h2,h3,h4{font-family:var(--disp);font-weight:600;letter-spacing:-.01em;margin:0}
+.serif{font-family:var(--disp)}
+
+/* ---------------------------------------------------------------- shell */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:250px minmax(0,1fr);height:100vh}
+.side{background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:14px 14px 10px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tile{width:34px;height:34px;border-radius:10px;background:var(--info);color:var(--ink-light);display:flex;align-items:center;justify-content:center;border:1px solid color-mix(in srgb,var(--ink-light) 35%,transparent)}
+.bname{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.02em;line-height:1}
+.bsub{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px}
+select,input[type=text],input[type=number]{width:100%;background:var(--wash);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:7px 9px;font:inherit;font-weight:600}
+input::placeholder{color:color-mix(in srgb,var(--muted) 80%,transparent)}
+.side-body{flex:1;overflow-y:auto;min-height:0;padding:10px 8px}
+.side-foot{border-top:1px solid var(--border);padding:10px 12px}
+.nav-grp{margin-bottom:12px}
+.nav-grp>.micro{padding:0 8px 5px;display:block}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:8px;color:var(--muted);font-weight:600;font-size:12.5px;cursor:pointer;border:1px solid transparent}
+.nav:hover{background:var(--wash);color:var(--text)}
+.nav.on{background:color-mix(in srgb,var(--info) 11%,transparent);color:var(--text);border-color:color-mix(in srgb,var(--info) 38%,transparent)}
+.nav .k{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.nav svg{flex:0 0 auto;opacity:.85}
+
+/* ---------------------------------------------------------------- main */
+.main{min-width:0;display:flex;flex-direction:column;min-height:0}
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:blur(10px)}
+.crumbs{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.crumbs b{color:var(--text)}
+.spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;cursor:pointer}
+.btn:hover{border-color:var(--info);background:color-mix(in srgb,var(--info) 7%,transparent)}
+.btn.primary{background:var(--info);border-color:var(--info);color:var(--ink-light)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+.btn.sm{padding:4px 8px;font-size:11.5px;border-radius:7px}
+.btn.block{width:100%;justify-content:center}
+.ico{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ico:hover{border-color:var(--info)}
+.content{flex:1;overflow-y:auto;min-height:0;padding:20px}
+.view{display:none;max-width:1180px}
+.view.on{display:block}
+.vhead{margin-bottom:16px}
+.vhead h1{font-size:31px;font-weight:600;letter-spacing:-.025em;line-height:1.06}
+.vhead p{margin:5px 0 0;color:var(--muted);max-width:76ch}
+
+/* --------------------------------------------------------------- blocks */
+.card{border:1px solid var(--border);border-radius:14px;background:var(--surface);padding:15px;margin-bottom:15px;box-shadow:0 1px 2px color-mix(in srgb,var(--ink-dark) 8%,transparent)}
+.card>h3{font-size:16px;margin-bottom:3px}
+.card>.hint{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:15px;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:15px}
+.stat{background:var(--surface);padding:11px 13px}
+.stat .v{font-family:var(--disp);font-weight:600;font-size:23px;letter-spacing:-.02em;line-height:1.15}
+.stat .v small{font-size:12px;font-weight:400;color:var(--muted)}
+.stat .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.row{display:flex;align-items:center;gap:10px}
+.row.wrap{flex-wrap:wrap}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.chip.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent);background:color-mix(in srgb,var(--ok) 9%,transparent)}
+.chip.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 9%,transparent)}
+.chip.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent);background:color-mix(in srgb,var(--bad) 9%,transparent)}
+.chip.info{color:var(--info);border-color:color-mix(in srgb,var(--info) 45%,transparent);background:color-mix(in srgb,var(--info) 9%,transparent)}
+.alert{border-radius:11px;padding:10px 12px;font-size:12.5px;border:1px solid var(--border);background:var(--wash);margin-bottom:12px}
+.alert.warn{border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 9%,transparent)}
+.alert.bad{border-color:color-mix(in srgb,var(--bad) 45%,transparent);background:color-mix(in srgb,var(--bad) 9%,transparent)}
+.alert.info{border-color:color-mix(in srgb,var(--info) 45%,transparent);background:color-mix(in srgb,var(--info) 8%,transparent)}
+.alert.ok{border-color:color-mix(in srgb,var(--ok) 45%,transparent);background:color-mix(in srgb,var(--ok) 9%,transparent)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:600}
+td{padding:8px;border-bottom:1px solid color-mix(in srgb,var(--border) 60%,transparent);vertical-align:middle}
+tbody tr:hover td{background:var(--wash)}
+td.m{font-family:var(--mono);font-size:11.5px}
+td.ev{color:var(--muted);font-style:italic}
+.tabs{display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;margin-bottom:-1px}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);background:var(--page);border-color:var(--border)}
+.tp{display:none}.tp.on{display:block}
+.slider{width:100%;accent-color:var(--info)}
+.bar{height:6px;border-radius:4px;background:var(--track);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--info);border-radius:4px}
+.bar>i.str{width:35%;background:linear-gradient(90deg,transparent,var(--info),transparent);animation:sweep 1.4s linear infinite}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+.bars{display:flex;height:8px;border-radius:5px;overflow:hidden;background:var(--track)}
+.bars>i{display:block;height:100%}
+
+/* ---------------------------------------------------------------- dag */
+.dag{position:relative;height:430px;border:1px solid var(--border);border-radius:12px;background:var(--page);overflow:hidden}
+.dag .mini{position:absolute;right:10px;bottom:10px;width:132px;height:82px;border:1px solid var(--border);border-radius:8px;background:var(--surface);opacity:.92}
+.node{position:absolute;display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:9px;font-size:11.5px;font-weight:600;border:1px solid color-mix(in srgb,var(--ink-light) 18%,transparent);box-shadow:0 1px 2px color-mix(in srgb,var(--ink-dark) 25%,transparent);white-space:nowrap}
+.node .b{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;border:1px solid color-mix(in srgb,var(--ink-light) 35%,transparent);flex:0 0 auto}
+.node.dim{opacity:.35}
+.evbox{border:1px solid var(--border);border-radius:11px;padding:12px;background:var(--page);margin-top:12px}
+.seq{max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+.seq div{display:flex;gap:10px;padding:2px 0;border-bottom:1px solid color-mix(in srgb,var(--border) 45%,transparent)}
+.seq div:last-child{border-bottom:none}
+.seq .n{font-family:var(--mono);font-size:10.5px;color:var(--muted);min-width:22px}
+.seq .h{opacity:.5}
+
+/* ------------------------------------------------------------- timeline */
+.tl{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--graph_bg,var(--page))}
+.tl svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--muted);align-items:center}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+
+/* -------------------------------------------------------------- player */
+.player{border:1px solid var(--border);border-radius:12px;background:var(--ink-dark);aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--ink-light)}
+.player .pl{width:46px;height:46px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink-light) 45%,transparent);display:flex;align-items:center;justify-content:center;font-size:15px}
+.player .cap{font-family:var(--mono);font-size:11.5px;opacity:.85}
+.scrub{width:72%;height:4px;border-radius:3px;background:color-mix(in srgb,var(--ink-light) 22%,transparent);position:relative}
+.scrub>i{position:absolute;inset:0 auto 0 0;width:38%;background:var(--info);border-radius:3px;display:block}
+.clip{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 9px;border-radius:8px;border:1px solid transparent;cursor:pointer;font-size:12.5px}
+.clip:hover{background:var(--wash)}
+.clip.on{background:color-mix(in srgb,var(--info) 10%,transparent);border-color:color-mix(in srgb,var(--info) 40%,transparent)}
+.clip .t{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.rstep{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid color-mix(in srgb,var(--border) 55%,transparent)}
+.rstep .rk{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:16px;padding-top:2px}
+.rwhy{font-size:11px;color:var(--warn);font-weight:600}
+.opt{display:flex;gap:9px;align-items:flex-start;padding:4px 0;font-size:12.5px}
+.opt input{margin-top:3px;accent-color:var(--info)}
+.fb{padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--border) 50%,transparent)}
+.fb .tag{font-weight:700;font-size:11px;letter-spacing:.04em}
+.okc{color:var(--ok)}.badc{color:var(--bad)}
+
+/* --------------------------------------------------------------- drawer */
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink-dark) 55%,transparent);opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:430px;max-width:92vw;background:var(--surface);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .22s cubic-bezier(.22,1,.36,1);z-index:41;display:flex;flex-direction:column;box-shadow:-1px 0 2px color-mix(in srgb,var(--ink-dark) 20%,transparent)}
+.drawer.on{transform:none}
+.drawer>header{display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--border)}
+.drawer .body{flex:1;overflow-y:auto;padding:13px 15px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:42;padding:20px}
+.modal.on{display:flex}
+.modal .sheet{background:var(--surface);border:1px solid var(--border);border-radius:15px;width:520px;max-width:100%;max-height:88vh;overflow:auto;box-shadow:0 24px 64px color-mix(in srgb,var(--ink-dark) 30%,transparent)}
+.modal h3{padding:14px 16px 6px;font-size:18px}
+.modal .mbody{padding:6px 16px 14px}
+.modal footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px 14px;border-top:1px solid var(--border)}
+.toast{position:fixed;left:20px;bottom:20px;z-index:43;background:var(--surface);border:1px solid color-mix(in srgb,var(--ok) 45%,transparent);border-radius:12px;padding:11px 14px;max-width:380px;display:none;box-shadow:0 8px 30px color-mix(in srgb,var(--ink-dark) 35%,transparent)}
+.toast.on{display:block}
+.auth{background:color-mix(in srgb,var(--warn) 12%,transparent);border-bottom:1px solid color-mix(in srgb,var(--warn) 45%,transparent);color:var(--text);padding:8px 20px;font-size:12.5px;display:none;align-items:center;gap:10px}
+.auth.on{display:flex}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.dot.warn{background:var(--warn)}
+.qcard{border:1px solid var(--border);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.qcard p{margin:0 0 7px;font-weight:600}
+.note{font-size:11.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ============================================================ SIDEBAR -->
+  <aside class="side">
+    <div class="side-head">
+      <div class="brand">
+        <div class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+        <div><div class="bname">LecGap</div><div class="bsub">Comprehension DAG</div></div>
+      </div>
+      <div class="micro" style="margin-bottom:4px">Course</div>
+      <div class="row">
+        <select id="courseSel"><option>ML · 3 lectures</option><option>PROB · 1 lecture</option></select>
+        <button class="ico" title="Delete this course" onclick="openModal('mDelCourse')">🗑</button>
+      </div>
+    </div>
+
+    <div class="side-body">
+      <div class="nav-grp">
+        <span class="micro">Student</span>
+        <div class="nav on" data-go="overview">◈ Overview</div>
+        <div class="nav" data-go="lectures">▤ Lectures<span class="k">3</span></div>
+        <div class="nav" data-go="map">⬡ Concept map<span class="k">181</span></div>
+        <div class="nav" data-go="lecture">▭ Lecture detail</div>
+        <div class="nav" data-go="quiz">? Quiz</div>
+        <div class="nav" data-go="remediation">☰ Remediation</div>
+        <div class="nav" data-go="clips">▶ Clips</div>
+      </div>
+      <div class="nav-grp">
+        <span class="micro">Faculty</span>
+        <div class="nav" data-go="analytics">◇ Analytics</div>
+        <div class="nav" data-go="heatmap">▥ Heatmap</div>
+        <div class="nav" data-go="divergence">⇄ Divergence</div>
+        <div class="nav" data-go="coverage">▬ Coverage</div>
+      </div>
+      <div class="nav-grp">
+        <span class="micro">System</span>
+        <div class="nav" data-go="jobs">⚙ Jobs<span class="k">1</span></div>
+        <div class="nav" data-go="system">◎ System &amp; quota</div>
+      </div>
+    </div>
+
+    <div class="side-foot">
+      <div class="between" style="margin-bottom:7px">
+        <span class="note"><span class="dot ok"></span> SSE Live · 1 job</span>
+        <button class="btn sm" onclick="toggleTheme()" id="themeBtn">Light</button>
+      </div>
+      <div class="note mono" style="font-size:10px">Groq 4 812 req · 71 whisper · resets 12m</div>
+      <div class="note" style="margin-top:6px"><a href="#" onclick="toggleAuth();return false" style="color:var(--muted)">demo: 401 banner</a> · <a href="#" onclick="openModal('mUpload');return false" style="color:var(--muted)">demo: upload</a> · <a href="#" onclick="toast()" style="color:var(--muted)">demo: completion</a></div>
+    </div>
+  </aside>
+
+  <!-- =============================================================== MAIN -->
+  <div class="main">
+    <div class="auth" id="authBanner">
+      <span>⚠ The backend requires an API key. Set <b class="mono">VITE_LECGAP_API_KEY</b> in frontend-react/.env (and LECGAP_API_KEY on the server) — the app cannot reach the API without it.</span>
+      <span class="spacer"></span>
+      <button class="btn sm" onclick="toggleAuth()">Retry</button>
+    </div>
+
+    <div class="topbar">
+      <span class="crumbs" id="crumbs">ML / <b>overview</b></span>
+      <span class="spacer"></span>
+      <input type="text" id="studentId" value="student_1" style="width:130px" title="Student ID" />
+      <span class="note" style="display:flex;align-items:center;gap:6px"><span class="dot ok" id="feedDot"></span><span id="feedTxt">Feed: live over SSE</span></span>
+      <button class="ico" title="Background tasks" onclick="openDrawer()">⚡</button>
+    </div>
+
+    <div class="content">
+
+      <!-- ==================================================== OVERVIEW -->
+      <section class="view on" data-view="overview">
+        <div class="vhead">
+          <div class="crumbs">ML · snapshot</div>
+          <h1>Course overview</h1>
+          <p>Everything derived from the lectures, at a glance. <span class="mono">GET /courses/ml/snapshot</span> drives this strip for both dashboards.</p>
+        </div>
+
+        <div class="strip">
+          <div class="stat"><div class="v">3 <small>· 3 ready</small></div><div class="s">lectures (uploaded 0 · error 0)</div></div>
+          <div class="stat"><div class="v">181</div><div class="s">concepts extracted</div></div>
+          <div class="stat"><div class="v">170 <small>edges</small></div><div class="s">graph built · acyclic</div></div>
+          <div class="stat"><div class="v">37<small>/52</small></div><div class="s">clips playable</div></div>
+          <div class="stat"><div class="v">89</div><div class="s">quiz questions · 1 respondent</div></div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>In flight</h3>
+            <p class="hint">From <span class="mono">snapshot.in_flight</span> — lectures the pipeline is working on right now.</p>
+            <div class="alert info"><b>#2 Gated Recurrent Unit (GRU)</b><br><span class="note mono">extracting · 70% · “Persisting concepts, passages, and spoken links…”</span><div class="bar" style="margin-top:7px"><i style="width:70%"></i></div></div>
+            <div class="note">A stuck <b>uploaded</b> row is a hint, never a spinning card — it goes to the triage panel below, not here.</div>
+          </div>
+
+          <div class="card">
+            <h3>Quota &amp; services</h3>
+            <p class="hint"><span class="mono">GET /usage</span> — graceful degradation is the point: every service says what it is doing.</p>
+            <table>
+              <tbody>
+                <tr><td>Groq chat</td><td class="m">4 812 req · 1.2 M tok left</td><td class="m muted">resets ~12m</td></tr>
+                <tr><td>Groq whisper</td><td class="m">71 req left</td><td class="m muted">≈3 more lectures like this</td></tr>
+                <tr><td>Local Whisper</td><td class="m">available · offline · unlimited</td><td><span class="chip ok">ffmpeg ✓</span></td></tr>
+                <tr><td>Ollama</td><td class="m">reachable</td><td><span class="chip">local LLM</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Next actions</h3>
+          <p class="hint">The four things a student actually does to a lecture. Each queues durable backend work and reports through the job feed.</p>
+          <div class="row wrap">
+            <button class="btn primary" onclick="openModal('mUpload')">↑ Upload lecture</button>
+            <button class="btn" onclick="startProg('extract')">⚙ Extract concepts + build graph</button>
+            <button class="btn" onclick="startProg('clips')">✂ Cut concept clips</button>
+            <button class="btn" onclick="startProg('graph')">◇ Rebuild graph</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== LECTURES -->
+      <section class="view" data-view="lectures">
+        <div class="vhead">
+          <div class="crumbs">ML · library</div>
+          <h1>Lectures</h1>
+          <p>Upload, watch, process, remove. <span class="mono">POST /lectures</span> → <span class="mono">PUT /lectures/{id}/media</span> → concepts → clips.</p>
+        </div>
+
+        <div class="card">
+          <div class="between">
+            <div><h3>Lecture rows</h3><p class="hint" style="margin:0"><span class="mono">GET /lectures?course_id=ml</span></p></div>
+            <button class="btn primary" onclick="openModal('mUpload')">↑ Upload lecture</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Media</th><th>Created</th><th style="text-align:right">Pipeline actions</th></tr></thead>
+            <tbody>
+              <tr><td class="m">#1</td><td><b>Multiple Linear Regression — Geometric Intuition &amp; Code</b></td><td><span class="chip ok">ready</span></td><td>✓</td><td class="m">9/12</td>
+                <td style="text-align:right"><span class="row" style="justify-content:flex-end">
+                  <button class="btn sm" onclick="startProg('extract')">Extract</button>
+                  <button class="btn sm" onclick="startProg('clips')">Cut clips</button>
+                  <button class="btn sm danger" onclick="openModal('mDelLecture')">Remove</button></span></td></tr>
+              <tr><td class="m">#2</td><td><b>Gated Recurrent Unit (GRU) — Deep Learning</b></td><td><span class="chip warn">transcribing</span></td><td>✓</td><td class="m">9/13</td>
+                <td style="text-align:right"><span class="row" style="justify-content:flex-end">
+                  <button class="btn sm" disabled style="opacity:.5;cursor:not-allowed">Extract</button>
+                  <button class="btn sm" disabled style="opacity:.5;cursor:not-allowed">Cut clips</button>
+                  <button class="btn sm danger" onclick="openModal('mDelLecture')">Remove</button></span></td></tr>
+              <tr><td class="m">#5</td><td><b>History of Deep Learning and Applications</b></td><td><span class="chip ok">ready</span></td><td>✓</td><td class="m">9/26</td>
+                <td style="text-align:right"><span class="row" style="justify-content:flex-end">
+                  <button class="btn sm" onclick="startProg('extract')">Extract</button>
+                  <button class="btn sm" onclick="startProg('clips')">Cut clips</button>
+                  <button class="btn sm danger" onclick="openModal('mDelLecture')">Remove</button></span></td></tr>
+            </tbody>
+          </table>
+          <p class="note" style="margin:10px 0 0">Buttons disable while a job is running for that lecture — the busy guard, so a double-click cannot queue duplicate work. Row action failures report inline, never as a traceback.</p>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>Ready to process, but never started</h3>
+            <p class="hint">Media is on the server (<span class="mono">has_media</span>), transcription never ran. <span class="mono">POST /lectures/{id}/rerun</span> — no re-upload.</p>
+            <div style="border:1px solid var(--border);border-radius:10px;padding:10px">
+              <div class="between">
+                <div><b>#7 — Intro to Vectors</b><div class="note">Last error: whisper chunking failed once</div></div>
+                <button class="btn sm" onclick="startProg('transcribe')">Start processing</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Incomplete uploads (no file arrived)</h3>
+            <p class="hint">Row created, stream died. Nothing to resume — these are clutter to delete.</p>
+            <div class="note" style="margin-bottom:9px">#8 — DL basics · no media on the server<br>#9 — Week 3 recap · no media on the server</div>
+            <button class="btn sm danger" onclick="openModal('mDelEmpty')">Delete these empty rows</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Duplicate guard</h3>
+          <p class="hint">Two-clause match on the file stem against lecture titles, scoped to the course. The submit stays blocked until the duplicate is acknowledged.</p>
+          <div class="alert warn">A lecture in this course already looks like this file (#1). Uploading will create a second row.</div>
+          <label class="opt"><input type="checkbox" /> Upload anyway (I know it's a duplicate)</label>
+        </div>
+      </section>
+
+      <!-- ==================================================== CONCEPT MAP -->
+      <section class="view" data-view="map">
+        <div class="vhead">
+          <div class="crumbs">ML · graph</div>
+          <h1>Concept map</h1>
+          <p>Prerequisites sit above what they unlock. <span class="mono">GET /courses/ml/graph</span> · rebuild with <span class="mono">POST /courses/ml/graph</span>.</p>
+        </div>
+
+        <div class="card">
+          <div class="row wrap" style="margin-bottom:10px">
+            <div style="min-width:190px"><div class="micro">Colour by</div><select><option>Learner order (first → last)</option><option>Concept identity</option></select></div>
+            <div style="min-width:170px"><div class="micro">Edge types</div><select><option>transcript, classifier</option><option>transcript only</option></select></div>
+            <div style="min-width:200px"><div class="micro">Concepts shown · 40</div><input class="slider" type="range" min="5" max="181" value="40" oninput="document.getElementById('lim').textContent=this.value"></div>
+            <div><div class="micro">Links drawn</div><div class="mono" style="font-weight:600">84 / 170</div></div>
+            <div style="min-width:170px"><div class="micro">Find concept</div><input type="text" placeholder="e.g. coefficients" /></div>
+            <button class="btn sm">Reset view</button>
+            <button class="btn sm" onclick="startProg('graph')">Rebuild graph</button>
+          </div>
+
+          <div class="note" style="margin-bottom:10px"><b>181 concepts in total · <span id="lim">40</span> shown · acyclic</b> — 141 lower-significance concept(s) hidden to keep this readable. Raise the slider to include them.</div>
+
+          <div class="dag">
+            <svg style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">
+              <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--graph-edge)"/></marker></defs>
+              <line x1="150" y1="78" x2="150" y2="168" stroke="var(--graph-edge)" stroke-width="1.4" marker-end="url(#ar)"/>
+              <line x1="150" y1="168" x2="150" y2="258" stroke="var(--graph-edge)" stroke-width="1.4" marker-end="url(#ar)"/>
+              <line x1="360" y1="78" x2="360" y2="168" stroke="var(--graph-edge)" stroke-width="1.4" marker-end="url(#ar)"/>
+              <line x1="360" y1="168" x2="150" y2="258" stroke="var(--graph-edge)" stroke-width="1" opacity=".75" marker-end="url(#ar)"/>
+              <line x1="560" y1="168" x2="360" y2="258" stroke="var(--graph-edge)" stroke-width="1" opacity=".75" marker-end="url(#ar)"/>
+              <line x1="150" y1="258" x2="360" y2="348" stroke="var(--graph-edge)" stroke-width="1" opacity=".7" marker-end="url(#ar)"/>
+              <line x1="560" y1="258" x2="560" y2="348" stroke="var(--graph-edge)" stroke-width="1" opacity=".7" marker-end="url(#ar)"/>
+            </svg>
+
+            <div class="node" style="left:60px;top:52px;background:hsl(175 42% 28%);color:var(--ink-light)"><span class="b">1</span>multiple linear regression</div>
+            <div class="node" style="left:288px;top:52px;background:hsl(96 42% 28%);color:var(--ink-light)"><span class="b">4</span>beta</div>
+            <div class="node" style="left:60px;top:142px;background:hsl(150 42% 28%);color:var(--ink-light)"><span class="b">2</span>coefficients</div>
+            <div class="node" style="left:300px;top:142px;background:hsl(60 42% 28%);color:var(--ink-light)"><span class="b">5</span>intercept</div>
+            <div class="node" style="left:478px;top:142px;background:hsl(24 42% 28%);color:var(--ink-light)"><span class="b">7</span>synthetic data generation</div>
+            <div class="node" style="left:60px;top:232px;background:hsl(120 42% 28%);color:var(--ink-light)"><span class="b">3</span>weights</div>
+            <div class="node dim" style="left:490px;top:232px;background:hsl(200 42% 24%);color:var(--ink-light)"><span class="b">9</span>HAVING</div>
+            <div class="node" style="left:60px;top:322px;background:hsl(340 42% 28%);color:var(--ink-light)"><span class="b">6</span>simple linear regression</div>
+            <div class="node" style="left:330px;top:322px;background:hsl(280 42% 26%);color:var(--ink-light)"><span class="b">8</span>residuals</div>
+            <div class="mini"></div>
+          </div>
+          <div class="legend"><span><span class="sw" style="background:var(--graph-edge)"></span>arrow = prerequisite link</span><span>badge = learner step</span><span>dimmed = unrelated to the selection</span><span>minimap →</span></div>
+
+          <div class="evbox">
+            <div class="micro" style="margin-bottom:6px">Selected · coefficients · learner step 2 of 181</div>
+            <div style="font-weight:600;font-size:12.5px">NEEDS FIRST (1) — study these before coefficients</div>
+            <div class="note" style="margin:3px 0 10px">multiple linear regression → coefficients <span class="chip info">spoken</span> <span class="mono">conf 0.90</span><br><i>“…each coefficient tells you how much the prediction moves when that feature moves by one…”</i></div>
+            <div style="font-weight:600;font-size:12.5px">UNLOCKS (2) — these need coefficients</div>
+            <div class="note" style="margin-top:3px">coefficients → weights <span class="chip">classifier</span> <span class="mono">conf 0.75</span><br>coefficients → intercept <span class="chip">classifier</span> <span class="mono">conf 0.68</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Learner order — the sequence to study in</h3>
+          <p class="hint">The full topological order. Hidden concepts stay listed but dimmed; hiding is a canvas cut, not a curriculum cut.</p>
+          <div class="seq">
+            <div><span class="n">1</span><span>multiple linear regression</span></div>
+            <div><span class="n">2</span><span>coefficients</span></div>
+            <div><span class="n">3</span><span>weights</span></div>
+            <div><span class="n">4</span><span>beta</span></div>
+            <div><span class="n">5</span><span>intercept</span></div>
+            <div><span class="n">6</span><span>simple linear regression</span></div>
+            <div class="h"><span class="n">7</span><span>HAVING</span></div>
+            <div><span class="n">8</span><span>residuals</span></div>
+            <div class="h"><span class="n">9</span><span>update</span></div>
+            <div><span class="n">10</span><span>synthetic data generation</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== LECTURE DETAIL -->
+      <section class="view" data-view="lecture">
+        <div class="vhead">
+          <div class="crumbs">ML / <b>#1</b></div>
+          <h1>Lecture detail &amp; coverage</h1>
+          <p>How much of the spoken lecture the extracted concepts actually pin down. <span class="mono">GET /lectures/1</span> · progress from <span class="mono">GET /lectures/1/progress</span>.</p>
+        </div>
+
+        <div class="card">
+          <div class="between" style="margin-bottom:12px">
+            <div><div class="micro">Lecture</div><select style="min-width:340px"><option>#1 Multiple Linear Regression — Geometric Intuition &amp; Code</option><option>#2 Gated Recurrent Unit (GRU)</option></select></div>
+            <div class="row"><span class="chip ok">ready</span><span class="note mono">12:07 · 42 concepts</span></div>
+          </div>
+
+          <div class="tl">
+            <svg viewBox="0 0 1000 160" role="img" aria-label="Coverage timeline">
+              <defs><pattern id="tp" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="1" height="6" fill="var(--tick)"/></pattern></defs>
+              <rect x="20" y="44" width="960" height="6" fill="url(#tp)" opacity=".55"/>
+              <rect x="20"  y="40" width="150" height="14" rx="3" fill="var(--covered)" opacity=".8"><title>covered 0:10–2:12</title></rect>
+              <rect x="196" y="40" width="104" height="14" rx="3" fill="var(--covered)" opacity=".8"><title>covered 2:12–3:36</title></rect>
+              <rect x="392" y="40" width="132" height="14" rx="3" fill="var(--covered)" opacity=".8"><title>covered 6:40–7:54</title></rect>
+              <rect x="612" y="40" width="204" height="14" rx="3" fill="var(--covered)" opacity=".8"><title>covered 10:33–13:45</title></rect>
+              <rect x="20"  y="64" width="120" height="16" rx="3" fill="hsl(175 42% 28%)"><title>multiple linear regression</title></rect>
+              <rect x="150" y="86" width="86"  height="16" rx="3" fill="hsl(150 42% 28%)"><title>coefficients</title></rect>
+              <rect x="246" y="108" width="72" height="16" rx="3" fill="hsl(120 42% 28%)"><title>weights</title></rect>
+              <rect x="328" y="64" width="66"  height="16" rx="3" fill="hsl(96 42% 28%)"><title>beta</title></rect>
+              <rect x="404" y="86" width="82"  height="16" rx="3" fill="hsl(60 42% 28%)"><title>intercept</title></rect>
+              <rect x="496" y="108" width="150" height="16" rx="3" fill="hsl(24 42% 28%)"><title>synthetic data generation</title></rect>
+              <text x="28" y="76" font-family="Plus Jakarta Sans" font-size="11" fill="var(--ink-light)">multiple linear regression</text>
+              <text x="336" y="76" font-family="Plus Jakarta Sans" font-size="11" fill="var(--ink-light)">beta</text>
+            </svg>
+          </div>
+          <div class="legend"><span><span class="sw" style="background:var(--covered)"></span>covered speech</span><span><span class="sw" style="background:var(--tick)"></span>transcript ticks</span><span><span class="sw" style="background:hsl(175 42% 28%)"></span>concept bands (learner order)</span><span class="mono">coverage 62% · 7m 31s pinned</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Concept coverage</h3>
+          <p class="hint">Every concept with its window and the sentence that grounds it — the evidence the quiz grader uses.</p>
+          <table>
+            <thead><tr><th style="width:22%">Concept</th><th style="width:12%">Window</th><th>Grounding sentence</th></tr></thead>
+            <tbody>
+              <tr><td><b>multiple linear regression</b></td><td class="m">0:10–2:12</td><td class="ev">“…so instead of one slope we now have a coefficient per input feature…”</td></tr>
+              <tr><td><b>coefficients</b></td><td class="m">2:12–3:36</td><td class="ev">“…each coefficient tells you how much the prediction moves when that feature moves by one…”</td></tr>
+              <tr><td><b>weights</b></td><td class="m">3:36–4:52</td><td class="ev">“…the weights are what the fit is solving for…”</td></tr>
+              <tr><td><b>beta</b></td><td class="m">6:40–7:54</td><td class="ev">“…we usually write this as beta, the vector of parameters…”</td></tr>
+              <tr><td><b>intercept</b></td><td class="m">8:20–9:41</td><td class="ev">“…the intercept is where the plane meets the axis when every feature is zero…”</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Processing states</h3>
+          <p class="hint">What the same screen shows while the pipeline runs, from <span class="mono">/progress</span> and the SSE feed.</p>
+          <div class="alert info" style="margin-bottom:8px"><b>#2 transcribing · 70%</b> — “Persisting concepts, passages, and spoken links…” (35s elapsed, stage from the job registry)<div class="bar" style="margin-top:7px"><i style="width:70%"></i></div></div>
+          <div class="alert warn"><b>Stalled</b> — no heartbeat for 40 ticks. The stage has not advanced; check the worker.</div>
+          <div class="alert bad"><b>Expired</b> — nothing has reported for 6 hours. The spinner has been dropped with an explanation instead of rendering forever.</div>
+        </div>
+      </section>
+
+      <!-- ==================================================== QUIZ -->
+      <section class="view" data-view="quiz">
+        <div class="vhead">
+          <div class="crumbs">ML · diagnostic</div>
+          <h1>Comprehension quiz</h1>
+          <p>Queues generation (<span class="mono">POST /quizzes/jobs</span>), reads the result (<span class="mono">GET /quizzes</span>), grades once (<span class="mono">POST /quizzes/submit</span>).</p>
+        </div>
+
+        <div class="tabs">
+          <div class="tab on" data-qt="start">1 · Start</div>
+          <div class="tab" data-qt="queued">2 · Queued (job)</div>
+          <div class="tab" data-qt="take">3 · Answering</div>
+          <div class="tab" data-qt="result">4 · Result &amp; feedback</div>
+          <div class="tab" data-qt="errors">Error states</div>
+        </div>
+
+        <div class="tp on" data-qp="start">
+          <div class="card">
+            <h3>Ready to be tested?</h3>
+            <p class="hint">Up to 15 questions, drawn evenly from this course's 181 concepts. Generation is one LLM call per question, capped — the cap is why this takes seconds and not minutes.</p>
+            <div class="row"><button class="btn primary">Start quiz</button><span class="note">A quiz you were already taking resumes automatically on reload.</span></div>
+          </div>
+        </div>
+
+        <div class="tp" data-qp="queued">
+          <div class="card">
+            <h3>Queueing quiz generation</h3>
+            <p class="hint">No blocking request — a durable job is created and the quiz opens itself when it lands.</p>
+            <div class="alert info">Quiz generation queued — job #24 appears in Background Tasks and the quiz opens when it is ready.<div class="bar" style="margin-top:8px"><i class="str"></i></div></div>
+            <div class="note">Completion is announced once, in the page body — never inside the progress card, where it would flash and vanish on the next tick.</div>
+          </div>
+        </div>
+
+        <div class="tp" data-qp="take">
+          <div class="card">
+            <div class="between" style="margin-bottom:10px"><div><h3>15 questions ready</h3><p class="hint" style="margin:0">Answers carry a latency stamp; submit is one-shot.</p></div><span class="chip">progress 4 / 15</span></div>
+            <div class="qcard">
+              <p>In multiple linear regression, what does a coefficient represent?</p>
+              <label class="opt"><input type="radio" name="q1" checked /> The change in the prediction per unit change in that feature</label>
+              <label class="opt"><input type="radio" name="q1" /> The number of features in the model</label>
+              <label class="opt"><input type="radio" name="q1" /> The correlation between two features</label>
+            </div>
+            <div class="qcard">
+              <p>The intercept is the prediction when…</p>
+              <label class="opt"><input type="radio" name="q2" checked /> every feature is zero</label>
+              <label class="opt"><input type="radio" name="q2" /> the residuals are largest</label>
+            </div>
+            <div class="qcard">
+              <p>Why generate synthetic data before fitting?</p>
+              <label class="opt"><input type="radio" name="q3" /> to replace the real dataset</label>
+              <label class="opt"><input type="radio" name="q3" checked /> to check the fit behaves on data whose truth you know</label>
+            </div>
+            <button class="btn primary" style="margin-top:6px">Submit answers</button>
+          </div>
+        </div>
+
+        <div class="tp" data-qp="result">
+          <div class="card">
+            <div class="between"><div><div class="micro">Last attempt</div><h3 class="serif" style="font-size:26px">11 / 15 <span class="muted" style="font-size:13px;font-family:var(--sans);font-weight:400">73% correct</span></h3></div><button class="btn sm" onclick="go('remediation')">Study the plan →</button></div>
+          </div>
+          <div class="card">
+            <h3>Per-question feedback</h3>
+            <p class="hint">Correctness, the explanation, the right answer, and why your pick was wrong — in a bounded list, not a wall.</p>
+            <div class="fb"><b>coefficients</b> <span class="tag okc">CORRECT</span><div class="note">✓ A coefficient is the per-unit effect of its feature.</div></div>
+            <div class="fb"><b>intercept</b> <span class="tag okc">CORRECT</span><div class="note">✓ It is the prediction when every feature is zero.</div></div>
+            <div class="fb"><b>residuals</b> <span class="tag badc">WRONG</span><div class="note">correct answer: <b>observed minus predicted</b><br>why your pick was wrong: you chose “the variance of the target”, which is the spread, not the leftover.</div></div>
+            <div class="fb"><b>synthetic data generation</b> <span class="tag badc">WRONG</span><div class="note">correct answer: <b>to check the fit on data whose truth you know</b></div></div>
+          </div>
+        </div>
+
+        <div class="tp" data-qp="errors">
+          <div class="alert warn"><b>409</b> — A quiz is already being generated for this course. Wait for it to finish, then press Generate again.</div>
+          <div class="alert info"><b>404</b> — This course has no concepts yet, so there is nothing to quiz. Extract concepts from a ready lecture first.</div>
+          <div class="alert bad"><b>404 on submit</b> — The quiz on the server was regenerated while you were answering. Generate the quiz again; your answers are not re-submitted against stale ids.</div>
+          <div class="alert warn"><b>Backend cap ignored</b> — The backend returned 74 questions instead of the 15 requested, so it is an older build. Restart it to pick up the cap.</div>
+        </div>
+      </section>
+
+      <!-- ==================================================== REMEDIATION -->
+      <section class="view" data-view="remediation">
+        <div class="vhead">
+          <div class="crumbs">ML · student_1</div>
+          <h1>Remediation</h1>
+          <p>Wrong answers traced backwards along the DAG into the order concepts actually need. <span class="mono">GET /students/student_1/remediation?course_id=ml</span> · re-readable any time.</p>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>Study in this order</h3>
+            <p class="hint">Each step is a prerequisite you have not shown, or a concept you failed. Clips attach where one was cut.</p>
+            <div class="rstep"><span class="rk">1</span><div><b>multiple linear regression</b> <span class="rwhy">(prerequisite)</span>
+              <div class="clip" style="padding:6px 0"><span>▶ multiple linear regression</span><span class="t">0:10–2:12</span></div></div></div>
+            <div class="rstep"><span class="rk">2</span><div><b>beta</b> <span class="rwhy">(prerequisite)</span>
+              <div class="clip" style="padding:6px 0"><span>▶ beta</span><span class="t">6:40–7:54</span></div></div></div>
+            <div class="rstep"><span class="rk">3</span><div><b>residuals</b> <span class="rwhy">(failed)</span>
+              <div class="note" style="padding-top:4px">no clip cut for this concept yet</div></div></div>
+            <div class="rstep" style="border-bottom:none"><span class="rk">4</span><div><b>synthetic data generation</b> <span class="rwhy">(failed)</span>
+              <div class="clip" style="padding:6px 0"><span>▶ synthetic data generation</span><span class="t">12:55–13:45</span></div></div></div>
+          </div>
+
+          <div class="card">
+            <h3>Playing a remediation clip</h3>
+            <p class="hint">Served from <span class="mono">/media/clips/1/…</span> — byte-range capable, never a filesystem path.</p>
+            <div class="player"><div class="pl">▶</div><div class="cap">multiple linear regression · 0:10 / 2:12</div><div class="scrub"><i></i></div></div>
+            <div class="note" style="margin-top:9px">A playing clip survives job ticks: progress updates never re-render the player.</div>
+          </div>
+        </div>
+
+        <div class="card"><div class="alert ok" style="margin:0"><b>Nothing to remediate</b> — all upstream concepts mastered. Shown instead of an empty list.</div></div>
+      </section>
+
+      <!-- ==================================================== CLIPS -->
+      <section class="view" data-view="clips">
+        <div class="vhead">
+          <div class="crumbs">ML / #1</div>
+          <h1>Clip library</h1>
+          <p>Every clip cut for a lecture. <span class="mono">GET /lectures/1/clips</span> · cut with <span class="mono">POST /lectures/1/clips</span>.</p>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="between" style="margin-bottom:9px">
+              <div><div class="micro">Lecture</div><select style="min-width:270px"><option>#1 Multiple Linear Regression</option><option>#2 Gated Recurrent Unit (GRU)</option></select></div>
+              <span class="chip info">9 playable</span>
+            </div>
+            <div class="clip on"><span>multiple linear regression</span><span class="t">0:10–2:12</span></div>
+            <div class="clip"><span>simple linear regression</span><span class="t">0:10–2:12</span></div>
+            <div class="clip"><span>multiple linear regression equation</span><span class="t">2:12–3:20</span></div>
+            <div class="clip"><span>coefficients</span><span class="t">6:40–7:54</span></div>
+            <div class="clip"><span>weights</span><span class="t">6:40–7:54</span></div>
+            <div class="clip"><span>beta</span><span class="t">10:33–11:40</span></div>
+            <div class="clip"><span>intercept</span><span class="t">10:33–11:40</span></div>
+            <div class="clip"><span>synthetic data generation</span><span class="t">12:55–13:45</span></div>
+            <div class="alert warn" style="margin:11px 0 0">3 clip row(s) have no media file on the server, so they cannot be played. Re-run “Cut concept clips” to rebuild them.</div>
+          </div>
+
+          <div class="card">
+            <h3>Coefficients — 2:12 to 3:36</h3>
+            <p class="hint">Bound to the canonical media URL: <span class="mono">/media/clips/1/coefficients.mp4</span></p>
+            <div class="player"><div class="pl">▶</div><div class="cap">2:12 / 3:36</div><div class="scrub"><i></i></div></div>
+            <div class="note" style="margin-top:9px">Percent-encoded filename — concept names with spaces are why playback once failed silently.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== FACULTY: ANALYTICS -->
+      <section class="view" data-view="analytics">
+        <div class="vhead">
+          <div class="crumbs">ML · faculty</div>
+          <h1>Analytics</h1>
+          <p>Taught-vs-learned divergence for the whole course. <span class="mono">GET /courses/ml/stats</span> · DAG from <span class="mono">/courses/ml/graph</span>.</p>
+        </div>
+
+        <div class="strip">
+          <div class="stat"><div class="v">170 <small>edges</small></div><div class="s">181 nodes · cycles 0 (strict partial order)</div></div>
+          <div class="stat"><div class="v">12</div><div class="s">root concepts (in-degree = 0)</div></div>
+          <div class="stat"><div class="v" style="color:var(--warn)">4</div><div class="s">critical gaps · failure rate &gt; 35%</div></div>
+          <div class="stat"><div class="v">2.4</div><div class="s">mean step-rank displacement</div></div>
+        </div>
+
+        <div class="card">
+          <div class="between" style="margin-bottom:12px"><div><h3>Prerequisite DAG</h3><p class="hint" style="margin:0">The same map students see, with transcript evidence on every edge.</p></div><button class="btn sm" onclick="startProg('graph')">Rebuild prerequisite DAG</button></div>
+          <div class="dag" style="height:330px">
+            <svg style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">
+              <line x1="170" y1="70" x2="170" y2="150" stroke="var(--graph-edge)" stroke-width="1.4" marker-end="url(#ar)"/>
+              <line x1="390" y1="70" x2="390" y2="150" stroke="var(--graph-edge)" stroke-width="1.4" marker-end="url(#ar)"/>
+              <line x1="170" y1="150" x2="170" y2="230" stroke="var(--graph-edge)" stroke-width="1.2" marker-end="url(#ar)"/>
+            </svg>
+            <div class="node" style="left:80px;top:44px;background:hsl(175 42% 28%);color:var(--ink-light)"><span class="b">1</span>multiple linear regression</div>
+            <div class="node" style="left:320px;top:44px;background:hsl(96 42% 28%);color:var(--ink-light)"><span class="b">4</span>beta</div>
+            <div class="node" style="left:80px;top:124px;background:hsl(150 42% 28%);color:var(--ink-light)"><span class="b">2</span>coefficients</div>
+            <div class="node" style="left:320px;top:124px;background:hsl(60 42% 28%);color:var(--ink-light)"><span class="b">5</span>intercept</div>
+            <div class="node" style="left:80px;top:204px;background:hsl(120 42% 28%);color:var(--ink-light)"><span class="b">3</span>weights</div>
+            <div class="mini"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== HEATMAP -->
+      <section class="view" data-view="heatmap">
+        <div class="vhead">
+          <div class="crumbs">ML · stats</div>
+          <h1>Confusion heatmap</h1>
+          <p>Wrong-answer rate per concept, highest first. <span class="mono">stats.heatmap</span> from <span class="mono">GET /courses/ml/stats</span>.</p>
+        </div>
+
+        <div class="card">
+          <p class="hint">The bar is the wrong-answer rate; the counts behind it are always shown, so a single attempt never reads as a pattern.</p>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div class="row"><span style="flex:1;min-width:180px"><b>synthetic data generation</b></span><span style="width:150px;display:flex;gap:2px" class="bars"><i style="width:78%;background:var(--bad)"></i></span><span class="note mono" style="width:110px">78% (7/9)</span></div>
+            <div class="row"><span style="flex:1;min-width:180px"><b>residuals</b></span><span style="width:150px;display:flex;gap:2px" class="bars"><i style="width:57%;background:var(--bad)"></i></span><span class="note mono" style="width:110px">57% (4/7)</span></div>
+            <div class="row"><span style="flex:1;min-width:180px"><b>intercept</b></span><span style="width:150px;display:flex;gap:2px" class="bars"><i style="width:42%;background:var(--warn)"></i></span><span class="note mono" style="width:110px">42% (3/7)</span></div>
+            <div class="row"><span style="flex:1;min-width:180px"><b>weights</b></span><span style="width:150px;display:flex;gap:2px" class="bars"><i style="width:31%;background:var(--warn)"></i></span><span class="note mono" style="width:110px">31% (2/6)</span></div>
+            <div class="row"><span style="flex:1;min-width:180px"><b>coefficients</b></span><span style="width:150px;display:flex;gap:2px" class="bars"><i style="width:18%;background:var(--ok)"></i></span><span class="note mono" style="width:110px">18% (1/6)</span></div>
+          </div>
+        </div>
+        <div class="card"><div class="alert info" style="margin:0">No graded answers yet — students must submit a quiz first. Shown instead of an empty chart.</div></div>
+      </section>
+
+      <!-- ==================================================== DIVERGENCE -->
+      <section class="view" data-view="divergence">
+        <div class="vhead">
+          <div class="crumbs">ML · stats</div>
+          <h1>Taught vs learned</h1>
+          <p>Where the taught order and the order students actually learned in disagree. <span class="mono">stats.divergence</span> + <span class="mono">taught_order</span> / <span class="mono">learned_order</span>.</p>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>Displacement, per concept</h3>
+            <p class="hint">→ later means students learned it after you taught it. ← earlier is the reverse. = is agreement.</p>
+            <table>
+              <thead><tr><th>Concept</th><th>Taught</th><th>Learned</th><th>Gap</th></tr></thead>
+              <tbody>
+                <tr><td><b>synthetic data generation</b></td><td class="m">#9</td><td class="m">#12</td><td class="m">→ later (+3)</td></tr>
+                <tr><td><b>residuals</b></td><td class="m">#5</td><td class="m">#8</td><td class="m">→ later (+3)</td></tr>
+                <tr><td><b>intercept</b></td><td class="m">#4</td><td class="m">#3</td><td class="m">← earlier (−1)</td></tr>
+                <tr><td><b>coefficients</b></td><td class="m">#2</td><td class="m">#2</td><td class="m">=</td></tr>
+                <tr><td><b>phantom concept</b></td><td class="m">—</td><td class="m">#6</td><td class="m">no taught position</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3>The two sequences</h3>
+            <p class="hint">Side by side, so a lecture-order change can be argued from data rather than memory.</p>
+            <div class="grid2" style="grid-template-columns:1fr 1fr;gap:12px">
+              <div><div class="micro" style="margin-bottom:5px">Taught</div><div class="seq"><div><span class="n">1</span><span>multiple linear regression</span></div><div><span class="n">2</span><span>coefficients</span></div><div><span class="n">3</span><span>weights</span></div><div><span class="n">4</span><span>intercept</span></div><div><span class="n">5</span><span>residuals</span></div></div></div>
+              <div><div class="micro" style="margin-bottom:5px">Learned</div><div class="seq"><div><span class="n">1</span><span>multiple linear regression</span></div><div><span class="n">2</span><span>coefficients</span></div><div><span class="n">3</span><span>intercept</span></div><div><span class="n">4</span><span>weights</span></div><div><span class="n">5</span><span>synthetic data generation</span></div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== COVERAGE -->
+      <section class="view" data-view="coverage">
+        <div class="vhead">
+          <div class="crumbs">ML · faculty</div>
+          <h1>Lecture coverage</h1>
+          <p>Which parts of a lecture the extracted concepts do and do not pin down. Same timeline the student sees, from the faculty picker.</p>
+        </div>
+        <div class="card">
+          <div class="between" style="margin-bottom:12px">
+            <div><div class="micro">Lecture</div><select style="min-width:320px"><option>#1 Multiple Linear Regression</option><option>#2 Gated Recurrent Unit (GRU)</option><option>#5 History of Deep Learning</option></select></div>
+            <span class="note mono">coverage 62% · gaps visible as bare track</span>
+          </div>
+          <div class="tl">
+            <svg viewBox="0 0 1000 120" role="img" aria-label="Faculty coverage">
+              <rect x="20" y="44" width="960" height="6" fill="url(#tp)" opacity=".5"/>
+              <rect x="20" y="40" width="150" height="14" rx="3" fill="var(--covered)" opacity=".8"/>
+              <rect x="196" y="40" width="104" height="14" rx="3" fill="var(--covered)" opacity=".8"/>
+              <rect x="392" y="40" width="132" height="14" rx="3" fill="var(--covered)" opacity=".8"/>
+              <rect x="612" y="40" width="204" height="14" rx="3" fill="var(--covered)" opacity=".8"/>
+              <text x="20" y="82" font-family="JetBrains Mono" font-size="10" fill="var(--muted)">0:00</text>
+              <text x="920" y="82" font-family="JetBrains Mono" font-size="10" fill="var(--muted)">12:07</text>
+            </svg>
+          </div>
+          <div class="legend"><span><span class="sw" style="background:var(--covered)"></span>speech pinned by concepts</span><span>bare track = nothing extracted there</span></div>
+        </div>
+      </section>
+
+      <!-- ==================================================== JOBS -->
+      <section class="view" data-view="jobs">
+        <div class="vhead">
+          <div class="crumbs">ML · system</div>
+          <h1>Background tasks</h1>
+          <p>Durable job registry. <span class="mono">GET /jobs</span> and the SSE stream on <span class="mono">/jobs/stream</span>. Cancel via <span class="mono">POST /jobs/{id}/cancel</span>.</p>
+        </div>
+
+        <div class="strip">
+          <div class="stat"><div class="v">1</div><div class="s">running now</div></div>
+          <div class="stat"><div class="v">3</div><div class="s">finished this session</div></div>
+          <div class="stat"><div class="v">1</div><div class="s">orphaned at last restart</div></div>
+          <div class="stat"><div class="v" style="font-size:15px;font-family:var(--mono)">#142</div><div class="s">snapshot change token</div></div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>Job</th><th>Kind</th><th>Target</th><th>Status</th><th>Stage</th><th>Progress</th><th>Elapsed</th><th style="text-align:right">Action</th></tr></thead>
+            <tbody>
+              <tr><td class="m">#24</td><td>extract</td><td>#2 GRU — Deep Learning</td><td><span class="chip warn">running</span></td><td class="note">extracting</td><td style="width:120px"><div class="bar"><i style="width:70%"></i></div><span class="note mono">70%</span></td><td class="m">35s</td><td style="text-align:right"><button class="btn sm danger" onclick="openModal('mDelEmpty')">Cancel</button></td></tr>
+              <tr><td class="m">#23</td><td>clips</td><td>#1 Multiple Linear Regression</td><td><span class="chip ok">ready</span></td><td class="note">done</td><td><span class="note mono">100%</span></td><td class="m">4m 12s</td><td style="text-align:right">—</td></tr>
+              <tr><td class="m">#22</td><td>graph</td><td>course ML</td><td><span class="chip ok">ready</span></td><td class="note">done</td><td><span class="note mono">100%</span></td><td class="m">1m 03s</td><td style="text-align:right">—</td></tr>
+              <tr><td class="m">#21</td><td>transcribe</td><td>#3 Week 3 recap</td><td><span class="chip bad">orphaned</span></td><td class="note">—</td><td><span class="note mono">—</span></td><td class="m">—</td><td style="text-align:right">—</td></tr>
+            </tbody>
+          </table>
+          <p class="note" style="margin:10px 0 0"><b>Orphaned</b> means the server restarted while the job was running; nothing is executing it any more. That is stated plainly rather than shown as a stuck spinner.</p>
+        </div>
+      </section>
+
+      <!-- ==================================================== SYSTEM -->
+      <section class="view" data-view="system">
+        <div class="vhead">
+          <div class="crumbs">ML · system</div>
+          <h1>System &amp; quota</h1>
+          <p>What the backend can do right now, and what it will refuse. <span class="mono">GET /usage</span> · <span class="mono">GET /health</span> · <span class="mono">GET /llm/backends</span>.</p>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>Quota detail</h3>
+            <table>
+              <tbody>
+                <tr><td>Groq chat</td><td class="m">4 812 requests left</td><td class="m">1.2 M tokens left</td><td class="note">resets ~12m</td></tr>
+                <tr><td>Groq whisper</td><td class="m">71 requests left</td><td colspan="2" class="note">this lecture ≈ 4 requests ≈ 3 more like it</td></tr>
+                <tr><td>Local Whisper</td><td class="m">available · offline · unlimited</td><td colspan="2"><span class="chip ok">ffmpeg ✓</span></td></tr>
+                <tr><td>Ollama</td><td class="m">reachable</td><td colspan="2" class="note">local LLM fallback for chat</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>Feed &amp; connectivity</h3>
+            <div class="row" style="margin-bottom:8px"><span class="dot ok"></span><b>SSE Live</b><span class="note">— event stream over the dev proxy; jobs update without a reload.</span></div>
+            <div class="row" style="margin-bottom:8px"><span class="dot warn"></span><b>Polling</b><span class="note">— stream unavailable, falling back to 1 Hz <span class="mono">GET /jobs</span>. Still updating.</span></div>
+            <div class="row"><span class="dot"></span><b>Disconnected</b><span class="note">— the feed gave up. Progress will not update until it reconnects.</span></div>
+            <p class="note" style="margin-top:10px">The three states are distinct on purpose: “polling” is degraded-but-working, “disconnected” is terminal. One label for both would read as a lie.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Failure surfaces</h3>
+          <div class="alert bad"><b>401</b> — the API key is missing or wrong. One banner at the top of the page, with a Retry that re-checks and refetches.</div>
+          <div class="alert warn"><b>Course delete</b> — the last remaining course cannot be deleted from the UI: with no course selected there is no path to create the next one. The command refuses rather than stranding you.</div>
+          <div class="alert info"><b>Render failure</b> — any page that throws shows a panel naming the page and offering Retry; the navbar and job drawer stay mounted so you can still see what happened.</div>
+          <div class="alert ok"><b>Nothing here yet</b> — empty states say what to do next, never a blank rectangle.</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== DRAWER -->
+<div class="scrim" id="scrim" onclick="closeOverlays()"></div>
+<aside class="drawer" id="drawer">
+  <header>
+    <b>Background tasks</b>
+    <span class="chip ok" id="drawerChip">SSE Live</span>
+    <span class="spacer" style="flex:1"></span>
+    <button class="ico" onclick="closeOverlays()">✕</button>
+  </header>
+  <div class="body">
+    <div class="note" style="margin-bottom:10px">Snapshot #142</div>
+    <div style="border:1px solid var(--border);border-radius:11px;padding:11px;margin-bottom:11px">
+      <div class="between"><b>#24 · extract</b><span class="chip warn">running</span></div>
+      <div class="note" style="margin:5px 0 7px">Reading the lecture structure (passages, concepts, spoken prerequisite links)… — Persisting concepts, passages, and spoken links…</div>
+      <div class="bar" id="jobBar"><i style="width:70%"></i></div>
+      <div class="between" style="margin-top:6px"><span class="note mono" id="jobPct">70%</span><button class="btn sm danger" onclick="cancelJob()">Cancel task</button></div>
+    </div>
+    <div class="alert warn" style="display:none" id="stallMsg">Stalled — the stage has not advanced for 40 ticks.</div>
+    <div class="note">Terminal jobs leave this view after one render; completions are announced in the page body instead of accumulating here.</div>
+  </div>
+</aside>
+
+<!-- ============================================================== MODALS -->
+<div class="modal" id="mUpload">
+  <div class="sheet">
+    <h3>Upload lecture</h3>
+    <div class="mbody">
+      <div class="micro" style="margin-bottom:5px">Transcription backend</div>
+      <select style="margin-bottom:12px"><option>auto — Groq when available, else local Whisper</option><option>local</option><option>groq</option></select>
+      <div class="micro" style="margin-bottom:5px">Lecture title</div>
+      <input type="text" placeholder="e.g. Lecture 1 — Introduction to Vectors" style="margin-bottom:12px" />
+      <div class="micro" style="margin-bottom:5px">Media file</div>
+      <div style="border:1px dashed var(--border);border-radius:10px;padding:16px;text-align:center" class="note">linear regression.mp4 · 412 MB</div>
+
+      <div class="alert warn" style="margin-top:12px">A lecture in this course already looks like this file (#1). Uploading will create a second row.</div>
+      <label class="opt"><input type="checkbox" /> Upload anyway (I know it's a duplicate)</label>
+
+      <div style="margin-top:12px">
+        <div class="between" style="margin-bottom:5px"><span class="note">Uploading media stream…</span><span class="note mono" id="upPct">Uploading…</span></div>
+        <div class="bar"><i class="str" id="upBar"></i></div>
+        <div class="note" style="margin-top:5px">Streamed in 1 MiB chunks with real progress, cancellable between chunks — a frozen 0% reads as “stalled”, so it is honest instead.</div>
+      </div>
+    </div>
+    <footer>
+      <button class="btn" onclick="closeOverlays()">Cancel</button>
+      <button class="btn primary" onclick="closeOverlays();startProg('transcribe')">Upload &amp; transcribe</button>
+    </footer>
+  </div>
+</div>
+
+<div class="modal" id="mDelCourse">
+  <div class="sheet">
+    <h3>Delete course ML?</h3>
+    <div class="mbody"><p class="note">Every lecture, concept, graph edge, clip, quiz question <b>and job row</b> for this course goes too. Media files and cut clips are removed from disk. This cannot be undone.</p></div>
+    <footer><button class="btn" onclick="closeOverlays()">Cancel</button><button class="btn danger" onclick="closeOverlays()">Delete course</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="mDelLecture">
+  <div class="sheet">
+    <h3>Remove this session?</h3>
+    <div class="mbody"><p class="note"><b>Multiple Linear Regression — Geometric Intuition &amp; Code</b> will be removed from ML. Everything derived from it goes too: the transcript, its extracted concepts and topics, every clip cut from it, and its quiz coverage. This cannot be undone.</p></div>
+    <footer><button class="btn" onclick="closeOverlays()">Cancel</button><button class="btn danger" onclick="closeOverlays()">Remove session</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="mDelEmpty">
+  <div class="sheet">
+    <h3>Delete empty rows?</h3>
+    <div class="mbody"><p class="note">2 rows with no media on the server will be deleted. This cannot be undone.</p></div>
+    <footer><button class="btn" onclick="closeOverlays()">Cancel</button><button class="btn danger" onclick="closeOverlays()">Delete empty rows</button></footer>
+  </div>
+</div>
+
+<!-- =============================================================== TOAST -->
+<div class="toast" id="toast">
+  <div class="between"><b>Clips cut for #1</b><button class="btn sm" onclick="document.getElementById('toast').classList.remove('on')">Dismiss</button></div>
+  <div class="note" style="margin-top:3px">9 clips are ready. The library below has been refreshed.</div>
+</div>
+
+<script>
+/* ------------------------------------------------------------- navigation */
+var NAV = {
+  overview:'ML / overview', lectures:'ML / lectures', map:'ML / graph',
+  lecture:'ML / #1', quiz:'ML / quiz', remediation:'ML / student_1',
+  clips:'ML / #1 / clips', analytics:'ML / faculty', heatmap:'ML / stats',
+  divergence:'ML / stats', coverage:'ML / faculty', jobs:'ML / jobs', system:'ML / system'
+}
+function go(v) {
+  document.querySelectorAll('.view').forEach(function (s) { s.classList.toggle('on', s.getAttribute('data-view') === v) })
+  document.querySelectorAll('.nav').forEach(function (n) { n.classList.toggle('on', n.getAttribute('data-go') === v) })
+  document.getElementById('crumbs').innerHTML = (NAV[v] || 'ML').replace(/\/([^/]+)$/, '/ <b>$1</b>')
+  document.querySelector('.content').scrollTop = 0
+}
+document.querySelectorAll('.nav').forEach(function (n) {
+  n.addEventListener('click', function () { go(n.getAttribute('data-go')) })
+})
+
+/* ------------------------------------------------------------------ theme */
+function toggleTheme() {
+  var r = document.documentElement
+  var next = r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+  r.setAttribute('data-theme', next)
+  document.getElementById('themeBtn').textContent = next === 'dark' ? 'Light' : 'Dark'
+}
+
+/* --------------------------------------------------------------- overlays */
+function openDrawer() { document.getElementById('drawer').classList.add('on'); document.getElementById('scrim').classList.add('on') }
+function openModal(id) { document.getElementById(id).classList.add('on'); document.getElementById('scrim').classList.add('on') }
+function closeOverlays() {
+  document.querySelectorAll('.modal').forEach(function (m) { m.classList.remove('on') })
+  document.getElementById('drawer').classList.remove('on')
+  document.getElementById('scrim').classList.remove('on')
+}
+function cancelJob() {
+  var bar = document.getElementById('jobBar').firstElementChild
+  bar.className = ''; bar.style.width = '0%'
+  document.getElementById('jobPct').textContent = 'cancelled'
+  document.getElementById('drawerChip').textContent = 'Cancelled'
+  document.getElementById('drawerChip').className = 'chip bad'
+  setTimeout(closeOverlays, 700)
+}
+function toast() { document.getElementById('toast').classList.add('on'); setTimeout(function () { document.getElementById('toast').classList.remove('on') }, 6000) }
+function toggleAuth() { document.getElementById('authBanner').classList.toggle('on') }
+
+/* quiz state tabs */
+document.querySelectorAll('[data-qt]').forEach(function (t) {
+  t.addEventListener('click', function () {
+    document.querySelectorAll('[data-qt]').forEach(function (x) { x.classList.toggle('on', x === t) })
+    var want = t.getAttribute('data-qt')
+    document.querySelectorAll('[data-qp]').forEach(function (p) { p.classList.toggle('on', p.getAttribute('data-qp') === want) })
+  })
+})
+
+/* a job that actually progresses, so the live feel is visible */
+var progTimer = null
+function startProg(kind) {
+  var bar = document.getElementById('jobBar').firstElementChild
+  var pctEl = document.getElementById('jobPct')
+  var chip = document.getElementById('drawerChip')
+  var p = 0
+  chip.textContent = 'SSE Live'; chip.className = 'chip ok'
+  bar.className = ''; bar.style.width = '0%'; pctEl.textContent = '0%'
+  openDrawer()
+  clearInterval(progTimer)
+  progTimer = setInterval(function () {
+    p = Math.min(100, p + 4 + Math.random() * 7)
+    bar.style.width = p.toFixed(0) + '%'
+    pctEl.textContent = p.toFixed(0) + '%'
+    if (p >= 100) {
+      clearInterval(progTimer)
+      chip.textContent = 'Done'; chip.className = 'chip ok'
+      closeOverlays()
+      toast()
+    }
+  }, 240)
+}
+</script>
+</body>
+</html>
