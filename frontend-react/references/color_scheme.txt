@@ -1,0 +1,8 @@
+{
+  "warmAlabaster": "#FAF7F2",
+  "pureCream": "#FFFFFF",
+  "deepEspresso": "#2C2520",
+  "sandDrift": "#EAE3D8",
+  "deepSeaTeal": "#0F766E",
+  "tealLight": "#E2EFEF"
+}

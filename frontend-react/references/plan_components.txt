@@ -1,0 +1,6 @@
+{
+  "Styling Engine": "NativeWind v4 (Tailwind CSS for React Native)",
+  "UI Components": "Gluestack UI v2 OR shadcn-react-native (Community Port)",
+  "Media Engine": "expo-video (For robust playback control and sync)",
+  "Animations": "React Native Reanimated (For buttery smooth sidebar transitions)"
+}

@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LecGap Studio — Comprehension Gap & Prerequisite Intelligence</title>
+  <meta name="description" content="A calm, intellectual workspace for lecture comprehension gap detection, prerequisite graph discovery, and personalized video remediation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ==========================================================================
+       NOTEBOOKLM / CALM EDITORIAL DESIGN SYSTEM
+       Warm paper, tactile typography, soft intellectual neutrals, refined sage.
+       ========================================================================== */
+    :root {
+      --font-display: 'Newsreader', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+
+      /* Soft Linen / Warm Paper Light Theme (Default) */
+      --bg-page: #FBFBF9;
+      --bg-surface: #FFFFFF;
+      --bg-surface-elevated: #FFFFFF;
+      --bg-subtle: #F4F3EF;
+      --bg-subtle-hover: #ECEAE4;
+      --border-subtle: #E8E6DF;
+      --border-medium: #DCD9D0;
+      --border-strong: #BCB8AC;
+
+      --text-primary: #1C1B18;
+      --text-secondary: #57554F;
+      --text-muted: #828078;
+      --text-faint: #ABA89E;
+
+      /* Calm, intellectual accents (soft sage, warm clay, soft amber) */
+      --accent-sage: #2D5A46;
+      --accent-sage-bg: #EDF4F0;
+      --accent-sage-border: #C8DFD4;
+      --accent-sage-text: #1E4233;
+
+      --accent-clay: #B85338;
+      --accent-clay-bg: #FAF0ED;
+      --accent-clay-border: #F0D2C9;
+      --accent-clay-text: #8E3B24;
+
+      --accent-amber: #A66E22;
+      --accent-amber-bg: #FAF4EB;
+      --accent-amber-border: #EEDCBE;
+      --accent-amber-text: #784E14;
+
+      --accent-indigo: #3D5A80;
+      --accent-indigo-bg: #F0F4F8;
+      --accent-indigo-border: #CCD8E4;
+      --accent-indigo-text: #293E58;
+
+      --shadow-sm: 0 1px 2px rgba(28, 27, 24, 0.04);
+      --shadow-md: 0 4px 12px rgba(28, 27, 24, 0.06);
+      --shadow-lg: 0 12px 32px rgba(28, 27, 24, 0.08);
+
+      --connector-stroke: #DCD9D0;
+      --connector-active: #2D5A46;
+    }
+
+    [data-theme="dark"] {
+      /* Soft Obsidian / Warm Charcoal Dark Theme */
+      --bg-page: #131312;
+      --bg-surface: #1B1B19;
+      --bg-surface-elevated: #222220;
+      --bg-subtle: #242421;
+      --bg-subtle-hover: #2D2D29;
+      --border-subtle: #2C2C28;
+      --border-medium: #3A3A35;
+      --border-strong: #52524C;
+
+      --text-primary: #EDECE8;
+      --text-secondary: #A6A49C;
+      --text-muted: #7E7C75;
+      --text-faint: #54534E;
+
+      --accent-sage: #4E876C;
+      --accent-sage-bg: rgba(78, 135, 108, 0.14);
+      --accent-sage-border: rgba(78, 135, 108, 0.32);
+      --accent-sage-text: #8AC7A9;
+
+      --accent-clay: #D66D52;
+      --accent-clay-bg: rgba(214, 109, 82, 0.14);
+      --accent-clay-border: rgba(214, 109, 82, 0.32);
+      --accent-clay-text: #F0A592;
+
+      --accent-amber: #D19445;
+      --accent-amber-bg: rgba(209, 148, 69, 0.14);
+      --accent-amber-border: rgba(209, 148, 69, 0.32);
+      --accent-amber-text: #E8BF87;
+
+      --accent-indigo: #628BB8;
+      --accent-indigo-bg: rgba(98, 139, 184, 0.14);
+      --accent-indigo-border: rgba(98, 139, 184, 0.32);
+      --accent-indigo-text: #ADC8E6;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
+
+      --connector-stroke: #33332E;
+      --connector-active: #4E876C;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Studio Bar */
+    .studio-header {
+      height: 56px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--accent-sage-bg);
+      border: 1px solid var(--accent-sage-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-sage-text);
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .notebook-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notebook-title {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .notebook-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot-subtle {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-sage);
+      display: inline-block;
+    }
+
+    /* Central Workspace View Mode Pills */
+    .view-mode-tabs {
+      display: flex;
+      align-items: center;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .view-tab {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: var(--font-sans);
+    }
+
+    .view-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .view-tab.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Subtle buttons */
+    .btn-subtle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn-subtle:hover {
+      background: var(--bg-subtle-hover);
+      color: var(--text-primary);
+      border-color: var(--border-medium);
+    }
+
+    .btn-primary-calm {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--text-primary);
+      color: var(--bg-surface);
+      border: 1px solid var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn-primary-calm:hover {
+      opacity: 0.9;
+    }
+
+    /* 3-Pane NotebookLM Studio Layout */
+    .studio-container {
+      display: grid;
+      grid-template-columns: 310px 1fr 380px;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* PANE 1: Sources & Lectures (Left) */
+    .sources-pane {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .pane-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pane-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sources-list {
+      padding: 14px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .source-card {
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .source-card:hover {
+      border-color: var(--border-medium);
+      background: var(--bg-subtle);
+    }
+
+    .source-card.active {
+      border-color: var(--accent-sage-border);
+      background: var(--accent-sage-bg);
+    }
+
+    .source-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .source-file-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .source-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .source-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+    }
+
+    .pill-calm {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 10.5px;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+
+    .pill-sage {
+      background: var(--accent-sage-bg);
+      color: var(--accent-sage-text);
+      border-color: var(--accent-sage-border);
+    }
+
+    .pill-clay {
+      background: var(--accent-clay-bg);
+      color: var(--accent-clay-text);
+      border-color: var(--accent-clay-border);
+    }
+
+    .pill-subtle {
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border-color: var(--border-subtle);
+    }
+
+    .sources-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* PANE 2: Main Intellectual Canvas (Center) */
+    .canvas-pane {
+      background: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .canvas-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 32px 100px 32px;
+      gap: 24px;
+      max-width: 1080px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Editorial Headline Block */
+    .editorial-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .editorial-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .editorial-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: -0.015em;
+      color: var(--text-primary);
+      line-height: 1.25;
+    }
+
+    .editorial-desc {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      max-width: 760px;
+      line-height: 1.6;
+    }
+
+    /* NotebookLM Prerequisite Mindmap Canvas */
+    .mindmap-board {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mindmap-topbar {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-subtle);
+    }
+
+    .mindmap-canvas-area {
+      position: relative;
+      height: 480px;
+      background: radial-gradient(var(--border-subtle) 1px, transparent 1px);
+      background-size: 20px 20px;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    .mindmap-canvas-area:active {
+      cursor: grabbing;
+    }
+
+    /* Mindmap SVG Connectors & Cards */
+    .concept-card-node {
+      position: absolute;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 190px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .concept-card-node:hover {
+      border-color: var(--accent-sage);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .concept-card-node.selected {
+      border-color: var(--accent-sage);
+      box-shadow: 0 0 0 2px var(--accent-sage-border), var(--shadow-md);
+      background: var(--bg-surface-elevated);
+    }
+
+    .concept-card-node.gap-alert {
+      border-left: 3px solid var(--accent-clay);
+    }
+
+    .concept-card-node.root-node {
+      border-top: 3px solid var(--accent-sage);
+    }
+
+    .node-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .node-title-text {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .node-sub-meta {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* Synchronized Lecture Transcript View */
+    .transcript-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .transcript-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: background 0.12s ease;
+      cursor: pointer;
+    }
+
+    .transcript-entry:hover {
+      background: var(--bg-subtle);
+    }
+
+    .transcript-entry.active-playing {
+      background: var(--accent-sage-bg);
+      border-left: 2px solid var(--accent-sage);
+    }
+
+    .transcript-time-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 2px 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .transcript-body {
+      font-size: 13.5px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .concept-inline-tag {
+      background: var(--accent-sage-bg);
+      color: var(--accent-sage-text);
+      border-bottom: 1px solid var(--accent-sage-border);
+      padding: 0 4px;
+      border-radius: 3px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Taught vs. Learned Divergence Flow Canvas */
+    .divergence-board {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .divergence-flow-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px;
+      background: var(--bg-subtle);
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* PANE 3: Studio & Gap Remediation (Right) */
+    .studio-pane {
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .studio-tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-subtle);
+    }
+
+    .studio-tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.12s ease;
+    }
+
+    .studio-tab.active {
+      color: var(--text-primary);
+      font-weight: 600;
+      background: var(--bg-surface);
+      border-bottom-color: var(--accent-sage);
+    }
+
+    .studio-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Remediation Card Standard (NotebookLM Audio/Video Snippet) */
+    .remediation-hero-card {
+      background: var(--bg-page);
+      border: 1px solid var(--border-medium);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .remediation-video-thumb {
+      height: 160px;
+      background: #0D0F14;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      overflow: hidden;
+    }
+
+    .remediation-play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1C1B18;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .remediation-play-btn:hover {
+      transform: scale(1.08);
+      background: #FFFFFF;
+    }
+
+    .remediation-details {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .remediation-rationale {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--accent-clay-bg);
+      border-left: 2px solid var(--accent-clay);
+      padding: 8px 10px;
+      border-radius: 0 6px 6px 0;
+      line-height: 1.45;
+    }
+
+    /* Adaptive Check Card */
+    .quiz-card {
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .quiz-q-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .quiz-choice-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      background: var(--bg-surface);
+      font-size: 12.5px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .quiz-choice-item:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-subtle);
+    }
+
+    .quiz-choice-item.selected-wrong {
+      border-color: var(--accent-clay-border);
+      background: var(--accent-clay-bg);
+      color: var(--accent-clay-text);
+    }
+
+    .quiz-choice-item.selected-correct {
+      border-color: var(--accent-sage-border);
+      background: var(--accent-sage-bg);
+      color: var(--accent-sage-text);
+    }
+
+    /* Bottom Docked Lecture Audio Player */
+    .bottom-player-bar {
+      height: 64px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: relative;
+      z-index: 60;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+    }
+
+    .player-track-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 280px;
+    }
+
+    .player-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      max-width: 580px;
+    }
+
+    .player-buttons-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .player-circle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      color: var(--bg-surface);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .player-circle-btn:hover {
+      opacity: 0.9;
+    }
+
+    .scrubber-wrap {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .scrubber-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .scrubber-fill {
+      height: 100%;
+      background: var(--accent-sage);
+      border-radius: 2px;
+      width: 24%;
+    }
+
+    /* Modal for Uploading */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 20, 18, 0.45);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-medium);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Studio Header -->
+  <header class="studio-header">
+    <div class="header-left">
+      <a href="#" class="brand-mark">
+        <div class="brand-icon">L</div>
+        <div class="notebook-title-wrap">
+          <div class="notebook-title" onclick="openCoursePicker()">
+            <span>CS229: Machine Learning &amp; Foundations</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="notebook-meta">
+            <span class="status-dot-subtle"></span>
+            <span>3 Lectures Ingested</span>
+            <span>&bull;</span>
+            <span>DAG Status: Strictly A-cyclic</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center Mode Switcher (NotebookLM Style) -->
+    <div class="view-mode-tabs">
+      <button class="view-tab active" onclick="switchCanvasView('mindmap', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span>Prerequisite Map</span>
+      </button>
+      <button class="view-tab" onclick="switchCanvasView('transcript', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span>Synchronized Transcript</span>
+      </button>
+      <button class="view-tab" onclick="switchCanvasView('divergence', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Taught vs Learned Divergence</span>
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button class="btn-subtle" onclick="toggleTheme()" id="themeBtn" title="Switch between Linen Light & Charcoal Dark">
+        <svg id="themeMoon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <svg id="themeSun" style="display:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <span id="themeLabel">Dark mode</span>
+      </button>
+
+      <button class="btn-primary-calm" onclick="openUploadModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Add Lecture Source</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 3-Pane NotebookLM Studio Container -->
+  <div class="studio-container">
+    
+    <!-- PANE 1: Sources & Audio Ingestions -->
+    <aside class="sources-pane">
+      <div class="pane-header">
+        <span class="pane-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Lecture Sources (3)</span>
+        </span>
+        <span class="pill-calm pill-sage font-mono">100% Indexed</span>
+      </div>
+
+      <div class="sources-list">
+        <!-- Source 1 -->
+        <div class="source-card" onclick="selectSource(1, this)">
+          <div class="source-card-top">
+            <div class="source-file-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <div>
+              <div class="source-title">Lecture 01: Vector Spaces &amp; Foundations</div>
+              <div class="source-meta-row" style="margin-top:4px;">
+                <span>52m 14s &bull; Prof. Andrew Ng</span>
+                <span class="pill-calm pill-subtle">4 concepts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Source 2 -->
+        <div class="source-card" onclick="selectSource(2, this)">
+          <div class="source-card-top">
+            <div class="source-file-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <div>
+              <div class="source-title">Lecture 02: Inner Products &amp; Projections</div>
+              <div class="source-meta-row" style="margin-top:4px;">
+                <span>48m 30s &bull; 2 clips cut</span>
+                <span class="pill-calm pill-subtle">3 concepts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Source 3 (Selected with Gap detected) -->
+        <div class="source-card active" onclick="selectSource(3, this)">
+          <div class="source-card-top">
+            <div class="source-file-icon" style="color:var(--accent-clay);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <div class="source-title">Lecture 03: Multivariate Gradient Descent</div>
+              <div class="source-meta-row" style="margin-top:4px;">
+                <span>54m 10s &bull; Active Playback</span>
+                <span class="pill-calm pill-clay">Gap: 41% Fail</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sources-footer">
+        <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">
+          <strong>Comprehension Engine</strong> listens to professor speech, aligns timestamps via Whisper-v3, and detects where students get lost due to missing prerequisites.
+        </div>
+        <button class="btn-subtle" style="width:100%; justify-content:center;" onclick="openUploadModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Upload Lecture Media (.mp4, .wav)</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- PANE 2: Main Intellectual Canvas (Center) -->
+    <main class="canvas-pane">
+      
+      <!-- VIEW 1: PREREQUISITE MINDMAP (Default) -->
+      <div id="view-mindmap" class="canvas-content">
+        <div class="editorial-header">
+          <span class="editorial-eyebrow">Prerequisite Knowledge Architecture</span>
+          <h1 class="editorial-title">Concept Dependency Map &amp; Spoken Anchors</h1>
+          <p class="editorial-desc">
+            Extracted directly from spoken lecture transcripts. Arrows represent strictly verified dependencies. Dashed nodes represent foundational root concepts with zero prerequisites.
+          </p>
+        </div>
+
+        <div class="mindmap-board">
+          <div class="mindmap-topbar">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="pill-calm pill-sage font-mono">14 Concepts Map</span>
+              <span style="font-size:11.5px; color:var(--text-muted);">Click any concept to see spoken evidence &amp; remediation</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:11px; color:var(--text-muted);">Graph Density:</span>
+              <span class="pill-calm pill-subtle font-mono">Transitive Reduction</span>
+            </div>
+          </div>
+
+          <div class="mindmap-canvas-area" id="mindmapCanvas">
+            <!-- Curved SVG connections -->
+            <svg width="100%" height="100%" style="position:absolute; inset:0; pointer-events:none;">
+              <defs>
+                <marker id="dot-end" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="4" markerHeight="4">
+                  <circle cx="3" cy="3" r="3" fill="var(--connector-stroke)"/>
+                </marker>
+              </defs>
+              <!-- Vector Spaces -> Inner Products -->
+              <path d="M 190 85 C 230 85, 250 165, 290 165" stroke="var(--connector-stroke)" stroke-width="1.8" fill="none" marker-end="url(#dot-end)"/>
+              <!-- Inner Products -> Gradient Descent -->
+              <path d="M 480 165 C 520 165, 540 245, 580 245" stroke="var(--connector-active)" stroke-width="2.2" fill="none" marker-end="url(#dot-end)"/>
+              <!-- Loss Function -> Gradient Descent -->
+              <path d="M 190 245 C 380 245, 450 245, 580 245" stroke="var(--connector-active)" stroke-width="2.2" fill="none" marker-end="url(#dot-end)"/>
+              <!-- Gradient Descent -> Logistic Regression -->
+              <path d="M 770 245 C 800 245, 820 180, 840 180" stroke="var(--connector-stroke)" stroke-width="1.8" fill="none" marker-end="url(#dot-end)"/>
+              <!-- Probability Axioms -> MLE -->
+              <path d="M 190 365 C 380 365, 420 365, 520 365" stroke="var(--connector-stroke)" stroke-width="1.8" fill="none" marker-end="url(#dot-end)"/>
+            </svg>
+
+            <!-- Node 1: Vector Spaces (Root) -->
+            <div class="concept-card-node root-node" style="left: 20px; top: 55px;" onclick="focusConcept('vector-spaces')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-sage">Foundational Root</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 01</span>
+              </div>
+              <div class="node-title-text">Vector Spaces &amp; Bases</div>
+              <div class="node-sub-meta">
+                <span>In: 0</span>
+                <span>&bull;</span>
+                <span>Out: 2 dependencies</span>
+              </div>
+            </div>
+
+            <!-- Node 2: Loss Formulation (Root) -->
+            <div class="concept-card-node root-node" style="left: 20px; top: 215px;" onclick="focusConcept('loss-functions')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-sage">Foundational Root</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 02</span>
+              </div>
+              <div class="node-title-text">Loss Functions &amp; Risk</div>
+              <div class="node-sub-meta">
+                <span>In: 0</span>
+                <span>&bull;</span>
+                <span>Out: 1 dependency</span>
+              </div>
+            </div>
+
+            <!-- Node 3: Axiomatic Probability (Root) -->
+            <div class="concept-card-node root-node" style="left: 20px; top: 335px;" onclick="focusConcept('probability')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-sage">Foundational Root</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 01</span>
+              </div>
+              <div class="node-title-text">Probability Axioms</div>
+              <div class="node-sub-meta">
+                <span>In: 0</span>
+                <span>&bull;</span>
+                <span>Out: 1 dependency</span>
+              </div>
+            </div>
+
+            <!-- Node 4: Inner Products (Prerequisite Bottleneck) -->
+            <div class="concept-card-node gap-alert" style="left: 290px; top: 135px;" onclick="focusConcept('inner-products')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-clay">Key Prereq</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 02</span>
+              </div>
+              <div class="node-title-text">Inner Products &amp; Projections</div>
+              <div class="node-sub-meta">
+                <span style="color:var(--accent-clay); font-weight:600;">38% Failure Bottleneck</span>
+              </div>
+            </div>
+
+            <!-- Node 5: Gradient Descent (Selected Active Concept with Gap) -->
+            <div class="concept-card-node selected gap-alert" style="left: 580px; top: 215px;" onclick="focusConcept('gradient-descent')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-clay">Gap Detected</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 03</span>
+              </div>
+              <div class="node-title-text">Multivariate Gradient Descent</div>
+              <div class="node-sub-meta">
+                <span style="color:var(--accent-clay); font-weight:600;">41% Quiz Failure Rate</span>
+              </div>
+            </div>
+
+            <!-- Node 6: MLE -->
+            <div class="concept-card-node" style="left: 520px; top: 335px;" onclick="focusConcept('mle')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-subtle">Core Concept</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 03</span>
+              </div>
+              <div class="node-title-text">Maximum Likelihood (MLE)</div>
+              <div class="node-sub-meta">
+                <span>Nominal (14% miss)</span>
+              </div>
+            </div>
+
+            <!-- Node 7: Logistic Regression -->
+            <div class="concept-card-node" style="left: 840px; top: 150px;" onclick="focusConcept('logistic-reg')">
+              <div class="node-header-row">
+                <span class="pill-calm pill-subtle">Applied</span>
+                <span class="font-mono" style="font-size:10px; color:var(--text-muted);">Lec 04</span>
+              </div>
+              <div class="node-title-text">Logistic Classification</div>
+              <div class="node-sub-meta">
+                <span>Prereq: Gradient Descent</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: SYNCHRONIZED TRANSCRIPT -->
+      <div id="view-transcript" class="canvas-content" style="display:none;">
+        <div class="editorial-header">
+          <span class="editorial-eyebrow">Acoustic Word Alignment</span>
+          <h1 class="editorial-title">Synchronized Lecture Transcript</h1>
+          <p class="editorial-desc">
+            Word-by-word transcription processed by Whisper-v3. Concept occurrences are automatically extracted and hyperlinked to their prerequisite graph nodes.
+          </p>
+        </div>
+
+        <div class="transcript-container">
+          <div class="transcript-entry" onclick="seekAudio('00:08:14')">
+            <span class="transcript-time-badge">08:14</span>
+            <div class="transcript-body">
+              "Welcome everyone. Today we begin our treatment of supervised learning by formalizing <span class="concept-inline-tag" onclick="focusConcept('vector-spaces')">Vector Spaces</span> in R^n, and how basis orthogonality simplifies parameter updates."
+            </div>
+          </div>
+
+          <div class="transcript-entry" onclick="seekAudio('00:11:30')">
+            <span class="transcript-time-badge">11:30</span>
+            <div class="transcript-body">
+              "Remember from Monday that the <span class="concept-inline-tag" onclick="focusConcept('inner-products')">Inner Product</span> of two vectors gives the signed length of the projection. We cannot compute residual error without projecting y onto the column space of X."
+            </div>
+          </div>
+
+          <div class="transcript-entry active-playing" onclick="seekAudio('00:14:50')">
+            <span class="transcript-time-badge">14:50</span>
+            <div class="transcript-body">
+              "Now, when we move to <span class="concept-inline-tag" onclick="focusConcept('gradient-descent')">Gradient Descent</span>, we evaluate the gradient of our empirical <span class="concept-inline-tag" onclick="focusConcept('loss-functions')">Loss Function</span>. Notice that the direction of steepest descent is orthogonal to the contour level set."
+            </div>
+          </div>
+
+          <div class="transcript-entry" onclick="seekAudio('00:19:40')">
+            <span class="transcript-time-badge">19:40</span>
+            <div class="transcript-body">
+              "If the learning rate alpha is chosen too large, we overshoot the valley. The Lipschitz smoothness of the gradient dictates our maximum step size."
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: TAUGHT VS LEARNED DIVERGENCE -->
+      <div id="view-divergence" class="canvas-content" style="display:none;">
+        <div class="editorial-header">
+          <span class="editorial-eyebrow">Pedagogical Sequence Telemetry</span>
+          <h1 class="editorial-title">Taught vs. Learned Sequence Divergence</h1>
+          <p class="editorial-desc">
+            Compares the professor's linear presentation sequence against the order students actually achieved mastery. A large divergence (&Delta; &gt; 2) pinpoints confusing lecture transitions.
+          </p>
+        </div>
+
+        <div class="divergence-board">
+          <div class="divergence-flow-row">
+            <div>
+              <div style="font-weight:600; font-size:13px;">Inner Products</div>
+              <div class="font-mono" style="font-size:11px; color:var(--text-muted);">Lec 02 &bull; Step #2</div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:13px; color:var(--text-secondary);">Mastered at step #6 in student attempts</span>
+              <span class="pill-calm pill-clay font-mono">&Delta; +4 Step Drift (P0)</span>
+            </div>
+          </div>
+
+          <div class="divergence-flow-row">
+            <div>
+              <div style="font-weight:600; font-size:13px;">Gradient Descent</div>
+              <div class="font-mono" style="font-size:11px; color:var(--text-muted);">Lec 03 &bull; Step #4</div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:13px; color:var(--text-secondary);">Students stalled until reviewing Inner Product projections</span>
+              <span class="pill-calm pill-clay font-mono">&Delta; +3 Step Drift (P1)</span>
+            </div>
+          </div>
+
+          <div class="divergence-flow-row">
+            <div>
+              <div style="font-weight:600; font-size:13px;">Vector Spaces</div>
+              <div class="font-mono" style="font-size:11px; color:var(--text-muted);">Lec 01 &bull; Step #1</div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:13px; color:var(--text-secondary);">Learned immediately as expected</span>
+              <span class="pill-calm pill-sage font-mono">&Delta; 0 Aligned</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- PANE 3: Studio & Gap Remediation (Right) -->
+    <aside class="studio-pane">
+      <div class="studio-tab-bar">
+        <div class="studio-tab active" onclick="switchStudioTab('remediation', this)">Remediation</div>
+        <div class="studio-tab" onclick="switchStudioTab('check', this)">Adaptive Check</div>
+        <div class="studio-tab" onclick="switchStudioTab('notes', this)">Gap Insights</div>
+      </div>
+
+      <!-- TAB 1: Remediation Video & Audio Studio -->
+      <div id="studio-remediation" class="studio-body">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">Targeted Remediation Clip</span>
+          <span class="pill-calm pill-clay">Active Gap</span>
+        </div>
+
+        <div class="remediation-hero-card">
+          <div class="remediation-video-thumb">
+            <!-- Simulated Video Slide -->
+            <div style="position:absolute; inset:0; opacity:0.35; background:repeating-linear-gradient(45deg, #1b212d, #1b212d 10px, #141824 10px, #141824 20px);"></div>
+            <div style="position:relative; z-index:2; text-align:center; padding:12px;">
+              <div style="font-family:var(--font-mono); font-size:10px; color:#4E876C; margin-bottom:4px;">REMEDIATION SLICE &bull; 01m 40s</div>
+              <div style="font-size:13px; font-weight:600; color:#EDECE8;">Orthogonal Error Projections</div>
+              <div style="font-size:11px; color:#A6A49C; margin-top:2px;">Lecture 02 @ 11:30 - 13:10</div>
+            </div>
+            <button class="remediation-play-btn" style="position:absolute; bottom:12px; right:12px; width:34px; height:34px;" onclick="playRemediationClip()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            </button>
+          </div>
+
+          <div class="remediation-details">
+            <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Why this video slice?</div>
+            <div class="remediation-rationale">
+              Student struggled on <em>Gradient Descent Convergence</em>. Root-cause trace indicates missing intuition on how <strong>Inner Product Projections</strong> define the orthogonal residual error.
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--text-muted);">
+              <span>Acoustic Grounding Match: <strong>94.2%</strong></span>
+              <button class="btn-subtle" style="padding:3px 8px; font-size:11px;" onclick="playRemediationClip()">Play Clip</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <span style="font-size:11.5px; font-weight:600; color:var(--text-secondary);">Spoken Grounding Quote</span>
+          <div style="background:var(--bg-subtle); border-left:2px solid var(--accent-sage); padding:10px 12px; border-radius:0 6px 6px 0; font-size:12.5px; font-style:italic; color:var(--text-primary); line-height:1.5;">
+            "The direction of steepest descent only guarantees loss minimization if the inner product with the gradient vector stays strictly negative across iterations."
+          </div>
+          <span class="font-mono" style="font-size:10.5px; color:var(--text-muted);">Spoken by Prof. Andrew Ng at 00:15:32</span>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: Adaptive Diagnostic Check -->
+      <div id="studio-check" class="studio-body" style="display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">Diagnostic Check #1</span>
+          <span class="pill-calm pill-subtle font-mono">1 of 3</span>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-q-title">
+            In multivariate gradient descent, why does updating parameters along -&nabla;J(&theta;) guarantee decreasing objective value for convex J?
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="quiz-choice-item" onclick="chooseOption(this, false)">
+              <span>Because projection matrices always preserve the Euclidean length of the parameter vector.</span>
+            </div>
+
+            <div class="quiz-choice-item" onclick="chooseOption(this, true)">
+              <span>Because the directional derivative along -&nabla;J is -&para;&nabla;J&para;&sup2; &le; 0, guaranteed strictly negative by first-order Taylor expansion.</span>
+            </div>
+
+            <div class="quiz-choice-item" onclick="chooseOption(this, false)">
+              <span>Because random vector iterations converge by the law of large numbers.</span>
+            </div>
+          </div>
+
+          <div id="quiz-feedback-box" style="display:none; padding:10px; border-radius:6px; font-size:12px; line-height:1.45;"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Class Gap Insights (For Instructors) -->
+      <div id="studio-notes" class="studio-body" style="display:none;">
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">Instructor Pedagogical Summary</div>
+        
+        <div style="background:var(--bg-subtle); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="font-weight:600; font-size:13px; color:var(--text-primary);">Recommended Lecture Modification</div>
+          <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
+            41% of students failed to connect Lecture 02's vector projection with Lecture 03's gradient vector. In next week's session, spend 3 minutes reviewing orthogonal projection before presenting Hessian matrices.
+          </p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <span style="font-size:11.5px; font-weight:600; color:var(--text-secondary);">Failure Rate by Concept</span>
+          
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+              <span>Multivariate Gradient Descent</span>
+              <span class="font-mono" style="color:var(--accent-clay); font-weight:600;">41%</span>
+            </div>
+            <div style="height:5px; background:var(--border-subtle); border-radius:3px; overflow:hidden;">
+              <div style="height:100%; width:41%; background:var(--accent-clay);"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:6px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+              <span>Inner Products &amp; Projections</span>
+              <span class="font-mono" style="color:var(--accent-clay); font-weight:600;">38%</span>
+            </div>
+            <div style="height:5px; background:var(--border-subtle); border-radius:3px; overflow:hidden;">
+              <div style="height:100%; width:38%; background:var(--accent-clay);"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:6px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+              <span>Maximum Likelihood (MLE)</span>
+              <span class="font-mono" style="color:var(--accent-sage); font-weight:600;">14%</span>
+            </div>
+            <div style="height:5px; background:var(--border-subtle); border-radius:3px; overflow:hidden;">
+              <div style="height:100%; width:14%; background:var(--accent-sage);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- Bottom Lecture Audio Scrubber Dock -->
+  <footer class="bottom-player-bar">
+    <div class="player-track-info">
+      <div style="width:36px; height:36px; border-radius:6px; background:var(--accent-sage-bg); border:1px solid var(--accent-sage-border); display:flex; align-items:center; justify-content:center; color:var(--accent-sage-text);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <div style="display:flex; flex-direction:column; overflow:hidden;">
+        <span style="font-size:12.5px; font-weight:600; color:var(--text-primary); text-overflow:ellipsis; white-space:nowrap; overflow:hidden;">
+          Lecture 03: Multivariate Gradient Descent
+        </span>
+        <span style="font-size:11px; color:var(--text-muted);">
+          Current Concept: <strong style="color:var(--accent-sage-text);">Gradient Descent</strong>
+        </span>
+      </div>
+    </div>
+
+    <div class="player-controls">
+      <div class="player-buttons-row">
+        <button class="btn-subtle" style="padding:4px 8px; border:none;" onclick="skipAudio(-10)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
+        <button class="player-circle-btn" onclick="togglePlayAudio(this)">
+          <svg id="playIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="pauseIcon" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button class="btn-subtle" style="padding:4px 8px; border:none;" onclick="skipAudio(10)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+
+      <div class="scrubber-wrap">
+        <span id="playerCurrentTime">14:50</span>
+        <div class="scrubber-track" onclick="handleScrub(event)">
+          <div class="scrubber-fill" id="playerProgressFill"></div>
+        </div>
+        <span>54:10</span>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px; width:220px; justify-content:flex-end;">
+      <span class="pill-calm pill-sage font-mono" style="font-size:10px;">1.0x SPEED</span>
+      <span class="font-mono" style="font-size:11px; color:var(--text-muted);">STT: 98% ALIGNED</span>
+    </div>
+  </footer>
+
+  <!-- Modal for Uploading -->
+  <div class="modal-backdrop" id="uploadModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Ingest Lecture Media into LecGap</div>
+        <button class="btn-subtle" style="padding:2px 8px;" onclick="closeUploadModal()">✕</button>
+      </div>
+      <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <label style="font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Lecture Session Title</label>
+          <input type="text" placeholder="e.g. Lecture 04 — Convex Optimization &amp; Newton-Raphson" style="width:100%; padding:8px 12px; margin-top:4px; border:1px solid var(--border-medium); border-radius:6px; background:var(--bg-subtle); color:var(--text-primary); font-family:var(--font-sans); font-size:13px; outline:none;" />
+        </div>
+        <div style="border:1px dashed var(--border-strong); padding:28px; text-align:center; border-radius:8px; background:var(--bg-subtle);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin:0 auto 8px auto; color:var(--text-muted);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Drop lecture audio or video file</div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Whisper STT automatically extracts key concepts, timestamp anchors &amp; prerequisite graph</div>
+        </div>
+      </div>
+      <div style="padding:12px 20px; background:var(--bg-subtle); border-top:1px solid var(--border-subtle); display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn-subtle" onclick="closeUploadModal()">Cancel</button>
+        <button class="btn-primary-calm" onclick="closeUploadModal()">Start Ingestion</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    let isPlaying = false;
+    let currentSeconds = 890; // 14:50
+
+    // Switch main canvas view
+    function switchCanvasView(viewKey, btn) {
+      document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.getElementById('view-mindmap').style.display = viewKey === 'mindmap' ? 'flex' : 'none';
+      document.getElementById('view-transcript').style.display = viewKey === 'transcript' ? 'flex' : 'none';
+      document.getElementById('view-divergence').style.display = viewKey === 'divergence' ? 'flex' : 'none';
+    }
+
+    // Switch right studio tab
+    function switchStudioTab(tabKey, tabEl) {
+      document.querySelectorAll('.studio-tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+
+      document.getElementById('studio-remediation').style.display = tabKey === 'remediation' ? 'flex' : 'none';
+      document.getElementById('studio-check').style.display = tabKey === 'check' ? 'flex' : 'none';
+      document.getElementById('studio-notes').style.display = tabKey === 'notes' ? 'flex' : 'none';
+    }
+
+    // Focus on concept node
+    function focusConcept(conceptId) {
+      document.querySelectorAll('.concept-card-node').forEach(n => n.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+
+      // Switch right pane to remediation tab
+      const tab = document.querySelectorAll('.studio-tab')[0];
+      switchStudioTab('remediation', tab);
+    }
+
+    // Audio player functions
+    function togglePlayAudio(btn) {
+      isPlaying = !isPlaying;
+      document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'block';
+      document.getElementById('pauseIcon').style.display = isPlaying ? 'block' : 'none';
+    }
+
+    function seekAudio(timestampStr) {
+      const parts = timestampStr.split(':');
+      const mins = parseInt(parts[0], 10);
+      const secs = parseInt(parts[1], 10);
+      currentSeconds = mins * 60 + secs;
+      document.getElementById('playerCurrentTime').textContent = timestampStr;
+      const pct = (currentSeconds / 3250) * 100;
+      document.getElementById('playerProgressFill').style.width = pct + '%';
+    }
+
+    function skipAudio(deltaSecs) {
+      currentSeconds = Math.max(0, currentSeconds + deltaSecs);
+      const m = Math.floor(currentSeconds / 60);
+      const s = currentSeconds % 60;
+      const str = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      document.getElementById('playerCurrentTime').textContent = str;
+    }
+
+    function handleScrub(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = (clickX / rect.width) * 100;
+      document.getElementById('playerProgressFill').style.width = pct + '%';
+    }
+
+    // Play remediation clip simulation
+    function playRemediationClip() {
+      seekAudio('11:30');
+      togglePlayAudio();
+      alert('Now playing targeted prerequisite remediation clip (Lecture 02 @ 11:30 - 13:10). This directly bridges the inner product projection gap.');
+    }
+
+    // Quiz choice feedback
+    function chooseOption(el, isCorrect) {
+      document.querySelectorAll('.quiz-choice-item').forEach(c => c.className = 'quiz-choice-item');
+      const feedback = document.getElementById('quiz-feedback-box');
+      feedback.style.display = 'block';
+
+      if (isCorrect) {
+        el.classList.add('selected-correct');
+        feedback.style.background = 'var(--accent-sage-bg)';
+        feedback.style.border = '1px solid var(--accent-sage-border)';
+        feedback.style.color = 'var(--accent-sage-text)';
+        feedback.innerHTML = '<strong>Correct!</strong> The negative gradient ensures first-order Taylor expansion decrease &nabla;J &middot; (-&alpha;&nabla;J) = -&alpha;||&nabla;J||&sup2; &le; 0. Mastery confirmed.';
+      } else {
+        el.classList.add('selected-wrong');
+        feedback.style.background = 'var(--accent-clay-bg)';
+        feedback.style.border = '1px solid var(--accent-clay-border)';
+        feedback.style.color = 'var(--accent-clay-text)';
+        feedback.innerHTML = '<strong>Gap Detected in Prerequisite:</strong> This answer reveals confusion regarding how inner products define directional derivatives. Click <em>Play Clip</em> in the Remediation tab to review.';
+      }
+    }
+
+    // Modal controls
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.add('open');
+    }
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('open');
+    }
+
+    // Theme toggling (Linen Light vs Charcoal Dark)
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+
+      document.getElementById('themeSun').style.display = next === 'dark' ? 'inline' : 'none';
+      document.getElementById('themeMoon').style.display = next === 'dark' ? 'none' : 'inline';
+      document.getElementById('themeLabel').textContent = next === 'dark' ? 'Light mode' : 'Dark mode';
+    }
+  </script>
+
+</body>
+</html>

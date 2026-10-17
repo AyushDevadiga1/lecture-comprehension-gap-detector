@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LecGap — Prerequisite DAG & Comprehension Gap Engine</title>
+  <meta name="description" content="Industrial ML dashboard for lecture comprehension gap detection, concept DAG inference, and pedagogical divergence telemetry." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM: INDUSTRIAL / UTILITARIAN DEEP TECH (Anti-AI Slop)
+       ========================================================================== */
+    :root {
+      --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      
+      /* Light theme tokens */
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+      
+      --accent-emerald: #059669;
+      --accent-emerald-bg: #ecfdf5;
+      --accent-emerald-border: #a7f3d0;
+      
+      --accent-amber: #d97706;
+      --accent-amber-bg: #fffbeb;
+      --accent-amber-border: #fde68a;
+      
+      --accent-orange: #ea580c;
+      --accent-orange-bg: #fff7ed;
+      --accent-orange-border: #fed7aa;
+      
+      --accent-blue: #0284c7;
+      --accent-blue-bg: #f0f9ff;
+      --accent-blue-border: #bae6fd;
+      
+      --node-bg: #ffffff;
+      --node-border: #cbd5e1;
+      --node-text: #0f172a;
+      --grid-line: rgba(0, 0, 0, 0.04);
+    }
+
+    html.dark {
+      /* Dark theme tokens (Monochromatic deep slate / zinc) */
+      --bg-canvas: #090b10;
+      --bg-surface: #0f131a;
+      --bg-subtle: #161b24;
+      --bg-hover: #1e2430;
+      --border-subtle: #212836;
+      --border-strong: #313b4d;
+      --text-main: #f1f5f9;
+      --text-muted: #8b9bb4;
+      --text-faint: #4c576b;
+      
+      --accent-emerald: #10b981;
+      --accent-emerald-bg: rgba(16, 185, 129, 0.09);
+      --accent-emerald-border: rgba(16, 185, 129, 0.25);
+      
+      --accent-amber: #f59e0b;
+      --accent-amber-bg: rgba(245, 158, 11, 0.09);
+      --accent-amber-border: rgba(245, 158, 11, 0.25);
+      
+      --accent-orange: #f97316;
+      --accent-orange-bg: rgba(249, 115, 22, 0.09);
+      --accent-orange-border: rgba(249, 115, 22, 0.25);
+      
+      --accent-blue: #38bdf8;
+      --accent-blue-bg: rgba(56, 189, 248, 0.09);
+      --accent-blue-border: rgba(56, 189, 248, 0.25);
+      
+      --node-bg: #131822;
+      --node-border: #283344;
+      --node-text: #e2e8f0;
+      --grid-line: rgba(255, 255, 255, 0.035);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .font-mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout Shell */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Utility Header */
+    .top-bar {
+      height: 48px;
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      z-index: 40;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .telemetry-indicator {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      box-shadow: 0 0 0 2px var(--accent-emerald-border);
+      position: relative;
+    }
+
+    .telemetry-indicator::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      opacity: 0.4;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0; transform: scale(1.8); }
+    }
+
+    .divider-v {
+      width: 1px;
+      height: 20px;
+      background-color: var(--border-subtle);
+    }
+
+    .course-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .select-industrial {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .select-industrial:hover, .select-industrial:focus {
+      border-color: var(--border-strong);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-action:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    .btn-action.primary {
+      background: var(--text-main);
+      color: var(--bg-surface);
+      border-color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .btn-action.primary:hover {
+      opacity: 0.92;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 3px;
+      line-height: 1.3;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-emerald {
+      background-color: var(--accent-emerald-bg);
+      color: var(--accent-emerald);
+      border-color: var(--accent-emerald-border);
+    }
+
+    .badge-amber {
+      background-color: var(--accent-amber-bg);
+      color: var(--accent-amber);
+      border-color: var(--accent-amber-border);
+    }
+
+    .badge-orange {
+      background-color: var(--accent-orange-bg);
+      color: var(--accent-orange);
+      border-color: var(--accent-orange-border);
+    }
+
+    .badge-zinc {
+      background-color: var(--bg-subtle);
+      color: var(--text-muted);
+      border-color: var(--border-subtle);
+    }
+
+    /* Main Container with Sidebar */
+    .body-wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Utilitarian Collapsible Sidebar */
+    .sidebar {
+      width: 230px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+
+    .sidebar.collapsed {
+      width: 52px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 8px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .nav-group-title {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      padding: 0 8px 4px 8px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar.collapsed .nav-group-title {
+      display: none;
+    }
+
+    .nav-items {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .nav-item:hover {
+      color: var(--text-main);
+      background-color: var(--bg-subtle);
+    }
+
+    .nav-item.active {
+      color: var(--text-main);
+      background-color: var(--bg-subtle);
+      border-color: var(--border-subtle);
+      font-weight: 600;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+    }
+
+    .nav-item.active .nav-icon {
+      opacity: 1;
+      color: var(--accent-emerald);
+    }
+
+    .sidebar.collapsed .nav-label {
+      display: none;
+    }
+
+    .sidebar-footer {
+      padding: 12px 10px;
+      border-top: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      font-size: 11px;
+    }
+
+    .sidebar-model-info {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      font-size: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .sidebar.collapsed .sidebar-model-info {
+      display: none;
+    }
+
+    /* Content Viewport */
+    .viewport {
+      flex: 1;
+      overflow-y: auto;
+      background-color: var(--bg-canvas);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Telemetry Sub-header (Strip) */
+    .telemetry-strip {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-brick {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .metric-brick-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .metric-brick-val {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .metric-brick-sub {
+      font-size: 10.5px;
+      color: var(--text-faint);
+    }
+
+    /* Main Scroll Area */
+    .main-content {
+      padding: 20px 24px 60px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1720px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Industrial Card Standard */
+    .panel-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--bg-surface);
+      min-height: 40px;
+    }
+
+    .panel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title {
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+    }
+
+    .panel-subtitle {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .panel-body-flush {
+      padding: 0;
+    }
+
+    /* Prerequisite Graph Canvas Area */
+    .dag-container {
+      position: relative;
+      height: 480px;
+      background-color: var(--bg-surface);
+      background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 24px 24px;
+      overflow: hidden;
+      border-radius: 0 0 6px 6px;
+      display: flex;
+    }
+
+    .dag-canvas-area {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      cursor: grab;
+    }
+
+    .dag-canvas-area:active {
+      cursor: grabbing;
+    }
+
+    .dag-overlay-toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 4px 8px;
+      z-index: 10;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .dag-legend {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      z-index: 10;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    /* Graph Node Inspector Drawer */
+    .dag-inspector {
+      width: 320px;
+      background-color: var(--bg-surface);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      z-index: 15;
+    }
+
+    .inspector-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inspector-content {
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 12px;
+    }
+
+    .inspector-prop {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .inspector-prop-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .inspector-prop-val {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .evidence-quote-box {
+      background-color: var(--bg-subtle);
+      border-left: 2px solid var(--accent-emerald);
+      padding: 8px 10px;
+      border-radius: 0 4px 4px 0;
+      font-size: 11.5px;
+      font-style: italic;
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    /* Grid Splits */
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+    }
+
+    /* Utilitarian Data Tables */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    .data-table th {
+      padding: 8px 12px;
+      background-color: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background-color: var(--bg-subtle);
+    }
+
+    /* Entropy / Failure Progress Bar */
+    .rate-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rate-bar-track {
+      flex: 1;
+      height: 6px;
+      background-color: var(--bg-subtle);
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .rate-bar-fill {
+      height: 100%;
+      background-color: var(--accent-amber);
+      border-radius: 2px;
+    }
+
+    .rate-bar-fill.critical {
+      background-color: var(--accent-orange);
+    }
+
+    .rate-bar-fill.nominal {
+      background-color: var(--accent-emerald);
+    }
+
+    /* Interactive Quiz Simulation Box */
+    .quiz-diagnostic-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .quiz-question-box {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 14px;
+    }
+
+    .quiz-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      background-color: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      font-size: 12px;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--border-strong);
+      background-color: var(--bg-subtle);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent-blue);
+      background-color: var(--accent-blue-bg);
+    }
+
+    .quiz-option.selected.wrong {
+      border-color: var(--accent-orange);
+      background-color: var(--accent-orange-bg);
+    }
+
+    .quiz-option.selected.correct {
+      border-color: var(--accent-emerald);
+      background-color: var(--accent-emerald-bg);
+    }
+
+    .option-radio {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      margin-top: 1px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quiz-option.selected .option-radio::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .remediation-callout {
+      border: 1px solid var(--accent-orange-border);
+      background-color: var(--accent-orange-bg);
+      border-radius: 5px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .remediation-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--accent-orange);
+      font-weight: 600;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Modal Video Player */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 680px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+
+    /* Jobs Flyout Drawer */
+    .jobs-drawer {
+      position: fixed;
+      top: 48px;
+      right: -360px;
+      width: 350px;
+      bottom: 0;
+      background-color: var(--bg-surface);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 50;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .jobs-drawer.open {
+      right: 0;
+    }
+
+    .jobs-drawer-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .job-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* SVG Graph styling */
+    .edge-line {
+      stroke: var(--border-strong);
+      stroke-width: 1.5;
+      fill: none;
+      transition: stroke 0.2s;
+    }
+
+    .edge-line.highlighted {
+      stroke: var(--accent-emerald);
+      stroke-width: 2.5;
+    }
+
+    .node-group {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .node-rect {
+      fill: var(--node-bg);
+      stroke: var(--node-border);
+      stroke-width: 1.2;
+      rx: 4;
+      ry: 4;
+      transition: all 0.15s ease;
+    }
+
+    .node-group:hover .node-rect {
+      stroke: var(--accent-emerald);
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
+    }
+
+    .node-group.active .node-rect {
+      stroke: var(--accent-emerald);
+      stroke-width: 2;
+      fill: var(--bg-subtle);
+    }
+
+    .node-group.root .node-rect {
+      stroke-dasharray: 4 2;
+    }
+
+    .node-title {
+      fill: var(--node-text);
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .node-meta {
+      fill: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      pointer-events: none;
+    }
+
+    /* Small scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-strong);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="brand-section">
+      <div class="brand-tag">
+        <span class="telemetry-indicator" title="Inference & Background Pipeline: Active"></span>
+        <span>LECGAP</span>
+        <span style="color: var(--text-faint); font-weight: 400;">//</span>
+        <span style="color: var(--text-muted); font-weight: 500;">COMPREHENSION DAG ENGINE</span>
+      </div>
+      
+      <div class="divider-v"></div>
+
+      <!-- Course Switcher -->
+      <div class="course-select-wrap">
+        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase;">SCOPE:</span>
+        <select id="courseSelect" class="select-industrial" onchange="handleCourseChange(this.value)">
+          <option value="cs229">CS229 — MACHINE LEARNING & DEEP FOUNDATIONS</option>
+          <option value="math221">MATH221 — LINEAR ALGEBRA & MATRIX ANALYSIS</option>
+          <option value="phys102">PHYS102 — CLASSICAL ELECTRODYNAMICS</option>
+        </select>
+      </div>
+
+      <span class="badge-status badge-emerald" id="dagStatusBadge">
+        DAG: A-CYCLIC [O(V+E) VALID]
+      </span>
+      <span class="badge-status badge-zinc font-mono" id="pipelineLatency">
+        STT: 42ms | LLM: 118 tok/s
+      </span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-action" onclick="toggleJobsDrawer()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span>Pipelines (<span id="activeJobsCount" class="font-mono">1</span>)</span>
+      </button>
+
+      <button class="btn-action" onclick="triggerDagRebuild()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Re-compute DAG</span>
+      </button>
+
+      <button class="btn-action primary" onclick="openUploadModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Ingest Lecture Media</span>
+      </button>
+
+      <div class="divider-v"></div>
+
+      <!-- Theme Switcher -->
+      <button class="btn-action" onclick="toggleTheme()" id="themeBtn" title="Toggle Light/Dark Theme">
+        <svg id="themeIconDark" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <svg id="themeIconLight" style="display:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Shell Body -->
+  <div class="body-wrapper">
+    <!-- Utilitarian Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div style="padding: 10px 10px 4px 10px; display: flex; justify-content: flex-end;">
+        <button class="btn-action" style="padding: 3px 6px;" onclick="toggleSidebar()" title="Toggle Sidebar">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div>
+          <div class="nav-group-title">Pedagogical Graph ML</div>
+          <div class="nav-items">
+            <a class="nav-item active" onclick="switchView('dag')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+              <span class="nav-label">Prerequisite Topology</span>
+            </a>
+            <a class="nav-item" onclick="switchView('divergence')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+              <span class="nav-label">Sequence Divergence</span>
+            </a>
+            <a class="nav-item" onclick="switchView('heatmap')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></div>
+              <span class="nav-label">Failure Heatmap</span>
+            </a>
+            <a class="nav-item" onclick="switchView('evidence')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+              <span class="nav-label">Spoken Evidence Ledger</span>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <div class="nav-group-title">Pipeline &amp; Ingestion</div>
+          <div class="nav-items">
+            <a class="nav-item" onclick="switchView('lectures')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+              <span class="nav-label">Lecture Corpus</span>
+            </a>
+            <a class="nav-item" onclick="switchView('clips')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <span class="nav-label">Remediation Slices</span>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <div class="nav-group-title">Diagnostics &amp; Remediation</div>
+          <div class="nav-items">
+            <a class="nav-item" onclick="switchView('quiz')">
+              <div class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <span class="nav-label">Adaptive Diagnostic</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-model-info">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-faint)">STUDENT:</span>
+            <span style="color:var(--text-main); font-weight:600;">stu_8841a</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-faint)">EXTRACTOR:</span>
+            <span>mistral-large-2411</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-faint)">MEMORY:</span>
+            <span>712 MB (CACHE 94%)</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Analytical Viewport -->
+    <main class="viewport">
+      <!-- High-Density Metric Telemetry Strip -->
+      <section class="telemetry-strip">
+        <div class="metric-brick">
+          <div class="metric-brick-label">
+            <span>Graph Complexity</span>
+            <span class="badge-status badge-zinc font-mono">DAG</span>
+          </div>
+          <div class="metric-brick-val">
+            <span id="metricNodes">14</span> <span style="font-size:12px; font-weight:400; color:var(--text-muted);">Nodes</span>
+            <span style="font-size:12px; color:var(--border-strong);">/</span>
+            <span id="metricEdges">21</span> <span style="font-size:12px; font-weight:400; color:var(--text-muted);">Edges</span>
+          </div>
+          <div class="metric-brick-sub font-mono">Cycles: 0 (Strict Partial Order)</div>
+        </div>
+
+        <div class="metric-brick">
+          <div class="metric-brick-label">
+            <span>Root Concepts (In-Degree = 0)</span>
+          </div>
+          <div class="metric-brick-val">
+            <span id="metricRoots">3</span>
+            <span class="badge-status badge-emerald">Foundations</span>
+          </div>
+          <div class="metric-brick-sub">Prerequisites with no precursors</div>
+        </div>
+
+        <div class="metric-brick">
+          <div class="metric-brick-label">
+            <span>Critical Gaps Tracked</span>
+          </div>
+          <div class="metric-brick-val">
+            <span id="metricGaps" style="color:var(--accent-orange)">4</span>
+            <span style="font-size:12px; font-weight:400; color:var(--text-muted);">of 14 concepts</span>
+          </div>
+          <div class="metric-brick-sub font-mono">Failure rate &gt; 35% on attempts</div>
+        </div>
+
+        <div class="metric-brick">
+          <div class="metric-brick-label">
+            <span>Sequence Divergence (Taught vs Learned)</span>
+          </div>
+          <div class="metric-brick-val">
+            <span id="metricDiv">Δ 2.4</span>
+            <span class="badge-status badge-amber">Drift Detected</span>
+          </div>
+          <div class="metric-brick-sub font-mono">Mean step rank displacement</div>
+        </div>
+      </section>
+
+      <!-- Main Workspace Container -->
+      <div class="main-content">
+        
+        <!-- SECTION 1: INTERACTIVE PREREQUISITE CONCEPT DAG -->
+        <section class="panel-card" id="section-dag">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <span class="panel-title">Topological Prerequisite DAG (Transitive Reduction)</span>
+              <span class="badge-status badge-zinc font-mono">AUTO-GENERATED VIA SPEECH-ALIGNMENT</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">MIN CONFIDENCE:</span>
+              <input type="range" min="50" max="95" value="70" id="confSlider" oninput="filterDagConfidence(this.value)" style="width:70px; height:4px;" />
+              <span id="confVal" class="font-mono" style="font-size:11px; color:var(--text-main);">70%</span>
+              <div class="divider-v" style="height:14px;"></div>
+              <button class="btn-action" style="padding:2px 8px; font-size:11px;" onclick="resetDagZoom()">Reset View</button>
+            </div>
+          </div>
+
+          <div class="dag-container">
+            <!-- Overlay Toolbar -->
+            <div class="dag-overlay-toolbar">
+              <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); font-weight:600;">TOPOLOGY:</span>
+              <span class="badge-status badge-zinc font-mono">TIER 1 (ROOTS) &rarr; TIER 4 (ADVANCED)</span>
+            </div>
+
+            <div class="dag-legend">
+              <div class="legend-item"><div class="legend-dot" style="border: 1px dashed var(--accent-emerald);"></div><span>Root Node (In-Deg 0)</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background: var(--node-border);"></div><span>Dependent Concept</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background: var(--accent-orange);"></div><span>High Gap (&gt;35% Fail)</span></div>
+            </div>
+
+            <!-- SVG Graph Render Canvas -->
+            <div class="dag-canvas-area" id="dagCanvasWrap">
+              <svg id="dagSvg" width="100%" height="100%" viewBox="0 0 850 460" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--border-strong)"/>
+                  </marker>
+                  <marker id="arrow-active" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--accent-emerald)"/>
+                  </marker>
+                </defs>
+
+                <!-- Edges (Prerequisite dependencies) -->
+                <g id="dagEdges">
+                  <!-- Vector Spaces -> Matrix Multiplication -->
+                  <path d="M 120 90 C 180 90, 200 90, 260 90" class="edge-line" marker-end="url(#arrow)" data-source="vector-spaces" data-target="matrix-mult" data-conf="92"/>
+                  <!-- Vector Spaces -> Dot Product -->
+                  <path d="M 120 90 C 180 90, 200 180, 260 180" class="edge-line" marker-end="url(#arrow)" data-source="vector-spaces" data-target="dot-product" data-conf="89"/>
+                  <!-- Matrix Mult -> Eigenvalues -->
+                  <path d="M 370 90 C 420 90, 440 90, 490 90" class="edge-line" marker-end="url(#arrow)" data-source="matrix-mult" data-target="eigenvalues" data-conf="95"/>
+                  <!-- Dot Product -> Gradient Descent -->
+                  <path d="M 370 180 C 420 180, 440 260, 490 260" class="edge-line" marker-end="url(#arrow)" data-source="dot-product" data-target="gradient-descent" data-conf="84"/>
+                  <!-- Loss Function (Root) -> Gradient Descent -->
+                  <path d="M 120 260 C 260 260, 360 260, 490 260" class="edge-line" marker-end="url(#arrow)" data-source="loss-functions" data-target="gradient-descent" data-conf="94"/>
+                  <!-- Probability (Root) -> Maximum Likelihood -->
+                  <path d="M 120 370 C 240 370, 260 370, 320 370" class="edge-line" marker-end="url(#arrow)" data-source="probability-basics" data-target="mle" data-conf="88"/>
+                  <!-- MLE -> Logistic Regression -->
+                  <path d="M 430 370 C 530 370, 560 320, 640 290" class="edge-line" marker-end="url(#arrow)" data-source="mle" data-target="logistic-reg" data-conf="87"/>
+                  <!-- Gradient Descent -> Logistic Regression -->
+                  <path d="M 600 260 C 620 260, 630 280, 640 290" class="edge-line" marker-end="url(#arrow)" data-source="gradient-descent" data-target="logistic-reg" data-conf="91"/>
+                  <!-- Eigenvalues -> PCA -->
+                  <path d="M 600 90 C 660 90, 670 140, 700 150" class="edge-line" marker-end="url(#arrow)" data-source="eigenvalues" data-target="pca" data-conf="93"/>
+                  <!-- Gradient Descent -> Backprop -->
+                  <path d="M 600 260 C 650 260, 680 230, 710 220" class="edge-line" marker-end="url(#arrow)" data-source="gradient-descent" data-target="backpropagation" data-conf="96"/>
+                </g>
+
+                <!-- Nodes -->
+                <g id="dagNodes">
+                  <!-- TIER 0: ROOTS (in-degree 0) -->
+                  <g class="node-group root" transform="translate(10, 65)" onclick="inspectNode('vector-spaces', 'Vector Spaces & Bases', 0, 0.94, 'Lecture 01', '00:08:14', 'To understand linear combinations, we treat Rn as our underlying vector space with orthogonal basis sets.', 2, 0)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Vector Spaces</text>
+                    <text class="node-meta" x="10" y="38">ROOT · IN:0 OUT:2</text>
+                  </g>
+
+                  <g class="node-group root" transform="translate(10, 235)" onclick="inspectNode('loss-functions', 'Loss & Objective Formulation', 0, 0.92, 'Lecture 02', '00:19:40', 'Every supervised learning estimator optimizes an empirical risk objective defined across training samples.', 1, 0)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Loss Functions</text>
+                    <text class="node-meta" x="10" y="38">ROOT · IN:0 OUT:1</text>
+                  </g>
+
+                  <g class="node-group root" transform="translate(10, 345)" onclick="inspectNode('probability-basics', 'Axiomatic Probability', 0, 0.96, 'Lecture 01', '00:41:10', 'We define random variables and conditional probability density functions before discussing parameter estimates.', 1, 0)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Probability Axioms</text>
+                    <text class="node-meta" x="10" y="38">ROOT · IN:0 OUT:1</text>
+                  </g>
+
+                  <!-- TIER 1 -->
+                  <g class="node-group" transform="translate(260, 65)" onclick="inspectNode('matrix-mult', 'Matrix Transformations', 1, 0.91, 'Lecture 01', '00:25:05', 'Matrix-vector multiplication represents linear mapping between affine subspaces.', 1, 1)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Matrix Mapping</text>
+                    <text class="node-meta" x="10" y="38">TIER 1 · CONF: 91%</text>
+                  </g>
+
+                  <g class="node-group" transform="translate(260, 155)" onclick="inspectNode('dot-product', 'Inner Products & Projections', 1, 0.89, 'Lecture 02', '00:11:30', 'The projection of x onto vector w gives the signed perpendicular distance used in linear classifiers.', 1, 1)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Inner Products</text>
+                    <text class="node-meta" x="10" y="38">TIER 1 · CONF: 89%</text>
+                  </g>
+
+                  <g class="node-group" transform="translate(320, 345)" onclick="inspectNode('mle', 'Maximum Likelihood Estimation', 1, 0.88, 'Lecture 03', '00:22:15', 'We maximize the log-likelihood function over Bernoulli outcomes to recover optimal theta.', 1, 1)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Max Likelihood</text>
+                    <text class="node-meta" x="10" y="38">TIER 1 · CONF: 88%</text>
+                  </g>
+
+                  <!-- TIER 2 -->
+                  <g class="node-group" transform="translate(490, 65)" onclick="inspectNode('eigenvalues', 'Spectral Decomposition & Eig', 2, 0.95, 'Lecture 04', '00:30:12', 'The eigenvectors of the covariance matrix point in the directions of maximal data variance.', 1, 1)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Eigenvalues</text>
+                    <text class="node-meta" x="10" y="38">TIER 2 · CONF: 95%</text>
+                  </g>
+
+                  <g class="node-group active" transform="translate(490, 235)" onclick="inspectNode('gradient-descent', 'Multivariate Gradient Descent', 2, 0.94, 'Lecture 03', '00:14:50', 'Stepping in the negative gradient direction guarantees loss decrease for convex objectives.', 2, 2)">
+                    <rect class="node-rect" width="115" height="48" style="stroke:var(--accent-orange); stroke-width: 1.5;"/>
+                    <text class="node-title" x="10" y="22" style="fill:var(--accent-orange)">Gradient Descent</text>
+                    <text class="node-meta" x="10" y="38">GAP: 41% FAIL</text>
+                  </g>
+
+                  <!-- TIER 3 (TERMINAL APPLICATIONS) -->
+                  <g class="node-group" transform="translate(700, 125)" onclick="inspectNode('pca', 'Principal Component Analysis', 3, 0.93, 'Lecture 05', '00:15:33', 'PCA projects high dimensional features onto the top k eigenvectors of the empirical Gram matrix.', 0, 1)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">PCA Projection</text>
+                    <text class="node-meta" x="10" y="38">TERMINAL · CONF:93%</text>
+                  </g>
+
+                  <g class="node-group" transform="translate(640, 265)" onclick="inspectNode('logistic-reg', 'Logistic Classification', 3, 0.91, 'Lecture 04', '00:12:00', 'Sigmoidal transformation on inner product yields probability estimates optimized via cross-entropy.', 0, 2)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Logistic Reg</text>
+                    <text class="node-meta" x="10" y="38">TERMINAL · CONF:91%</text>
+                  </g>
+
+                  <g class="node-group" transform="translate(710, 195)" onclick="inspectNode('backpropagation', 'Reverse-Mode Automatic Diff', 3, 0.96, 'Lecture 06', '00:35:10', 'Backpropagation is exact recursive application of the multivariate chain rule across DAG nodes.', 0, 1)">
+                    <rect class="node-rect" width="115" height="48"/>
+                    <text class="node-title" x="10" y="22">Backpropagation</text>
+                    <text class="node-meta" x="10" y="38">TERMINAL · CONF:96%</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Inspector Panel -->
+            <div class="dag-inspector">
+              <div class="inspector-header">
+                <span>Concept Node Inspector</span>
+                <span class="badge-status badge-emerald" id="insTier">TIER 2</span>
+              </div>
+              <div class="inspector-content">
+                <div class="inspector-prop">
+                  <span class="inspector-prop-label">Concept Identifier</span>
+                  <span class="inspector-prop-val font-mono" id="insId" style="font-size:13px; font-weight:600;">gradient-descent</span>
+                </div>
+
+                <div class="inspector-prop">
+                  <span class="inspector-prop-label">Full Canonical Name</span>
+                  <span class="inspector-prop-val" id="insName">Multivariate Gradient Descent</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                  <div class="inspector-prop">
+                    <span class="inspector-prop-label">In-Degree / Prereqs</span>
+                    <span class="inspector-prop-val font-mono" id="insPrereqs">2 concepts</span>
+                  </div>
+                  <div class="inspector-prop">
+                    <span class="inspector-prop-label">Extraction Conf.</span>
+                    <span class="inspector-prop-val font-mono" id="insConf">94.2%</span>
+                  </div>
+                </div>
+
+                <div class="inspector-prop">
+                  <span class="inspector-prop-label">Spoken Acoustic Evidence</span>
+                  <div class="evidence-quote-box" id="insQuote">
+                    "Stepping in the negative gradient direction guarantees loss decrease for convex objectives."
+                  </div>
+                </div>
+
+                <div class="inspector-prop">
+                  <span class="inspector-prop-label">Source Ingestion</span>
+                  <span class="inspector-prop-val font-mono" id="insSource" style="font-size:11px;">Lecture 03 @ 00:14:50</span>
+                </div>
+
+                <div class="inspector-prop">
+                  <span class="inspector-prop-label">Remediation Video Clip</span>
+                  <button class="btn-action" style="justify-content:center; width:100%;" onclick="openVideoPlayer('Gradient Descent Convergence', 'Lecture 03', '14:50 - 16:30')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Play Extracted Clip (1m 40s)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: DUAL MATRIX (DIVERGENCE & FAILURE HEATMAP) -->
+        <div class="two-col-grid">
+          
+          <!-- Taught vs. Learned Sequence Divergence Table -->
+          <section class="panel-card" id="section-divergence">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span class="panel-title">Taught vs. Learned Order Divergence</span>
+              </div>
+              <span class="badge-status badge-amber font-mono">SPEARMAN RHO: 0.61</span>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Concept</th>
+                    <th style="text-align:center;">Taught #</th>
+                    <th style="text-align:center;">Mastered #</th>
+                    <th style="text-align:right;">Displacement (Gap)</th>
+                    <th style="text-align:right;">Priority</th>
+                  </tr>
+                </thead>
+                <tbody id="divergenceTbody">
+                  <tr>
+                    <td style="font-weight:600;">Inner Products &amp; Projections</td>
+                    <td class="font-mono" style="text-align:center;">#2</td>
+                    <td class="font-mono" style="text-align:center;">#6</td>
+                    <td style="text-align:right;"><span class="badge-status badge-orange font-mono">&Delta; +4 steps</span></td>
+                    <td style="text-align:right;"><span class="badge-status badge-zinc font-mono">P0 - HIGH</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Multivariate Gradient Descent</td>
+                    <td class="font-mono" style="text-align:center;">#4</td>
+                    <td class="font-mono" style="text-align:center;">#7</td>
+                    <td style="text-align:right;"><span class="badge-status badge-amber font-mono">&Delta; +3 steps</span></td>
+                    <td style="text-align:right;"><span class="badge-status badge-zinc font-mono">P1 - MED</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Spectral Decomposition / Eig</td>
+                    <td class="font-mono" style="text-align:center;">#5</td>
+                    <td class="font-mono" style="text-align:center;">#8</td>
+                    <td style="text-align:right;"><span class="badge-status badge-amber font-mono">&Delta; +3 steps</span></td>
+                    <td style="text-align:right;"><span class="badge-status badge-zinc font-mono">P1 - MED</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Maximum Likelihood Estimation</td>
+                    <td class="font-mono" style="text-align:center;">#3</td>
+                    <td class="font-mono" style="text-align:center;">#4</td>
+                    <td style="text-align:right;"><span class="badge-status badge-zinc font-mono">&Delta; +1 step</span></td>
+                    <td style="text-align:right;"><span class="badge-status badge-zinc font-mono">P2 - LOW</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Vector Spaces &amp; Bases</td>
+                    <td class="font-mono" style="text-align:center;">#1</td>
+                    <td class="font-mono" style="text-align:center;">#1</td>
+                    <td style="text-align:right;"><span class="badge-status badge-emerald font-mono">&Delta; 0 (Aligned)</span></td>
+                    <td style="text-align:right;"><span class="badge-status badge-zinc font-mono">P3 - STABLE</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Comprehension Failure Heatmap & Entropy Breakdown -->
+          <section class="panel-card" id="section-heatmap">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="panel-title">Comprehension Failure Rate Heatmap</span>
+              </div>
+              <span class="badge-status badge-orange font-mono">4 BOTTLENECK NODES</span>
+            </div>
+            <div class="panel-body" style="display:flex; flex-direction:column; gap:16px;">
+              
+              <!-- Item 1 -->
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="font-weight:600;">Multivariate Gradient Descent</span>
+                  <span class="font-mono" style="color:var(--accent-orange); font-weight:600;">41% Fail (48 / 117 attempts)</span>
+                </div>
+                <div class="rate-bar-container">
+                  <div class="rate-bar-track">
+                    <div class="rate-bar-fill critical" style="width: 41%;"></div>
+                  </div>
+                  <span class="badge-status badge-orange font-mono">HIGH RISK</span>
+                </div>
+              </div>
+
+              <!-- Item 2 -->
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="font-weight:600;">Inner Products &amp; Projections</span>
+                  <span class="font-mono" style="color:var(--accent-orange); font-weight:600;">38% Fail (34 / 89 attempts)</span>
+                </div>
+                <div class="rate-bar-container">
+                  <div class="rate-bar-track">
+                    <div class="rate-bar-fill critical" style="width: 38%;"></div>
+                  </div>
+                  <span class="badge-status badge-orange font-mono">HIGH RISK</span>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="font-weight:600;">Spectral Decomposition / Eig</span>
+                  <span class="font-mono" style="color:var(--accent-amber); font-weight:600;">29% Fail (21 / 72 attempts)</span>
+                </div>
+                <div class="rate-bar-container">
+                  <div class="rate-bar-track">
+                    <div class="rate-bar-fill" style="width: 29%;"></div>
+                  </div>
+                  <span class="badge-status badge-amber font-mono">ELEVATED</span>
+                </div>
+              </div>
+
+              <!-- Item 4 -->
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="font-weight:600;">Maximum Likelihood Estimation</span>
+                  <span class="font-mono" style="color:var(--text-muted); font-weight:600;">14% Fail (11 / 78 attempts)</span>
+                </div>
+                <div class="rate-bar-container">
+                  <div class="rate-bar-track">
+                    <div class="rate-bar-fill nominal" style="width: 14%;"></div>
+                  </div>
+                  <span class="badge-status badge-emerald font-mono">NOMINAL</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+
+        <!-- SECTION 3: SPOKEN EVIDENCE & DEPENDENCY LEDGER -->
+        <section class="panel-card" id="section-evidence">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span class="panel-title">Extracted Prerequisite Evidence &amp; Transcription Grounding</span>
+            </div>
+            <span class="badge-status badge-zinc font-mono">10 VERIFIED RELATIONS</span>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Prerequisite (Source)</th>
+                  <th>Target (Dependent)</th>
+                  <th style="text-align:center;">Extraction Method</th>
+                  <th style="text-align:center;">Confidence</th>
+                  <th>Spoken Transcript Grounding (Lecture Verbatim)</th>
+                  <th style="text-align:right;">Remediation Clip</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600; color:var(--text-main);">Vector Spaces &amp; Bases</td>
+                  <td style="font-weight:600; color:var(--accent-blue);">Inner Products &amp; Projections</td>
+                  <td style="text-align:center;"><span class="badge-status badge-zinc font-mono">LLM_EXTRACTION</span></td>
+                  <td style="text-align:center;"><span class="badge-status badge-emerald font-mono">89%</span></td>
+                  <td style="max-width:380px; font-size:11.5px; color:var(--text-muted);">
+                    "Before we calculate projection magnitudes, ensure you remember basis independence from Monday's lecture."
+                  </td>
+                  <td style="text-align:right;">
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;" onclick="openVideoPlayer('Inner Products Prerequisite', 'Lecture 02', '11:30 - 13:10')">Clip (1m 40s)</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600; color:var(--text-main);">Inner Products &amp; Projections</td>
+                  <td style="font-weight:600; color:var(--accent-blue);">Multivariate Gradient Descent</td>
+                  <td style="text-align:center;"><span class="badge-status badge-zinc font-mono">TRANSITIVE_REDUCTION</span></td>
+                  <td style="text-align:center;"><span class="badge-status badge-emerald font-mono">94%</span></td>
+                  <td style="max-width:380px; font-size:11.5px; color:var(--text-muted);">
+                    "The gradient dot product with unit velocity gives the directional derivative along any trajectory."
+                  </td>
+                  <td style="text-align:right;">
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;" onclick="openVideoPlayer('Gradient Descent Vector Projection', 'Lecture 03', '14:50 - 16:30')">Clip (1m 40s)</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600; color:var(--text-main);">Loss &amp; Objective Formulation</td>
+                  <td style="font-weight:600; color:var(--accent-blue);">Multivariate Gradient Descent</td>
+                  <td style="text-align:center;"><span class="badge-status badge-zinc font-mono">SYLLABUS_COREF</span></td>
+                  <td style="text-align:center;"><span class="badge-status badge-emerald font-mono">92%</span></td>
+                  <td style="max-width:380px; font-size:11.5px; color:var(--text-muted);">
+                    "Once our empirical loss function J(theta) is written down, we compute partial derivatives to step downward."
+                  </td>
+                  <td style="text-align:right;">
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;" onclick="openVideoPlayer('Empirical Loss Minimization', 'Lecture 02', '19:40 - 21:00')">Clip (1m 20s)</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SECTION 4: LECTURE CORPUS & PIPELINE INGESTION -->
+        <section class="panel-card" id="section-lectures">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <span class="panel-title">Lecture Corpus &amp; Pipeline Extraction Status</span>
+            </div>
+            <button class="btn-action" style="font-size:11.5px;" onclick="openUploadModal()">+ Ingest Session</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Session Title</th>
+                  <th style="text-align:center;">Whisper STT</th>
+                  <th style="text-align:center;">Concepts Extracted</th>
+                  <th style="text-align:center;">Clips Cut</th>
+                  <th>Audio Duration</th>
+                  <th style="text-align:right;">Pipeline Operations</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-mono">#101</td>
+                  <td style="font-weight:600;">Lecture 01 — Linear Spaces, Bases, and Axiomatic Foundations</td>
+                  <td style="text-align:center;"><span class="badge-status badge-emerald font-mono">READY (0.96)</span></td>
+                  <td class="font-mono" style="text-align:center;">4 concepts</td>
+                  <td class="font-mono" style="text-align:center;">3 clips</td>
+                  <td class="font-mono" style="color:var(--text-muted);">52m 14s</td>
+                  <td style="text-align:right;">
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;">Re-run STT</button>
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;">Inspect Transcript</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono">#102</td>
+                  <td style="font-weight:600;">Lecture 02 — Inner Products, Projections &amp; Empirical Risk</td>
+                  <td style="text-align:center;"><span class="badge-status badge-emerald font-mono">READY (0.94)</span></td>
+                  <td class="font-mono" style="text-align:center;">3 concepts</td>
+                  <td class="font-mono" style="text-align:center;">2 clips</td>
+                  <td class="font-mono" style="color:var(--text-muted);">48m 30s</td>
+                  <td style="text-align:right;">
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;">Re-run STT</button>
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;">Inspect Transcript</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono">#103</td>
+                  <td style="font-weight:600;">Lecture 03 — Multivariate Optimization &amp; Convex Descent</td>
+                  <td style="text-align:center;"><span class="badge-status badge-emerald font-mono">READY (0.95)</span></td>
+                  <td class="font-mono" style="text-align:center;">4 concepts</td>
+                  <td class="font-mono" style="text-align:center;">4 clips</td>
+                  <td class="font-mono" style="color:var(--text-muted);">54m 10s</td>
+                  <td style="text-align:right;">
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;">Re-run STT</button>
+                    <button class="btn-action" style="padding:2px 6px; font-size:11px;">Inspect Transcript</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SECTION 5: ADAPTIVE DIAGNOSTIC QUIZ & GAP TRACE -->
+        <section class="panel-card" id="section-quiz">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span class="panel-title">Active Student Diagnostic &amp; Upstream Prerequisite Tracing</span>
+            </div>
+            <span class="badge-status badge-zinc font-mono">STUDENT: stu_8841a | ADAPTIVE CHECK #3</span>
+          </div>
+          <div class="panel-body">
+            <div class="quiz-diagnostic-wrap">
+              
+              <div class="quiz-question-box">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <span class="badge-status badge-zinc font-mono">TARGET CONCEPT: GRADIENT DESCENT</span>
+                  <span class="font-mono" style="font-size:11px; color:var(--text-muted);">QUESTION 1 OF 3</span>
+                </div>
+                <p style="font-size:13px; font-weight:500; color:var(--text-main); margin-bottom:12px;">
+                  Given an objective function <span class="font-mono">J(&theta;) = &frac12; || X&theta; - y ||&sup2;</span>, why does the gradient descent parameter update <span class="font-mono">&theta; := &theta; - &alpha; &nabla;J(&theta;)</span> guarantee asymptotic convergence to the global minimum, assuming &alpha; satisfies the Lipschitz condition?
+                </p>
+
+                <!-- Options -->
+                <div style="display:flex; flex-direction:column; gap:8px;" id="quizOptions">
+                  <div class="quiz-option" onclick="handleSelectOption(this, false)">
+                    <div class="option-radio"></div>
+                    <div>Because every matrix transformation preserves orthogonal projection angles across all iterations.</div>
+                  </div>
+
+                  <div class="quiz-option" onclick="handleSelectOption(this, true)">
+                    <div class="option-radio"></div>
+                    <div>Because the Hessian matrix <span class="font-mono">X&top;X</span> is positive semi-definite, rendering the empirical loss strictly convex with negative directional derivatives.</div>
+                  </div>
+
+                  <div class="quiz-option" onclick="handleSelectOption(this, false)">
+                    <div class="option-radio"></div>
+                    <div>Because probability axioms guarantee Bernoulli trials average to zero variance over large sample sizes.</div>
+                  </div>
+                </div>
+
+                <!-- Remediation Block (Appears on incorrect selection) -->
+                <div class="remediation-callout" id="remediationCallout" style="display:none; margin-top:14px;">
+                  <div class="remediation-header">
+                    <span>Upstream Comprehension Gap Detected</span>
+                    <span>TRACE: INNER PRODUCTS &amp; CONVEX PROJECTIONS</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--text-main);">
+                    The incorrect option indicates confusion regarding how linear inner products govern directional gradients. We have queued targeted video remediation for this exact prerequisite:
+                  </p>
+                  <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface); padding:8px 12px; border-radius:4px; border:1px solid var(--border-subtle); margin-top:4px;">
+                    <div>
+                      <div style="font-weight:600; font-size:12px;">Lecture 02 — Inner Products &amp; Projections</div>
+                      <div class="font-mono" style="font-size:10.5px; color:var(--text-muted);">Timestamp: 11:30 - 13:10 (Duration 1m 40s)</div>
+                    </div>
+                    <button class="btn-action primary" style="font-size:11px;" onclick="openVideoPlayer('Inner Products Prerequisite Slicing', 'Lecture 02', '11:30 - 13:10')">
+                      Watch Video Remediation Clip &rarr;
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Video Player Modal -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div style="display:flex; flex-direction:column;">
+        <span id="modalVideoTitle" style="font-size:13px; font-weight:600;">Remediation Clip</span>
+        <span id="modalVideoSubtitle" class="font-mono" style="font-size:10.5px; color:var(--text-muted);">Lecture 02 · 11:30 - 13:10</span>
+      </div>
+      <button class="btn-action" style="padding:2px 8px;" onclick="closeVideoPlayer()">✕</button>
+    </div>
+    <div style="background:#000; height:360px; display:flex; align-items:center; justify-content:center; position:relative;">
+      <!-- Mock lecture video presentation slide -->
+      <div style="width:90%; height:80%; border:1px solid #333; background:#0a0e17; padding:20px; display:flex; flex-direction:column; justify-content:space-between; color:#fff; font-family:var(--font-sans);">
+        <div>
+          <div style="font-size:11px; font-family:var(--font-mono); color:#10b981;">[LEC-02] INNER PRODUCTS &amp; AFFINE PROJECTIONS</div>
+          <div style="font-size:18px; font-weight:700; margin-top:6px;">Orthogonal Decomposition of Error Vectors</div>
+          <p style="font-size:12px; color:#94a3b8; margin-top:8px; line-height:1.5;">
+            "Notice how the vector residual e = y - X&theta; must be orthogonal to the column space of X. This means X&top;(y - X&theta;) = 0."
+          </p>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #222; padding-top:10px; font-family:var(--font-mono); font-size:11px; color:#64748b;">
+          <span>AUDIO TRACK: STT-ALIGNED CHUNK #4</span>
+          <span style="color:#10b981;">PLAYING RECTIFIED CLIP (00:44 / 01:40)</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 16px; background:var(--bg-surface); display:flex; justify-content:space-between; align-items:center;">
+      <span class="font-mono" style="font-size:11px; color:var(--text-muted);">AUDIO EMBEDDING: text-embedding-3-small MATCH: 0.941</span>
+      <button class="btn-action primary" onclick="closeVideoPlayer()">Resume Diagnostic Check</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Media Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-dialog" style="max-width:500px;">
+    <div class="modal-header">
+      <span style="font-size:13px; font-weight:600;">Ingest Lecture Recording into Engine</span>
+      <button class="btn-action" style="padding:2px 8px;" onclick="closeUploadModal()">✕</button>
+    </div>
+    <div class="panel-body" style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <label class="inspector-prop-label">Course Destination</label>
+        <input type="text" class="select-industrial" value="CS229 — MACHINE LEARNING &amp; DEEP FOUNDATIONS" disabled style="width:100%; margin-top:4px;" />
+      </div>
+      <div>
+        <label class="inspector-prop-label">Lecture Session Title</label>
+        <input type="text" id="uploadTitleInput" class="select-industrial" placeholder="e.g. Lecture 07 — Support Vector Machines &amp; Kernels" style="width:100%; margin-top:4px;" />
+      </div>
+      <div style="border:1px dashed var(--border-strong); padding:24px; text-align:center; border-radius:4px; background:var(--bg-subtle);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0 auto 8px auto; opacity:0.6;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div style="font-size:12px; font-weight:600;">Drag and drop audio/video recording</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Supported: .mp4, .m4a, .mp3, .wav (Up to 2GB)</div>
+      </div>
+    </div>
+    <div style="padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-subtle); display:flex; justify-content:flex-end; gap:8px;">
+      <button class="btn-action" onclick="closeUploadModal()">Cancel</button>
+      <button class="btn-action primary" onclick="simulateIngestLecture()">Start Extraction Pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jobs Drawer -->
+<div class="jobs-drawer" id="jobsDrawer">
+  <div class="jobs-drawer-header">
+    <span>Background Inference &amp; Jobs Feed</span>
+    <button class="btn-action" style="padding:2px 6px;" onclick="toggleJobsDrawer()">✕</button>
+  </div>
+  <div style="flex:1; overflow-y:auto;">
+    <div class="job-item">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="badge-status badge-emerald font-mono">ACTIVE #304</span>
+        <span class="font-mono" style="font-size:10px; color:var(--text-muted);">00:18 ELAPSED</span>
+      </div>
+      <div style="font-size:12px; font-weight:600;">Acoustic Transitive Reduction</div>
+      <div style="font-size:11px; color:var(--text-muted);">Pruning redundant transitive edges across CS229 concept matrix...</div>
+      <div class="rate-bar-track" style="margin-top:4px;">
+        <div class="rate-bar-fill nominal" style="width:68%;"></div>
+      </div>
+    </div>
+
+    <div class="job-item">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="badge-status badge-zinc font-mono">COMPLETED #303</span>
+        <span class="font-mono" style="font-size:10px; color:var(--text-muted);">1.4s TOTAL</span>
+      </div>
+      <div style="font-size:12px; font-weight:600;">Whisper Large-v3 Alignment</div>
+      <div style="font-size:11px; color:var(--text-muted);">Indexed 3,420 words with millisecond audio timestamp confidence.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Course Mock Data
+  const COURSES = {
+    cs229: {
+      name: "CS229 — MACHINE LEARNING & DEEP FOUNDATIONS",
+      nodes: 14,
+      edges: 21,
+      roots: 3,
+      gaps: 4,
+      div: "Δ 2.4",
+      activeJobs: 1
+    },
+    math221: {
+      name: "MATH221 — LINEAR ALGEBRA & MATRIX ANALYSIS",
+      nodes: 18,
+      edges: 29,
+      roots: 2,
+      gaps: 2,
+      div: "Δ 1.1",
+      activeJobs: 0
+    },
+    phys102: {
+      name: "PHYS102 — CLASSICAL ELECTRODYNAMICS",
+      nodes: 11,
+      edges: 15,
+      roots: 2,
+      gaps: 3,
+      div: "Δ 3.2",
+      activeJobs: 0
+    }
+  };
+
+  // Inspect Node handler
+  function inspectNode(id, name, tier, conf, source, time, quote, outDeg, inDeg) {
+    document.getElementById('insId').textContent = id;
+    document.getElementById('insName').textContent = name;
+    document.getElementById('insTier').textContent = tier === 0 ? "ROOT (TIER 0)" : "TIER " + tier;
+    document.getElementById('insConf').textContent = (conf * 100).toFixed(1) + "%";
+    document.getElementById('insPrereqs').textContent = inDeg === 0 ? "0 (Root)" : inDeg + " concepts";
+    document.getElementById('insQuote').textContent = '"' + quote + '"';
+    document.getElementById('insSource').textContent = source + " @ " + time;
+
+    // Highlight node visually
+    const nodes = document.querySelectorAll('.node-group');
+    nodes.forEach(n => n.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // Highlight connecting edges
+    const edges = document.querySelectorAll('.edge-line');
+    edges.forEach(e => {
+      if (e.getAttribute('data-source') === id || e.getAttribute('data-target') === id) {
+        e.classList.add('highlighted');
+        e.setAttribute('marker-end', 'url(#arrow-active)');
+      } else {
+        e.classList.remove('highlighted');
+        e.setAttribute('marker-end', 'url(#arrow)');
+      }
+    });
+  }
+
+  // Filter DAG by confidence slider
+  function filterDagConfidence(val) {
+    document.getElementById('confVal').textContent = val + '%';
+    const edges = document.querySelectorAll('.edge-line');
+    edges.forEach(e => {
+      const conf = parseInt(e.getAttribute('data-conf') || '100');
+      if (conf < val) {
+        e.style.opacity = '0.1';
+      } else {
+        e.style.opacity = '1';
+      }
+    });
+  }
+
+  function resetDagZoom() {
+    const svg = document.getElementById('dagSvg');
+    svg.setAttribute('viewBox', '0 0 850 460');
+    filterDagConfidence(70);
+    document.getElementById('confSlider').value = 70;
+  }
+
+  // Course switcher
+  function handleCourseChange(courseKey) {
+    const data = COURSES[courseKey];
+    if (!data) return;
+    document.getElementById('metricNodes').textContent = data.nodes;
+    document.getElementById('metricEdges').textContent = data.edges;
+    document.getElementById('metricRoots').textContent = data.roots;
+    document.getElementById('metricGaps').textContent = data.gaps;
+    document.getElementById('metricDiv').textContent = data.div;
+    document.getElementById('activeJobsCount').textContent = data.activeJobs;
+  }
+
+  // View Switcher (Scrolls cleanly to corresponding card)
+  function switchView(viewId) {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    const target = document.getElementById('section-' + viewId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // Quiz Option Selector & Remediation Trigger
+  function handleSelectOption(el, isCorrect) {
+    const options = document.querySelectorAll('.quiz-option');
+    options.forEach(o => o.classList.remove('selected', 'correct', 'wrong'));
+
+    el.classList.add('selected');
+    const remediation = document.getElementById('remediationCallout');
+
+    if (!isCorrect) {
+      el.classList.add('wrong');
+      remediation.style.display = 'block';
+      remediation.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      el.classList.add('correct');
+      remediation.style.display = 'none';
+    }
+  }
+
+  // Video Player Modal
+  function openVideoPlayer(title, session, timestamp) {
+    document.getElementById('modalVideoTitle').textContent = title;
+    document.getElementById('modalVideoSubtitle').textContent = session + " · " + timestamp;
+    document.getElementById('videoModal').classList.add('active');
+  }
+
+  function closeVideoPlayer() {
+    document.getElementById('videoModal').classList.remove('active');
+  }
+
+  // Upload Modal
+  function openUploadModal() {
+    document.getElementById('uploadModal').classList.add('active');
+  }
+
+  function closeUploadModal() {
+    document.getElementById('uploadModal').classList.remove('active');
+  }
+
+  function simulateIngestLecture() {
+    closeUploadModal();
+    toggleJobsDrawer();
+  }
+
+  // Jobs Drawer
+  function toggleJobsDrawer() {
+    const drawer = document.getElementById('jobsDrawer');
+    drawer.classList.toggle('open');
+  }
+
+  // Sidebar Collapse
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+
+  // Trigger DAG rebuild simulation
+  function triggerDagRebuild() {
+    const btn = event.currentTarget;
+    const origText = btn.innerHTML;
+    btn.innerHTML = '<span>Re-indexing DAG...</span>';
+    btn.style.opacity = '0.6';
+    setTimeout(() => {
+      btn.innerHTML = origText;
+      btn.style.opacity = '1';
+      alert('Topological sort completed. Transitive reduction confirmed a-cyclic graph with 14 nodes and 21 edges.');
+    }, 900);
+  }
+
+  // Theme Toggle (Dark / Light)
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark');
+    if (isDark) {
+      html.classList.remove('dark');
+      document.getElementById('themeIconDark').style.display = 'none';
+      document.getElementById('themeIconLight').style.display = 'inline-block';
+      localStorage.setItem('lecgap_theme', 'light');
+    } else {
+      html.classList.add('dark');
+      document.getElementById('themeIconDark').style.display = 'inline-block';
+      document.getElementById('themeIconLight').style.display = 'none';
+      localStorage.setItem('lecgap_theme', 'dark');
+    }
+  }
+
+  // On page load theme check
+  (function initTheme() {
+    const saved = localStorage.getItem('lecgap_theme');
+    if (saved === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.getElementById('themeIconDark').style.display = 'none';
+      document.getElementById('themeIconLight').style.display = 'inline-block';
+    }
+  })();
+</script>
+
+</body>
+</html>
