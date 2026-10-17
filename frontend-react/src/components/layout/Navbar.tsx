@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -12,6 +12,10 @@ import {
   Badge,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
 import { NavLink, useLocation } from 'react-router-dom'
 import BoltIcon from '@mui/icons-material/Bolt'
@@ -20,13 +24,15 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import LayersIcon from '@mui/icons-material/Layers'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
-import { useQuery } from '@tanstack/react-query'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../api/courses'
+import { errorMessage } from '../../api/client'
 import { useAppStore } from '../../store/useAppStore'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 import { feedStatus } from '../../lib/feedStatus'
 import { queryKeys } from '../../lib/queryKeys'
-import { gradient, tint } from '../../theme/alpha'
+import { tint } from '../../theme/alpha'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
@@ -62,6 +68,40 @@ export const Navbar: React.FC = () => {
     }
   }, [courseList, selectedCourseId, setSelectedCourseId])
 
+  const queryClient = useQueryClient()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  /**
+   * The last course cannot go through this UI: with no course selected the
+   * dashboard has no upload path to create the next one, so deletion would
+   * strand the user on an empty picker. Creating the first course from
+   * nothing is a separate brick (first-run onboarding); until it exists the
+   * honest move is refusing rather than breaking the way forward.
+   */
+  const canDelete = selectedCourseId != null && courseList.length > 1 && !deleting
+
+  const handleConfirmDelete = async () => {
+    if (selectedCourseId == null) return
+    const removed = selectedCourseId
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await coursesApi.delete(removed)
+      setConfirmDelete(false)
+      // Move off the deleted course *before* the invalidation refetches, so
+      // no query fires once against an id that no longer exists.
+      const remaining = courseList.filter((c) => c.course_id !== removed)
+      setSelectedCourseId(remaining[0]?.course_id ?? null)
+      await queryClient.invalidateQueries()
+    } catch (err: unknown) {
+      setDeleteError(errorMessage(err, 'Could not delete course'))
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   // If the stored course no longer exists on the server (deleted between
   // sessions), fall back to the first available one. Prevents a permanently
   // broken state where every query silently fires with a 404-producing id.
@@ -91,11 +131,13 @@ export const Navbar: React.FC = () => {
               width: 38,
               height: 38,
               borderRadius: '10px',
-              background: gradient('info', 'ok', 135),
+              // Solid info tile, no glow: the gradient + shadow version read
+              // as decoration rather than brand. One flat token, one hairline
+              // ring, and the measured contrast ink do the whole job.
+              backgroundColor: 'primary.main',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: `0 4px 14px ${tint('info', 35)}`,
               // A hairline light ring so the tile reads as an object on both
               // bases — ink-light is near-white in dark and white in light.
               border: `1px solid ${tint('ink-light', 35)}`,
@@ -111,11 +153,7 @@ export const Navbar: React.FC = () => {
                 fontSize: '1.2rem',
                 lineHeight: 1.05,
                 letterSpacing: '-0.025em',
-                // gradient() returns a CSS gradient string; without a non-transparent
-                // background, -webkit-text-fill-color: transparent renders nothing.
-                background: gradient('info', 'ok', 135),
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: 'text.primary',
               }}
             >
               LecGap
@@ -205,6 +243,33 @@ export const Navbar: React.FC = () => {
 
           </FormControl>
 
+          {/* Delete the selected course. Guarded to a confirmation dialog and
+              disabled for the last remaining course — see handleConfirmDelete. */}
+          <Tooltip
+            title={
+              selectedCourseId == null
+                ? 'Select a course first'
+                : courseList.length <= 1
+                  ? 'Keep at least one course'
+                  : `Delete course ${selectedCourseId.toUpperCase()}`
+            }
+          >
+            <span>
+              <IconButton
+                onClick={() => {
+                  setDeleteError(null)
+                  setConfirmDelete(true)
+                }}
+                disabled={!canDelete}
+                color="inherit"
+                aria-label="Delete this course"
+                sx={{ border: '1px solid', borderColor: 'divider' }}
+              >
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+
           {/* Theme base. The choice is remembered and defaults to the OS
               preference; see `resolveInitialBase`.
 
@@ -264,6 +329,29 @@ export const Navbar: React.FC = () => {
           </Tooltip>
         </Box>
       </Toolbar>
+
+      <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800 }}>
+          Delete course {selectedCourseId?.toUpperCase()}?
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2">
+            Every lecture, concept, graph edge, clip, quiz question and job
+            for this course goes too. This cannot be undone.
+          </Typography>
+          {deleteError && (
+            <Typography variant="body2" sx={{ color: 'error.main', mt: 1.5 }}>
+              {deleteError}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmDelete(false)}>Cancel</Button>
+          <Button variant="contained" color="error" onClick={handleConfirmDelete} disabled={deleting} autoFocus>
+            {deleting ? 'Deleting…' : 'Delete course'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   )
 }

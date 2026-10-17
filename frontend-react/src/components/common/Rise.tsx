@@ -1,33 +1,35 @@
-import React from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
 /**
- * Entrance animation for a block: fade up once, then get out of the way.
+ * One orchestrated page-load reveal.
  *
- * Shared by both dashboards so the page's rhythm is one decision rather than
- * two similar ones that drift — a card on the student page and a card on the
- * faculty page should arrive the same way.
+ * The aesthetic prompt's own recipe: a single staggered entrance is worth more
+ * than scattered micro-interactions. Every child gets an index, and the
+ * stagger is bounded (40 ms × index, capped at 160 ms) so a long list never
+ * delays a later row by a second.
  *
- * `useReducedMotion` is the contract, not a nicety: a user who has asked the
- * system for less motion gets the final state immediately, with no transform
- * at all (`initial={false}` skips the animation entirely rather than playing a
- * shorter one).
- *
- * `height: 100%` is load-bearing — it is what lets a card wrapped inside a
- * `Grid item` keep the row alignment it had before it was wrapped.
+ * Reduced motion is the contract, not a nicety: when the user has asked for
+ * less motion, everything renders in its final state immediately. No
+ * animation, no delay, no opacity dip.
  */
-export const Rise: React.FC<{
-  delay?: number
-  y?: number
+export function Rise({ children, index = 0, delay = 0 }: {
   children: React.ReactNode
-}> = ({ delay = 0, y = 18, children }) => {
+  index?: number
+  delay?: number
+}) {
   const reduce = useReducedMotion()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    if (!reduce) setMounted(true)
+  }, [reduce])
+  if (reduce) return <>{children}</>
   return (
     <motion.div
-      initial={reduce ? false : { opacity: 0, y }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: 'easeOut' }}
-      style={{ height: '100%' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: mounted ? 1 : 0, y: mounted ? 0 : 10 }}
+      transition={{ duration: 0.32, delay: delay + Math.min(index, 4) * 0.04, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>

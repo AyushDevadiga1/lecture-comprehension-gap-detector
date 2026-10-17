@@ -135,8 +135,8 @@ export const FacultyDashboard: React.FC = () => {
           <Card sx={{
             p: 2,
             height: '100%',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+            transition: 'border-color 0.2s ease',
+            '&:hover': { borderColor: 'info.main' },
           }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               DAG Structure
@@ -156,8 +156,8 @@ export const FacultyDashboard: React.FC = () => {
           <Card sx={{
             p: 2,
             height: '100%',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+            transition: 'border-color 0.2s ease',
+            '&:hover': { borderColor: 'info.main' },
           }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Root Concepts
@@ -177,8 +177,8 @@ export const FacultyDashboard: React.FC = () => {
           <Card sx={{
             p: 2,
             height: '100%',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+            transition: 'border-color 0.2s ease',
+            '&:hover': { borderColor: 'info.main' },
           }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Comprehension Gaps Tracked
@@ -198,8 +198,8 @@ export const FacultyDashboard: React.FC = () => {
           <Card sx={{
             p: 2,
             height: '100%',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+            transition: 'border-color 0.2s ease',
+            '&:hover': { borderColor: 'info.main' },
           }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Avg. Sequence Divergence

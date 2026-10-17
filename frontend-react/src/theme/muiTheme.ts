@@ -70,21 +70,20 @@ function buildPalette(p: TokenPalette) {
 
 /** The shared type ramp — see the note above about Roboto. */
 const typography = {
-  fontFamily:
-    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  h1: { fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 },
-  h2: { fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.15 },
-  h3: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
-  h4: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.25 },
-  h5: { fontWeight: 700, letterSpacing: '-0.015em', lineHeight: 1.3 },
-  h6: { fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.4 },
+  fontFamily: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  h1: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.05 },
+  h2: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.12 },
+  h3: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.018em', lineHeight: 1.2 },
+  h4: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.015em', lineHeight: 1.22 },
+  h5: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.28 },
+  h6: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.005em', lineHeight: 1.32 },
   subtitle1: { fontWeight: 600, lineHeight: 1.5 },
   subtitle2: { fontWeight: 600, letterSpacing: '0.01em', lineHeight: 1.4 },
   body1: { lineHeight: 1.6 },
   body2: { lineHeight: 1.55 },
-  button: { fontWeight: 600, letterSpacing: '0.01em' },
+  button: { fontWeight: 600, letterSpacing: '-0.01em' },
   caption: { letterSpacing: '0.02em', lineHeight: 1.45 },
-  overline: { fontWeight: 700, letterSpacing: '0.09em' },
+  overline: { fontWeight: 700, letterSpacing: '0.1em' },
 }
 
 export function buildTheme(base?: Base | string | null): Theme {
@@ -118,14 +117,16 @@ export function buildTheme(base?: Base | string | null): Theme {
 
       // ---------------------------------------------------------------- cards
       // The dashboards are built almost entirely from <Card>, so this one
-      // override carries most of the surface language: a hairline sand border
-      // (warm) plus a layered ink wash instead of MUI's grey material shadow.
+      // override carries most of the surface language: a hairline border
+      // plus one tight ink wash. The previous version stacked a 32px ambient
+      // wash that read as floating panels; restraint here is what makes the
+      // page feel flat and deliberate rather than decorated.
       MuiCard: {
         styleOverrides: {
           root: {
             borderRadius: 16,
             border: `1px solid ${token('border')}`,
-            boxShadow: `0 1px 2px ${tint('ink-dark', 5)}, 0 12px 32px ${tint('ink-dark', 5)}`,
+            boxShadow: `0 1px 2px ${tint('ink-dark', 8)}`,
           },
         },
       },

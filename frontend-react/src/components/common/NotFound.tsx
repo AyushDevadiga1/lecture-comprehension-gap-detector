@@ -2,7 +2,6 @@ import React from 'react'
 import { Box, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
 import HomeIcon from '@mui/icons-material/Home'
-import { gradient } from '../../theme/alpha'
 
 export const NotFound: React.FC = () => {
   return (
@@ -22,9 +21,7 @@ export const NotFound: React.FC = () => {
         sx={{
           fontSize: '6rem',
           fontWeight: 800,
-          background: gradient('info', 'ok', 135),
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'text.primary',
         }}
       >
         404
