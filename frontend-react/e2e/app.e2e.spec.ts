@@ -89,7 +89,27 @@ test.describe('the app in a real browser, through the real proxy', () => {
     expect(errors, `page logged errors:\n${errors.join('\n')}`).toEqual([])
   })
 
-  test('the clip browser lists real clips and gives the player a real URL', async ({ page }) => {
+  test('course delete asks first, and cancel leaves everything in place', async ({ page }) => {
+    // The destructive path is deliberately NOT taken here: the e2e database
+    // is shared by every test in the run, and deleting a seeded course would
+    // break the others. What this proves instead is that the affordance is
+    // wired — the dialog names the course, states the blast radius, and
+    // cancelling returns to an intact page with no errors.
+    const errors = watchConsole(page)
+
+    await page.goto('/student')
+    await page.getByRole('button', { name: 'Delete this course' }).click()
+
+    await expect(page.getByText(/Delete course ML\?/)).toBeVisible()
+    await expect(page.getByText(/Every lecture, concept, graph edge/)).toBeVisible()
+    await page.getByRole('button', { name: 'Cancel' }).click()
+
+    // The dialog is gone and the course is still selected.
+    await expect(page.getByText(/Delete course ML\?/)).toBeHidden()
+    await expect(page.getByText('Linear Regression').first()).toBeVisible()
+
+    expect(errors, `page logged errors:\n${errors.join('\n')}`).toEqual([])
+  })
     // The other half of the display story: clips existed in the database and
     // `GET /lectures/{id}/clips` worked, but nothing in the UI called it —
     // playback was only reachable through the quiz remediation path. A user
