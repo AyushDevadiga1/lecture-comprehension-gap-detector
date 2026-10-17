@@ -8,6 +8,8 @@ import {
   Button,
   TextField,
   LinearProgress,
+  Checkbox,
+  FormControlLabel,
   Table,
   TableHead,
   TableRow,
@@ -41,6 +43,7 @@ import {
   submitError,
 } from '../../lib/quiz'
 import { useJobList, useBusyLectureIds } from '../../lib/useJobFeed'
+import { findDuplicate, splitStalled } from '../../lib/lectureTriage'
 import { useQuizStore, draftForCourse } from '../../store/useQuizStore'
 import { useAppStore } from '../../store/useAppStore'
 import { StatusBadge } from '../../components/common/StatusBadge'
@@ -66,6 +69,12 @@ export const StudentDashboard: React.FC = () => {
   // Upload state
   const [uploadTitle, setUploadTitle] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  /**
+   * Explicit "upload anyway" for the duplicate guard below. Reset whenever
+   * the file changes — an ack for one filename must never carry over to the
+   * next, or the guard warns without protecting.
+   */
+  const [dedupeAck, setDedupeAck] = useState(false)
   /**
    * Upload progress. `null` = idle; a number = measured percent; `'streaming'`
    * = bytes are flowing but unmeasurable (or nothing has reported yet). The
@@ -98,6 +107,9 @@ export const StudentDashboard: React.FC = () => {
 
   /** The session a removal is pending confirmation for. */
   const [removeTarget, setRemoveTarget] = useState<LectureOut | null>(null)
+
+  /** Bulk removal of abandoned rows, pending the same confirmation. */
+  const [dropAbandoned, setDropAbandoned] = useState(false)
 
 
   // Remediation playback state
@@ -310,6 +322,48 @@ export const StudentDashboard: React.FC = () => {
     }
   }
 
+  /**
+   * Restart transcription for a row whose media is already on the server.
+   * The busy guard (one pipeline job per lecture) applies here exactly as on
+   * the table buttons — the UI disables, so this never double-queues.
+   */
+  const handleResumeLecture = async (lectureId: number) => {
+    setRowError(null)
+    try {
+      await lecturesApi.rerun(lectureId)
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
+    } catch (err: unknown) {
+      setRowError(errorMessage(err, 'Could not start processing'))
+    }
+  }
+
+  /** Delete every abandoned row after confirmation. Failures are per-row. */
+  const handleDropAbandoned = async (ids: number[]) => {
+    setRowError(null)
+    try {
+      for (const lid of ids) {
+        try {
+          await lecturesApi.delete(lid)
+        } catch (err: unknown) {
+          setRowError(errorMessage(err, `Delete lecture #${lid} failed`))
+        }
+      }
+      if (selectedCourseId) invalidateCourse(queryClient, selectedCourseId)
+    } finally {
+      // Close regardless: partial progress must be visible, not hidden
+      // behind a still-open dialog.
+      setDropAbandoned(false)
+    }
+  }
+
+  // Duplicate guard + stalled split, recomputed per render from the lecture
+  // list (small arrays; no memo needed). Both are pure lib functions with
+  // their own unit tests.
+  const duplicateId = selectedCourseId
+    ? findDuplicate(lectureList, selectedCourseId, selectedFile?.name)
+    : null
+  const { resumable, abandoned } = splitStalled(lectureList, selectedCourseId ?? '')
+
   if (!selectedCourseId) {
     return (
       <Alert severity="info" sx={{ mt: 4 }}>
@@ -438,9 +492,33 @@ export const StudentDashboard: React.FC = () => {
                       type="file"
                       hidden
                       accept="video/*,audio/*"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        setSelectedFile(e.target.files?.[0] || null)
+                        // An ack is per-filename: choosing another file must
+                        // re-arm the guard, or the warning protects nothing.
+                        setDedupeAck(false)
+                      }}
                     />
                   </Button>
+
+                  {duplicateId != null && (
+                    <Box>
+                      <Alert severity="warning" sx={{ mb: 1 }}>
+                        A lecture in this course already looks like this file
+                        (#{duplicateId}). Uploading will create a second row.
+                      </Alert>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={dedupeAck}
+                            onChange={(e) => setDedupeAck(e.target.checked)}
+                            size="small"
+                          />
+                        }
+                        label="Upload anyway (I know it's a duplicate)"
+                      />
+                    </Box>
+                  )}
 
                   {uploadProgress !== null && (
                     <Box>
@@ -463,7 +541,12 @@ export const StudentDashboard: React.FC = () => {
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={!selectedFile || !uploadTitle.trim() || uploadProgress !== null}
+                    disabled={
+                      !selectedFile ||
+                      !uploadTitle.trim() ||
+                      uploadProgress !== null ||
+                      (duplicateId != null && !dedupeAck)
+                    }
                     startIcon={<CloudUploadIcon />}
                   >
                     Upload &amp; Transcribe
@@ -618,6 +701,96 @@ export const StudentDashboard: React.FC = () => {
         )}
       </Box>
 
+      {/* Stalled rows — resumable vs abandoned need opposite actions, so they
+          get opposite sections, never one list or one button. */}
+      {(resumable.length > 0 || abandoned.length > 0) && (
+        <Box>
+          {resumable.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                Ready to process, but never started
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                These rows already have their video on the server. Transcription
+                just never ran — start it below, no re-upload needed.
+              </Typography>
+              {resumable.map((lec) => {
+                const busy = busyLectureIds.has(lec.id)
+                return (
+                  <Box
+                    key={lec.id}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 2,
+                      p: 1.5,
+                      mb: 1,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        #{lec.id} — {lec.title}
+                      </Typography>
+                      {lec.error && (
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          Last error: {lec.error}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Tooltip
+                      title={busy ? 'A job is already running for this lecture' : ''}
+                      disableHoverListener={!busy}
+                    >
+                      <span>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          disabled={busy}
+                          onClick={() => handleResumeLecture(lec.id)}
+                        >
+                          Start processing
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  </Box>
+                )
+              })}
+            </Box>
+          )}
+
+          {abandoned.length > 0 && (
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                Incomplete uploads (no file arrived)
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                A row was created but the video never finished uploading, so
+                there is nothing on the server to process. Delete these to
+                clean up.
+              </Typography>
+              {abandoned.map((lec) => (
+                <Typography key={lec.id} variant="body2" sx={{ color: 'text.secondary' }}>
+                  #{lec.id} — {lec.title} · no media on the server
+                </Typography>
+              ))}
+              <Button
+                size="small"
+                color="error"
+                variant="outlined"
+                sx={{ mt: 1.5 }}
+                onClick={() => setDropAbandoned(true)}
+              >
+                Delete these empty rows
+              </Button>
+            </Box>
+          )}
+        </Box>
+      )}
+
       {/* Course graph — the prerequisite DAG, drawn rather than listed.
           Sits between the lectures that produced it and the clips cut from
           those lectures. `key` resets the view's control state on a course
@@ -691,6 +864,38 @@ export const StudentDashboard: React.FC = () => {
           <Button onClick={() => setRemoveTarget(null)}>Cancel</Button>
           <Button variant="contained" color="error" onClick={handleRemoveLecture} autoFocus>
             Remove session
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Bulk removal gets the same confirmation: same irreversibility. */}
+      <Dialog
+        open={dropAbandoned}
+        onClose={() => setDropAbandoned(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Delete empty rows?</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2">
+            {abandoned.length} row{abandoned.length === 1 ? '' : 's'} with no
+            media on the server will be deleted. This cannot be undone.
+          </Typography>
+          {rowError && (
+            <Alert severity="error" sx={{ mt: 1.5 }}>
+              {rowError}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setDropAbandoned(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleDropAbandoned(abandoned.map((l) => l.id))}
+            autoFocus
+          >
+            Delete empty rows
           </Button>
         </DialogActions>
       </Dialog>
