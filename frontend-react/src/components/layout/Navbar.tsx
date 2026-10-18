@@ -1,21 +1,13 @@
-import React, { useEffect, useState } from 'react'
+﻿import React from 'react'
 import {
   AppBar,
   Toolbar,
   Typography,
   Box,
   Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Badge,
   IconButton,
   Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material'
 import { NavLink, useLocation } from 'react-router-dom'
 import BoltIcon from '@mui/icons-material/Bolt'
@@ -24,19 +16,15 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import LayersIcon from '@mui/icons-material/Layers'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { courses as coursesApi } from '../../api/courses'
-import { errorMessage } from '../../api/client'
 import { useAppStore } from '../../store/useAppStore'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 import { feedStatus } from '../../lib/feedStatus'
-import { invalidateCourse, queryKeys } from '../../lib/queryKeys'
 import { tint } from '../../theme/alpha'
+import { CoursePicker } from './CoursePicker'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
-  const { selectedCourseId, setSelectedCourseId, toggleJobDrawer, base, toggleBase } = useAppStore()
+  const { selectedCourseId, toggleJobDrawer, base, toggleBase } = useAppStore()
   // Reads the query cache, not the feed. The badge and the status dot are the
   // only Navbar elements that depend on job state.
   const activeJobs = useActiveJobs(selectedCourseId)
@@ -47,77 +35,9 @@ export const Navbar: React.FC = () => {
   // start. See lib/feedStatus.ts.
   const feed = feedStatus(mode)
 
-  // The error is read too, so a failed course list never renders as
-  // "No courses found" — that text reads as *your data is gone* rather than
-  // *you are not authorised*, and sends the reader hunting in the wrong place.
-  // The 401 case is covered by the AuthBanner; this covers everything else.
-  const {
-    data: courseList = [],
-    isError: coursesFailed,
-  } = useQuery({
-    queryKey: queryKeys.courses(),
-    queryFn: () => coursesApi.list(),
-  })
-
-  // Auto-select the first available course when no course is stored yet (fresh
-  // install, private-mode, or the stored id was cleared). This runs once per
-  // course-list load so it does not race with a deliberate user deselect.
-  useEffect(() => {
-    if (selectedCourseId == null && courseList.length > 0) {
-      setSelectedCourseId(courseList[0]!.course_id)
-    }
-  }, [courseList, selectedCourseId, setSelectedCourseId])
-
-  const queryClient = useQueryClient()
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
-
-  /**
-   * The last course cannot go through this UI: with no course selected the
-   * dashboard has no upload path to create the next one, so deletion would
-   * strand the user on an empty picker. Creating the first course from
-   * nothing is a separate brick (first-run onboarding); until it exists the
-   * honest move is refusing rather than breaking the way forward.
-   */
-  const canDelete = selectedCourseId != null && courseList.length > 1 && !deleting
-
-  const handleConfirmDelete = async () => {
-    if (selectedCourseId == null) return
-    const removed = selectedCourseId
-    setDeleting(true)
-    setDeleteError(null)
-    try {
-      await coursesApi.delete(removed)
-      setConfirmDelete(false)
-      // Move off the deleted course *before* invalidating, so no query fires
-      // once against an id that no longer exists. Then the one invalidation
-      // rule: it already clears ['courses'] and every course-scoped key for
-      // `removed`, which is exactly the set a deletion invalidates. A blanket
-      // wipe here would also clear every other course's cache, and the
-      // queryKeys guard rightly forbids a panel doing its own invalidation.
-      const remaining = courseList.filter((c) => c.course_id !== removed)
-      setSelectedCourseId(remaining[0]?.course_id ?? null)
-      invalidateCourse(queryClient, removed)
-    } catch (err: unknown) {
-      setDeleteError(errorMessage(err, 'Could not delete course'))
-    } finally {
-      setDeleting(false)
-    }
-  }
-
-  // If the stored course no longer exists on the server (deleted between
-  // sessions), fall back to the first available one. Prevents a permanently
-  // broken state where every query silently fires with a 404-producing id.
-  useEffect(() => {
-    if (
-      selectedCourseId != null &&
-      courseList.length > 0 &&
-      !courseList.some((c) => c.course_id === selectedCourseId)
-    ) {
-      setSelectedCourseId(courseList[0]!.course_id)
-    }
-  }, [courseList, selectedCourseId, setSelectedCourseId])
+  // Course selection, auto-selection, fallback and deletion live in
+  // <CoursePicker/> — one owner for one concern. It reads the same query key
+  // this navbar used to own, so nothing refetches.
 
   return (
     <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -210,69 +130,9 @@ export const Navbar: React.FC = () => {
 
         {/* Right Tools: Course Selector + Jobs Drawer Trigger */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 170 }}>
-            <InputLabel id="course-select-label" sx={{ color: 'text.secondary' }}>
-              Course
-            </InputLabel>
-            <Select
-              labelId="course-select-label"
-              value={selectedCourseId || ''}
-              label="Course"
-              onChange={(e) => setSelectedCourseId(e.target.value)}
-              sx={{
-                borderRadius: '10px',
-                // A wash of `text`, not a hardcoded white at 4%.
-                // A white wash is invisible the moment anyone flips to the light
-                // base — white on a white select is no wash at all.
-                backgroundColor: tint('text', 4),
-                '& .MuiSelect-select': { py: 1, fontWeight: 600 },
-              }}
-            >
-              {selectedCourseId && !courseList.some((c) => c.course_id === selectedCourseId) && (
-                <MenuItem value={selectedCourseId} sx={{ display: 'none' }}>
-                  {selectedCourseId.toUpperCase()}
-                </MenuItem>
-              )}
-              {courseList.map((c) => (
-                <MenuItem key={c.course_id} value={c.course_id}>
-                  {c.course_id.toUpperCase()} ({c.total_lectures} lecs)
-                </MenuItem>
-              ))}
-              {courseList.length === 0 && !selectedCourseId && (
-                <MenuItem value="" disabled>
-                  {coursesFailed ? 'Could not load courses' : 'No courses found'}
-                </MenuItem>
-              )}
-            </Select>
-
-          </FormControl>
-
-          {/* Delete the selected course. Guarded to a confirmation dialog and
-              disabled for the last remaining course — see handleConfirmDelete. */}
-          <Tooltip
-            title={
-              selectedCourseId == null
-                ? 'Select a course first'
-                : courseList.length <= 1
-                  ? 'Keep at least one course'
-                  : `Delete course ${selectedCourseId.toUpperCase()}`
-            }
-          >
-            <span>
-              <IconButton
-                onClick={() => {
-                  setDeleteError(null)
-                  setConfirmDelete(true)
-                }}
-                disabled={!canDelete}
-                color="inherit"
-                aria-label="Delete this course"
-                sx={{ border: '1px solid', borderColor: 'divider' }}
-              >
-                <DeleteOutlineIcon fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <Box sx={{ minWidth: 170 }}>
+            <CoursePicker />
+          </Box>
 
           {/* Theme base. The choice is remembered and defaults to the OS
               preference; see `resolveInitialBase`.
@@ -333,29 +193,6 @@ export const Navbar: React.FC = () => {
           </Tooltip>
         </Box>
       </Toolbar>
-
-      <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600 }}>
-          Delete course {selectedCourseId?.toUpperCase()}?
-        </DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2">
-            Every lecture, concept, graph edge, clip, quiz question and job
-            for this course goes too. This cannot be undone.
-          </Typography>
-          {deleteError && (
-            <Typography variant="body2" sx={{ color: 'error.main', mt: 1.5 }}>
-              {deleteError}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setConfirmDelete(false)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={handleConfirmDelete} disabled={deleting} autoFocus>
-            {deleting ? 'Deleting…' : 'Delete course'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </AppBar>
   )
 }
