@@ -280,6 +280,35 @@ export interface JobAcceptedOut {
   detail?: string | null
 }
 
+// ── Usage ─────────────────────────────────────────────────────────────────────
+
+/**
+ * One service's quota row from `GET /usage`.
+ *
+ * Every field is optional because the backend reports what it knows: a service
+ * that has never been called has no counters yet, and a local one has no quota
+ * at all. The renderer degrades rather than assuming zeros — "no usage data
+ * yet" is a different statement from "0 requests left".
+ */
+export interface UsageServiceOut {
+  calls?: number
+  remaining_requests?: number | null
+  remaining_tokens?: number | null
+  reset_in_s?: number | null
+  /** Local Whisper: model present. */
+  available?: boolean
+  /** Local Whisper: ffmpeg usable. */
+  ffmpeg_ok?: boolean
+  /** Ollama: reachable. */
+  reachable?: boolean
+}
+
+export interface UsageOut {
+  /** Keyed by service id: `groq.chat`, `groq.whisper`, `local`, `ollama`. */
+  services: Record<string, UsageServiceOut>
+  availability?: Record<string, boolean>
+}
+
 // ── Error envelope ────────────────────────────────────────────────────────────
 
 /** Every non-2xx response from the backend carries this shape. */
