@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E2E — the app in a REAL browser, against a real Vite dev server proxying to a
  * real backend.
  *
@@ -41,17 +41,23 @@ test.describe('the app in a real browser, through the real proxy', () => {
   test('renders real data, and the job feed reaches the UI', async ({ page }) => {
     const errors = watchConsole(page)
 
-    await page.goto('/student')
-
-    // --- the read path, through the proxy ---------------------------------
-    // These lecture titles exist only in the E2E throwaway database.
-    await expect(page.getByText('Linear Regression').first()).toBeVisible()
-    await expect(page.getByText('Multiple Regression').first()).toBeVisible()
+    // --- the snapshot strip, on its own view ------------------------------
+    // The route split means the strip and the lecture table are separate
+    // screens now; asserting both is still one test, deliberately: it is the
+    // read path, and both halves are served by the same proxy.
+    await page.goto('/student/overview')
 
     // The snapshot numbers the seeded database implies.
     await expect(page.getByText('2 (2 ready)')).toBeVisible()
-    await expect(page.getByText('2 Edges')).toBeVisible()
+    await expect(page.getByText(/2 edges/i)).toBeVisible()
     await expect(page.getByText('2 / 2 OK')).toBeVisible()
+
+    // --- the lecture read path, through the proxy -------------------------
+    await page.goto('/student/lectures')
+
+    // These lecture titles exist only in the E2E throwaway database.
+    await expect(page.getByText('Linear Regression').first()).toBeVisible()
+    await expect(page.getByText('Multiple Regression').first()).toBeVisible()
 
     // --- the busy guard, from real job state ------------------------------
     // Two rows, one carrying the running job, so exactly one Extract button is
@@ -61,7 +67,7 @@ test.describe('the app in a real browser, through the real proxy', () => {
     // modal and marks the rest of the page `aria-hidden`, so `getByRole` finds
     // nothing behind it. A role query that returns 0 here is the a11y tree
     // behaving correctly, not a missing button.
-    const extract = page.getByRole('button', { name: 'Extract Concepts' })
+    const extract = page.getByRole('button', { name: 'Extract concepts' })
     await expect(extract).toHaveCount(2)
     await expect(extract.nth(0)).toBeEnabled()
     await expect(extract.nth(1)).toBeDisabled()
@@ -76,7 +82,10 @@ test.describe('the app in a real browser, through the real proxy', () => {
     // after a real frame has been parsed out of a real proxied response body.
     // If Vite buffered the SSE response, or the browser could not read a
     // streaming body through the proxy, this chip stays on "Disconnected".
-    await expect(page.getByText('SSE Live')).toBeVisible({ timeout: 30_000 })
+    // The sidebar footer names the feed mode too; scope to the drawer chip.
+    await expect(page.locator('.MuiDrawer-paper').getByText('SSE Live')).toBeVisible({
+      timeout: 30_000,
+    })
 
     // The seeded in-flight job. `useActiveJobs` filters terminal rows out, so
     // this card can only exist if a live snapshot reached the React Query cache.
@@ -97,7 +106,7 @@ test.describe('the app in a real browser, through the real proxy', () => {
     // cancelling returns to an intact page with no errors.
     const errors = watchConsole(page)
 
-    await page.goto('/student')
+    await page.goto('/student/lectures')
     await page.getByRole('button', { name: 'Delete this course' }).click()
 
     await expect(page.getByText(/Delete course ML\?/)).toBeVisible()
@@ -110,11 +119,13 @@ test.describe('the app in a real browser, through the real proxy', () => {
 
     expect(errors, `page logged errors:\n${errors.join('\n')}`).toEqual([])
   })
+
+  test('the clip browser lists real clips and gives the player a real URL', async ({ page }) => {
     // The other half of the display story: clips existed in the database and
     // `GET /lectures/{id}/clips` worked, but nothing in the UI called it —
     // playback was only reachable through the quiz remediation path. A user
     // who had cut 24 clips had no browser for them.
-    await page.goto('/student')
+    await page.goto('/student/clips')
 
     await expect(page.getByText('Clip Library')).toBeVisible()
     // Two seeded clips, both ok. Asserted on the time ranges because the
@@ -142,7 +153,7 @@ test.describe('the app in a real browser, through the real proxy', () => {
     // incrementally. If the proxy buffered the response, `retry: 2000` and the
     // first `event: jobs` frame would arrive together at the very end rather
     // than promptly, and `bodyUsed` would be read-only in a way that shows it.
-    await page.goto('/student')
+    await page.goto('/student/overview')
 
     const probe = await page.evaluate(async () => {
       const started = performance.now()

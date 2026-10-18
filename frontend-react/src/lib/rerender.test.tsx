@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import { useState } from 'react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -6,7 +6,7 @@ import { useJobList } from './useJobFeed'
 import { queryKeys } from './queryKeys'
 import { createTestQueryClient } from '../test/queries'
 import { renderWithProviders } from '../test/render'
-import appLayoutSource from '../components/layout/AppLayout.tsx?raw'
+import appShellSource from '../components/layout/AppShell.tsx?raw'
 import type { JobOut } from '../api/types'
 
 /**
@@ -114,15 +114,15 @@ describe('a job tick does not re-render the page', () => {
 })
 
 describe('§1 — the feed is read only where progress is shown', () => {
-  it('AppLayout connects the feed without reading job state', () => {
-    // AppLayout renders <Outlet/>. If it reads the jobs cache, every tick
+  it('AppShell connects the feed without reading job state', () => {
+    // AppShell renders <Outlet/>. If it reads the jobs cache, every tick
     // re-renders the whole routed page. A static guard so the rule survives a
     // future refactor — the Python twin is tests/test_theme.py's colour scanner.
-    expect(appLayoutSource).toContain('useJobFeedConnection')
+    expect(appShellSource).toContain('useJobFeedConnection')
     for (const hook of ['useJobs(', 'useJobList(', 'useActiveJobs(', 'useJobCards(', 'useFeedStatus(']) {
-      expect(appLayoutSource, `AppLayout must not call ${hook}`).not.toContain(hook)
+      expect(appShellSource, `AppShell must not call ${hook}`).not.toContain(hook)
     }
-    expect(appLayoutSource).not.toContain('useJobStore')
+    expect(appShellSource).not.toContain('useJobStore')
   })
 
   it('no component reaches for the feed singleton', () => {

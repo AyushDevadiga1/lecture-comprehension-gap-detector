@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Visual review tier — capture the real app so a person can look at it.
  *
  * ## Why this exists
@@ -87,7 +87,7 @@ test('capture the app for visual review', async ({ page }) => {
   // Dark first, explicitly. The files are numbered so a reviewer opens the dark
   // set expecting dark.
   await forceBase(page, 'dark')
-  await page.goto('/student')
+  await page.goto('/student/clips')
   await expectBase(page, 'dark')
   await expect(page.getByText('Clip Library')).toBeVisible({ timeout: 30_000 })
   await page.waitForTimeout(1500)
@@ -120,7 +120,7 @@ test('capture the app for visual review', async ({ page }) => {
   // Narrow viewport, because truncation and overflow are the class of defect
   // that a 1440px screenshot cannot show and a test cannot assert.
   await page.setViewportSize({ width: 420, height: 900 })
-  await page.goto('/student')
+  await page.goto('/student/clips')
   await expect(page.getByText('Clip Library')).toBeVisible({ timeout: 30_000 })
   await page.waitForTimeout(1200)
   await page.screenshot({ path: path.join(OUT, '06-student-narrow.png'), fullPage: true })
@@ -131,7 +131,7 @@ test('capture the app for visual review', async ({ page }) => {
   // localStorage before load, since the base is resolved at module evaluation.
   await page.setViewportSize({ width: 1440, height: 1000 })
   await forceBase(page, 'light')
-  await page.goto('/student')
+  await page.goto('/student/clips')
   await expectBase(page, 'light')
   await expect(page.getByText('Clip Library')).toBeVisible({ timeout: 30_000 })
   await page.waitForTimeout(1500)

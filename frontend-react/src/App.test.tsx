@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { App } from './App'
 import { mockFetch } from './test/fetchMock'
+import { createTestQueryClient } from './test/queries'
 import { renderWithProviders } from './test/render'
 
 /**
@@ -36,16 +37,17 @@ const routes = [
   { path: '/courses/ml/stats', json: emptyStats },
   { path: '/lectures', json: [] },
   { path: /^\/jobs\/?$/, json: { jobs: [] } },
+  { path: '/usage', json: { services: {} } },
 ]
 
 describe('App shell', () => {
   it('renders the brand and both role links', async () => {
     const fetchMock = mockFetch(routes)
-    renderWithProviders(<App />, { withProviders: false })
+    renderWithProviders(<App client={createTestQueryClient()} />, { withProviders: false })
 
     expect(screen.getByText('LecGap')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Student Portal/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Faculty Insights/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Overview/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Analytics/i })).toBeInTheDocument()
 
     // The course picker comes from GET /courses — prove it was served, not skipped.
     await waitFor(() => expect(fetchMock.callsTo('GET', '/courses')).toHaveLength(1))
@@ -54,28 +56,33 @@ describe('App shell', () => {
   it('redirects the index route to the student dashboard', async () => {
     mockFetch(routes)
     window.history.pushState({}, '', '/')
-    renderWithProviders(<App />, { withProviders: false })
+    renderWithProviders(<App client={createTestQueryClient()} />, { withProviders: false })
 
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/student')
+      expect(window.location.pathname).toBe('/student/overview')
     })
   })
 
   it('mounts the faculty dashboard on /faculty', async () => {
     mockFetch(routes)
     window.history.pushState({}, '', '/faculty')
-    renderWithProviders(<App />, { withProviders: false })
+    renderWithProviders(<App client={createTestQueryClient()} />, { withProviders: false })
 
-    // The page heading, not the nav link — both contain "Faculty Insights".
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Faculty Insights: ML/i })).toBeInTheDocument()
-    })
-  })
+    // The page heading, not the nav link — both contain "Faculty insights".
+    // The route is lazy now: the first import of a view can exceed waitFor's
+    // 1s default, so this waits on the chunk rather than on a render.
+    await waitFor(
+      () => {
+        expect(screen.getByRole('heading', { name: /Faculty insights: ML/i })).toBeInTheDocument()
+      },
+      { timeout: 8000 },
+    )
+  }, 20000)
 
   it('shows a not-found page for an unknown route', async () => {
     mockFetch(routes)
     window.history.pushState({}, '', '/nope')
-    renderWithProviders(<App />, { withProviders: false })
+    renderWithProviders(<App client={createTestQueryClient()} />, { withProviders: false })
 
     await waitFor(() => {
       expect(screen.getByText('404')).toBeInTheDocument()

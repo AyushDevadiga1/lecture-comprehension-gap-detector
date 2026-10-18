@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+﻿import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { StudentDashboard } from './StudentDashboard'
+import { LecturesView } from './views/LecturesView'
 import { renderWithProviders } from '../../test/render'
 import { mockFetch } from '../../test/fetchMock'
 import type { FetchMock } from '../../test/fetchMock'
@@ -71,7 +71,7 @@ function routes(extra: Parameters<typeof mockFetch>[0] = []) {
 
 async function renderDashboard(extraRoutes: Parameters<typeof mockFetch>[0] = []) {
   const mock = mockFetch(routes(extraRoutes))
-  renderWithProviders(<StudentDashboard />)
+  renderWithProviders(<LecturesView />)
   // Lectures table proves the rows (and therefore the triage inputs) loaded.
   await screen.findByText('Half Upload')
   return mock

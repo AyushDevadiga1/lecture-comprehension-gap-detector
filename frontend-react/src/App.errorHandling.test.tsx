@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { App } from './App'
 import { mockFetch } from './test/fetchMock'
+import { createTestQueryClient } from './test/queries'
 import { renderWithProviders } from './test/render'
 
 /**
@@ -43,6 +44,7 @@ const routes = [
   { path: '/courses/ml/stats', json: { course_id: 'ml', heatmap: [], divergence: [], taught_order: [], learned_order: [] } },
   { path: '/lectures', json: [] },
   { path: /^\/jobs\/?$/, json: { jobs: [] } },
+  { path: '/usage', json: { services: {} } },
   // A crash on the dashboard's own read: a malformed payload, which is what a
   // schema drift upstream actually looks like from the browser's side.
   { path: '/courses/ml/graph', json: { nodes: [{ id: 'a' }], edges: 'not-an-array' } },
@@ -55,7 +57,7 @@ function renderPage(path: string) {
   try {
     mockFetch(routes)
     window.history.pushState({}, '', path)
-    renderWithProviders(<App />, { withProviders: false })
+    renderWithProviders(<App client={createTestQueryClient()} />, { withProviders: false })
   } finally {
     console.error = spy
   }
@@ -67,8 +69,8 @@ describe('a render failure does not take down the app shell', () => {
 
     // The chrome is the point: these are what a user needs in order to get out.
     await waitFor(() => expect(screen.getByText('LecGap')).toBeInTheDocument())
-    expect(screen.getByRole('link', { name: /Student Portal/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Faculty Insights/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Lectures/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Analytics/i })).toBeInTheDocument()
   })
 
   it('keeps the jobs drawer reachable — often the only way to see what broke', async () => {
@@ -79,23 +81,25 @@ describe('a render failure does not take down the app shell', () => {
   })
 
   it('catches the throw in place and keeps the navbar up', async () => {
-    // `FacultyDashboard.tsx:88` does `graphData.edges.map(...)` with no guard, so
-    // the `edges: 'not-an-array'` route above is a guaranteed render throw —
-    // which is what a backend schema drift actually looks like from here. The
-    // page must degrade to the boundary's panel, not to a blank document.
+    // `features/faculty/views/AnalyticsView.tsx` does `graphData.edges.map(...)`
+    // with no guard, so the `edges: 'not-an-array'` route above is a guaranteed
+    // render throw — which is what a backend schema drift actually looks like
+    // from here. The page must degrade to the boundary's panel, not to a blank
+    // document. The route is lazy, so the throw only happens once its chunk
+    // has loaded; that is what the 8s wait is for.
     renderPage('/faculty')
 
     // The boundary caught it, and named the page rather than saying "Error".
     await waitFor(
       () => expect(screen.getByRole('group', { name: /failed to render/i })).toBeInTheDocument(),
-      { timeout: 5_000 },
+      { timeout: 8_000 },
     )
     expect(screen.getByText(/this page failed to render/i)).toBeInTheDocument()
 
     // And the chrome is still there to navigate away with.
     expect(screen.getByText('LecGap')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Student Portal/i })).toBeInTheDocument()
-  })
+    expect(screen.getByRole('link', { name: /Lectures/i })).toBeInTheDocument()
+  }, 20000)
 
   it('does not leave a blank page on an unknown route', async () => {
     renderPage('/nope')

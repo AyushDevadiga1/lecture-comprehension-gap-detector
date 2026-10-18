@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E2E — the §10 gate: a playing `<video>` must survive a job tick.
  *
  * ## Why this file exists
@@ -58,8 +58,8 @@ const JOB_LECTURE_ID = 2 // Multiple Regression: ready, has a concept, no clips
 test.describe('§10: a playing video survives a job tick', () => {
   test('keeps decoding while real job snapshots arrive', async ({ page, request }) => {
     // --- 1. play a real clip ----------------------------------------------
-    await page.goto('/student')
-    await expect(page.getByText('Clip Library')).toBeVisible()
+    await page.goto('/student/clips')
+    await expect(page.getByText('2 playable')).toBeVisible()
     await page.getByText(PLAYING_LECTURE_CLIP).click()
 
     const video = page.locator('video')
@@ -120,7 +120,10 @@ test.describe('§10: a playing video survives a job tick', () => {
     // behind it `aria-hidden`, so clicking the clip row through it would not
     // work. It does not pause the video, which is part of what is being shown.
     await page.getByRole('button', { name: 'View Background Jobs & Pipelines' }).click()
-    await expect(page.getByText('SSE Live')).toBeVisible({ timeout: 30_000 })
+    // The sidebar footer also names the feed mode now; scope to the drawer chip.
+    await expect(page.locator('.MuiDrawer-paper').getByText('SSE Live')).toBeVisible({
+      timeout: 30_000,
+    })
 
     const snapshotNo = page.getByText(/^Snapshot #\d+$/)
     await expect(snapshotNo).toBeVisible({ timeout: 30_000 })

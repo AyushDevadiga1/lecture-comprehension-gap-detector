@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E2E — the prerequisite DAG in a REAL browser.
  *
  * ## What only this file can prove
@@ -38,10 +38,10 @@ test.describe('the course graph draws and answers clicks', () => {
   test('nodes render, and a click shows spoken evidence', async ({ page }) => {
     const errors = watchConsole(page)
 
-    await page.goto('/student')
+    await page.goto('/student/map')
 
-    // The section the student dashboard renders around the canvas.
-    await expect(page.getByText('Course graph', { exact: true })).toBeVisible()
+    // The section the concept-map view renders around the canvas.
+    await expect(page.getByText('Concept map', { exact: true }).first()).toBeVisible()
 
     // Real layout, real visibility: these are painted nodes, not DOM that
     // happens to exist. jsdom cannot make this assertion (see above).
@@ -70,7 +70,7 @@ test.describe('the course graph draws and answers clicks', () => {
   test('unchecking transcript leaves only the inferred link', async ({ page }) => {
     const errors = watchConsole(page)
 
-    await page.goto('/student')
+    await page.goto('/student/map')
     await expect(page.getByText(/Links drawn 2 \/ 2/)).toBeVisible()
 
     await page.getByRole('combobox', { name: 'Edge types' }).click()
@@ -85,7 +85,7 @@ test.describe('the course graph draws and answers clicks', () => {
   test('the learner order lists the study sequence', async ({ page }) => {
     const errors = watchConsole(page)
 
-    await page.goto('/student')
+    await page.goto('/student/map')
     await expect(page.getByText('Learner order', { exact: false }).first()).toBeVisible()
     await expect(page.getByText('Multiple Regression').first()).toBeVisible()
 
@@ -95,7 +95,7 @@ test.describe('the course graph draws and answers clicks', () => {
   test('find-concept locates a node and opens its evidence', async ({ page }) => {
     const errors = watchConsole(page)
 
-    await page.goto('/student')
+    await page.goto('/student/map')
     await expect(page.getByRole('button', { name: /^Slope, learner step/ })).toBeVisible()
 
     // Case-insensitive substring; centers the match and selects it, which is

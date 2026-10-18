@@ -1,4 +1,4 @@
-/**
+﻿/**
  * *Start Quiz* must send the cap. This is the seam the api test cannot reach.
  *
  * ## Why this file is separate from `api/quizzes.test.ts`
@@ -24,7 +24,7 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
-import { StudentDashboard } from './StudentDashboard'
+import { QuizView } from './views/QuizView'
 import { renderWithProviders } from '../../test/render'
 import { mockFetch } from '../../test/fetchMock'
 import { createTestQueryClient } from '../../test/queries'
@@ -66,7 +66,7 @@ function manyQuestions(n: number) {
 
 async function renderDashboard() {
   const mock = mockFetch(dashboardRoutes())
-  const view = renderWithProviders(<StudentDashboard />)
+  const view = renderWithProviders(<QuizView />)
   // The button only renders once the course is set, which it is from the store.
   await screen.findByRole('button', { name: /Start Quiz/i })
   return { mock, view }
@@ -120,7 +120,7 @@ describe('the Start Quiz button', () => {
     // The numbers are the handoff's own signature: a course with 153 concepts
     // returning 153 questions means the cap did not apply server-side.
     const queryClient = createTestQueryClient()
-    const view = renderWithProviders(<StudentDashboard />, { queryClient })
+    const view = renderWithProviders(<QuizView />, { queryClient })
     const mock = mockFetch([
       ...dashboardRoutes(),
       { method: 'POST', path: '/quizzes/jobs', status: 202, json: { job_id: 77, status: 'queued' } },

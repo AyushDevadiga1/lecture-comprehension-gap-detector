@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E2E — the light theme, and the first proof that `color-mix` resolves.
  *
  * ## What is unverified that this file verifies
@@ -175,7 +175,7 @@ test.describe('the light theme renders, and color-mix resolves', () => {
     })
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`))
 
-    await page.goto('/student')
+    await page.goto('/student/lectures')
     await switchTo(page, 'light')
 
     // Still the real app, not a blank repaint.
@@ -193,7 +193,7 @@ test.describe('the light theme renders, and color-mix resolves', () => {
     // `prefers-color-scheme: light`, so light is what the app resolves to anyway
     // and the reload would prove nothing. Dark is only reachable via the stored
     // choice, so the reload is the only thing that distinguishes the two.
-    await page.goto('/student')
+    await page.goto('/student/lectures')
     await switchTo(page, 'dark')
 
     await page.reload()
@@ -201,13 +201,16 @@ test.describe('the light theme renders, and color-mix resolves', () => {
   })
 
   test('a color-mix() wash resolves to a real translucent colour', async ({ page }) => {
-    await page.goto('/student')
+    await page.goto('/student/lectures')
     await switchTo(page, 'light')
 
     // Open the drawer so a job card renders — the `tint('surface-alt', 40)`
     // surface. The seeded running job guarantees a card exists.
     await page.getByRole('button', { name: 'View Background Jobs & Pipelines' }).click()
-    await expect(page.getByText('SSE Live')).toBeVisible({ timeout: 30_000 })
+    // The sidebar footer names the feed mode too; scope to the drawer chip.
+    await expect(page.locator('.MuiDrawer-paper').getByText('SSE Live')).toBeVisible({
+      timeout: 30_000,
+    })
 
     const card = page.locator('.MuiDrawer-paper .MuiListItem-root').first()
     await expect(card).toBeVisible()
@@ -251,10 +254,13 @@ test.describe('the light theme renders, and color-mix resolves', () => {
     // 10% wash is the thinnest in the app, so it is where a `color-mix`
     // regression shows up first — and where a silent failure to resolve leaves
     // text on undifferentiated paper.
-    await page.goto('/student')
+    await page.goto('/student/lectures')
     await switchTo(page, 'light')
     await page.getByRole('button', { name: 'View Background Jobs & Pipelines' }).click()
-    await expect(page.getByText('SSE Live')).toBeVisible({ timeout: 30_000 })
+    // The sidebar footer names the feed mode too; scope to the drawer chip.
+    await expect(page.locator('.MuiDrawer-paper').getByText('SSE Live')).toBeVisible({
+      timeout: 30_000,
+    })
 
     // No seeded job carries an error, so the wash is measured on a probe element
     // bearing the same declaration. Stated plainly because it bounds the claim:
