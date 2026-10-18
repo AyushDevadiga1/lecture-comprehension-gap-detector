@@ -88,7 +88,8 @@ describe('duplicate guard', () => {
     const user = userEvent.setup()
     await renderDashboard()
 
-    await user.type(screen.getByLabelText(/Lecture Title/i), 'linear regression')
+    await user.click(screen.getByRole('button', { name: /Upload lecture/i }))
+    await user.type(screen.getByLabelText(/Lecture title/i), 'linear regression')
     await user.upload(fileInput(), new File(['x'], 'linear regression.mp4', { type: 'video/mp4' }))
 
     // Names lecture #1 — scoped to the warning alert, because #1 also
@@ -101,7 +102,7 @@ describe('duplicate guard', () => {
     )
     expect(warning).toBeTruthy()
     expect(within(warning!).getByText(/#1/)).toBeInTheDocument()
-    const submit = screen.getByRole('button', { name: /Upload & Transcribe/ })
+    const submit = screen.getByRole('button', { name: /Upload & transcribe/ })
     expect(submit).toBeDisabled()
 
     await user.click(screen.getByRole('checkbox', { name: /Upload anyway/ }))
@@ -112,11 +113,12 @@ describe('duplicate guard', () => {
     const user = userEvent.setup()
     await renderDashboard()
 
-    await user.type(screen.getByLabelText(/Lecture Title/i), 'Brand New')
+    await user.click(screen.getByRole('button', { name: /Upload lecture/i }))
+    await user.type(screen.getByLabelText(/Lecture title/i), 'Brand New')
     await user.upload(fileInput(), new File(['x'], 'brand new.mp4', { type: 'video/mp4' }))
 
     expect(screen.queryByText(/already looks like this file/)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Upload & Transcribe/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /Upload & transcribe/ })).toBeEnabled()
   }, 30000)
 })
 

@@ -1,25 +1,20 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import {
   Alert,
   Box,
   Button,
   Card,
   CardContent,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
-  Grid,
   IconButton,
-  LinearProgress,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  TextField,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -31,33 +26,29 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { lectures as lecturesApi } from '../../../api/lectures'
 import { errorMessage } from '../../../api/client'
 import { queryKeys, invalidateCourse } from '../../../lib/queryKeys'
-import { findDuplicate, splitStalled } from '../../../lib/lectureTriage'
+import { splitStalled } from '../../../lib/lectureTriage'
 import { useBusyLectureIds } from '../../../lib/useJobFeed'
 import { useAppStore } from '../../../store/useAppStore'
 import type { LectureOut } from '../../../api/types'
 import { ErrorAlert } from '../../../components/common/ErrorAlert'
 import { LoadingScreen } from '../../../components/common/LoadingScreen'
-import { SectionIcon } from '../../../components/common/SectionIcon'
 import { StatusBadge } from '../../../components/common/StatusBadge'
+import { UploadDialog } from '../../../components/student/UploadDialog'
 
 /**
- * Lectures — upload, process, remove, and the triage of rows the pipeline
- * never finished.
+ * Lectures — the table, the triage of unfinished rows, and the upload entry
+ * point.
  *
- * Lifted from `StudentDashboard` verbatim at P0. It owns `['lectures', course]`;
- * ClipsView and LectureDetailView read the same key, so the list is fetched
- * once per course.
+ * Owns `['lectures', course]`; Clips and Lecture detail read the same key. The
+ * upload form moved into `UploadDialog` at P1, which is why this file no longer
+ * holds upload state: ingestion is occasional, and a permanent form competes
+ * with the content the page exists to show.
  */
 export const LecturesView: React.FC = () => {
   const queryClient = useQueryClient()
   const { selectedCourseId } = useAppStore()
 
-  const [uploadTitle, setUploadTitle] = useState('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [dedupeAck, setDedupeAck] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<number | 'streaming' | null>(null)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-
+  const [uploadOpen, setUploadOpen] = useState(false)
   const [rowError, setRowError] = useState<string | null>(null)
   const [removeTarget, setRemoveTarget] = useState<LectureOut | null>(null)
   const [dropAbandoned, setDropAbandoned] = useState(false)
@@ -73,36 +64,7 @@ export const LecturesView: React.FC = () => {
   })
 
   const busyLectureIds = useBusyLectureIds(selectedCourseId)
-
-  const duplicateId = selectedCourseId
-    ? findDuplicate(lectureList, selectedCourseId, selectedFile?.name)
-    : null
   const { resumable, abandoned } = splitStalled(lectureList, selectedCourseId ?? '')
-
-  const handleFileUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedCourseId || !selectedFile || !uploadTitle.trim()) return
-
-    setUploadError(null)
-    setUploadProgress('streaming')
-
-    try {
-      const lecture = await lecturesApi.create({
-        course_id: selectedCourseId,
-        title: uploadTitle.trim(),
-      })
-      await lecturesApi.uploadMedia(lecture.id, selectedFile, (pct) =>
-        setUploadProgress(pct === null ? 'streaming' : pct),
-      )
-      setUploadTitle('')
-      setSelectedFile(null)
-      setUploadProgress(null)
-      invalidateCourse(queryClient, selectedCourseId)
-    } catch (err: unknown) {
-      setUploadError(errorMessage(err, 'Upload failed'))
-      setUploadProgress(null)
-    }
-  }
 
   const handleTriggerConcepts = async (lectureId: number) => {
     setRowError(null)
@@ -126,8 +88,8 @@ export const LecturesView: React.FC = () => {
 
   /**
    * Remove a session — and with it everything derived from it. The backend
-   * cascades; this is confirmation UI over an endpoint that exists, because
-   * the operation is irreversible.
+   * cascades; this is confirmation UI over an endpoint that exists, because the
+   * operation is irreversible.
    */
   const handleRemoveLecture = async () => {
     if (!removeTarget) return
@@ -175,235 +137,134 @@ export const LecturesView: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography variant="h4">Lectures in {selectedCourseId.toUpperCase()}</Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-          Upload a recording, extract concepts, cut clips, or remove a session entirely.
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="h4">Lectures in {selectedCourseId.toUpperCase()}</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+            Upload a recording, extract concepts, cut clips, or remove a session entirely.
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<CloudUploadIcon />} onClick={() => setUploadOpen(true)}>
+          Upload lecture
+        </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={5}>
-          <Card>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <SectionIcon>
-                  <CloudUploadIcon sx={{ color: 'primary.main', fontSize: 20 }} />
-                </SectionIcon>
-                <Typography variant="h6">Upload lecture</Typography>
-              </Box>
+      <Card>
+        <CardContent>
+          {lecturesError && <ErrorAlert error={lecturesError} title="Failed to load lectures" />}
+          {rowError && <ErrorAlert error={rowError} title="Pipeline action failed" />}
+          {isLoadingLectures && <LoadingScreen message="Loading lectures..." />}
 
-              <form onSubmit={handleFileUpload}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <TextField
-                    label="Lecture title"
-                    placeholder="e.g. Lecture 1 — Introduction to Vectors"
-                    value={uploadTitle}
-                    onChange={(e) => setUploadTitle(e.target.value)}
-                    size="small"
-                    required
-                    fullWidth
-                  />
+          {lectureList.length === 0 && !isLoadingLectures && (
+            <Typography variant="body2" sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}>
+              No lectures found for this course. Upload the first one to get started.
+            </Typography>
+          )}
 
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    sx={{
-                      p: 1.5,
-                      borderStyle: 'dashed',
-                      borderColor: selectedFile ? 'primary.main' : 'divider',
-                    }}
-                  >
-                    {selectedFile
-                      ? selectedFile.name
-                      : 'Select Video / Audio File (.mp4, .mp3, .wav)'}
-                    <input
-                      type="file"
-                      hidden
-                      accept="video/*,audio/*"
-                      onChange={(e) => {
-                        setSelectedFile(e.target.files?.[0] || null)
-                        // An ack is per-filename: choosing another file must
-                        // re-arm the guard, or the warning protects nothing.
-                        setDedupeAck(false)
-                      }}
-                    />
-                  </Button>
-
-                  {duplicateId != null && (
-                    <Box>
-                      <Alert severity="warning" sx={{ mb: 1 }}>
-                        A lecture in this course already looks like this file (#{duplicateId}).
-                        Uploading will create a second row.
-                      </Alert>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={dedupeAck}
-                            onChange={(e) => setDedupeAck(e.target.checked)}
-                            size="small"
-                          />
-                        }
-                        label="Upload anyway (I know it's a duplicate)"
-                      />
-                    </Box>
-                  )}
-
-                  {uploadProgress !== null && (
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption">Uploading media stream...</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                          {uploadProgress === 'streaming' ? 'Uploading…' : `${uploadProgress}%`}
-                        </Typography>
-                      </Box>
-                      <LinearProgress
-                        variant={uploadProgress === 'streaming' ? 'indeterminate' : 'determinate'}
-                        value={typeof uploadProgress === 'number' ? uploadProgress : 0}
-                        sx={{ height: 6, borderRadius: 3 }}
-                      />
-                    </Box>
-                  )}
-
-                  {uploadError && <ErrorAlert error={uploadError} title="Upload failed" />}
-
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={
-                      !selectedFile ||
-                      !uploadTitle.trim() ||
-                      uploadProgress !== null ||
-                      (duplicateId != null && !dedupeAck)
-                    }
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Upload &amp; Transcribe
-                  </Button>
-                </Box>
-              </form>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <SectionIcon>
-                  <CheckCircleIcon sx={{ color: 'primary.main', fontSize: 20 }} />
-                </SectionIcon>
-                <Typography variant="h6">Lecture rows</Typography>
-              </Box>
-
-              {lecturesError && <ErrorAlert error={lecturesError} title="Failed to load lectures" />}
-              {rowError && <ErrorAlert error={rowError} title="Pipeline action failed" />}
-              {isLoadingLectures && <LoadingScreen message="Loading lectures..." />}
-
-              {lectureList.length === 0 && !isLoadingLectures && (
-                <Typography variant="body2" sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}>
-                  No lectures found for this course. Use the upload form to add the first one.
-                </Typography>
-              )}
-
-              {lectureList.length > 0 && (
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ID</TableCell>
-                      <TableCell>Title</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Media</TableCell>
-                      <TableCell>Created</TableCell>
-                      <TableCell align="right">Pipeline actions</TableCell>
+          {lectureList.length > 0 && (
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Media</TableCell>
+                  <TableCell>Created</TableCell>
+                  <TableCell align="right">Pipeline actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {lectureList.map((lec) => {
+                  // C0's rule: while a job is in flight for this lecture the
+                  // actions are disabled, so a double-click cannot queue
+                  // duplicate work.
+                  const busy = busyLectureIds.has(lec.id)
+                  return (
+                    <TableRow key={lec.id} hover>
+                      <TableCell sx={{ fontFamily: 'var(--font-mono)' }}>#{lec.id}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{lec.title}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={lec.status} />
+                      </TableCell>
+                      <TableCell>
+                        {lec.has_media ? (
+                          <CheckCircleIcon sx={{ color: 'success.main', fontSize: 18 }} />
+                        ) : (
+                          <CancelIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                        {new Date(lec.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          <Tooltip
+                            title={busy ? 'A job is already running for this lecture' : ''}
+                            disableHoverListener={!busy}
+                          >
+                            <span>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                disabled={busy}
+                                onClick={() => handleTriggerConcepts(lec.id)}
+                                sx={{ fontSize: '0.72rem', py: 0.25 }}
+                              >
+                                Extract concepts
+                              </Button>
+                            </span>
+                          </Tooltip>
+                          <Tooltip
+                            title={busy ? 'A job is already running for this lecture' : ''}
+                            disableHoverListener={!busy}
+                          >
+                            <span>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="secondary"
+                                disabled={busy}
+                                onClick={() => handleTriggerClips(lec.id)}
+                                sx={{ fontSize: '0.72rem', py: 0.25 }}
+                              >
+                                Cut clips
+                              </Button>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title="Remove this session and everything derived from it">
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label={`Remove ${lec.title}`}
+                                onClick={() => {
+                                  setRowError(null)
+                                  setRemoveTarget(lec)
+                                }}
+                                sx={{ border: '1px solid', borderColor: 'divider' }}
+                              >
+                                <DeleteOutlineIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {lectureList.map((lec) => {
-                      // C0's rule: while a job is in flight for this lecture the
-                      // actions are disabled, so a double-click cannot queue
-                      // duplicate work.
-                      const busy = busyLectureIds.has(lec.id)
-                      return (
-                        <TableRow key={lec.id} hover>
-                          <TableCell sx={{ fontFamily: 'var(--font-mono)' }}>#{lec.id}</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>{lec.title}</TableCell>
-                          <TableCell>
-                            <StatusBadge status={lec.status} />
-                          </TableCell>
-                          <TableCell>
-                            {lec.has_media ? (
-                              <CheckCircleIcon sx={{ color: 'success.main', fontSize: 18 }} />
-                            ) : (
-                              <CancelIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
-                            )}
-                          </TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
-                            {new Date(lec.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell align="right">
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                              <Tooltip
-                                title={busy ? 'A job is already running for this lecture' : ''}
-                                disableHoverListener={!busy}
-                              >
-                                <span>
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    disabled={busy}
-                                    onClick={() => handleTriggerConcepts(lec.id)}
-                                    sx={{ fontSize: '0.72rem', py: 0.25 }}
-                                  >
-                                    Extract concepts
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                              <Tooltip
-                                title={busy ? 'A job is already running for this lecture' : ''}
-                                disableHoverListener={!busy}
-                              >
-                                <span>
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    color="secondary"
-                                    disabled={busy}
-                                    onClick={() => handleTriggerClips(lec.id)}
-                                    sx={{ fontSize: '0.72rem', py: 0.25 }}
-                                  >
-                                    Cut clips
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                              <Tooltip title="Remove this session and everything derived from it">
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    aria-label={`Remove ${lec.title}`}
-                                    onClick={() => {
-                                      setRowError(null)
-                                      setRemoveTarget(lec)
-                                    }}
-                                    sx={{ border: '1px solid', borderColor: 'divider' }}
-                                  >
-                                    <DeleteOutlineIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stalled rows — resumable vs abandoned need opposite actions, so they
           get opposite sections, never one list or one button. */}
@@ -491,6 +352,13 @@ export const LecturesView: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <UploadDialog
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        courseId={selectedCourseId}
+        lectures={lectureList}
+      />
 
       {/* Removal is irreversible, so it is confirmed — and the dialog says
           exactly what travels with it. */}
