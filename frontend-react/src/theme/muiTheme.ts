@@ -68,22 +68,36 @@ function buildPalette(p: TokenPalette) {
   } as const
 }
 
-/** The shared type ramp — see the note above about Roboto. */
+/**
+ * The shared type ramp.
+ *
+ * Two faces, split by job: the display face carries identity on headings, stat
+ * values and the brand; the sans carries reading in tables, labels and body.
+ * That split is the whole point — a serif everywhere would cost legibility at
+ * 11px, and a grotesk everywhere is what every generated dashboard looks like.
+ *
+ * Weights stop at 600 across the display ramp. Newsreader has no 700 or 800
+ * file, so a heavier request would be synthesised (faux bold) — visibly wrong
+ * on a serif and a real defect, which is why every `fontWeight: 800` in the
+ * codebase was swept to 600 when this pairing landed.
+ */
+const DISPLAY = "'Newsreader', Georgia, 'Times New Roman', serif"
+
 const typography = {
-  fontFamily: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  h1: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.05 },
-  h2: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.12 },
-  h3: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.018em', lineHeight: 1.2 },
-  h4: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.015em', lineHeight: 1.22 },
-  h5: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.28 },
-  h6: { fontFamily: "'Space Grotesk', 'IBM Plex Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.005em', lineHeight: 1.32 },
+  fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  h1: { fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.06 },
+  h2: { fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '-0.015em', lineHeight: 1.12 },
+  h3: { fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 },
+  h4: { fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.22 },
+  h5: { fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '0em', lineHeight: 1.28 },
+  h6: { fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '0em', lineHeight: 1.32 },
   subtitle1: { fontWeight: 600, lineHeight: 1.5 },
   subtitle2: { fontWeight: 600, letterSpacing: '0.01em', lineHeight: 1.4 },
   body1: { lineHeight: 1.6 },
   body2: { lineHeight: 1.55 },
   button: { fontWeight: 600, letterSpacing: '-0.01em' },
   caption: { letterSpacing: '0.02em', lineHeight: 1.45 },
-  overline: { fontWeight: 700, letterSpacing: '0.1em' },
+  overline: { fontWeight: 600, letterSpacing: '0.1em' },
 }
 
 export function buildTheme(base?: Base | string | null): Theme {
@@ -266,6 +280,72 @@ export function buildTheme(base?: Base | string | null): Theme {
           bar: {
             borderRadius: 999,
             backgroundImage: gradient('info', 'ok'),
+          },
+        },
+      },
+
+      /**
+       * The slider, themed once for every instance — the node-limit control on
+       * the concept map, and any filter that grows later.
+       *
+       * Before this, sliders were browser defaults with only `accent-color`,
+       * which meant their track, thumb and focus ring came from the OS. That is
+       * the single most visible "unfinished" detail in a themed app: the control
+       * is saturated by the platform, not by the palette.
+       *
+       * Every value is a token, so both bases are covered and the colour guards
+       * pass; the focus ring is the same `tint('info', 18)` the text fields use,
+       * so keyboard focus looks identical wherever it lands.
+       */
+      MuiSlider: {
+        styleOverrides: {
+          root: {
+            height: 4,
+            color: token('info'),
+            padding: '13px 0',
+          },
+          rail: {
+            height: 4,
+            borderRadius: 999,
+            backgroundColor: token('track'),
+            opacity: 1,
+          },
+          track: {
+            height: 4,
+            border: 'none',
+            borderRadius: 999,
+            backgroundColor: token('info'),
+          },
+          thumb: {
+            width: 14,
+            height: 14,
+            backgroundColor: token('info'),
+            border: `2px solid ${token('page')}`,
+            '&:hover, &.Mui-focusVisible': {
+              boxShadow: `0 0 0 6px ${tint('info', 18)}`,
+            },
+            '&.Mui-active': {
+              boxShadow: `0 0 0 8px ${tint('info', 22)}`,
+            },
+          },
+          valueLabel: {
+            backgroundColor: token('surface'),
+            color: token('text'),
+            border: `1px solid ${token('border')}`,
+            borderRadius: 6,
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontSize: 11,
+            padding: '2px 6px',
+          },
+          mark: {
+            width: 2,
+            height: 2,
+            borderRadius: 1,
+            backgroundColor: token('track'),
+          },
+          markLabel: {
+            fontSize: 10,
+            color: token('muted'),
           },
         },
       },

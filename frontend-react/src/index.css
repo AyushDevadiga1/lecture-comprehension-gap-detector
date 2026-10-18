@@ -10,8 +10,12 @@
  */
 
 :root {
-  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Space Grotesk', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Display face: an editorial serif. Carries the identity on headings, stat
+     values and the brand; body text stays on the neutral sans so dense tables
+     and small labels keep their legibility. Weights stop at 600 — anything
+     heavier would be synthesised faux-bold, so no component asks for 700+. */
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 

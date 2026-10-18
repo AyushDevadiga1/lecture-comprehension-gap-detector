@@ -323,7 +323,7 @@ export const ClipBrowser: React.FC<ClipBrowserProps> = ({ lectures, onCutClips }
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '0.7rem',
-                            fontWeight: 800,
+                            fontWeight: 600,
                             backgroundColor: 'text.disabled',
                             color: 'background.paper',
                             ...(c.id === playingId

@@ -215,7 +215,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '0.75rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         backgroundColor: picked ? 'info.main' : tint('text', 10),
                         color: picked ? 'info.contrastText' : 'text.secondary',
                       }}
@@ -260,7 +260,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
                                     variant="caption"
                                     sx={{
                                       color: 'text.disabled',
-                                      fontWeight: 800,
+                                      fontWeight: 600,
                                       minWidth: 14,
                                     }}
                                   >
@@ -382,7 +382,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
                       justifyContent: 'center',
                     }}
                   >
-                    <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, lineHeight: 1 }}>
                       {result.total > 0 ? Math.round((result.score / result.total) * 100) : 0}%
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -395,7 +395,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
                   <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                     Quiz complete
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     {verdict(result.score, result.total).title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -448,7 +448,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                         <Typography
                           variant="subtitle2"
-                          sx={{ color: 'text.secondary', fontWeight: 800, minWidth: 26 }}
+                          sx={{ color: 'text.secondary', fontWeight: 600, minWidth: 26 }}
                         >
                           {String(idx + 1).padStart(2, '0')}
                         </Typography>

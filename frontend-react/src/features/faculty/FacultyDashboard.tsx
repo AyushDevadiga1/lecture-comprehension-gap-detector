@@ -105,7 +105,7 @@ export const FacultyDashboard: React.FC = () => {
       {/* Top Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
             Faculty Insights: {selectedCourseId.toUpperCase()}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -141,7 +141,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               DAG Structure
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: graphData?.is_dag ? 'success.main' : 'warning.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: graphData?.is_dag ? 'success.main' : 'warning.main' }}>
               {graphData?.is_dag ? 'Valid DAG' : 'Cyclic / Pending'}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -162,7 +162,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Root Concepts
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
               {rootConcepts}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -183,7 +183,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Comprehension Gaps Tracked
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'warning.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'warning.main' }}>
               {statsData?.heatmap?.filter((h) => h.rate > 0.3)?.length ?? 0}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -204,7 +204,7 @@ export const FacultyDashboard: React.FC = () => {
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
               Avg. Sequence Divergence
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'info.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'info.main' }}>
               {statsData?.divergence?.length
                 ? (statsData.divergence.reduce((acc, d) => acc + d.gap, 0) / statsData.divergence.length).toFixed(1)
                 : '0.0'}

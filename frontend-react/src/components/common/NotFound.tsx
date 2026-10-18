@@ -20,7 +20,7 @@ export const NotFound: React.FC = () => {
         variant="h1"
         sx={{
           fontSize: '6rem',
-          fontWeight: 800,
+          fontWeight: 600,
           color: 'text.primary',
         }}
       >

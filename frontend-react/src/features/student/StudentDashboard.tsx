@@ -378,7 +378,7 @@ export const StudentDashboard: React.FC = () => {
       <Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800 }}>
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>
               Student Portal: {selectedCourseId.toUpperCase()}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -405,7 +405,7 @@ export const StudentDashboard: React.FC = () => {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Total Lectures
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
                   {snapshot.lectures.total} ({snapshot.lectures.ready} ready)
                 </Typography>
               </Card>
@@ -417,7 +417,7 @@ export const StudentDashboard: React.FC = () => {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Extracted Concepts
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
                   {snapshot.concepts}
                 </Typography>
               </Card>
@@ -429,7 +429,7 @@ export const StudentDashboard: React.FC = () => {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Prerequisite Graph
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: snapshot.graph.has ? 'success.main' : 'warning.main' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums', color: snapshot.graph.has ? 'success.main' : 'warning.main' }}>
                   {snapshot.graph.has ? `${snapshot.graph.edges} Edges` : 'Not Built'}
                 </Typography>
               </Card>
@@ -441,7 +441,7 @@ export const StudentDashboard: React.FC = () => {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   Video Clips Cut
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600, mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
                   {snapshot.clips.ok} / {snapshot.clips.cut} OK
                 </Typography>
               </Card>
@@ -843,7 +843,7 @@ export const StudentDashboard: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 800 }}>Remove this session?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Remove this session?</DialogTitle>
         <DialogContent dividers>
           <Typography variant="body2" sx={{ mb: 1 }}>
             <strong>{removeTarget?.title}</strong> will be removed from{' '}
@@ -875,7 +875,7 @@ export const StudentDashboard: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 800 }}>Delete empty rows?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Delete empty rows?</DialogTitle>
         <DialogContent dividers>
           <Typography variant="body2">
             {abandoned.length} row{abandoned.length === 1 ? '' : 's'} with no

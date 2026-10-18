@@ -143,7 +143,7 @@ function ConceptNode({ data }: NodeProps<ConceptNodeData>) {
           component="span"
           sx={{
             fontSize: '0.7rem',
-            fontWeight: 800,
+            fontWeight: 600,
             borderRadius: '50%',
             width: 22,
             height: 22,
