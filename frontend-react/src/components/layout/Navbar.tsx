@@ -31,7 +31,7 @@ import { errorMessage } from '../../api/client'
 import { useAppStore } from '../../store/useAppStore'
 import { useActiveJobs, useFeedStatus } from '../../lib/useJobFeed'
 import { feedStatus } from '../../lib/feedStatus'
-import { queryKeys } from '../../lib/queryKeys'
+import { invalidateCourse, queryKeys } from '../../lib/queryKeys'
 import { tint } from '../../theme/alpha'
 
 export const Navbar: React.FC = () => {
@@ -90,11 +90,15 @@ export const Navbar: React.FC = () => {
     try {
       await coursesApi.delete(removed)
       setConfirmDelete(false)
-      // Move off the deleted course *before* the invalidation refetches, so
-      // no query fires once against an id that no longer exists.
+      // Move off the deleted course *before* invalidating, so no query fires
+      // once against an id that no longer exists. Then the one invalidation
+      // rule: it already clears ['courses'] and every course-scoped key for
+      // `removed`, which is exactly the set a deletion invalidates. A blanket
+      // wipe here would also clear every other course's cache, and the
+      // queryKeys guard rightly forbids a panel doing its own invalidation.
       const remaining = courseList.filter((c) => c.course_id !== removed)
       setSelectedCourseId(remaining[0]?.course_id ?? null)
-      await queryClient.invalidateQueries()
+      invalidateCourse(queryClient, removed)
     } catch (err: unknown) {
       setDeleteError(errorMessage(err, 'Could not delete course'))
     } finally {
@@ -149,7 +153,7 @@ export const Navbar: React.FC = () => {
             <Typography
               variant="h6"
               sx={{
-                fontWeight: 800,
+                fontWeight: 600,
                 fontSize: '1.2rem',
                 lineHeight: 1.05,
                 letterSpacing: '-0.025em',
@@ -331,7 +335,7 @@ export const Navbar: React.FC = () => {
       </Toolbar>
 
       <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>
+        <DialogTitle sx={{ fontWeight: 600 }}>
           Delete course {selectedCourseId?.toUpperCase()}?
         </DialogTitle>
         <DialogContent dividers>
