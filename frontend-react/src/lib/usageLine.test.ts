@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { usageLine } from './usageLine'
+import { usageLine, usageRows } from './usageLine'
 import type { UsageOut } from '../api/types'
 
 /**
@@ -71,5 +71,43 @@ describe('usageLine', () => {
     expect(usageLine(usage({ 'groq.chat': { remaining_requests: 5, reset_in_s: 0 } }))).toBe(
       'Groq 5 req',
     )
+  })
+})
+
+describe('usageRows', () => {
+  it('gives every service a readable name and its own detail', () => {
+    expect(
+      usageRows(
+        usage({
+          'groq.chat': { remaining_requests: 4812, remaining_tokens: 1200000, reset_in_s: 720 },
+          'groq.whisper': { remaining_requests: 71 },
+          local: { available: true, ffmpeg_ok: true },
+          ollama: { reachable: true },
+        }),
+      ),
+    ).toEqual([
+      { name: 'Groq chat', detail: '4,812 requests left · 1,200,000 tokens left · resets in 12m' },
+      { name: 'Groq whisper', detail: '71 requests left' },
+      { name: 'Local Whisper', detail: 'offline · unlimited' },
+      { name: 'Ollama', detail: 'reachable' },
+    ])
+  })
+
+  it('omits a service with nothing to report instead of showing dashes', () => {
+    expect(usageRows(usage({ 'groq.chat': {} }))).toEqual([])
+    expect(usageRows(null)).toEqual([])
+  })
+
+  it('flags a local backend whose ffmpeg is missing', () => {
+    expect(usageRows(usage({ local: { available: true, ffmpeg_ok: false } }))).toEqual([
+      { name: 'Local Whisper', detail: 'offline · unlimited · ffmpeg missing' },
+    ])
+  })
+
+  it('keeps an unknown service id, labelled as itself', () => {
+    // A new backend service must appear, not vanish, before a label exists.
+    expect(usageRows(usage({ 'some.new.thing': { remaining_requests: 5 } }))).toEqual([
+      { name: 'some.new.thing', detail: '5 requests left' },
+    ])
   })
 })

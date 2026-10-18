@@ -5,7 +5,7 @@ import { usage as usageApi } from '../../../api/usage'
 import { queryKeys } from '../../../lib/queryKeys'
 import { useFeedStatus } from '../../../lib/useJobFeed'
 import { feedStatus } from '../../../lib/feedStatus'
-import { usageLine } from '../../../lib/usageLine'
+import { usageLine, usageRows } from '../../../lib/usageLine'
 import { useAppStore } from '../../../store/useAppStore'
 
 /**
@@ -26,7 +26,7 @@ export const SystemView: React.FC = () => {
   })
 
   const summary = usageLine(data)
-  const services = data?.services ?? {}
+  const rows = usageRows(data)
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -54,32 +54,35 @@ export const SystemView: React.FC = () => {
             </Typography>
           )}
 
-          {Object.entries(services).map(([name, svc]) => (
-            <Box
-              key={name}
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: 2,
-                py: 1,
-                borderTop: '1px solid',
-                borderColor: 'divider',
-              }}
-            >
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {name}
-              </Typography>
-              <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', color: 'text.secondary' }}>
-                {typeof svc.remaining_requests === 'number'
-                  ? `${svc.remaining_requests} requests left`
-                  : svc.available
-                    ? 'available · unlimited'
-                    : svc.reachable
-                      ? 'reachable'
-                      : '—'}
-              </Typography>
-            </Box>
-          ))}
+          {rows.length === 0 ? (
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              No usage data yet — counters appear after the first API call.
+            </Typography>
+          ) : (
+            rows.map((row) => (
+              <Box
+                key={row.name}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  py: 1,
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {row.name}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: 'var(--font-mono)', color: 'text.secondary' }}
+                >
+                  {row.detail}
+                </Typography>
+              </Box>
+            ))
+          )}
         </CardContent>
       </Card>
 

@@ -58,3 +58,51 @@ export function usageLine(data: UsageOut | null | undefined): string | null {
 
   return parts.join(' · ')
 }
+
+export interface UsageRow {
+  /** Service id as the backend reports it: `groq.chat`, `local`, … */
+  name: string
+  detail: string
+}
+
+/** How a service id reads to a person. */
+const LABELS: Record<string, string> = {
+  'groq.chat': 'Groq chat',
+  'groq.whisper': 'Groq whisper',
+  local: 'Local Whisper',
+  ollama: 'Ollama',
+}
+
+/**
+ * Per-service detail, for the places that show a table rather than one line
+ * (Overview's quota card, System & quota). The same three distinctions as
+ * `usageLine` — counters, never-called, unlimited-local — because a table is a
+ * wider view of the same facts, and the two must not disagree.
+ */
+export function usageRows(data: UsageOut | null | undefined): UsageRow[] {
+  if (!data || !data.services) return []
+
+  const rows: UsageRow[] = []
+  for (const [id, svc] of Object.entries(data.services)) {
+    const parts: string[] = []
+
+    if (typeof svc.remaining_requests === 'number') {
+      parts.push(`${group(svc.remaining_requests)} requests left`)
+    }
+    if (typeof svc.remaining_tokens === 'number') {
+      parts.push(`${group(svc.remaining_tokens)} tokens left`)
+    }
+    if (typeof svc.reset_in_s === 'number' && svc.reset_in_s > 0) {
+      parts.push(`resets in ${Math.floor(svc.reset_in_s / 60)}m`)
+    }
+    if (svc.available) parts.push('offline · unlimited')
+    if (svc.ffmpeg_ok === false) parts.push('ffmpeg missing')
+    if (svc.reachable) parts.push('reachable')
+
+    // A service with nothing to say is omitted rather than rendered as a row of
+    // dashes: "no data yet" is ambient, and an empty row implies a failure.
+    if (parts.length === 0) continue
+    rows.push({ name: LABELS[id] ?? id, detail: parts.join(' · ') })
+  }
+  return rows
+}
