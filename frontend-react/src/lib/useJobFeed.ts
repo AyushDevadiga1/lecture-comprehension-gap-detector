@@ -97,11 +97,17 @@ export function useJobFeedConnection(courseId?: string | null): void {
       )
       prevRef.current = state.jobs
 
-      // The clips follow-up: a finished clip job must refresh its own list,
-      // which is not course-scoped and so is not covered by invalidateCourse.
+      // A finished clip job must refresh its own list, which is not
+      // course-scoped and so is not covered by invalidateCourse.
       for (const job of finished) {
         if (job.kind === 'clips' && job.lecture_id != null) {
           void queryClient.invalidateQueries({ queryKey: queryKeys.clips(job.lecture_id) })
+        }
+        // Any finished job touching a lecture may have changed its detail
+        // (segments, concepts, or the status that flips this view off
+        // transcribing). Refresh the per-lecture reads.
+        if (job.lecture_id != null) {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.lecture(job.lecture_id) })
         }
       }
     })

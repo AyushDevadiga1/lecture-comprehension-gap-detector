@@ -30,6 +30,8 @@ describe('queryKeys', () => {
     expect(queryKeys.stats('ML')).toEqual(['stats', 'ML'])
     expect(queryKeys.lectures('ML')).toEqual(['lectures', 'ML'])
     expect(queryKeys.jobs('ML')).toEqual(['jobs', 'ML'])
+    expect(queryKeys.lecture(4)).toEqual(['lecture', 4])
+    expect(queryKeys.lectureProgress(4)).toEqual(['lecture', 4, 'progress'])
   })
 })
 
@@ -100,6 +102,22 @@ describe('invalidateCourse', () => {
     await Promise.resolve()
 
     expect(invalidatedKeys(qc)).toEqual([])
+  })
+
+  it('clears per-lecture reads regardless of course', async () => {
+    const qc = client()
+    seed(qc, queryKeys.lecture(4))
+    seed(qc, queryKeys.lectureProgress(4))
+
+    invalidateCourse(qc, 'ML')
+    await Promise.resolve()
+
+    expect(invalidatedKeys(qc)).toEqual(
+      expect.arrayContaining([
+        JSON.stringify(queryKeys.lecture(4)),
+        JSON.stringify(queryKeys.lectureProgress(4)),
+      ]),
+    )
   })
 })
 

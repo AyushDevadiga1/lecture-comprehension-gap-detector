@@ -19,6 +19,10 @@ export const queryKeys = {
   graph: (courseId: string) => ['graph', courseId] as const,
   stats: (courseId: string) => ['stats', courseId] as const,
   lectures: (courseId: string) => ['lectures', courseId] as const,
+  /** Per-lecture detail (segments + concepts) — keyed by id, not course. */
+  lecture: (lectureId: number) => ['lecture', lectureId] as const,
+  /** Transcribe progress for one lecture; nested so the detail key covers it. */
+  lectureProgress: (lectureId: number) => ['lecture', lectureId, 'progress'] as const,
   clips: (lectureId: number) => ['clips', lectureId] as const,
   remediation: (studentId: string) => ['remediation', studentId] as const,
   /** Fed by the SSE feed, never fetched on a timer. See useJobs(). */
@@ -43,6 +47,12 @@ const COURSE_SCOPED = ['snapshot', 'graph', 'stats', 'lectures'] as const
  * `clips` and `remediation` are deliberately not course-scoped (they are keyed
  * by lecture id and student id); a clip cut invalidates `['lectures', courseId]`
  * and the clip list is refetched by its own key when the lecture panel opens.
+ *
+ * **Per-lecture detail** (`lecture`, from `02-backend-map.md` §4a) joins here as
+ * an *unscoped-by-course* variant: a lecture key carries only the lecture id, so
+ * any course-affecting write clears every per-lecture read. Coarse on purpose —
+ * these writes are rare, and a stale transcript or a missing concept band is
+ * worse than one extra GET.
  */
 export function invalidateCourse(queryClient: QueryClient, courseId: string): void {
   void queryClient.invalidateQueries({ queryKey: queryKeys.courses() })
@@ -51,6 +61,7 @@ export function invalidateCourse(queryClient: QueryClient, courseId: string): vo
       const resource = query.queryKey[0]
       if (typeof resource !== 'string') return false
       if (resource === 'courses') return true
+      if (resource === 'lecture') return true
       if (!(COURSE_SCOPED as readonly string[]).includes(resource)) return false
       // Unscoped variants (length 1) match; scoped ones must match the course.
       return query.queryKey.length === 1 || query.queryKey[1] === courseId
