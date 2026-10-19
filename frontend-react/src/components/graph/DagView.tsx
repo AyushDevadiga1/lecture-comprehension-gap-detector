@@ -41,7 +41,10 @@ import { tint, token } from '../../theme/alpha'
  *   - edge-type filtering over the methods actually present;
  *   - the counts line (total · shown · acyclic/cyclic) and the dropped-count
  *     caption;
- *   - the learner-order study sequence in a bounded scroll box.
+ *   - the learner-order study sequence in a bounded scroll box;
+ *   - a min-confidence cut for links (from the approved mock): links below
+ *     the slider are hidden, not faded, and the "Links drawn" count follows;
+ *     node layout ignores the cut so the graph does not jump while sliding.
  *
  * What is new, because an SVG layout does not transfer to a canvas:
  *   - positions come from a deterministic layered layout (depth = longest
@@ -295,6 +298,15 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
     nodes.length <= READABLE_ALL ? nodes.length : DEFAULT_LIMIT,
   )
 
+  /**
+   * Minimum edge confidence, in percent. 0% (the default) draws every link,
+   * so the shipped view is unchanged. Below-threshold links are HIDDEN, not
+   * dimmed: the counts line says "drawn", and a fade would make it lie.
+   * Node positions keep using the confidence-unfiltered set, so sliding does
+   * not shuffle the layout under the pointer — only the links come and go.
+   */
+  const [minConfidence, setMinConfidence] = React.useState(0)
+
   const { kept, dropped } = React.useMemo(
     () => rankConcepts(nodes, edges, limit),
     [nodes, edges, limit],
@@ -348,6 +360,23 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
     [kept, shownEdges],
   )
 
+  /**
+   * The confidence cut. "Minimum" is inclusive: an edge at exactly the slider
+   * value draws (the mock's filter, and what "min" should mean). The epsilon
+   * only absorbs float noise from `0.7 * 100`-style arithmetic, so a 70% edge
+   * is not dropped by a 70% floor.
+   */
+  const drawnEdges = React.useMemo(
+    () =>
+      minConfidence <= 0
+        ? shownEdges
+        : shownEdges.filter(
+            (e) => (e.confidence ?? 0) >= minConfidence / 100 - 1e-9,
+          ),
+    [shownEdges, minConfidence],
+  )
+  const hiddenByConfidence = shownEdges.length - drawnEdges.length
+
   const flowNodes: FlowNode<ConceptNodeData>[] = React.useMemo(
     () =>
       kept.map((name) => {
@@ -383,7 +412,7 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
 
   const flowEdges: FlowEdge[] = React.useMemo(
     () =>
-      shownEdges.map((e, i) => {
+      drawnEdges.map((e, i) => {
         // The selected concept's own links read first: accent, wider, with a
         // matching head. Everything else stays the quiet graph edge.
         const hot =
@@ -400,18 +429,10 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
           markerEnd: { type: MarkerType.ArrowClosed, color: stroke },
         }
       }),
-    [shownEdges, selected],
+    [drawnEdges, selected],
   )
 
-  const drawnCount = React.useMemo(() => {
-    const wantedSet = new Set(wanted)
-    return edges.filter(
-      (e) =>
-        keptSet.has(e.source) &&
-        keptSet.has(e.target) &&
-        wantedSet.has(e.source_method || 'classifier'),
-    ).length
-  }, [edges, keptSet, wanted])
+  const drawnCount = drawnEdges.length
 
   const incident = React.useMemo(() => {
     if (shownSelected == null) return []
@@ -486,7 +507,7 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {/* Controls — the same four as panels/graph.py::_controls. */}
+      {/* Controls — the Python's four, plus the mock's confidence filter. */}
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <FormControl size="small" sx={{ minWidth: 220 }}>
           <InputLabel id={`${idPrefix}-color-label`}>Colour by</InputLabel>
@@ -523,6 +544,22 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
             ))}
           </Select>
         </FormControl>
+
+        <Box sx={{ minWidth: 200 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            Min confidence {minConfidence}%
+          </Typography>
+          <Slider
+            aria-label="Min confidence"
+            value={minConfidence}
+            min={0}
+            max={100}
+            step={5}
+            valueLabelDisplay="auto"
+            valueLabelFormat={(v) => `${v}%`}
+            onChange={(_, v) => setMinConfidence(v as number)}
+          />
+        </Box>
 
         <Box sx={{ minWidth: 220 }}>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -592,6 +629,12 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
         <Typography variant="caption" sx={{ color: 'text.secondary', mt: -1 }}>
           {dropped.length} lower-significance concept(s) hidden to keep this
           readable. Raise the slider to include them.
+        </Typography>
+      )}
+      {hiddenByConfidence > 0 && (
+        <Typography variant="caption" sx={{ color: 'text.secondary', mt: -1 }}>
+          {hiddenByConfidence} lower-confidence link(s) hidden below{' '}
+          {minConfidence}%. Lower the Min confidence slider to include them.
         </Typography>
       )}
 

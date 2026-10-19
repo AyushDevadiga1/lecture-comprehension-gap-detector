@@ -242,6 +242,41 @@ describe('DagView', () => {
     })
   })
 
+  it('the confidence slider hides weak links and the counts follow', async () => {
+    const user = userEvent.setup()
+    renderDag()
+
+    expect(screen.getByText(/Links drawn 3 \/ 3/)).toBeInTheDocument()
+
+    const slider = screen.getByRole('slider', { name: 'Min confidence' })
+    slider.focus()
+    // 5% a press; at 40% the 0.4 classifier edge is AT the floor and stays —
+    // "min" is inclusive, and this boundary is the one a `>` would get wrong.
+    for (let i = 0; i < 8; i++) await user.keyboard('{ArrowRight}')
+    expect(screen.getByText(/Min confidence 40%/)).toBeInTheDocument()
+    expect(screen.getByText(/Links drawn 3 \/ 3/)).toBeInTheDocument()
+    expect(screen.queryByText(/lower-confidence link/)).not.toBeInTheDocument()
+
+    // One more press cuts it: count, readout and caption stay in step...
+    await user.keyboard('{ArrowRight}')
+    await waitFor(() => {
+      expect(screen.getByText(/Links drawn 2 \/ 3/)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/Min confidence 45%/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/1 lower-confidence link\(s\) hidden below 45%/),
+    ).toBeInTheDocument()
+    // ...and "hidden" means gone from the canvas, not faded.
+    expect(document.querySelectorAll('.react-flow__edge-path')).toHaveLength(2)
+
+    // Back to 0%: the cut reverses and everything returns.
+    for (let i = 0; i < 9; i++) await user.keyboard('{ArrowLeft}')
+    await waitFor(() => {
+      expect(screen.getByText(/Links drawn 3 \/ 3/)).toBeInTheDocument()
+    })
+    expect(screen.queryByText(/lower-confidence link/)).not.toBeInTheDocument()
+  })
+
   it('the limit slider hides lower-significance concepts and says so', async () => {
     const user = userEvent.setup()
     renderDag()
