@@ -9,6 +9,7 @@ import { JobDrawer } from '../common/JobDrawer'
 import { JobCompletionHost } from '../common/JobCompletionHost'
 import { useAppStore } from '../../store/useAppStore'
 import { useJobFeedConnection } from '../../lib/useJobFeed'
+import { useRouteFocus } from '../../lib/useRouteFocus'
 
 /**
  * The application shell: sidebar, banner, topbar, the routed view, and the two
@@ -28,8 +29,10 @@ import { useJobFeedConnection } from '../../lib/useJobFeed'
  */
 export const AppShell: React.FC = () => {
   const { selectedCourseId } = useAppStore()
+  const mainRef = React.useRef<HTMLElement>(null)
 
   useJobFeedConnection(selectedCourseId)
+  useRouteFocus(mainRef)
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -40,7 +43,12 @@ export const AppShell: React.FC = () => {
         <AuthBanner />
         <Topbar />
 
-        <Box component="main" sx={{ flexGrow: 1, px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+        <Box
+          component="main"
+          ref={mainRef}
+          tabIndex={-1}
+          sx={{ flexGrow: 1, px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 }, outline: 'none' }}
+        >
           <ErrorBoundary title="This page failed to render" resetKeys={[selectedCourseId]}>
             <Outlet />
           </ErrorBoundary>
