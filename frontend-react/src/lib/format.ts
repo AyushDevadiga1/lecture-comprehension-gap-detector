@@ -30,3 +30,22 @@ export function formatClipTime(seconds: number | null | undefined): string {
   const ss = String(s).padStart(2, '0')
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
+
+/**
+ * Wall-clock duration for a job row — `35s`, `4m 12s`, `1m 03s`.
+ *
+ * A clock, not a media position: seconds always carry a unit and minutes are
+ * padded the way the job registry prints them, so a column of durations lines
+ * up. Returns `—` when neither a start nor a finish is known, the same honest
+ * placeholder `formatClipTime` uses.
+ */
+export function formatElapsed(seconds: number | null | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds)) return '—'
+  const total = Math.max(0, Math.floor(seconds))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}m`
+  if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
+  return `${s}s`
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatClipTime } from './format'
+import { formatClipTime, formatElapsed } from './format'
 
 /**
  * Clip timestamps are offsets into a lecture, in seconds, and they arrive from
@@ -43,5 +43,31 @@ describe('formatClipTime', () => {
     expect(formatClipTime(undefined)).toBe('--:--')
     expect(formatClipTime(Number.NaN)).toBe('--:--')
     expect(formatClipTime(Number.POSITIVE_INFINITY)).toBe('--:--')
+  })
+})
+
+describe('formatElapsed', () => {
+  it('renders seconds below a minute', () => {
+    expect(formatElapsed(0)).toBe('0s')
+    expect(formatElapsed(35)).toBe('35s')
+    expect(formatElapsed(59)).toBe('59s')
+  })
+
+  it('renders padded minutes and seconds', () => {
+    expect(formatElapsed(60)).toBe('1m 00s')
+    expect(formatElapsed(252)).toBe('4m 12s')
+    expect(formatElapsed(63)).toBe('1m 03s')
+  })
+
+  it('renders hours once past an hour', () => {
+    expect(formatElapsed(3600)).toBe('1h 00m')
+    expect(formatElapsed(7325)).toBe('2h 02m')
+  })
+
+  it('clamps negatives and renders a placeholder for missing values', () => {
+    expect(formatElapsed(-5)).toBe('0s')
+    expect(formatElapsed(null)).toBe('—')
+    expect(formatElapsed(undefined)).toBe('—')
+    expect(formatElapsed(Number.NaN)).toBe('—')
   })
 })
