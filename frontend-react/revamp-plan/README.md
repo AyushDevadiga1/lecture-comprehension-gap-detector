@@ -58,6 +58,7 @@ Stated up front because every phase is judged against them:
 
 | File | What it settles |
 |---|---|
+| `NEXT-AGENT.md` | **Start here if you are picking this up** — current state, next task, and the traps that cost time |
 | `01-architecture.md` | Routes, shell, file layout, state tiers, component inventory |
 | `02-backend-map.md` | Every endpoint → view → query key → states → invalidation |
 | `03-invariants-and-quality.md` | The invariants above in detail, error handling, a11y, testing, perf budget |
