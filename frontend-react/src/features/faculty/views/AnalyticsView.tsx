@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Grid,
   Table,
   TableBody,
   TableCell,
@@ -27,6 +26,7 @@ import { ErrorAlert } from '../../../components/common/ErrorAlert'
 import { LoadingScreen } from '../../../components/common/LoadingScreen'
 import { Rise } from '../../../components/common/Rise'
 import { SectionIcon } from '../../../components/common/SectionIcon'
+import { TelemetryStrip } from '../../../components/common/TelemetryStrip'
 
 /**
  * Faculty analytics — the telemetry cards, the rebuild control, and the
@@ -70,18 +70,6 @@ export const AnalyticsView: React.FC = () => {
     onError: (err: unknown) => setBuildError(errorMessage(err, 'Could not queue a graph rebuild')),
   })
 
-  /**
-   * True root concepts: nodes with in-degree 0. `topological_order` contains
-   * every node, so its length is the concept count, not the root count — a bug
-   * fixed in 27fed3c. With no edges, every node is effectively a root.
-   */
-  const rootConcepts = React.useMemo(() => {
-    if (!graphData) return 0
-    if (graphData.edges.length === 0) return graphData.node_count
-    const hasIncoming = new Set(graphData.edges.map((e) => e.target))
-    return graphData.nodes.filter((n) => !hasIncoming.has(n)).length
-  }, [graphData])
-
   if (!selectedCourseId) {
     return <Typography color="text.secondary">Select a course to inspect analytics.</Typography>
   }
@@ -119,76 +107,7 @@ export const AnalyticsView: React.FC = () => {
 
       {buildError && <ErrorAlert error={buildError} title="Graph rebuild failed" />}
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Rise delay={0}>
-            <Card sx={{ p: 2, height: '100%', transition: 'border-color 0.2s ease', '&:hover': { borderColor: 'info.main' } }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-                DAG structure
-              </Typography>
-              <Typography variant="h5" sx={{ mt: 0.5, fontVariantNumeric: 'tabular-nums', color: graphData?.is_dag ? 'success.main' : 'warning.main' }}>
-                {graphData?.is_dag ? 'Valid DAG' : 'Cyclic / pending'}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                {graphData ? `${graphData.node_count} nodes, ${graphData.edge_count} edges` : '—'}
-              </Typography>
-            </Card>
-          </Rise>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Rise delay={0.05}>
-            <Card sx={{ p: 2, height: '100%', transition: 'border-color 0.2s ease', '&:hover': { borderColor: 'info.main' } }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-                Root concepts
-              </Typography>
-              <Typography variant="h5" sx={{ mt: 0.5, fontVariantNumeric: 'tabular-nums' }}>
-                {rootConcepts}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                No prerequisites (in-degree 0)
-              </Typography>
-            </Card>
-          </Rise>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Rise delay={0.1}>
-            <Card sx={{ p: 2, height: '100%', transition: 'border-color 0.2s ease', '&:hover': { borderColor: 'info.main' } }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-                Comprehension gaps tracked
-              </Typography>
-              <Typography variant="h5" sx={{ mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'warning.main' }}>
-                {statsData?.heatmap?.filter((h) => h.rate > 0.3)?.length ?? 0}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Concepts with &gt;30% failure rate
-              </Typography>
-            </Card>
-          </Rise>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Rise delay={0.15}>
-            <Card sx={{ p: 2, height: '100%', transition: 'border-color 0.2s ease', '&:hover': { borderColor: 'info.main' } }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-                Avg. sequence divergence
-              </Typography>
-              <Typography variant="h5" sx={{ mt: 0.5, fontVariantNumeric: 'tabular-nums', color: 'info.main' }}>
-                {statsData?.divergence?.length
-                  ? (
-                      statsData.divergence.reduce((acc, d) => acc + d.gap, 0) /
-                      statsData.divergence.length
-                    ).toFixed(1)
-                  : '0.0'}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Step gap (taught vs learned)
-              </Typography>
-            </Card>
-          </Rise>
-        </Grid>
-      </Grid>
+      <TelemetryStrip graph={graphData ?? null} stats={statsData ?? null} />
 
       <Rise delay={0.2}>
         <Card>
