@@ -1,0 +1,33 @@
+My current evaluation on the frontend and the backend :
+First of all the system overall looks good but the thing is it is not self explanatory or you can say that it looks a bit more complicated than it should be for a user as he/she may need to understand this in simple words,
+no doubt we should not compromise demonstration and description of the engineering we have done behind the scenes but we must keep in mind to explain this in the overview tabe also I think.
+
+I think we must take over and think what are the things we should be actually showcasing here.
+
+Also currently if I recall we are basically we are cutting the clips and adding them to like a blender of the complete lecture right ? Fine I get it .
+
+But suppose a person randomly adds a different lecture to the course and then we try to connect the similar topics and their topicd ?
+Will we be able to ? Or should this be like deleted from the course or we can keep it to look and find inside that there might be some topics which are actually connected.
+Like we can use a scatter plot on a big plane to cluster similar points ( Also this is a suggestion ( if this require additional costs we can skip this too))
+Doing this we not only get the actual understanding after cutting but also get a clarity of the next steps we are about to do.
+
+Also the concept map is good but is it actually feasible ? 
+Now let's think about it , does it actually use everything we do before the plotting and ordering or are we missing something ?
+I genuinely think to be honest we must use another plotting method to make this concept map to be honest which will showcase the actual data and topics highlighting things and connectivity ?
+
+Also I think we can make better story to showcase the timeline for our lecture detail and even give user more info, what we disovered in simple and show it.
+Like maybe a better metric or diagram for this .
+
+For the quiz are we even generating the factual quizes which we actually need that works in a reinforced approach which is serving a the backbone helping a person get the actual thing he wants from this course?
+And I was thinking that given the wrong answers after a quiz we can give the user the clips from the videos to look with the map segment he must use to reach the current map --- what do u think about this ?
+I think this is covered in remedition -- if then OK!!!
+
+For faculty and the dashboard -- I want to understand that whether it actually works well currently or do we need a better implementation plan to be done later.
+Fine if for later cause that is the plan.
+
+We still need to think carefully about the data structures and optimization of the code we have written , is the current sub branch frontend better than the actual main one and should it be merged ( Need a answer for this and No merging to be done yet)
+The files are starting to look more and more messy and I Think we are loosing context and sight of the project , I think we need to make the above decision so that we can clean and may need to use some sort of library like openspec to make sure that if any agent is to come tommorow and see the codebase he learns the context in few seconds and not burn tokens to understand everything complexly.
+We are keeping a worklog and git branch for this but this can be improved I think
+
+For now all I want is you to look at all this things I have said above and give your review on it and not actually implement it .
+You can look around things and ignore any docs folder for now as it is the working of current system and will be replaced later.

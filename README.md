@@ -329,27 +329,19 @@ of each stage → module → output (clip videos live under `data/processed/clip
 
 ### Frontend
 
+#### Modern Primary UI (React + Vite + MUI)
 ```bash
-streamlit run frontend/student_app.py     # student dashboard (ingest → quiz)
-streamlit run frontend/faculty_app.py     # faculty dashboard (stats/DAG/timeline)
+cd frontend-react
+npm install
+npm run dev               # opens http://localhost:5173
 ```
+Features code-split views for students (Overview, Ingest/Upload, Concept DAG map with confidence filters, In-line Quizzes, Video clip remediation) and faculty (Confusion Heatmap, Taught-vs-Learned Divergence, Lecture timeline coverage), background SSE job drawer, and dark/light system theming. Tests: `npm run verify` (type-check, lint, and vitest).
 
-Both dashboards share a pure-Python API client (`frontend/client.py`) and talk
-to the backend only over HTTP (see `plan/FRONTEND_API_CONTRACT.md`). Student
-dashboard: upload a lecture → process → take the ordered quiz → get the
-personalized remediation sequence with per-concept clip playback. The quiz is
-a graded MCQ per concept — the stem quotes the lecture's own spoken sentence,
-and grading is server-side (the client just picks an option); when the
-transcript can't support a concept the fallback is a name-recognition question,
-so every question stays answerable. Faculty dashboard: heatmap of concept miss
-rates
-+ taught-vs-learned divergence, the interactive concept prerequisite DAG
-(learner order top→bottom, edge-tooltip confidence; vis-network loads from a
-CDN so the page itself is only a few KB), and a per-lecture **timeline +
-coverage** view showing how much of the spoken lecture the extracted concepts
-pin down, with each concept's quiz-answer evidence sentence — all served by
-the API (`GET /courses/{id}/stats`, `GET /courses/{id}/graph`,
-`GET /lectures/{id}`).
+#### Legacy UI (Streamlit)
+```bash
+streamlit run frontend/student_app.py     # legacy student dashboard
+streamlit run frontend/faculty_app.py     # legacy faculty dashboard
+```
 
 ### Recovery experiment (Phase 7 validator)
 
@@ -385,9 +377,11 @@ curl -X POST http://127.0.0.1:8000/lectures \
 curl http://127.0.0.1:8000/lectures/1
 curl http://127.0.0.1:8000/health   # shows which LLM backends are usable
 
-# 6. (Later phases) Student / faculty UI
-python -m streamlit run frontend/student_app.py
-# and separately:   python -m streamlit run frontend/faculty_app.py
+# 6. Start the Frontend (React + Vite)
+cd frontend-react
+npm install
+npm run dev                                # opens http://localhost:5173
+# (Legacy Streamlit fallback: streamlit run frontend/student_app.py)
 ```
 
 Tests and benchmarks:
@@ -463,6 +457,8 @@ Raw media and the database are git-ignored — never commit them.
 
 | File | Contents |
 |---|---|
+| `ARCHITECTURE.md` | Root 1-page architecture overview (repo layout, pipeline stages, models) |
+| `frontend-react/EVALUATION_AND_PLAN.md` | Frontend UX evaluation, shipped improvements, and roadmap |
 | `plan/ARCHITECTURE.md` | Full 8-stage pipeline, stage by stage, tech stack |
 | `plan/LECTURE_STRUCTURE.md` | Approved Lecture-Structure redesign spec (passages, teach-spans, transcript-first graph) |
 | `plan/EVALUATION.md` | How the prerequisite classifier and refinement loop are tested |
