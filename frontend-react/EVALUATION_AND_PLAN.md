@@ -408,9 +408,9 @@ A comprehensive browser-driven interactive QA session was executed on the live f
 | 7 | DAG: colour-by lecture source option | Medium (multi-lecture clarity) | Small | ⛔ Blocked — graph nodes are `string[]` with no `lecture_id`; requires backend schema change to add lecture provenance per node |
 | 8 | OpenAPI → TypeScript type generation | High (dev hygiene) | Small | 🔜 Next — backend must be running; run `GET /openapi.json` then `npx openapi-typescript` |
 | 9 | ARCHITECTURE.md one-pager at workspace root | High (context loss fix) | Small | ✅ Done |
-| 10 | Repo Cleanup: Retire legacy Streamlit `frontend/` & prune python deps | Medium (repo hygiene) | Small | 📋 Planned (Phase B) |
-| 11 | Doc Alignment: Update root `README.md` and Docker configs for React | High (onboarding/ops) | Small | 📋 Planned (Phase C) |
-| 12 | Git Sub-Branch Consolidation: Merge to `main` via PR | High (release readiness) | Small | 📋 Ready to merge |
+| 10 | Repo Cleanup: Archive legacy Streamlit `frontend/` to `deprecated/` | Medium (repo hygiene) | Small | ✅ Done |
+| 11 | Doc Alignment: Update root `README.md` for React & interactive docs | High (onboarding/ops) | Small | ✅ Done |
+| 12 | Git Sub-Branch Consolidation: Merged to `main` and pushed | High (release readiness) | Small | ✅ Done |
 | 13 | HeatmapView: real 2D grid instead of bars | Medium (faculty UX) | Medium | Phase 2 |
 | 14 | DivergenceView: bump chart instead of table | Medium (faculty UX) | Medium | Phase 2 |
 | 15 | Scatter / cluster concept view | Medium (multi-lecture insight) | Large | Phase 2 |
