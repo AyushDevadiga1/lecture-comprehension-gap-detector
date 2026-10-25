@@ -88,3 +88,18 @@ frontend-react/screenshots/
 
 
 output.txt
+
+# Node / Frontend build artifacts
+node_modules/
+**/node_modules/
+dist/
+dist-ssr/
+frontend-react/dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+coverage/
+.coverage
+.cache/

@@ -16,6 +16,8 @@ REPO = Path(__file__).resolve().parents[1]
 
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
+if str(REPO / "deprecated") not in sys.path:
+    sys.path.insert(0, str(REPO / "deprecated"))
 
 # Isolate the DB at the earliest possible moment - before any test module
 # imports backend.config. This must be a hard set, not setdefault: a module-level
