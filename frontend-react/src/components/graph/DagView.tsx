@@ -80,6 +80,12 @@ export interface DagViewProps {
   graph: CourseGraphOut
   /** Disambiguates control ids when two views share a page. */
   idPrefix?: string
+  /**
+   * If provided, the DAG will auto-select and centre the first concept whose
+   * name contains this string (case-insensitive). Used by the "Show on map"
+   * button in RemediationView which passes `?find=<concept>` via the URL.
+   */
+  initialFind?: string
 }
 
 interface ConceptNodeData {
@@ -269,7 +275,7 @@ function layoutLayers(
   return positions
 }
 
-export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => {
+export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag', initialFind }) => {
   // Stable empties: `graph.nodes ?? []` would allocate a fresh array on every
   // render, churning every useMemo below (the exhaustive-deps rule flags
   // exactly this). Module-level singletons keep the identities stable.
@@ -280,7 +286,7 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
   const [colorBy, setColorBy] = React.useState<ColourBy>('order')
   const [methods, setMethods] = React.useState<string[] | null>(null)
   const [selected, setSelected] = React.useState<string | null>(null)
-  const [query, setQuery] = React.useState('')
+  const [query, setQuery] = React.useState(initialFind ?? '')
   const [searchNote, setSearchNote] = React.useState<string | null>(null)
   // The canvas instance, for the reset-view affordance only. Captured via
   // onInit rather than a ReactFlowProvider so this component stays
@@ -493,6 +499,18 @@ export const DagView: React.FC<DagViewProps> = ({ graph, idPrefix = 'dag' }) => 
     const pos = positions.get(pick)
     if (pos) flow?.setCenter(pos.x + 90, pos.y + 28, { zoom: 1.1, duration: 300 })
   }
+
+  // Auto-select on mount when initialFind is provided, once the layout is ready.
+  React.useEffect(() => {
+    if (!initialFind || kept.length === 0) return
+    const q = initialFind.trim().toLowerCase()
+    const pick = kept.find((n) => n.toLowerCase().includes(q))
+    if (pick) {
+      setSelected(pick)
+      const pos = positions.get(pick)
+      if (pos) flow?.setCenter(pos.x + 90, pos.y + 28, { zoom: 1.1, duration: 300 })
+    }
+  }, [initialFind, kept, positions, flow])
 
   if (nodes.length === 0) {
     return (

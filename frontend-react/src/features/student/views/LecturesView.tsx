@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Alert,
   Box,
@@ -22,8 +22,10 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { lectures as lecturesApi } from '../../../api/lectures'
+import { courses as coursesApi } from '../../../api/courses'
 import { errorMessage } from '../../../api/client'
 import { queryKeys, invalidateCourse } from '../../../lib/queryKeys'
 import { splitStalled } from '../../../lib/lectureTriage'
@@ -65,6 +67,15 @@ export const LecturesView: React.FC = () => {
 
   const busyLectureIds = useBusyLectureIds(selectedCourseId)
   const { resumable, abandoned } = splitStalled(lectureList, selectedCourseId ?? '')
+
+  // Snapshot for cross-lecture isolation check: a ready lecture with 0 total
+  // concepts is isolated from the concept graph.
+  const { data: snapshot } = useQuery({
+    queryKey: queryKeys.snapshot(selectedCourseId ?? ''),
+    queryFn: () => (selectedCourseId ? coursesApi.snapshot(selectedCourseId) : null),
+    enabled: !!selectedCourseId,
+  })
+  const totalConcepts = snapshot?.concepts ?? 0
 
   const handleTriggerConcepts = async (lectureId: number) => {
     setRowError(null)
@@ -192,7 +203,17 @@ export const LecturesView: React.FC = () => {
                       <TableCell sx={{ fontFamily: 'var(--font-mono)' }}>#{lec.id}</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>{lec.title}</TableCell>
                       <TableCell>
-                        <StatusBadge status={lec.status} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <StatusBadge status={lec.status} />
+                          {/* Isolation warning: lecture is processed but the course
+                              has no concepts at all — this lecture may be unrelated
+                              to the rest of the course content. */}
+                          {lec.status === 'ready' && totalConcepts === 0 && (
+                            <Tooltip title="This lecture is ready but no concepts have been extracted yet. Run 'Extract concepts' to connect it to the course graph.">
+                              <WarningAmberIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+                            </Tooltip>
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         {lec.has_media ? (

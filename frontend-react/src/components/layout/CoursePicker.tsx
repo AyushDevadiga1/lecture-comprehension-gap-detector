@@ -11,16 +11,21 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../api/courses'
 import { errorMessage } from '../../api/client'
 import { useAppStore } from '../../store/useAppStore'
 import { invalidateCourse, queryKeys } from '../../lib/queryKeys'
 import { tint } from '../../theme/alpha'
+
+/** Course ID must be alphanumeric / hyphens / underscores, 1-40 chars. */
+const COURSE_ID_RE = /^[\w-]{1,40}$/
 
 /**
  * Course selection and deletion — one component, because one thing owns it.
@@ -74,6 +79,22 @@ export const CoursePicker: React.FC = () => {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  // ── Create new course ──────────────────────────────────────────────────
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newCourseId, setNewCourseId] = useState('')
+  const newCourseIdValid = COURSE_ID_RE.test(newCourseId.trim())
+  const newCourseIdTaken = courseList.some(
+    (c) => c.course_id === newCourseId.trim().toLowerCase(),
+  )
+
+  const handleCreateCourse = () => {
+    const id = newCourseId.trim().toLowerCase()
+    if (!newCourseIdValid || newCourseIdTaken) return
+    setSelectedCourseId(id)
+    setCreateOpen(false)
+    setNewCourseId('')
+  }
 
   const canDelete = selectedCourseId != null && courseList.length > 1 && !deleting
 
@@ -140,6 +161,21 @@ export const CoursePicker: React.FC = () => {
           </Select>
         </FormControl>
 
+        <Tooltip title="Create a new course">
+          <IconButton
+            onClick={() => {
+              setNewCourseId('')
+              setCreateOpen(true)
+            }}
+            color="inherit"
+            aria-label="Create a new course"
+            size="small"
+            sx={{ border: '1px solid', borderColor: 'divider' }}
+          >
+            <AddCircleOutlineIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
         <Tooltip
           title={
             selectedCourseId == null
@@ -165,6 +201,54 @@ export const CoursePicker: React.FC = () => {
           </span>
         </Tooltip>
       </Box>
+
+      {/* ── Create course dialog ───────────────────────────────────────── */}
+      <Dialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>Create a new course</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Enter an ID for the new course (letters, numbers, hyphens, underscores — max 40
+            characters). The course is created automatically when you upload the first lecture.
+          </Typography>
+          <TextField
+            label="Course ID"
+            placeholder="e.g. ml-2025"
+            value={newCourseId}
+            onChange={(e) => setNewCourseId(e.target.value.replace(/\s/g, '-'))}
+            size="small"
+            fullWidth
+            autoFocus
+            error={newCourseId.length > 0 && (!newCourseIdValid || newCourseIdTaken)}
+            helperText={
+              newCourseIdTaken
+                ? 'A course with this ID already exists.'
+                : newCourseId.length > 0 && !newCourseIdValid
+                  ? 'Only letters, numbers, hyphens, and underscores (1–40 chars).'
+                  : ''
+            }
+            inputProps={{ 'aria-label': 'New course ID', maxLength: 40 }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && newCourseIdValid && !newCourseIdTaken) handleCreateCourse()
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateCourse}
+            disabled={!newCourseIdValid || newCourseIdTaken}
+            autoFocus
+          >
+            Create &amp; Switch
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 600 }}>

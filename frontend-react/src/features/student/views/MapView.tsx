@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
 import { Box, Skeleton, Typography } from '@mui/material'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { courses as coursesApi } from '../../../api/courses'
 import { queryKeys } from '../../../lib/queryKeys'
@@ -19,9 +20,15 @@ const DagView = React.lazy(() =>
  * opening both fetches once. `key={selectedCourseId}` resets the canvas'
  * control state on a course switch — a colour-by or node-limit choice for one
  * course must never silently scope another.
+ *
+ * Accepts a `?find=<concept>` URL search param (set by the "Show on map" button
+ * in RemediationView) and forwards it to DagView as `initialFind`, which
+ * auto-selects and centres the matching concept on load.
  */
 export const MapView: React.FC = () => {
   const { selectedCourseId } = useAppStore()
+  const [searchParams] = useSearchParams()
+  const initialFind = searchParams.get('find') ?? undefined
 
   const {
     data: graphData,
@@ -44,6 +51,9 @@ export const MapView: React.FC = () => {
         <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
           Prerequisites sit above what they unlock. Drag to pan, scroll to zoom, click a
           concept for its links and evidence.
+          {initialFind && (
+            <> Highlighting <strong>{initialFind}</strong> from your remediation plan.</>
+          )}
         </Typography>
       </Box>
 
@@ -62,7 +72,12 @@ export const MapView: React.FC = () => {
             />
           }
         >
-          <DagView key={selectedCourseId} graph={graphData} idPrefix="student-graph" />
+          <DagView
+            key={selectedCourseId}
+            graph={graphData}
+            idPrefix="student-graph"
+            initialFind={initialFind}
+          />
         </Suspense>
       )}
     </Box>

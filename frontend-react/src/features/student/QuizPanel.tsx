@@ -181,7 +181,10 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
                 below both pinned outside that scroll region. */}
             <Box
               sx={{
-                maxHeight: '54vh',
+                // Responsive height: fills remaining viewport after header (~72px),
+                // card padding (2×24px), title row (~40px), caption (~20px), progress
+                // bar (~56px), and submit bar (~72px). Min so it never collapses.
+                maxHeight: 'clamp(220px, calc(100vh - 380px), 56vh)',
                 overflowY: 'auto',
                 overscrollBehavior: 'contain',
                 pr: 0.5,

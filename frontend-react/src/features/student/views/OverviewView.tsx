@@ -9,8 +9,9 @@ import { usageRows } from '../../../lib/usageLine'
 import { useAppStore } from '../../../store/useAppStore'
 import { ErrorAlert } from '../../../components/common/ErrorAlert'
 import { Rise } from '../../../components/common/Rise'
+import { gradient } from '../../../theme/alpha'
 
-/** One brick of the snapshot strip. */
+/** One stat brick of the snapshot strip. */
 const Brick: React.FC<{ label: string; value: React.ReactNode; note?: string; delay: number }> = ({
   label,
   value,
@@ -45,19 +46,92 @@ const Brick: React.FC<{ label: string; value: React.ReactNode; note?: string; de
   </Grid>
 )
 
+/** One clickable step in the pipeline stepper. */
+const PipelineStep: React.FC<{
+  num: number
+  label: string
+  desc: string
+  done: boolean
+  active: boolean
+  to: string
+}> = ({ num, label, desc, done, active, to }) => (
+  <Box
+    component={RouterLink}
+    to={to}
+    sx={{
+      flex: 1,
+      minWidth: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 0.75,
+      textDecoration: 'none',
+      color: 'text.primary',
+      '&:hover .step-circle': { borderColor: 'primary.main' },
+    }}
+  >
+    <Box
+      className="step-circle"
+      sx={{
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid',
+        borderColor: done ? 'success.main' : active ? 'primary.main' : 'divider',
+        bgcolor: done ? 'success.main' : active ? 'primary.main' : 'transparent',
+        color: done || active ? 'primary.contrastText' : 'text.secondary',
+        fontWeight: 700,
+        fontSize: '0.9rem',
+        transition: 'border-color 0.2s',
+        flexShrink: 0,
+      }}
+    >
+      {done ? '✓' : num}
+    </Box>
+    <Box sx={{ textAlign: 'center' }}>
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 700,
+          color: done ? 'success.main' : active ? 'primary.main' : 'text.secondary',
+          display: 'block',
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>
+        {desc}
+      </Typography>
+    </Box>
+  </Box>
+)
+
+/** Horizontal connector line between steps. */
+const Connector: React.FC<{ done: boolean }> = ({ done }) => (
+  <Box
+    sx={{
+      flex: '0 0 24px',
+      height: '2px',
+      bgcolor: done ? 'success.main' : 'divider',
+      mt: '20px',
+      alignSelf: 'flex-start',
+      transition: 'background-color 0.3s',
+    }}
+  />
+)
+
 /**
- * Course overview — the snapshot strip, what the pipeline is working on, the
- * quota, and where to go next.
+ * Course overview — hero banner explaining LecGap in plain English, a smart
+ * pipeline stepper driven by real snapshot data, stat bricks, in-flight jobs,
+ * and a "where to go next" action grid.
  *
- * One request of its own (`['snapshot', courseId]`); the quota card reads
- * `['usage']`, which the sidebar already owns, so it is a cache hit rather
- * than a second fetch.
+ * Quota & services info has been moved to /system (System & quota view) —
+ * it is debugging/admin context that students don't need on their landing page.
  *
- * The in-flight card reads `snapshot.in_flight` — the same payload, no extra
- * call. It is the honest place to see "something is running" without opening
- * the drawer, and it lists *only* rows the pipeline is actively working on: a
- * stuck `uploaded` row is a triage problem, and it belongs in Lectures, not in
- * a spinning card here.
+ * One request of its own (`['snapshot', courseId]`).
  */
 export const OverviewView: React.FC = () => {
   const { selectedCourseId } = useAppStore()
@@ -68,18 +142,45 @@ export const OverviewView: React.FC = () => {
     enabled: !!selectedCourseId,
   })
 
-  const { data: usage } = useQuery({
+  const { data: usageData } = useQuery({
     queryKey: queryKeys.usage(),
     queryFn: () => usageApi.get(),
-    retry: false,
   })
+  const quota = usageRows(usageData)
 
   if (!selectedCourseId) {
     return <Typography color="text.secondary">Select a course to begin.</Typography>
   }
 
   const inFlight = snapshot?.in_flight ?? []
-  const quota = usageRows(usage)
+
+  // Derive pipeline step completion state from the snapshot
+  const hasLectures = (snapshot?.lectures.ready ?? 0) > 0
+  const hasGraph    = snapshot?.graph.has ?? false
+  const hasQuiz     = (snapshot?.quiz.questions ?? 0) > 0
+
+  const steps = [
+    {
+      num: 1, label: 'Upload a lecture', desc: 'Add a recording',
+      done: hasLectures, active: !hasLectures,
+      to: '/student/lectures',
+    },
+    {
+      num: 2, label: 'Build concept map', desc: 'Extract & connect topics',
+      done: hasGraph, active: hasLectures && !hasGraph,
+      to: '/student/map',
+    },
+    {
+      num: 3, label: 'Take the quiz', desc: 'Find your gaps',
+      done: hasQuiz, active: hasGraph && !hasQuiz,
+      to: '/student/quiz',
+    },
+    {
+      num: 4, label: 'Follow the plan', desc: 'Watch prerequisite clips',
+      done: false, active: hasQuiz,
+      to: '/student/remediation',
+    },
+  ]
 
   const actions = [
     { to: '/student/lectures', label: 'Upload a lecture', hint: 'add a recording and transcribe it' },
@@ -90,42 +191,105 @@ export const OverviewView: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography variant="h4">Student portal: {selectedCourseId.toUpperCase()}</Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-          Upload lectures, take adaptive comprehension checks, and stream prerequisite
-          remediation clips.
-        </Typography>
-      </Box>
+
+      {/* ── Hero banner ──────────────────────────────────────────────────── */}
+      <Rise delay={0}>
+        <Card
+          sx={{
+            background: gradient('surface', 'surface_alt', 135),
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2.5, md: 3.5 } }}>
+            <Typography
+              variant="overline"
+              sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: '0.12em' }}
+            >
+              Lecture Comprehension Gap Detector
+            </Typography>
+            <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, lineHeight: 1.35 }}>
+              Upload your lectures. LecGap maps which topics depend on which,
+              then after a quiz tells you exactly which prerequisites to revisit —
+              in the right order.
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1.5, maxWidth: 680 }}>
+              No manual tagging required. The prerequisite graph is built automatically
+              from what the professor actually says in the lecture, refined by your quiz
+              performance, and linked back to the exact video clip where each concept
+              was first taught.
+            </Typography>
+          </CardContent>
+        </Card>
+      </Rise>
+
+      {/* ── Pipeline progress stepper ────────────────────────────────────── */}
+      <Rise delay={0.05}>
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 2.5, color: 'text.secondary', fontWeight: 600 }}
+            >
+              Your progress · course {selectedCourseId.toUpperCase()}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+              {steps.map((s, i) => (
+                <React.Fragment key={s.num}>
+                  <PipelineStep {...s} />
+                  {i < steps.length - 1 && (
+                    <Connector done={steps[i + 1].done || steps[i + 1].active} />
+                  )}
+                </React.Fragment>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      </Rise>
 
       {snapshotError && (
         <ErrorAlert error={snapshotError} title="Failed to load course snapshot" />
       )}
 
+      {/* ── Snapshot stat bricks ─────────────────────────────────────────── */}
       {snapshot && (
         <Grid container spacing={2}>
           <Brick
             label="Total lectures"
             value={`${snapshot.lectures.total} (${snapshot.lectures.ready} ready)`}
             note={`${snapshot.lectures.uploaded} uploaded · ${snapshot.lectures.transcribing} transcribing · ${snapshot.lectures.error} error`}
-            delay={0}
+            delay={0.08}
           />
-          <Brick label="Extracted concepts" value={snapshot.concepts} delay={0.05} />
+          <Brick
+            label="Extracted concepts"
+            value={snapshot.concepts}
+            note="unique topics found across all lectures"
+            delay={0.11}
+          />
           <Brick
             label="Prerequisite graph"
-            value={snapshot.graph.has ? `${snapshot.graph.edges} edges` : 'Not built'}
-            note={snapshot.graph.has ? `${snapshot.graph.nodes} nodes` : 'extract concepts to build it'}
-            delay={0.1}
+            value={snapshot.graph.has ? `${snapshot.graph.edges} edges` : 'Not built yet'}
+            note={
+              snapshot.graph.has
+                ? `${snapshot.graph.nodes} nodes`
+                : 'extract concepts first'
+            }
+            delay={0.14}
           />
           <Brick
             label="Video clips cut"
             value={`${snapshot.clips.ok} / ${snapshot.clips.cut} OK`}
-            note={snapshot.clips.cut > snapshot.clips.ok ? 'some rows have no media on the server' : undefined}
-            delay={0.15}
+            note={
+              snapshot.clips.cut > snapshot.clips.ok
+                ? 'some clips missing media'
+                : 'all clips available'
+            }
+            delay={0.17}
           />
         </Grid>
       )}
 
+      {/* ── In-flight processing & Quota ─────────────────────────────────── */}
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
@@ -207,6 +371,7 @@ export const OverviewView: React.FC = () => {
         </Grid>
       </Grid>
 
+      {/* ── Where to go next ─────────────────────────────────────────────── */}
       <Card>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 1.5 }}>
