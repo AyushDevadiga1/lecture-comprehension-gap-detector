@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LecGap Field Guide — A Beginner's Tour of the App</title>
+<style>
+  :root {
+    --page: #faf7f2;
+    --surface: #ffffff;
+    --surface-2: #f1ece4;
+    --surface-3: #e8e1d6;
+    --ink: #2c2520;
+    --muted: #6f6257;
+    --border: #ded5c8;
+    --border-strong: #c8bcab;
+    --teal: #0f766e;
+    --teal-soft: #d9f3ef;
+    --blue: #2563a8;
+    --blue-soft: #e4eefb;
+    --amber: #a85b08;
+    --amber-soft: #fbeed8;
+    --red: #b42318;
+    --red-soft: #fbe7e5;
+    --green: #1d6b3a;
+    --green-soft: #e2f3e8;
+    --shadow: 0 18px 45px rgba(64, 45, 25, 0.09);
+    --shadow-sm: 0 2px 10px rgba(64, 45, 25, 0.06);
+    --radius: 18px;
+    --radius-sm: 12px;
+    --max: 1120px;
+    --mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --sans: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --display: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+  }
+
+  html[data-theme="dark"] {
+    --page: #15110d;
+    --surface: #221c17;
+    --surface-2: #2c2520;
+    --surface-3: #362e26;
+    --ink: #f6f1e9;
+    --muted: #b9ac9d;
+    --border: #453b31;
+    --border-strong: #5a4d40;
+    --teal: #2dd4bf;
+    --teal-soft: #123c38;
+    --blue: #7fb4ee;
+    --blue-soft: #172b42;
+    --amber: #e3b341;
+    --amber-soft: #3a2b12;
+    --red: #ff7b72;
+    --red-soft: #3a1d1b;
+    --green: #57d364;
+    --green-soft: #15371d;
+    --shadow: 0 22px 55px rgba(0, 0, 0, 0.35);
+    --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--teal); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--blue); }
+  code, pre, .mono { font-family: var(--mono); }
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.38em;
+    font-size: 0.87em;
+    overflow-wrap: anywhere;
+  }
+  pre {
+    margin: 0;
+    padding: 18px 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    max-width: 100%;
+    font-size: 0.84rem;
+    line-height: 1.65;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  h1, h2, h3, h4 { line-height: 1.2; text-wrap: balance; }
+  h1 { font-family: var(--display); font-size: clamp(2.35rem, 5vw, 4.4rem); font-weight: 600; letter-spacing: -0.035em; margin: 0 0 18px; }
+  h2 { font-family: var(--display); font-size: clamp(1.7rem, 3vw, 2.5rem); font-weight: 600; letter-spacing: -0.025em; margin: 0 0 14px; }
+  h3 { font-size: 1.13rem; margin: 34px 0 12px; letter-spacing: -0.01em; }
+  h4 { font-size: 0.98rem; margin: 22px 0 8px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  li { margin: 5px 0; }
+  strong { font-weight: 650; }
+
+  .progress {
+    position: fixed; inset: 0 auto auto 0; height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--teal), var(--blue));
+    z-index: 100; transition: width 80ms linear;
+  }
+
+  .hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 12% 20%, color-mix(in srgb, var(--teal) 15%, transparent), transparent 28rem),
+      radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--blue) 14%, transparent), transparent 32rem),
+      linear-gradient(135deg, var(--surface), var(--page) 72%);
+  }
+  .hero::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px);
+    background-size: 54px 54px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,.5), transparent 85%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative; z-index: 1;
+    max-width: 1250px; margin: 0 auto;
+    padding: 66px 28px 54px;
+    display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 48px; align-items: end;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.68rem; font-weight: 700;
+    color: var(--teal); margin-bottom: 18px;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 1px; background: var(--teal); }
+  .hero p.lead { font-size: 1.13rem; max-width: 720px; color: var(--muted); margin-bottom: 24px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 11px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 0.72rem; font-weight: 650; color: var(--muted);
+    box-shadow: var(--shadow-sm);
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+  .hero-card {
+    position: relative;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+  }
+  .hero-card h3 { margin: 0 0 8px; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .hero-card .big { font-family: var(--display); font-size: 1.55rem; line-height: 1.25; margin-bottom: 14px; }
+  .hero-card ul { list-style: none; padding: 0; margin: 0; font-size: 0.84rem; color: var(--muted); }
+  .hero-card li { display: flex; gap: 9px; padding: 7px 0; border-top: 1px solid var(--border); }
+  .hero-card li span:first-child { color: var(--teal); font-weight: 700; flex: 0 0 auto; }
+  .theme-toggle {
+    position: fixed; right: 20px; bottom: 20px; z-index: 80;
+    border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--ink);
+    border-radius: 999px; padding: 10px 15px;
+    font: 650 0.78rem var(--sans); cursor: pointer;
+    box-shadow: var(--shadow); transition: transform .18s ease, border-color .18s ease;
+  }
+  .theme-toggle:hover { transform: translateY(-2px); border-color: var(--teal); }
+
+  .layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: grid;
+    grid-template-columns: 250px minmax(0, var(--max));
+    gap: 48px;
+    justify-content: center;
+    align-items: start;
+    overflow: hidden;
+  }
+  .layout > * { min-width: 0; max-width: 100%; }
+  .toc {
+    position: sticky; top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 26px 0 26px;
+    font-size: 0.82rem;
+  }
+  .toc h2 {
+    font-family: var(--sans); font-size: 0.66rem; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--muted); margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+  .toc li { counter-increment: toc; margin: 0; }
+  .toc a {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 6px 9px; border-radius: 8px;
+    color: var(--muted); text-decoration: none; line-height: 1.35;
+    border-left: 2px solid transparent;
+  }
+  .toc a::before { content: counter(toc, decimal-leading-zero); font-family: var(--mono); font-size: 0.62rem; color: var(--border-strong); }
+  .toc a:hover { color: var(--ink); background: var(--surface-2); }
+  .toc a.active { color: var(--teal); background: var(--teal-soft); border-left-color: var(--teal); }
+  .toc a.active::before { color: var(--teal); }
+  .toc .toc-note { margin-top: 12px; padding: 10px 11px; border: 1px dashed var(--border); border-radius: 10px; color: var(--muted); font-size: 0.72rem; }
+
+  main { min-width: 0; padding: 42px 0 80px; }
+  section { scroll-margin-top: 24px; margin-bottom: 54px; }
+  .section-kicker {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--teal); font-family: var(--mono); font-size: 0.7rem;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .section-kicker .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 25px; height: 25px; border-radius: 50%;
+    border: 1px solid var(--border-strong); color: var(--muted);
+    font-size: 0.64rem;
+  }
+  .section-intro { color: var(--muted); font-size: 1.02rem; max-width: 780px; margin-bottom: 24px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card + .card { margin-top: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .callout {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    background: var(--teal-soft);
+    padding: 17px 19px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 18px 0;
+    color: var(--ink);
+  }
+  .callout.warn { border-left-color: var(--amber); background: var(--amber-soft); }
+  .callout.bad { border-left-color: var(--red); background: var(--red-soft); }
+  .callout.blue { border-left-color: var(--blue); background: var(--blue-soft); }
+  .callout .label {
+    display: block; text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 0.65rem; font-weight: 750; margin-bottom: 4px;
+    color: var(--teal);
+  }
+  .callout.warn .label { color: var(--amber); }
+  .callout.bad .label { color: var(--red); }
+  .callout.blue .label { color: var(--blue); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; margin: 20px 0; }
+  .flow-step {
+    flex: 1 1 150px; min-width: 140px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 14px 13px; position: relative;
+  }
+  .flow-step:not(:last-child) { margin-right: 26px; }
+  .flow-step:not(:last-child)::after {
+    content: "→"; position: absolute; right: -21px; top: 50%;
+    transform: translateY(-50%); color: var(--border-strong); font-size: 1rem;
+  }
+  .flow-step .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--teal-soft); color: var(--teal);
+    font-family: var(--mono); font-size: 0.66rem; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .flow-step strong { display: block; font-size: 0.88rem; margin-bottom: 3px; }
+  .flow-step span { display: block; color: var(--muted); font-size: 0.74rem; line-height: 1.45; }
+
+  .layer-stack { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+  .layer {
+    display: grid; grid-template-columns: 190px minmax(0, 1fr);
+    gap: 18px; align-items: center;
+    padding: 14px 18px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--surface);
+  }
+  .layer:first-child { border-color: var(--teal); background: var(--teal-soft); }
+  .layer .layer-name { font-weight: 700; font-size: 0.88rem; }
+  .layer .layer-name small { display: block; color: var(--muted); font-family: var(--mono); font-size: 0.67rem; font-weight: 400; margin-top: 2px; }
+  .layer .layer-desc { color: var(--muted); font-size: 0.84rem; }
+
+  .tree {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 22px;
+    overflow-x: auto; font-size: 0.8rem; line-height: 1.75; white-space: pre;
+  }
+  .tree .t-comment { color: var(--muted); }
+  .tree .t-key { color: var(--teal); font-weight: 600; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); max-width: 100%; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th, td { text-align: left; padding: 10px 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; position: sticky; top: 0; z-index: 1; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: color-mix(in srgb, var(--teal) 4%, transparent); }
+  td code { font-size: 0.75rem; white-space: nowrap; }
+  .tag {
+    display: inline-block; padding: 1px 7px; border-radius: 999px;
+    font-size: 0.64rem; font-weight: 700; letter-spacing: 0.03em;
+    background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
+  }
+  .tag.hot { background: var(--teal-soft); color: var(--teal); border-color: color-mix(in srgb, var(--teal) 30%, transparent); }
+  .tag.old { background: var(--amber-soft); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 30%, transparent); }
+
+  .screen-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 24px; margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .screen-head { display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin-bottom: 8px; }
+  .screen-title { display: flex; gap: 12px; align-items: center; }
+  .screen-icon {
+    width: 38px; height: 38px; flex: 0 0 auto; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--teal-soft); color: var(--teal);
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent);
+  }
+  .screen-title h3 { margin: 0; font-size: 1.02rem; }
+  .route {
+    display: inline-block; font-family: var(--mono); font-size: 0.68rem;
+    color: var(--muted); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 2px 7px; margin-top: 3px;
+  }
+  .screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: 14px; }
+  .screen-grid h4 { margin: 0 0 5px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .screen-grid ul { margin: 0; padding-left: 18px; font-size: 0.86rem; }
+  .screen-grid li { margin: 3px 0; }
+  .file-note { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 12px; }
+
+  .two-col { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr); gap: 18px; align-items: start; }
+  .mini-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 17px 18px; }
+  .mini-card h4 { margin: 0 0 7px; font-size: 0.9rem; }
+  .mini-card p, .mini-card li { font-size: 0.82rem; color: var(--muted); }
+  .mini-card ul { margin-bottom: 0; }
+
+  details.deep {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); margin: 14px 0; overflow: hidden;
+  }
+  details.deep > summary {
+    cursor: pointer; list-style: none; padding: 14px 17px;
+    font-weight: 650; font-size: 0.86rem;
+    display: flex; justify-content: space-between; gap: 12px; align-items: center;
+  }
+  details.deep > summary::-webkit-details-marker { display: none; }
+  details.deep > summary::after { content: "+"; color: var(--teal); font-family: var(--mono); font-size: 1rem; }
+  details.deep[open] > summary::after { content: "−"; }
+  details.deep .deep-body { padding: 0 17px 17px; font-size: 0.86rem; color: var(--muted); }
+  details.deep .deep-body p:last-child { margin-bottom: 0; }
+
+  .glossary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; }
+  .glossary dt { font-weight: 700; font-size: 0.9rem; margin-top: 10px; }
+  .glossary dd { margin: 2px 0 0; color: var(--muted); font-size: 0.84rem; }
+
+  .footer { border-top: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 0.82rem; }
+  .footer-inner { max-width: 1250px; margin: 0 auto; padding: 34px 28px; display: flex; gap: 22px; justify-content: space-between; flex-wrap: wrap; }
+  .footer a { color: var(--teal); }
+
+  .to-top {
+    position: fixed; right: 20px; bottom: 68px; z-index: 80;
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink);
+    cursor: pointer; box-shadow: var(--shadow); display: none; font-size: 1rem;
+  }
+  .to-top.show { display: block; }
+
+  @media (max-width: 1050px) {
+    .layout { grid-template-columns: 1fr; gap: 0; padding: 0 22px; }
+    .toc { position: static; max-height: none; padding: 18px 0 0; overflow: visible; }
+    .toc h2 { display: none; }
+    .toc ol { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; }
+    .toc li { flex: 0 0 auto; }
+    .toc a { border-left: 0; border-bottom: 2px solid transparent; border-radius: 8px 8px 0 0; white-space: nowrap; padding: 6px 10px; }
+    .toc a.active { border-left-color: transparent; border-bottom-color: var(--teal); }
+    .toc .toc-note { display: none; }
+    .hero-inner { grid-template-columns: 1fr; gap: 28px; padding-top: 52px; }
+    .hero-card { max-width: 460px; }
+  }
+  @media (max-width: 760px) {
+    body { font-size: 15px; }
+    .grid-2, .grid-3, .grid-4, .two-col, .glossary, .screen-grid { grid-template-columns: 1fr; }
+    .layer { grid-template-columns: 1fr; gap: 3px; }
+    .flow { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .flow-step:not(:last-child) { margin-right: 0; }
+    .flow-step:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -18px; transform: translateX(50%); }
+    .hero-inner { padding: 44px 20px 38px; }
+    .layout { padding: 0 16px; }
+    main { padding-top: 30px; }
+    section { margin-bottom: 44px; }
+    .screen-card, .card { padding: 19px; }
+    .theme-toggle { right: 14px; bottom: 14px; }
+    .to-top { right: 14px; bottom: 62px; }
+    th { position: static; }
+  }
+  @media print {
+    .toc, .theme-toggle, .to-top, .progress { display: none !important; }
+    .layout { display: block; max-width: none; padding: 0; }
+    .hero { border: 0; }
+    .card, .screen-card, .pipe, .mini-card, .callout { break-inside: avoid; box-shadow: none; }
+    a { color: inherit; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; transition: none !important; }
+  }
+</style>
+<script>
+  try {
+    var saved = localStorage.getItem('lecgap-tutorial-theme');
+    if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';
+  } catch (e) { /* storage can be disabled; light is a safe default */ }
+</script>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">LecGap field guide</div>
+      <h1>How the app actually works</h1>
+      <p class="lead">
+        A beginner-friendly tour of every current screen and shared component in the React frontend,
+        plus the background processes that turn a lecture video into a prerequisite map, a quiz,
+        and a personalised study plan.
+      </p>
+      <div class="chip-row">
+        <span class="chip"><span class="dot"></span> Active frontend: frontend-react</span>
+        <span class="chip">React 18 + Vite + TypeScript</span>
+        <span class="chip">FastAPI + SQLite</span>
+        <span class="chip">Live jobs over SSE</span>
+      </div>
+    </div>
+    <aside class="hero-card" aria-label="What this guide covers">
+      <h3>One lecture's journey</h3>
+      <div class="big">Video in. Study plan out.</div>
+      <ul>
+        <li><span>01</span><span>Whisper turns speech into timestamped text.</span></li>
+        <li><span>02</span><span>An LLM finds passages, concepts, and spoken prerequisites.</span></li>
+        <li><span>03</span><span>The app builds a directed concept graph and a learner order.</span></li>
+        <li><span>04</span><span>Quizzes find gaps; clips re-teach concepts in order.</span></li>
+      </ul>
+    </aside>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="Table of contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#start">Start here</a></li>
+      <li><a href="#run">Run LecGap</a></li>
+      <li><a href="#big-picture">The big picture</a></li>
+      <li><a href="#frontend">Frontend skeleton</a></li>
+      <li><a href="#screens">Every screen</a></li>
+      <li><a href="#components">Component catalog</a></li>
+      <li><a href="#journeys">Four real journeys</a></li>
+      <li><a href="#pipeline">Backend pipeline</a></li>
+      <li><a href="#database">Database and disk</a></li>
+      <li><a href="#state">State and live updates</a></li>
+      <li><a href="#theme">Theme and accessibility</a></li>
+      <li><a href="#files">File map</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+      <li><a href="#health">Health check</a></li>
+    </ol>
+    <div class="toc-note">
+      New to the codebase? Read sections 1–5 in order, then use the component catalog as a reference.
+    </div>
+  </nav>
+
+  <main>
+    <section id="start">
+      <div class="section-kicker"><span class="num">01</span> Start here</div>
+      <h2>What LecGap is, in one paragraph</h2>
+      <p class="section-intro">
+        LecGap is a lecture-comprehension gap detector. You give it a recorded lecture. It listens to the
+        recording, works out which concepts were taught and which concepts must be understood before
+        others, then quizzes students. When a student gets something wrong, LecGap walks backwards through
+        the concept graph and produces a study plan ordered from the earliest prerequisite to the thing
+        that was missed. Each step links to the exact video clip where that concept was taught.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0">The student story</h3>
+          <ol>
+            <li>Upload a lecture recording.</li>
+            <li>Wait for transcription and concept extraction.</li>
+            <li>Open the concept map and see what depends on what.</li>
+            <li>Take a short diagnostic quiz.</li>
+            <li>Receive a remediation plan in the correct learning order.</li>
+            <li>Watch the matching lecture clips.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">The instructor story</h3>
+          <ol>
+            <li>See every prerequisite edge the system found, with confidence and spoken evidence.</li>
+            <li>See where the class is getting confused.</li>
+            <li>Compare the order concepts were taught with the order the graph says they should be learned.</li>
+            <li>See how much of a lecture's spoken time is covered by extracted concepts.</li>
+            <li>Rebuild the graph when new lectures arrive.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="callout blue">
+        <span class="label">Current frontend, not the old one</span>
+        <p>
+          The active UI is <code>frontend-react/</code>, built with React, Vite, TypeScript, Material UI,
+          React Query, Zustand, and React Flow. The old Streamlit UI now lives in
+          <code>deprecated/frontend/</code>. Some older docs and tests still say <code>frontend/</code>;
+          when they do, they are talking about the archived version. This guide describes the React app
+          that actually runs at <code>localhost:5173</code>.
+        </p>
+      </div>
+
+      <div class="callout">
+        <span class="label">The one rule that explains the architecture</span>
+        <p>
+          The browser is for showing things and collecting clicks. It never reads the database and never
+          runs the AI pipeline. It asks a FastAPI backend for data, and the backend queues slow work as a
+          background job. That separation is why a six-minute transcription does not freeze the page.
+        </p>
+      </div>
+    </section>
+
+    <section id="run">
+      <div class="section-kicker"><span class="num">02</span> Run LecGap</div>
+      <h2>Three steps to a working local app</h2>
+      <p class="section-intro">
+        You need two terminals: one for the Python backend, one for the React frontend. The frontend
+        development server proxies API calls to the backend, so the browser sees everything as one origin.
+      </p>
+
+      <div class="card">
+        <h3 style="margin-top:0">Terminal 1 — start the backend</h3>
+        <pre><code># From the repository root
+# Generic setup: activate the project's Python environment first
+# conda activate lecgap
+
+python -m uvicorn backend.main:app --port 8000</code></pre>
+        <p style="margin-top:12px;font-size:.85rem;color:var(--muted)">
+          On the machine this guide was verified on, the project dependencies are installed in Python
+          3.11, not the default Python 3.13. Use:
+        </p>
+        <pre><code>py -3.11 -m uvicorn backend.main:app --port 8000</code></pre>
+        <p style="margin-top:12px;font-size:.85rem;color:var(--muted)">
+          Backend health: <a href="http://localhost:8000/health">http://localhost:8000/health</a>.
+          Interactive API docs: <a href="http://localhost:8000/docs">http://localhost:8000/docs</a>.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Terminal 2 — start the frontend</h3>
+        <pre><code>cd frontend-react
+npm install
+npm run dev</code></pre>
+        <p style="margin-top:12px;font-size:.85rem;color:var(--muted)">
+          Open <a href="http://localhost:5173">http://localhost:5173</a>. The Vite proxy forwards
+          <code>/courses</code>, <code>/lectures</code>, <code>/quizzes</code>, <code>/students</code>,
+          <code>/jobs</code>, <code>/media</code>, <code>/usage</code>, <code>/health</code>, and
+          <code>/llm</code> to the backend on port 8000.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0">What you should see</h3>
+          <ul>
+            <li>A dark or light LecGap sidebar, a course picker, and three navigation groups.</li>
+            <li>The Overview page with a four-step progress strip.</li>
+            <li>The demo database already contains courses <code>ml</code> and <code>prob</code>.</li>
+            <li>The system status dot in the sidebar footer should settle on a live feed or polling.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Where the data lives</h3>
+          <ul>
+            <li><code>data/lecgap.db</code> — the SQLite database.</li>
+            <li><code>data/raw/</code> — uploaded lecture media.</li>
+            <li><code>data/processed/clips/&lt;lecture_id&gt;/</code> — cut video clips.</li>
+            <li><code>data/lecturebank/</code> — the public benchmark used to fit the prerequisite classifier.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="label">First-run gotcha</span>
+        <p>
+          If <code>python</code> says <code>No module named uvicorn</code> or <code>pytest</code>, you are on
+          the wrong interpreter. The repository's <code>environment.yml</code> describes the <code>lecgap</code>
+          environment. On this machine, the working interpreter for the backend is <code>py -3.11</code>.
+        </p>
+      </div>
+    </section>
+
+    <section id="big-picture">
+      <div class="section-kicker"><span class="num">03</span> The big picture</div>
+      <h2>Four layers, two kinds of traffic</h2>
+      <p class="section-intro">
+        Think of the app as a restaurant. The browser is the dining room. FastAPI is the waiter. The
+        pipeline workers are the kitchen. SQLite and the media folders are the pantry. The dining room can
+        ask for a dish and watch a progress screen, but it never walks into the kitchen and cooks.
+      </p>
+
+      <div class="layer-stack" aria-label="Application layers">
+        <div class="layer">
+          <div class="layer-name">Browser UI <small>frontend-react/</small></div>
+          <div class="layer-desc">React pages, shared components, React Query cache, Zustand UI state, SSE job feed. Shows data and sends user actions.</div>
+        </div>
+        <div class="layer">
+          <div class="layer-name">HTTP API <small>backend/api/</small></div>
+          <div class="layer-desc">FastAPI routes validate requests, read or write the database, queue jobs, and return JSON. It does not block on long pipeline work.</div>
+        </div>
+        <div class="layer">
+          <div class="layer-name">Workers and pipeline <small>backend/api/jobs/ + backend/pipeline/</small></div>
+          <div class="layer-desc">Background jobs run Whisper, the Lecture-Structure LLM pass, graph construction, ffmpeg clip cutting, and quiz generation.</div>
+        </div>
+        <div class="layer">
+          <div class="layer-name">Storage <small>data/</small></div>
+          <div class="layer-desc">SQLite stores rows for lectures, concepts, graph edges, clips, quiz questions, responses, and jobs. Files on disk store the actual video and clips.</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <h3>Traffic type 1 — ordinary requests</h3>
+          <p>
+            Most screens use normal JSON requests: <em>give me the lecture list</em>, <em>give me the graph</em>,
+            <em>submit these quiz answers</em>. These go through the single HTTP client in
+            <code>src/api/client.ts</code> and are cached by React Query.
+          </p>
+          <h3>Traffic type 2 — live job updates</h3>
+          <p>
+            Slow operations return a <code>job_id</code> immediately. The backend runs the work in the
+            background. The browser keeps one Server-Sent Events connection open to
+            <code>/jobs/stream</code> and receives a fresh job snapshot whenever something changes.
+          </p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Why this matters</h3>
+          <p>
+            In the old Streamlit app, the whole page re-ran on a timer to read a progress number. That
+            restarted playing videos and made the page flicker. The React app fixes this by pushing job
+            updates into a cache and only letting the components that display jobs subscribe to them.
+          </p>
+          <p style="margin-bottom:0">
+            The E2E test suite includes a real-browser test that plays a video while a real clip job runs,
+            and asserts the video keeps decoding without restarting.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow" aria-label="High-level data flow">
+        <div class="flow-step">
+          <span class="step-num">01</span>
+          <strong>User action</strong>
+          <span>Upload, extract, quiz, rebuild</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">02</span>
+          <strong>API request</strong>
+          <span>JSON or streamed upload</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">03</span>
+          <strong>Job queued</strong>
+          <span>202 + durable job id</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">04</span>
+          <strong>Worker runs</strong>
+          <span>Pipeline stages write rows</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">05</span>
+          <strong>UI updates</strong>
+          <span>SSE pushes, cache refreshes</span>
+        </div>
+      </div>
+    </section>
+
+<style>
+  .layout > * { min-width: 0; }
+  .toc { min-width: 0; max-width: 100%; }
+  .toc ol { max-width: 100%; }
+  .pipeline-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .pipe {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 17px 18px;
+    position: relative; overflow: hidden;
+  }
+  .pipe::before {
+    content: attr(data-stage);
+    position: absolute; right: 12px; top: 9px;
+    font-family: var(--mono); font-size: 1.55rem; font-weight: 700;
+    color: color-mix(in srgb, var(--ink) 7%, transparent);
+    line-height: 1;
+  }
+  .pipe h4 { margin: 0 0 4px; font-size: 0.93rem; position: relative; }
+  .pipe .pipe-file { font-family: var(--mono); font-size: 0.68rem; color: var(--teal); margin-bottom: 8px; word-break: break-word; }
+  .pipe p { font-size: 0.82rem; color: var(--muted); margin-bottom: 7px; }
+  .pipe .io { font-size: 0.74rem; border-top: 1px dashed var(--border); padding-top: 7px; }
+  .pipe .io b { color: var(--ink); }
+
+  .catalog-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0 12px; }
+  .catalog-controls input {
+    flex: 1 1 260px; min-width: 220px; padding: 10px 13px;
+    border-radius: 10px; border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--ink);
+    font: 0.86rem var(--sans); outline: none;
+  }
+  .catalog-controls input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+  .catalog-controls .count { color: var(--muted); font-size: 0.76rem; font-family: var(--mono); }
+
+  .step-list { counter-reset: journey; list-style: none; padding: 0; margin: 18px 0 0; }
+  .step-list > li {
+    counter-increment: journey; position: relative;
+    padding: 0 0 22px 48px; margin: 0;
+  }
+  .step-list > li::before {
+    content: counter(journey);
+    position: absolute; left: 0; top: 0;
+    width: 31px; height: 31px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--teal); font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  }
+  .step-list > li::after {
+    content: ""; position: absolute; left: 15px; top: 34px; bottom: 2px;
+    width: 1px; background: var(--border);
+  }
+  .step-list > li:last-child::after { display: none; }
+  .step-list strong { display: block; margin-bottom: 4px; }
+  .step-list p { margin-bottom: 6px; color: var(--muted); font-size: 0.88rem; }
+  .step-list .tech { font-family: var(--mono); font-size: 0.72rem; color: var(--teal); }
+
+  .status-table td:first-child { font-weight: 650; }
+  .status-ok { color: var(--green); font-weight: 700; }
+  .status-warn { color: var(--amber); font-weight: 700; }
+  .status-bad { color: var(--red); font-weight: 700; }
+
+  @media (max-width: 760px) {
+    .pipeline-grid { grid-template-columns: 1fr; }
+    .step-list > li { padding-left: 42px; }
+  }
+</style>
+
+    <section id="frontend">
+      <div class="section-kicker"><span class="num">04</span> Frontend skeleton</div>
+      <h2>From <code>index.html</code> to a routed page</h2>
+      <p class="section-intro">
+        The React app has a small, deliberate skeleton. Each layer owns one concern: providers, router,
+        chrome, and the page itself. Understanding this tree makes every other file easier to place.
+      </p>
+
+      <div class="tree"><span class="t-comment">&lt;!-- simplified, but every line exists in the real code --&gt;</span>
+index.html
+└─ #root
+   └─ <span class="t-key">src/main.tsx</span>
+      └─ ErrorBoundary <span class="t-comment">// last-resort crash screen</span>
+         └─ <span class="t-key">App</span>  <span class="t-comment">(src/App.tsx)</span>
+            └─ AppProviders <span class="t-comment">// React Query + Material UI theme</span>
+               └─ BrowserRouter
+                  └─ <span class="t-key">AppShell</span>  <span class="t-comment">(components/layout/AppShell.tsx)</span>
+                     ├─ Sidebar
+                     │  └─ CoursePicker
+                     ├─ AuthBanner
+                     ├─ Topbar
+                     ├─ ErrorBoundary <span class="t-comment">// a broken page does not kill the shell</span>
+                     │  └─ &lt;Outlet&gt; → lazy-loaded route view
+                     ├─ JobDrawer
+                     └─ JobCompletionHost</div>
+
+      <div class="grid-2" style="margin-top:18px">
+        <div class="card">
+          <h3 style="margin-top:0">The providers</h3>
+          <p><code>AppProviders</code> installs exactly two things around the whole app:</p>
+          <ul>
+            <li><strong>QueryClientProvider</strong> — the React Query cache for server data.</li>
+            <li><strong>AppTheme</strong> — the MUI theme plus the <code>--lgc-*</code> CSS variables for the current light or dark base.</li>
+          </ul>
+          <p style="margin-bottom:0">
+            Keeping these in one file means the real app and the test renderer cannot drift into two
+            different theme stacks.
+          </p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">The shell</h3>
+          <p><code>AppShell</code> is the permanent frame:</p>
+          <ul>
+            <li>Owns the single SSE connection.</li>
+            <li>Renders the sidebar, banner, topbar, routed page, job drawer, and completion snackbars.</li>
+            <li>Does <em>not</em> read job data itself, so a job tick cannot re-render the active page.</li>
+            <li>Wraps only the page outlet in an error boundary, so a broken page leaves the navigation usable.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Route table</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>URL</th><th>View component</th><th>What it is for</th><th>Group</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/</code></td><td>redirect</td><td>Goes to <code>/student/overview</code>.</td><td><span class="tag">entry</span></td></tr>
+            <tr><td><code>/student/overview</code></td><td><code>OverviewView</code></td><td>Landing page, pipeline progress, counts, quick actions.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/student/lectures</code></td><td><code>LecturesView</code></td><td>Upload, inspect, process, and delete lectures.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/student/map</code></td><td><code>MapView</code> + <code>DagView</code></td><td>Interactive prerequisite concept graph.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/student/lecture</code></td><td><code>LectureDetailView</code></td><td>One lecture's concepts, timestamps, coverage, and live progress.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/student/quiz</code></td><td><code>QuizView</code> + <code>QuizPanel</code></td><td>Generate, answer, grade, and review a diagnostic quiz.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/student/remediation</code></td><td><code>RemediationView</code></td><td>Ordered study plan with clips and concept-map links.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/student/clips</code></td><td><code>ClipsView</code> + <code>ClipBrowser</code></td><td>Browse and play every clip for a lecture.</td><td><span class="tag hot">student</span></td></tr>
+            <tr><td><code>/faculty/analytics</code></td><td><code>AnalyticsView</code></td><td>Graph edge table with confidence, method, and spoken evidence.</td><td><span class="tag">faculty</span></td></tr>
+            <tr><td><code>/faculty/heatmap</code></td><td><code>HeatmapView</code></td><td>Wrong-answer rate per concept.</td><td><span class="tag">faculty</span></td></tr>
+            <tr><td><code>/faculty/divergence</code></td><td><code>DivergenceView</code></td><td>Taught-vs-learned order comparison.</td><td><span class="tag">faculty</span></td></tr>
+            <tr><td><code>/faculty/coverage</code></td><td><code>CoverageView</code></td><td>How much of a lecture is covered by extracted concepts.</td><td><span class="tag">faculty</span></td></tr>
+            <tr><td><code>/jobs</code></td><td><code>JobsView</code></td><td>Registry of background work for the selected course.</td><td><span class="tag">system</span></td></tr>
+            <tr><td><code>/system</code></td><td><code>SystemView</code></td><td>API quota, feed state, and failure-handling notes.</td><td><span class="tag">system</span></td></tr>
+            <tr><td><code>*</code></td><td><code>NotFound</code></td><td>Friendly 404 instead of a blank page.</td><td><span class="tag">fallback</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn" style="margin-top:18px">
+        <span class="label">A small leftover you may notice</span>
+        <p>
+          <code>components/layout/Navbar.tsx</code> still exists, but nothing mounts it anymore. The current
+          chrome is <code>Sidebar</code> + <code>Topbar</code>. The older README describes a top navigation
+          bar because that was the earlier layout. If you are learning the current code, start with
+          <code>Sidebar</code> and <code>Topbar</code>, not <code>Navbar</code>.
+        </p>
+      </div>
+
+      <h3>Why the routes are lazy-loaded</h3>
+      <p>
+        Every page is imported with <code>React.lazy</code> and rendered inside <code>Suspense</code>. That
+        creates one JavaScript chunk per page. The browser downloads the Overview page first, and only
+        downloads the heavy graph library (<code>reactflow</code>) when you open the Concept map. The
+        production build output confirms this: <code>DagView</code> is its own large async chunk.
+      </p>
+    </section>
+
+    <section id="screens">
+      <div class="section-kicker"><span class="num">05</span> Every screen</div>
+      <h2>The 13 screens, one by one</h2>
+      <p class="section-intro">
+        Each card explains what you see, what the screen talks to, and which shared components do the
+        heavy lifting. All view files live under <code>frontend-react/src/features/</code>.
+      </p>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">01</div>
+            <div><h3>Overview</h3><span class="route">/student/overview</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A plain-English hero explaining the product.</li>
+              <li>A four-step progress strip: upload, map, quiz, remediation.</li>
+              <li>Snapshot bricks: lectures, concepts, graph edges, clips.</li>
+              <li>An “in flight” panel for work currently processing.</li>
+              <li>Quota and services, plus a “where to go next” grid.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /courses/{id}/snapshot</code></li>
+              <li><code>GET /usage</code></li>
+              <li><code>useAppStore</code> for the selected course</li>
+              <li><code>Rise</code>, <code>ErrorAlert</code>, <code>LinearProgress</code></li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/student/views/OverviewView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">02</div>
+            <div><h3>Lectures</h3><span class="route">/student/lectures</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A table of every lecture in the course.</li>
+              <li>Status badges, media presence, creation date.</li>
+              <li>Buttons to extract concepts, cut clips, or remove a lecture.</li>
+              <li>An upload dialog with duplicate detection and real upload progress.</li>
+              <li>Separate cleanup sections for resumable and abandoned uploads.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /lectures?course_id=…</code></li>
+              <li><code>POST /lectures</code> then <code>PUT /lectures/{id}/media</code></li>
+              <li><code>POST /lectures/{id}/concepts</code></li>
+              <li><code>POST /lectures/{id}/clips</code></li>
+              <li><code>POST /lectures/{id}/rerun</code></li>
+              <li><code>DELETE /lectures/{id}</code></li>
+              <li><code>UploadDialog</code>, <code>StatusBadge</code>, <code>ErrorAlert</code></li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/student/views/LecturesView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">03</div>
+            <div><h3>Concept map</h3><span class="route">/student/map</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A pannable, zoomable prerequisite graph.</li>
+              <li>Arrow direction: prerequisite → dependent.</li>
+              <li>Learner-step badges, confidence filters, edge-type filters.</li>
+              <li>“Concepts shown” limit slider and a find-concept search box.</li>
+              <li>Click a node to see what it needs first and what it unlocks.</li>
+              <li>A learner-order study sequence below the canvas.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /courses/{id}/graph</code></li>
+              <li><code>DagView</code>, <code>ConceptNode</code>, <code>EdgeRow</code></li>
+              <li><code>rankConcepts</code> for significance and limits</li>
+              <li><code>nodeColors</code> for order-vs-identity colouring</li>
+              <li><code>?find=concept</code> URL parameter auto-selects a concept</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">Files: features/student/views/MapView.tsx + components/graph/DagView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">04</div>
+            <div><h3>Lecture detail</h3><span class="route">/student/lecture</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A lecture picker and status summary.</li>
+              <li>A coverage timeline showing transcript ticks, covered runs, and concept bands.</li>
+              <li>A concept list with teach timestamps and “spoken” / “implicit” tags.</li>
+              <li>A live progress card while transcription is running.</li>
+              <li>A “show on map” action for each concept.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /lectures/{id}</code> for segments and concepts</li>
+              <li><code>GET /lectures/{id}/progress</code> while transcribing</li>
+              <li><code>useActiveJobs</code> for live job progress</li>
+              <li><code>CoverageTimeline</code> and <code>StatusBadge</code></li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/student/views/LectureDetailView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">05</div>
+            <div><h3>Quiz</h3><span class="route">/student/quiz</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A “Start Quiz” button that queues generation instead of freezing.</li>
+              <li>A question cap (default 15 in the frontend).</li>
+              <li>Answer tiles, progress bar, and a submit button.</li>
+              <li>A score gauge, verdict, remediation sequence, and per-question feedback.</li>
+              <li>A clip player for remediation clips inside the quiz panel.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>POST /quizzes/jobs</code> to queue generation</li>
+              <li><code>GET /quizzes</code> to read the generated questions</li>
+              <li><code>POST /quizzes/submit</code> for server-side grading</li>
+              <li><code>useQuizStore</code> for the in-progress draft</li>
+              <li><code>useJobList</code> to detect when generation is ready</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">Files: features/student/views/QuizView.tsx + features/student/QuizPanel.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">06</div>
+            <div><h3>Remediation</h3><span class="route">/student/remediation</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>“Study in this order”, numbered from foundations upward.</li>
+              <li>Failed concepts marked separately from prerequisite foundations.</li>
+              <li>A Play clip action on each step, plus Show on map.</li>
+              <li>An inline clip player on the right.</li>
+              <li>The last score and total when available.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li>The freshest result from <code>useQuizStore</code> when present</li>
+              <li><code>GET /students/{studentId}/remediation</code> after a reload</li>
+              <li><code>select_remediation_sequence</code> on the backend</li>
+              <li>Clips attached to the quiz payload when available</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/student/views/RemediationView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">07</div>
+            <div><h3>Clips</h3><span class="route">/student/clips</span></div>
+          </div>
+          <span class="tag hot">Student</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A lecture picker and a list of every clip for that lecture.</li>
+              <li>Playable clips with time ranges and a current-clip highlight.</li>
+              <li>A custom player with play/pause, seek, ±10 seconds, speed, volume, fullscreen, previous/next clip, and keyboard shortcuts.</li>
+              <li>Failed clips explained with a “Re-cut” action.</li>
+              <li>An empty state that offers to cut clips.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /lectures/{id}/clips</code></li>
+              <li><code>POST /lectures/{id}/clips</code> for cut/re-cut</li>
+              <li><code>ClipBrowser</code> for the playlist and state</li>
+              <li><code>VideoPlayer</code> for the transport controls</li>
+              <li>Media URLs under <code>/media/clips/{lecture_id}/{filename}</code></li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">Files: features/student/views/ClipsView.tsx + features/student/ClipBrowser.tsx + components/media/VideoPlayer.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">08</div>
+            <div><h3>Faculty analytics</h3><span class="route">/faculty/analytics</span></div>
+          </div>
+          <span class="tag">Faculty</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>Four telemetry cards: DAG validity, root concepts, tracked gaps, average divergence.</li>
+              <li>A table of every prerequisite edge.</li>
+              <li>Confidence, source method, and the professor's verbatim evidence.</li>
+              <li>A “Rebuild prerequisite DAG” button that queues a job.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /courses/{id}/graph</code></li>
+              <li><code>GET /courses/{id}/stats</code></li>
+              <li><code>POST /courses/{id}/graph</code> for rebuild</li>
+              <li><code>TelemetryStrip</code>, <code>SectionIcon</code>, <code>Rise</code></li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/faculty/views/AnalyticsView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">09</div>
+            <div><h3>Heatmap</h3><span class="route">/faculty/heatmap</span></div>
+          </div>
+          <span class="tag">Faculty</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>Wrong-answer rate per concept, highest first.</li>
+              <li>Counts behind every bar, so one attempt does not look like a pattern.</li>
+              <li>An honest empty state until students submit a quiz.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /courses/{id}/stats</code></li>
+              <li>The <code>heatmap</code> array from aggregated quiz responses</li>
+              <li><code>LinearProgress</code> and semantic colour tokens</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/faculty/views/HeatmapView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">10</div>
+            <div><h3>Divergence</h3><span class="route">/faculty/divergence</span></div>
+          </div>
+          <span class="tag">Faculty</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A displacement table: taught position, learned position, and the gap.</li>
+              <li>Amber highlighting when the gap is large.</li>
+              <li>Two side-by-side lists: taught order and learned order.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /courses/{id}/stats</code></li>
+              <li>Taught order = earliest concept timestamp.</li>
+              <li>Learned order = graph topological order.</li>
+              <li>Gap = learned index − taught index.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/faculty/views/DivergenceView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">11</div>
+            <div><h3>Coverage</h3><span class="route">/faculty/coverage</span></div>
+          </div>
+          <span class="tag">Faculty</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>A lecture picker with status and media presence.</li>
+              <li>The same coverage timeline students see in Lecture detail.</li>
+              <li>A table of concept, time window, and the spoken sentence used as quiz evidence.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /lectures?course_id=…</code></li>
+              <li><code>GET /lectures/{id}</code></li>
+              <li><code>buildTimelineModel</code> for the merged-coverage math</li>
+              <li><code>CoverageTimeline</code> shared with the student side</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/faculty/views/CoverageView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">12</div>
+            <div><h3>Jobs</h3><span class="route">/jobs</span></div>
+          </div>
+          <span class="tag">System</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>Summary cards: running now, finished, orphaned, snapshot token.</li>
+              <li>A table of every job for the course, whoever started it.</li>
+              <li>Kind, target, status, stage, progress, elapsed time.</li>
+              <li>A cancel action for work still in flight.</li>
+              <li>An explanation of what “orphaned” means.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>useJobList</code> reading the SSE cache, not a direct fetch</li>
+              <li><code>GET /jobs</code> only as the feed fallback</li>
+              <li><code>POST /jobs/{id}/cancel</code></li>
+              <li><code>feedStatus</code>, <code>formatElapsed</code></li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/system/views/JobsView.tsx</p>
+      </article>
+
+      <article class="screen-card">
+        <div class="screen-head">
+          <div class="screen-title">
+            <div class="screen-icon">13</div>
+            <div><h3>System &amp; quota</h3><span class="route">/system</span></div>
+          </div>
+          <span class="tag">System</span>
+        </div>
+        <div class="screen-grid">
+          <div>
+            <h4>What you see</h4>
+            <ul>
+              <li>Per-service usage rows: Groq chat, Groq Whisper, local Whisper, Ollama.</li>
+              <li>Whether ffmpeg is available.</li>
+              <li>Current feed state: live stream, polling, or unavailable.</li>
+              <li>A short list of failure surfaces and what the app does about them.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What powers it</h4>
+            <ul>
+              <li><code>GET /usage</code></li>
+              <li><code>useFeedStatus</code></li>
+              <li><code>usageLine</code> and <code>usageRows</code></li>
+              <li>Shared <code>['usage']</code> cache with the sidebar and Overview</li>
+            </ul>
+          </div>
+        </div>
+        <p class="file-note">File: frontend-react/src/features/system/views/SystemView.tsx</p>
+      </article>
+
+      <div class="callout">
+        <span class="label">The 404 fallback</span>
+        <p>
+          <code>NotFound.tsx</code> is not a route of its own; it is the wildcard. It exists so an unknown
+          URL never produces a blank screen. It offers one clear way back to the Student Portal.
+        </p>
+      </div>
+    </section>
+
+    <section id="components">
+      <div class="section-kicker"><span class="num">06</span> Component catalog</div>
+      <h2>Every current frontend component</h2>
+      <p class="section-intro">
+        This table lists every React component file that is part of the active UI. Use the filter box to
+        search by name, file, or purpose. “Unused” is called out honestly where something is still in the
+        tree but no longer mounted.
+      </p>
+
+      <div class="catalog-controls">
+        <input id="componentFilter" type="search" placeholder="Filter components… try “job”, “graph”, or “quiz”" aria-label="Filter component catalog">
+        <span class="count" id="componentCount">39 shown</span>
+      </div>
+
+      <div class="table-wrap">
+        <table id="componentTable">
+          <thead>
+            <tr><th>Component</th><th>File</th><th>What it does</th><th>Used in</th></tr>
+          </thead>
+          <tbody>
+            <tr data-search="app top level root routing providers">
+              <td><code>App</code></td><td><code>src/App.tsx</code></td>
+              <td>Defines the providers, router, route table, lazy-loaded views, and redirects.</td>
+              <td>Root</td>
+            </tr>
+            <tr data-search="appproviders query theme providers">
+              <td><code>AppProviders</code></td><td><code>src/AppProviders.tsx</code></td>
+              <td>Installs React Query and the app theme around every page; shared with tests.</td>
+              <td>App, test renderer</td>
+            </tr>
+            <tr data-search="appshell layout sidebar topbar shell frame sse">
+              <td><code>AppShell</code></td><td><code>components/layout/AppShell.tsx</code></td>
+              <td>Permanent frame; owns the SSE connection and the route error boundary.</td>
+              <td>Every page</td>
+            </tr>
+            <tr data-search="sidebar navigation nav groups jobs badge feed quota theme">
+              <td><code>Sidebar</code></td><td><code>components/layout/Sidebar.tsx</code></td>
+              <td>Primary navigation, course picker, active-job badge, feed status, quota line, theme toggle.</td>
+              <td>AppShell</td>
+            </tr>
+            <tr data-search="topbar header breadcrumb student id jobs">
+              <td><code>Topbar</code></td><td><code>components/layout/Topbar.tsx</code></td>
+              <td>Breadcrumb from the current URL, Student ID field, jobs shortcut.</td>
+              <td>AppShell</td>
+            </tr>
+            <tr data-search="coursepicker course select create delete dialog">
+              <td><code>CoursePicker</code></td><td><code>components/layout/CoursePicker.tsx</code></td>
+              <td>Selects, creates, and deletes courses; auto-selects the first course and refuses to delete the last one.</td>
+              <td>Sidebar</td>
+            </tr>
+            <tr data-search="navbar old unused legacy top navigation">
+              <td><code>Navbar</code> <span class="tag old">unused</span></td><td><code>components/layout/Navbar.tsx</code></td>
+              <td>Earlier top navigation bar. Still present, but nothing imports or mounts it.</td>
+              <td>Nothing</td>
+            </tr>
+            <tr data-search="authbanner 401 unauthorized api key retry">
+              <td><code>AuthBanner</code></td><td><code>components/common/AuthBanner.tsx</code></td>
+              <td>The single 401 banner; explains an API-key problem and offers Retry.</td>
+              <td>AppShell</td>
+            </tr>
+            <tr data-search="errorboundary crash error fallback">
+              <td><code>ErrorBoundary</code></td><td><code>components/common/ErrorBoundary.tsx</code></td>
+              <td>Catches a render crash. One root boundary and one per-page boundary keep the shell alive.</td>
+              <td>main.tsx, AppShell</td>
+            </tr>
+            <tr data-search="erroralert message retry error">
+              <td><code>ErrorAlert</code></td><td><code>components/common/ErrorAlert.tsx</code></td>
+              <td>Standard error panel with a title, message, and optional Retry.</td>
+              <td>Most views</td>
+            </tr>
+            <tr data-search="loadingscreen spinner loading">
+              <td><code>LoadingScreen</code></td><td><code>components/common/LoadingScreen.tsx</code></td>
+              <td>Centered spinner and message for a loading page or panel.</td>
+              <td>Views, Suspense fallbacks</td>
+            </tr>
+            <tr data-search="statusbadge status pill ready running error orphaned">
+              <td><code>StatusBadge</code></td><td><code>components/common/StatusBadge.tsx</code></td>
+              <td>Human-readable colour chip for lecture and job statuses.</td>
+              <td>Lectures, lecture detail, drawer, jobs</td>
+            </tr>
+            <tr data-search="rise animation entrance motion reduced motion">
+              <td><code>Rise</code></td><td><code>components/common/Rise.tsx</code></td>
+              <td>Small staggered entrance animation; renders instantly when reduced motion is requested.</td>
+              <td>Overview, analytics, telemetry</td>
+            </tr>
+            <tr data-search="sectionicon icon tile section header">
+              <td><code>SectionIcon</code></td><td><code>components/common/SectionIcon.tsx</code></td>
+              <td>The rounded tinted tile that frames a section-heading icon.</td>
+              <td>Quiz, analytics, heatmap, divergence</td>
+            </tr>
+            <tr data-search="notfound 404 missing page">
+              <td><code>NotFound</code></td><td><code>components/common/NotFound.tsx</code></td>
+              <td>Friendly wildcard route for unknown URLs.</td>
+              <td>App route table</td>
+            </tr>
+            <tr data-search="jobdrawer jobs progress live sse cancel drawer">
+              <td><code>JobDrawer</code></td><td><code>components/common/JobDrawer.tsx</code></td>
+              <td>Right-side drawer listing live jobs with progress, stage guidance, stall warnings, and cancel.</td>
+              <td>AppShell</td>
+            </tr>
+            <tr data-search="jobcompletionhost snackbar finished notification">
+              <td><code>JobCompletionHost</code></td><td><code>components/common/JobCompletionHost.tsx</code></td>
+              <td>Announces each finished job exactly once with a success, warning, or error snackbar.</td>
+              <td>AppShell</td>
+            </tr>
+            <tr data-search="coveragetimeline timeline coverage svg segments concepts">
+              <td><code>CoverageTimeline</code></td><td><code>components/common/CoverageTimeline.tsx</code></td>
+              <td>SVG timeline of transcript ticks, merged covered runs, concept bands, and an evidence table.</td>
+              <td>Lecture detail, faculty coverage</td>
+            </tr>
+            <tr data-search="telemetrystrip stats cards faculty graph divergence">
+              <td><code>TelemetryStrip</code></td><td><code>components/common/TelemetryStrip.tsx</code></td>
+              <td>Four summary cards for DAG validity, roots, tracked gaps, and average divergence.</td>
+              <td>Analytics</td>
+            </tr>
+            <tr data-search="dagview graph reactflow nodes edges learner order evidence">
+              <td><code>DagView</code></td><td><code>components/graph/DagView.tsx</code></td>
+              <td>Interactive prerequisite graph with filters, search, focus dimming, evidence, and learner order.</td>
+              <td>Concept map</td>
+            </tr>
+            <tr data-search="conceptnode dag node label rank subcomponent">
+              <td><code>ConceptNode</code> <span class="tag">internal</span></td><td><code>components/graph/DagView.tsx</code></td>
+              <td>The clickable concept tile with a learner-step badge and accessible keyboard handling.</td>
+              <td>DagView</td>
+            </tr>
+            <tr data-search="edgerow edge evidence confidence subcomponent">
+              <td><code>EdgeRow</code> <span class="tag">internal</span></td><td><code>components/graph/DagView.tsx</code></td>
+              <td>One incident edge: source → target, method, confidence, and spoken evidence.</td>
+              <td>DagView</td>
+            </tr>
+            <tr data-search="videoplayer video clip player seek speed fullscreen">
+              <td><code>VideoPlayer</code></td><td><code>components/media/VideoPlayer.tsx</code></td>
+              <td>Custom clip player with transport controls, keyboard shortcuts, speed, volume, fullscreen, and failure recovery.</td>
+              <td>Clip browser, quiz panel</td>
+            </tr>
+            <tr data-search="uploaddialog upload file title duplicate progress">
+              <td><code>UploadDialog</code></td><td><code>components/student/UploadDialog.tsx</code></td>
+              <td>Two-step lecture upload with duplicate guard, real progress, and error feedback.</td>
+              <td>Lectures</td>
+            </tr>
+            <tr data-search="quizpanel quiz questions answers score feedback remediation">
+              <td><code>QuizPanel</code></td><td><code>features/student/QuizPanel.tsx</code></td>
+              <td>The quiz state machine UI: start, answer, submit, score gauge, feedback, remediation, clip playback.</td>
+              <td>Quiz</td>
+            </tr>
+            <tr data-search="clipbrowser clips playlist lecture select re-cut">
+              <td><code>ClipBrowser</code></td><td><code>features/student/ClipBrowser.tsx</code></td>
+              <td>Playlist and player for one lecture's clips, including failed-clip explanations and re-cut.</td>
+              <td>Clips</td>
+            </tr>
+            <tr data-search="overviewview landing dashboard snapshot pipeline">
+              <td><code>OverviewView</code></td><td><code>features/student/views/OverviewView.tsx</code></td>
+              <td>Landing page with hero, progress stepper, stat bricks, in-flight work, quota, and next actions.</td>
+              <td><code>/student/overview</code></td>
+            </tr>
+            <tr data-search="lecturesview lectures table upload triage delete">
+              <td><code>LecturesView</code></td><td><code>features/student/views/LecturesView.tsx</code></td>
+              <td>Lecture table, pipeline actions, stalled-upload triage, delete confirmations, upload dialog.</td>
+              <td><code>/student/lectures</code></td>
+            </tr>
+            <tr data-search="mapview map graph route">
+              <td><code>MapView</code></td><td><code>features/student/views/MapView.tsx</code></td>
+              <td>Loads the course graph, handles <code>?find=</code>, and mounts DagView.</td>
+              <td><code>/student/map</code></td>
+            </tr>
+            <tr data-search="lecturedetailview lecture detail concepts timeline">
+              <td><code>LectureDetailView</code></td><td><code>features/student/views/LectureDetailView.tsx</code></td>
+              <td>Lecture picker, coverage timeline, concept list, timestamps, and live progress.</td>
+              <td><code>/student/lecture</code></td>
+            </tr>
+            <tr data-search="quizview quiz route generation job">
+              <td><code>QuizView</code></td><td><code>features/student/views/QuizView.tsx</code></td>
+              <td>Wires quiz generation, loading, submission, course changes, and QuizPanel.</td>
+              <td><code>/student/quiz</code></td>
+            </tr>
+            <tr data-search="remediationview remediation study plan clips map">
+              <td><code>RemediationView</code></td><td><code>features/student/views/RemediationView.tsx</code></td>
+              <td>Ordered study plan, clip playback, and “show on map” navigation.</td>
+              <td><code>/student/remediation</code></td>
+            </tr>
+            <tr data-search="clipsview clips route">
+              <td><code>ClipsView</code></td><td><code>features/student/views/ClipsView.tsx</code></td>
+              <td>Loads lectures and mounts the clip browser; handles clip-cut requests.</td>
+              <td><code>/student/clips</code></td>
+            </tr>
+            <tr data-search="analyticsview faculty graph edges telemetry rebuild">
+              <td><code>AnalyticsView</code></td><td><code>features/faculty/views/AnalyticsView.tsx</code></td>
+              <td>Telemetry, full edge table with evidence, and graph rebuild.</td>
+              <td><code>/faculty/analytics</code></td>
+            </tr>
+            <tr data-search="heatmapview faculty heatmap wrong answers">
+              <td><code>HeatmapView</code></td><td><code>features/faculty/views/HeatmapView.tsx</code></td>
+              <td>Wrong-answer rates per concept with counts and bars.</td>
+              <td><code>/faculty/heatmap</code></td>
+            </tr>
+            <tr data-search="divergenceview faculty taught learned order">
+              <td><code>DivergenceView</code></td><td><code>features/faculty/views/DivergenceView.tsx</code></td>
+              <td>Displacement table and side-by-side taught/learned order lists.</td>
+              <td><code>/faculty/divergence</code></td>
+            </tr>
+            <tr data-search="coverageview faculty timeline coverage">
+              <td><code>CoverageView</code></td><td><code>features/faculty/views/CoverageView.tsx</code></td>
+              <td>Lecture coverage timeline and evidence table.</td>
+              <td><code>/faculty/coverage</code></td>
+            </tr>
+            <tr data-search="jobsview system jobs registry table">
+              <td><code>JobsView</code></td><td><code>features/system/views/JobsView.tsx</code></td>
+              <td>Full job registry with summary cards, progress, elapsed time, and cancel.</td>
+              <td><code>/jobs</code></td>
+            </tr>
+            <tr data-search="systemview usage quota feed connectivity">
+              <td><code>SystemView</code></td><td><code>features/system/views/SystemView.tsx</code></td>
+              <td>Service availability, usage counters, feed state, and failure surfaces.</td>
+              <td><code>/system</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout blue" style="margin-top:18px">
+        <span class="label">How to read the catalog</span>
+        <p>
+          Components under <code>components/</code> are reused. Components under <code>features/</code> are
+          page-specific or page-adjacent. A “view” is the component a route renders. An “internal”
+          component is defined inside a larger file and is not exported for reuse.
+        </p>
+      </div>
+    </section>
+
+    <section id="journeys">
+      <div class="section-kicker"><span class="num">07</span> Four real journeys</div>
+      <h2>Follow the data through the app</h2>
+      <p class="section-intro">
+        The fastest way to understand a system is to follow one action from click to result. These are the
+        four journeys that matter most.
+      </p>
+
+      <h3>Journey 1 — Upload a lecture and get a transcript</h3>
+      <ol class="step-list">
+        <li>
+          <strong>You choose a title and a file in UploadDialog.</strong>
+          <p>The dialog checks the course's existing lecture titles to warn about probable duplicates.</p>
+          <span class="tech">components/student/UploadDialog.tsx</span>
+        </li>
+        <li>
+          <strong>Step 1: create the lecture row.</strong>
+          <p>The frontend sends a form request with the course and title. The backend creates a lecture in status <code>uploaded</code> and returns it immediately.</p>
+          <span class="tech">POST /lectures → backend/api/routes/lectures.py</span>
+        </li>
+        <li>
+          <strong>Step 2: stream the media file.</strong>
+          <p>The file is sent with XMLHttpRequest so the browser can report real upload progress. The backend writes it to <code>data/raw/</code> in chunks, then updates the lecture row with the file path.</p>
+          <span class="tech">PUT /lectures/{id}/media → api/client.ts putStream()</span>
+        </li>
+        <li>
+          <strong>A transcription job is queued.</strong>
+          <p>The API creates a durable row in the <code>jobs</code> table, returns its id, and schedules a worker. The page does not wait for transcription.</p>
+          <span class="tech">jobs.process_lecture → backend/api/jobs/transcribe.py</span>
+        </li>
+        <li>
+          <strong>Whisper produces timestamped segments.</strong>
+          <p>Depending on configuration, this is local Whisper or Groq's hosted Whisper. Long audio is downmixed and chunked. Each segment has a start time, an end time, and text.</p>
+          <span class="tech">backend/pipeline/transcribe.py</span>
+        </li>
+        <li>
+          <strong>The lecture becomes ready.</strong>
+          <p>Segments are saved to <code>transcript_segments</code>, the lecture status flips to <code>ready</code>, and the job finishes. The SSE feed tells the UI, which refreshes the lecture list and snapshot.</p>
+          <span class="tech">transcript_segments + jobs.status = ready</span>
+        </li>
+      </ol>
+
+      <h3>Journey 2 — Turn a transcript into a concept graph</h3>
+      <ol class="step-list">
+        <li>
+          <strong>You click “Extract concepts”.</strong>
+          <p>This is only allowed for a ready lecture. The API checks status, queues an extraction job, and returns a job id.</p>
+          <span class="tech">POST /lectures/{id}/concepts</span>
+        </li>
+        <li>
+          <strong>The Lecture-Structure pass reads the transcript in windows.</strong>
+          <p>It uses overlapping windows so a topic that crosses a boundary is seen in both. It asks the LLM for passages, concepts with teach spans, and prerequisite links that the professor actually said out loud.</p>
+          <span class="tech">backend/pipeline/passages.py</span>
+        </li>
+        <li>
+          <strong>The worker saves three kinds of rows.</strong>
+          <p><code>passages</code> describe teaching units. <code>concepts</code> point at their passage and carry start/end times. <code>lecture_links</code> store spoken prerequisites with verbatim evidence.</p>
+          <span class="tech">backend/api/jobs/extract.py</span>
+        </li>
+        <li>
+          <strong>The course graph is rebuilt immediately.</strong>
+          <p>Concept names are deduplicated by embedding similarity. Spoken links become edges at confidence 0.9. A classifier fills only the pairs the transcript never grounded. Cycles are removed by dropping the weakest edge. The result is topologically sorted into learner order.</p>
+          <span class="tech">backend/api/jobs/graph.py + backend/pipeline/build_graph.py</span>
+        </li>
+        <li>
+          <strong>The map and faculty views refresh.</strong>
+          <p>The graph is persisted in <code>graph_nodes</code> and <code>graph_edges</code>. React Query invalidates the course-scoped keys after the job finishes, so a visit to the map shows the new graph.</p>
+          <span class="tech">GET /courses/{id}/graph</span>
+        </li>
+      </ol>
+
+      <h3>Journey 3 — Take a quiz and receive remediation</h3>
+      <ol class="step-list">
+        <li>
+          <strong>You click “Start Quiz”.</strong>
+          <p>The frontend queues generation with a cap (15 by default). The backend returns <code>202 + job_id</code>; the old synchronous endpoint is kept only for compatibility.</p>
+          <span class="tech">POST /quizzes/jobs</span>
+        </li>
+        <li>
+          <strong>The quiz worker writes one MCQ per selected concept.</strong>
+          <p>Each question is grounded in the concept's teaching passage when available, with the old local transcript window as fallback. An LLM writes a question, a correct answer, three plausible distractors, an explanation, and per-distractor rationales. If the LLM fails, the pure evidence-based MCQ path still produces a gradable question.</p>
+          <span class="tech">backend/pipeline/mcq_gen.py + backend/pipeline/quiz.py</span>
+        </li>
+        <li>
+          <strong>The browser reads the questions.</strong>
+          <p>When the job is ready, QuizView calls <code>GET /quizzes</code>. That endpoint only reads existing questions; it never regenerates them. The answer key stays on the server.</p>
+          <span class="tech">GET /quizzes?course_id=…&amp;student_id=…</span>
+        </li>
+        <li>
+          <strong>You answer and submit.</strong>
+          <p>The frontend sends only the selected option for each question. The backend grades server-side against the stored answer. It records a <code>quiz_responses</code> row and appends a new attempt.</p>
+          <span class="tech">POST /quizzes/submit</span>
+        </li>
+        <li>
+          <strong>The remediation order is computed.</strong>
+          <p>Failed concepts are collected. The prerequisite graph is walked backwards to find everything upstream. The union is sorted by the graph's topological order, so foundations appear before the missed concept. Clips are attached when available.</p>
+          <span class="tech">select_remediation_sequence() → backend/pipeline/quiz.py</span>
+        </li>
+        <li>
+          <strong>You get a study plan, not just a score.</strong>
+          <p>QuizPanel shows the score, per-question feedback, and the ordered remediation sequence. RemediationView can replay the same plan after a reload by calling the server endpoint.</p>
+          <span class="tech">GET /students/{studentId}/remediation</span>
+        </li>
+      </ol>
+
+      <h3>Journey 4 — Watch a long job without refreshing the page</h3>
+      <ol class="step-list">
+        <li>
+          <strong>An action creates a job before the worker starts.</strong>
+          <p>The row is inserted as <code>queued</code>. A client can attach to it immediately instead of waiting for the first progress update.</p>
+          <span class="tech">jobs table + registry.create_job()</span>
+        </li>
+        <li>
+          <strong>The worker publishes progress.</strong>
+          <p>Every progress call updates the legacy in-memory store and the durable job row. The job carries a stage, detail, percentage, and heartbeat timestamp.</p>
+          <span class="tech">backend/api/jobs/progress.py</span>
+        </li>
+        <li>
+          <strong>The browser keeps one SSE connection open.</strong>
+          <p><code>jobFeed.ts</code> reads <code>/jobs/stream</code> with a streaming <code>fetch</code>. It parses <code>data:</code> lines, ignores keep-alives, reconnects with backoff, and falls back to reading <code>GET /jobs</code> once per failure cycle.</p>
+          <span class="tech">src/lib/jobFeed.ts</span>
+        </li>
+        <li>
+          <strong>Snapshots land in one React Query key.</strong>
+          <p><code>useJobFeedConnection</code> writes each snapshot to <code>['jobs', courseId]</code>. Components that need job data read that key through <code>useSyncExternalStore</code>. The shell reads nothing, so a job tick cannot re-render the page.</p>
+          <span class="tech">src/lib/useJobFeed.ts</span>
+        </li>
+        <li>
+          <strong>The drawer and badges update; finished work is announced once.</strong>
+          <p>The job drawer shows only live jobs. A completion host shows a snackbar once. Finished clips jobs also invalidate their per-lecture clip list; lecture jobs invalidate lecture detail.</p>
+          <span class="tech">JobDrawer + JobCompletionHost + queryKeys</span>
+        </li>
+        <li>
+          <strong>Restart safety.</strong>
+          <p>If the server dies while a job is running, boot-time recovery marks stale running jobs as <code>orphaned</code>. The UI says the work was lost instead of showing a spinner that can never finish.</p>
+          <span class="tech">recover_orphans() + heartbeat_at</span>
+        </li>
+      </ol>
+    </section>
+
+    <section id="pipeline">
+      <div class="section-kicker"><span class="num">08</span> Backend pipeline</div>
+      <h2>Seven stages, and what each one actually does</h2>
+      <p class="section-intro">
+        The pipeline is split into small modules on purpose. Each one is mostly pure logic: it takes data
+        in, returns data out, and lets the API/job layer decide how to persist it. That makes the stages
+        testable without a browser, an LLM, or ffmpeg.
+      </p>
+
+      <div class="pipeline-grid">
+        <div class="pipe" data-stage="1">
+          <h4>Transcription</h4>
+          <div class="pipe-file">backend/pipeline/transcribe.py</div>
+          <p>Converts lecture audio/video into timestamped text segments using Whisper. Local Whisper is the default; Groq's hosted Whisper is optional. Long files are downmixed to mono 16 kHz FLAC and chunked to fit upload limits.</p>
+          <div class="io"><b>In:</b> media path → <b>Out:</b> <code>[{start, end, text}]</code></div>
+        </div>
+
+        <div class="pipe" data-stage="2">
+          <h4>Lecture-Structure pass</h4>
+          <div class="pipe-file">backend/pipeline/passages.py</div>
+          <p>One consolidated LLM read of the transcript in overlapping windows. It recovers teaching passages, concept teach spans, and spoken prerequisite links with verbatim evidence. The old chunk-atomic extractor remains only as a fallback.</p>
+          <div class="io"><b>In:</b> transcript segments → <b>Out:</b> passages, concepts, links</div>
+        </div>
+
+        <div class="pipe" data-stage="3">
+          <h4>Prerequisite classification</h4>
+          <div class="pipe-file">backend/pipeline/classify_prerequisites.py</div>
+          <p>For candidate concept pairs, predicts whether A must be understood before B. A temporal + embedding pre-filter avoids checking every possible pair. The adopted model is a frozen MiniLM encoder plus a logistic head, with F1 0.569 on the LectureBank benchmark.</p>
+          <div class="io"><b>In:</b> concept names and times → <b>Out:</b> candidate edges + confidence</div>
+        </div>
+
+        <div class="pipe" data-stage="4">
+          <h4>Graph construction</h4>
+          <div class="pipe-file">backend/pipeline/build_graph.py</div>
+          <p>Deduplicates concept names by embedding similarity (for example, “Gradient Descent” and “GD optimization”), adds transcript edges first, fills uncovered pairs with classifier edges, removes cycles by dropping the weakest edge, and computes a topological learner order.</p>
+          <div class="io"><b>In:</b> concepts + spoken links + classifier pairs → <b>Out:</b> DAG + learner order</div>
+        </div>
+
+        <div class="pipe" data-stage="5">
+          <h4>Clip segmentation</h4>
+          <div class="pipe-file">backend/pipeline/segment_clips.py</div>
+          <p>Runs ffmpeg once per concept over its teach span. Short clips are re-encoded for frame accuracy; very long clips use stream copy to save CPU. A failed clip does not abort the whole batch; the result row records the error.</p>
+          <div class="io"><b>In:</b> lecture media + concept spans → <b>Out:</b> MP4 clips + clip rows</div>
+        </div>
+
+        <div class="pipe" data-stage="6">
+          <h4>Quiz generation and grading</h4>
+          <div class="pipe-file">backend/pipeline/mcq_gen.py + backend/pipeline/quiz.py + backend/api/routes/quizzes.py</div>
+          <p>Writes one MCQ per concept from the teaching passage, with distractors and rationales. Falls back to an evidence-sentence question if the LLM fails. Grading is always server-side. Answered questions are preserved when a quiz is regenerated.</p>
+          <div class="io"><b>In:</b> concepts + passages → <b>Out:</b> questions, answers, explanations, quiz responses</div>
+        </div>
+
+        <div class="pipe" data-stage="7">
+          <h4>Remediation and refinement</h4>
+          <div class="pipe-file">backend/pipeline/quiz.py + experiments/refine.py</div>
+          <p>Remediation is live: failed concepts plus their transitive prerequisites, ordered by learner order. The graph-refinement experiment also exists, but it lives in <code>experiments/refine.py</code> and is not wired into a live API route. It validates the mechanism; it is not a production stage yet.</p>
+          <div class="io"><b>Live out:</b> ordered remediation. <b>Experiment:</b> precision/recall/F1 recovery</div>
+        </div>
+      </div>
+
+      <h3>Transcript-first, classifier second</h3>
+      <p>
+        This is the most important design choice in the graph. If the professor explicitly says something
+        like “before we can understand backpropagation, recall the chain rule”, that sentence is strong
+        evidence. The system stores it as a <code>lecture_link</code> with the exact quote and turns it into
+        an edge at confidence 0.9. The classifier only fills pairs the transcript never grounded, such as
+        cross-lecture relationships or silent jumps. That is why the graph view can show <em>why</em> an
+        edge exists: a spoken quote or a classifier inference.
+      </p>
+
+      <div class="grid-2">
+        <div class="mini-card">
+          <h4>What the LLM is used for</h4>
+          <ul>
+            <li>Reading lecture structure: passages, concepts, and spoken prerequisites.</li>
+            <li>Writing quiz questions and explanations.</li>
+            <li>Optionally adding a second opinion to a classifier edge when LLM reasoning is enabled.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h4>What the LLM is not trusted to do</h4>
+          <ul>
+            <li>Grade answers. Grading uses the stored answer key.</li>
+            <li>Silently delete edges. An LLM second opinion can adjust confidence, not hard-veto an edge.</li>
+            <li>Run without fallbacks. If the structure pass fails, the old extraction path is used.</li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="deep">
+        <summary>Deep dive: why the graph is a DAG, and why that matters</summary>
+        <div class="deep-body">
+          <p>
+            A DAG is a directed graph with no cycles. “Directed” means each edge has a direction:
+            <code>Chain Rule → Backpropagation</code> means the chain rule comes first. “No cycles” means
+            you cannot follow arrows and arrive back where you started, which would make “what comes first?”
+            unanswerable.
+          </p>
+          <p>
+            The graph builder removes cycles by finding the lowest-confidence edge in a cycle and dropping
+            it, then repeating until no cycles remain. Transcript edges have high confidence, so they
+            usually survive; a weak classifier guess is the one that gets dropped. The remaining graph can
+            be topologically sorted, which is the learner order shown in the study sequence and used by
+            remediation.
+          </p>
+        </div>
+      </details>
+
+      <details class="deep">
+        <summary>Deep dive: how clip cutting balances speed and accuracy</summary>
+        <div class="deep-body">
+          <p>
+            ffmpeg can cut in two ways. Stream copy (<code>-c copy</code>) is almost instant and lossless,
+            but it can only start on a keyframe, so the first few seconds may jump backwards. Re-encoding
+            (<code>libx264</code>) starts on the exact requested frame, but costs CPU time.
+          </p>
+          <p>
+            LecGap's default is a hybrid: clips up to 120 seconds are re-encoded for accuracy; longer spans
+            use stream copy. Setting <code>LECGAP_CLIP_STREAMCOPY=1</code> forces every clip to the fast
+            path. Each concept is cut independently, and a failure is recorded per clip rather than
+            aborting the whole lecture.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section id="database">
+      <div class="section-kicker"><span class="num">09</span> Database and disk</div>
+      <h2>Where every fact is stored</h2>
+      <p class="section-intro">
+        The backend uses SQLite with write-ahead logging so API reads and background workers can write
+        without blocking each other. Large media never goes into the database; only paths and metadata do.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Table</th><th>Plain-English meaning</th><th>Key fields</th></tr></thead>
+          <tbody>
+            <tr><td><code>lectures</code></td><td>One uploaded lecture.</td><td>course, title, file path, status, created time, error</td></tr>
+            <tr><td><code>transcript_segments</code></td><td>Timestamped pieces of speech.</td><td>lecture, index, start, end, text</td></tr>
+            <tr><td><code>llm_cache</code></td><td>Prompt-hash cache so identical LLM calls cost nothing.</td><td>prompt hash, model, response, token counts</td></tr>
+            <tr><td><code>concepts</code></td><td>One concept taught in one lecture.</td><td>name, start/end, implicit flag, source, passage link</td></tr>
+            <tr><td><code>passages</code></td><td>A coherent teaching unit recovered from the transcript.</td><td>title, kind, span, summary, joined text</td></tr>
+            <tr><td><code>lecture_links</code></td><td>A prerequisite the professor explicitly voiced.</td><td>source name, target name, confidence, evidence quote</td></tr>
+            <tr><td><code>graph_nodes</code></td><td>Canonical concept node in the course graph.</td><td>course, deduplicated name</td></tr>
+            <tr><td><code>graph_edges</code></td><td>One prerequisite edge: source before target.</td><td>confidence, source method, evidence</td></tr>
+            <tr><td><code>clips</code></td><td>One cut video clip for a concept.</td><td>concept name, start/end, file path, ok flag, error</td></tr>
+            <tr><td><code>quiz_questions</code></td><td>One generated MCQ, including its answer key and feedback.</td><td>concept, question, distractors, answer, explanation, rationales</td></tr>
+            <tr><td><code>quiz_responses</code></td><td>One student's answer to one question.</td><td>student, concept, selected, correct, latency, attempt</td></tr>
+            <tr><td><code>jobs</code></td><td>Durable background work and its progress.</td><td>kind, status, stage, progress, heartbeat, error</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Disk layout</h3>
+      <pre><code>data/
+├─ lecgap.db                     # SQLite database (WAL mode)
+├─ raw/
+│  └─ lec&lt;id&gt;_&lt;filename&gt;         # uploaded lecture media
+├─ processed/
+│  └─ clips/
+│     └─ &lt;lecture_id&gt;/
+│        └─ &lt;concept&gt;__&lt;start&gt;-&lt;end&gt;.mp4
+├─ lecturebank/                  # benchmark dataset for the classifier
+└─ samples/                      # sample media for development/tests</code></pre>
+
+      <div class="callout">
+        <span class="label">Why SQLite is enough here</span>
+        <p>
+          This is a single-process local application, not a multi-server deployment. SQLite plus WAL gives
+          durable rows, concurrent reads, and a busy timeout for writes. The database path is configurable
+          with <code>LECGAP_DATABASE_URL</code>. Tests point it at a throwaway temp database so they never
+          touch real data.
+        </p>
+      </div>
+    </section>
+
+    <section id="state">
+      <div class="section-kicker"><span class="num">10</span> State and live updates</div>
+      <h2>Three places state lives</h2>
+      <p class="section-intro">
+        React apps get confusing when one piece of data has several owners. LecGap splits state by what it
+        is: server data, UI preferences, and a short-lived quiz draft.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3 style="margin-top:0">React Query</h3>
+          <p>Owns server data: courses, lectures, graph, stats, clips, usage, and the job-feed snapshot.</p>
+          <p style="margin-bottom:0">Fetches once, caches, and invalidates by key after writes.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Zustand</h3>
+          <p>Owns UI state: selected course, student id, theme base, drawer open/closed, quiz draft, and completion notifications.</p>
+          <p style="margin-bottom:0">Changing UI state does not trigger an API call by itself.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Local component state</h3>
+          <p>Owns things that only matter on one screen: dialog open, typed search, selected lecture, playing clip.</p>
+          <p style="margin-bottom:0">When the component unmounts, this state is gone, and that is correct.</p>
+        </div>
+      </div>
+
+      <h3>The query keys</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Data</th><th>Who reads it</th></tr></thead>
+          <tbody>
+            <tr><td><code>['courses']</code></td><td>Course list</td><td>CoursePicker, invalidation helper</td></tr>
+            <tr><td><code>['snapshot', courseId]</code></td><td>Course readiness counts</td><td>Overview, Lectures</td></tr>
+            <tr><td><code>['graph', courseId]</code></td><td>Prerequisite graph</td><td>MapView, AnalyticsView</td></tr>
+            <tr><td><code>['stats', courseId]</code></td><td>Heatmap and divergence</td><td>Analytics, Heatmap, Divergence</td></tr>
+            <tr><td><code>['lectures', courseId]</code></td><td>Lecture list</td><td>Lectures, Clips, Lecture detail, Coverage</td></tr>
+            <tr><td><code>['lecture', lectureId]</code></td><td>Segments and concepts</td><td>Lecture detail, Coverage</td></tr>
+            <tr><td><code>['lecture', lectureId, 'progress']</code></td><td>Live progress while transcribing</td><td>useLectureProgress</td></tr>
+            <tr><td><code>['clips', lectureId]</code></td><td>Clips for one lecture</td><td>ClipBrowser</td></tr>
+            <tr><td><code>['remediation', studentId]</code></td><td>Server-side study plan</td><td>RemediationView</td></tr>
+            <tr><td><code>['jobs', courseId]</code></td><td>SSE job snapshot</td><td>Sidebar badge, JobDrawer, JobsView, Lecture detail</td></tr>
+            <tr><td><code>['usage']</code></td><td>Quota and service counters</td><td>Sidebar, Overview, SystemView</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>One invalidation rule</h3>
+      <p>
+        Every course-affecting write calls <code>invalidateCourse(queryClient, courseId)</code>. That helper
+        clears the course list, all course-scoped keys for that course, and every per-lecture read. It
+        exists because four hand-written invalidation lists had already drifted apart. One rule means a new
+        write cannot forget one of the screens.
+      </p>
+
+      <h3>How the live job feed works</h3>
+      <div class="flow" aria-label="SSE job feed flow">
+        <div class="flow-step">
+          <span class="step-num">01</span>
+          <strong>Worker writes</strong>
+          <span>stage, percent, heartbeat</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">02</span>
+          <strong>SSE emits</strong>
+          <span>only when the snapshot changes</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">03</span>
+          <strong>Feed parses</strong>
+          <span>data lines, skip keep-alives</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">04</span>
+          <strong>Cache writes</strong>
+          <span>['jobs', courseId]</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-num">05</span>
+          <strong>Leaves read</strong>
+          <span>drawer, badge, jobs page</span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h4>Feed modes</h4>
+          <ul>
+            <li><strong>starting</strong> — the first connection is being opened.</li>
+            <li><strong>stream</strong> — SSE is live and parsing frames.</li>
+            <li><strong>poll</strong> — SSE failed, so the app falls back to reading <code>GET /jobs</code>.</li>
+            <li><strong>unavailable</strong> — neither path is working; the UI says so.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h4>Job states</h4>
+          <ul>
+            <li><strong>queued</strong> — registered, not started.</li>
+            <li><strong>running</strong> — a worker is publishing progress.</li>
+            <li><strong>ready</strong> — finished successfully.</li>
+            <li><strong>error</strong> — finished with a failure.</li>
+            <li><strong>cancelled</strong> — the user settled the record.</li>
+            <li><strong>orphaned</strong> — the server restarted and nothing is running it.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Why the shell does not read job state</span>
+        <p>
+          <code>AppShell</code> renders the active page through <code>&lt;Outlet/&gt;</code>. If it subscribed
+          to a value that changes every second, every page would re-render every second, and a playing
+          video could restart. The shell only opens the connection. The drawer, badge, and Jobs page read
+          the job cache as leaves. That separation is a core design rule, not a micro-optimisation.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="mini-card">
+          <h4>Error handling you will meet</h4>
+          <ul>
+            <li><strong>401</strong> — one AuthBanner at the top, with Retry.</li>
+            <li><strong>Render crash</strong> — ErrorBoundary shows a panel and keeps the shell alive.</li>
+            <li><strong>API failure</strong> — ErrorAlert shows the backend's detail message.</li>
+            <li><strong>Stalled job</strong> — the drawer warns after a long silence.</li>
+            <li><strong>Server restart</strong> — stale jobs become <code>orphaned</code>.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h4>Where the API client lives</h4>
+          <ul>
+            <li><code>api/client.ts</code> — the only file that calls <code>fetch</code> or XHR.</li>
+            <li><code>api/courses.ts</code>, <code>lectures.ts</code>, <code>quizzes.ts</code>, <code>jobs.ts</code>, <code>usage.ts</code> — typed wrappers.</li>
+            <li><code>api/types.ts</code> — shared TypeScript shapes.</li>
+            <li>The API key is added in one place, from <code>VITE_LECGAP_API_KEY</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="theme">
+      <div class="section-kicker"><span class="num">11</span> Theme and accessibility</div>
+      <h2>One token system, two bases</h2>
+      <p class="section-intro">
+        The app supports a warm light theme and a dark espresso theme. The important part is that both
+        come from the same small token table, so a colour cannot drift between the two.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3 style="margin-top:0">Tokens</h3>
+          <p><code>theme/tokens.ts</code> defines the palette for light and dark: page, surface, border, text, status colours, graph colours, and node ink.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">MUI theme</h3>
+          <p><code>theme/muiTheme.ts</code> maps those tokens into Material UI roles like <code>primary</code>, <code>background.paper</code>, and <code>divider</code>.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">CSS variables</h3>
+          <p><code>theme/variables.ts</code> writes <code>--lgc-*</code> variables onto the document root so plain CSS and SVG can use the same values.</p>
+        </div>
+      </div>
+
+      <h3>Rules the code follows</h3>
+      <ul>
+        <li>Components use semantic MUI slots or <code>tint()</code> / <code>token()</code> / <code>gradient()</code>, not raw hex values.</li>
+        <li>Graph node fills and label ink are calculated so text stays readable on both bases.</li>
+        <li>Status colours are contrast-checked against the surfaces they actually land on.</li>
+        <li><code>Rise</code> honours <code>prefers-reduced-motion</code> and renders instantly when motion is reduced.</li>
+        <li>Icon-only controls carry an <code>aria-label</code>; the E2E tests address them by role and name.</li>
+        <li>Focus styles are visible, and the job feed status is announced, not only coloured.</li>
+      </ul>
+
+      <div class="callout blue">
+        <span class="label">The practical result</span>
+        <p>
+          Switching the theme changes the MUI theme and the CSS variables together. A card background, a
+          table header, a graph node, and a custom SVG band all re-derive from the same palette. That is why
+          the light theme is not a separate stylesheet that slowly falls out of date.
+        </p>
+      </div>
+    </section>
+
+    <section id="files">
+      <div class="section-kicker"><span class="num">12</span> File map</div>
+      <h2>Where to look, and where to change things</h2>
+      <p class="section-intro">
+        A short map of the directories that matter when you are reading or extending the app.
+      </p>
+
+      <pre><code>lecture-comprehension-gap-detector/
+├─ backend/
+│  ├─ main.py                 # FastAPI app, CORS, auth middleware, health
+│  ├─ config.py               # every environment variable and default
+│  ├─ api/
+│  │  ├─ routes/              # courses, lectures, quizzes, jobs, media, usage
+│  │  ├─ jobs/                # background workers for each stage
+│  │  ├─ job_registry.py      # durable jobs, heartbeat, orphan recovery, locks
+│  │  └─ schemas.py           # Pydantic request/response shapes
+│  ├─ models/db.py            # SQLite tables + additive migrations
+│  └─ pipeline/               # transcribe, passages, classify, graph, clips, quiz
+├─ frontend-react/
+│  ├─ src/
+│  │  ├─ App.tsx              # routes + lazy loading
+│  │  ├─ main.tsx             # root render + root error boundary
+│  │  ├─ api/                 # typed HTTP wrappers
+│  │  ├─ components/          # shared layout, common, graph, media, student UI
+│  │  ├─ features/            # student, faculty, system page-level views
+│  │  ├─ lib/                 # hooks, query keys, pure helpers
+│  │  ├─ store/               # Zustand stores
+│  │  └─ theme/               # tokens, MUI theme, CSS variables
+│  ├─ e2e/                    # Playwright real-browser tests
+│  └─ src/**/*.test.ts(x)     # Vitest unit/component tests
+├─ data/                      # SQLite database, raw media, processed clips
+├─ experiments/               # classifier fine-tuning + refinement experiment
+├─ tests/                     # backend pytest suite
+└─ deprecated/frontend/       # archived Streamlit UI</code></pre>
+
+      <h3>Common changes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>I want to…</th><th>Start here</th><th>Also touch</th></tr></thead>
+          <tbody>
+            <tr><td>Add a new page</td><td><code>src/nav.ts</code></td><td><code>src/App.tsx</code>, a new view under <code>src/features/</code></td></tr>
+            <tr><td>Add a new API call</td><td><code>src/api/types.ts</code></td><td>A domain wrapper in <code>src/api/</code>, then a query key</td></tr>
+            <tr><td>Change colours</td><td><code>src/theme/tokens.ts</code></td><td><code>muiTheme.ts</code>, <code>nodeColors.ts</code>, tests</td></tr>
+            <tr><td>Change a graph rule</td><td><code>backend/pipeline/build_graph.py</code></td><td><code>backend/api/jobs/graph.py</code>, graph tests</td></tr>
+            <tr><td>Change a quiz prompt</td><td><code>backend/pipeline/mcq_gen.py</code></td><td><code>backend/api/routes/quizzes.py</code>, quiz tests</td></tr>
+            <tr><td>Add a database column</td><td><code>backend/models/db.py</code></td><td>Use the additive migration path; run the DB tests</td></tr>
+            <tr><td>Change job progress</td><td><code>backend/api/jobs/progress.py</code></td><td><code>job_registry.py</code>, drawer/job tests</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Useful commands</h3>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0">Frontend</h4>
+          <pre><code>cd frontend-react
+npm run dev        # local app
+npm run verify     # type-check + lint + unit tests
+npm run build      # production build
+npm run test:e2e   # real browser + real backend</code></pre>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">Backend</h4>
+          <pre><code># Use the project interpreter
+py -3.11 -m pytest -q
+
+# Start the API
+py -3.11 -m uvicorn backend.main:app --port 8000
+
+# Health check
+curl http://localhost:8000/health</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="glossary">
+      <div class="section-kicker"><span class="num">13</span> Glossary</div>
+      <h2>Plain-English definitions</h2>
+      <p class="section-intro">
+        Keep this nearby while reading the code. Most of the jargon in the repository is one of these
+        ideas.
+      </p>
+
+      <dl class="glossary">
+        <dt>DAG</dt>
+        <dd>A directed graph with no cycles. Arrows show order, and you cannot loop back to the start.</dd>
+
+        <dt>Node</dt>
+        <dd>One concept in the graph. In LecGap, a node is usually a concept name such as “Slope” or “Backpropagation”.</dd>
+
+        <dt>Edge</dt>
+        <dd>A prerequisite link. <code>A → B</code> means A should be understood before B.</dd>
+
+        <dt>Topological order</dt>
+        <dd>A valid study order where every prerequisite appears before the concept that needs it.</dd>
+
+        <dt>Prerequisite</dt>
+        <dd>Something that must be learned first. “Chain rule” is a prerequisite of “backpropagation”.</dd>
+
+        <dt>Passage</dt>
+        <dd>A coherent stretch of a lecture where one topic is taught. It is the unit a student would re-watch.</dd>
+
+        <dt>Teach span</dt>
+        <dd>The exact start and end time where a concept is explained, not merely mentioned.</dd>
+
+        <dt>Transcript-first</dt>
+        <dd>Use prerequisite links the professor actually voiced as the primary graph evidence. The classifier fills only the gaps.</dd>
+
+        <dt>Classifier</dt>
+        <dd>A model that predicts whether one concept is a prerequisite of another. LecGap uses a frozen MiniLM encoder plus a logistic head.</dd>
+
+        <dt>Embedding</dt>
+        <dd>A list of numbers representing the meaning of text. Similar concept names have similar embeddings, which helps deduplication and candidate selection.</dd>
+
+        <dt>Deduplication</dt>
+        <dd>Merging names that mean the same thing, such as “Gradient Descent” and “GD optimization”, into one graph node.</dd>
+
+        <dt>Clip</dt>
+        <dd>A short video cut from the lecture around a concept's teach span.</dd>
+
+        <dt>Remediation</dt>
+        <dd>The ordered study plan produced after a quiz. It includes failed concepts and the prerequisites upstream of them.</dd>
+
+        <dt>SSE</dt>
+        <dd>Server-Sent Events. A one-way stream from the server to the browser, used here for live job progress.</dd>
+
+        <dt>Job</dt>
+        <dd>A durable record of background work: transcribe, extract, clips, graph, or quiz.</dd>
+
+        <dt>Heartbeat</dt>
+        <dd>A timestamp the worker refreshes while it is alive. If it goes stale, the job can be marked orphaned.</dd>
+
+        <dt>Orphaned</dt>
+        <dd>A job that was running when the server died. Nothing is executing it any more.</dd>
+
+        <dt>React Query</dt>
+        <dd>The library that owns server data in the frontend: fetching, caching, and invalidation.</dd>
+
+        <dt>Zustand</dt>
+        <dd>A small state library used for UI state such as selected course, theme, and the quiz draft.</dd>
+
+        <dt>Vite proxy</dt>
+        <dd>The development server forwards API paths to FastAPI on port 8000, so the browser can use same-origin requests.</dd>
+
+        <dt>MUI</dt>
+        <dd>Material UI, the component library used for buttons, cards, tables, dialogs, and the overall visual system.</dd>
+
+        <dt>Lazy loading</dt>
+        <dd>Downloading a page's JavaScript only when it is first opened. It keeps the initial load smaller.</dd>
+      </dl>
+    </section>
+
+    <section id="health">
+      <div class="section-kicker"><span class="num">14</span> Health check</div>
+      <h2>Does it work right now?</h2>
+      <p class="section-intro">
+        This section records what was actually run against the current repository, so you can tell the
+        difference between “the code looks fine” and “the system was exercised”.
+      </p>
+
+      <div class="table-wrap">
+        <table class="status-table">
+          <thead><tr><th>Check</th><th>Result</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Backend import + live API</td>
+              <td class="status-ok">PASS</td>
+              <td><code>/health</code> returned ok; <code>/courses</code> returned the demo courses <code>ml</code> and <code>prob</code>; graph, stats, lectures, jobs, usage, and quiz reads all served real data.</td>
+            </tr>
+            <tr>
+              <td>Frontend unit/component suite</td>
+              <td class="status-ok">PASS</td>
+              <td>819 tests passed across 43 test files with <code>npm run verify</code>, including TypeScript and ESLint gates.</td>
+            </tr>
+            <tr>
+              <td>Frontend production build</td>
+              <td class="status-ok">PASS</td>
+              <td><code>npm run build</code> completed; route-level chunks and vendor chunks were produced.</td>
+            </tr>
+            <tr>
+              <td>Real-browser E2E</td>
+              <td class="status-ok">PASS</td>
+              <td>13 Playwright tests passed against a real backend, real Vite proxy, real SSE stream, real clip media, and a real decoded video.</td>
+            </tr>
+            <tr>
+              <td>Backend pytest suite</td>
+              <td class="status-warn">PASS WITH LEGACY FAILURES</td>
+              <td>714 passed, 3 skipped, 24 failed. Every failure is in a test that still points at the archived <code>frontend/</code> Streamlit folder or <code>.streamlit/config.toml</code>. The active React app and backend logic are unaffected.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="label">The 24 backend failures, stated plainly</span>
+        <p>
+          They are <code>FileNotFoundError</code> failures from legacy Streamlit tests after the archive move:
+          the tests still ask for <code>frontend/student_app.py</code>, <code>frontend/faculty_app.py</code>,
+          or the old root <code>.streamlit/config.toml</code>. They do not exercise the active React frontend
+          or the API. The clean fix is to point those tests at <code>deprecated/frontend/</code> or retire
+          them with the Streamlit app. Until then, a fully green backend test run is not expected on this
+          checkout.
+        </p>
+      </div>
+
+      <h3>What the live API returned during the check</h3>
+      <div class="grid-4">
+        <div class="mini-card">
+          <h4>Courses</h4>
+          <p><strong>2</strong> demo courses: <code>ml</code> and <code>prob</code>.</p>
+        </div>
+        <div class="mini-card">
+          <h4>Graph</h4>
+          <p><strong>100</strong> nodes and <strong>84</strong> edges for <code>ml</code>, acyclic.</p>
+        </div>
+        <div class="mini-card">
+          <h4>Stats</h4>
+          <p><strong>74</strong> heatmap rows and <strong>100</strong> divergence rows.</p>
+        </div>
+        <div class="mini-card">
+          <h4>Jobs</h4>
+          <p><strong>38</strong> historical jobs for <code>ml</code>, with the latest quiz job ready.</p>
+        </div>
+      </div>
+
+      <h3>How to rerun the checks</h3>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0">Backend</h4>
+          <pre><code>py -3.11 -m pytest -q
+py -3.11 -m uvicorn backend.main:app --port 8000
+
+# In another terminal:
+curl http://localhost:8000/health
+curl http://localhost:8000/courses</code></pre>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">Frontend</h4>
+          <pre><code>cd frontend-react
+npm run verify
+npm run build
+npm run test:e2e</code></pre>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Bottom line</span>
+        <p>
+          The active system works: the React app renders, the API serves real data, slow work runs through
+          durable jobs, the SSE feed reaches the UI, quizzes are graded server-side, remediation is ordered
+          from the graph, and clips play in the browser. The only red lights are stale tests for the
+          archived Streamlit frontend.
+        </p>
+      </div>
+    </section>
+
+
+  </main>
+</div>
+
+<button class="theme-toggle" id="themeToggle" type="button">Dark mode</button>
+<button class="to-top" id="toTop" type="button" aria-label="Back to top">↑</button>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <strong>LecGap Field Guide</strong><br>
+      Written from the current code in this repository.
+    </div>
+    <div>
+      <a href="README.md">README</a> ·
+      <a href="ARCHITECTURE.md">Architecture</a> ·
+      <a href="frontend-react/README.md">Frontend README</a> ·
+      <a href="plan/EVALUATION.md">Evaluation plan</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var toggle = document.getElementById('themeToggle');
+    function label() {
+      toggle.textContent = root.dataset.theme === 'dark' ? 'Light mode' : 'Dark mode';
+      toggle.setAttribute('aria-label', toggle.textContent);
+    }
+    label();
+    toggle.addEventListener('click', function () {
+      root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('lecgap-tutorial-theme', root.dataset.theme); } catch (e) {}
+      label();
+    });
+
+    var progress = document.getElementById('progress');
+    var toTop = document.getElementById('toTop');
+    function onScroll() {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+      progress.style.width = pct + '%';
+      toTop.classList.toggle('show', window.scrollY > 900);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var sections = links.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id); });
+        });
+      }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+      sections.forEach(function (s) { observer.observe(s); });
+    }
+
+    var filter = document.getElementById('componentFilter');
+    var count = document.getElementById('componentCount');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#componentTable tbody tr'));
+    function applyFilter() {
+      if (!filter) return;
+      var q = filter.value.trim().toLowerCase();
+      var shown = 0;
+      rows.forEach(function (row) {
+        var haystack = (row.getAttribute('data-search') || '') + ' ' + row.textContent.toLowerCase();
+        var match = !q || haystack.indexOf(q) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) shown += 1;
+      });
+      if (count) count.textContent = shown + ' shown';
+    }
+    if (filter) filter.addEventListener('input', applyFilter);
+    applyFilter();
+  })();
+</script>
+</body>
+</html>

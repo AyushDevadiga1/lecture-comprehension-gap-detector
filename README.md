@@ -397,6 +397,9 @@ npm install
 npm run dev               # opens http://localhost:5173
 ```
 Features code-split views for students (Overview, Ingest/Upload, Concept DAG map with confidence filters, In-line Quizzes, Video clip remediation) and faculty (Confusion Heatmap, Taught-vs-Learned Divergence, Lecture timeline coverage), background SSE job drawer, and dark/light system theming. Tests: `npm run verify` (type-check, lint, and vitest).
+
+A beginner-friendly visual tour of every frontend component and the backend pipeline is available as
+`tutorial.html` at the repository root — open it in any browser.
 #### Legacy UI (Streamlit)
 ```bash
 streamlit run frontend/student_app.py     # legacy student dashboard
@@ -569,3 +572,4 @@ Raw media and the database are git-ignored — never commit them.
 | `plan/LIMITATIONS.md` | Honest scope boundaries and known weak points |
 | `plan/TEAM.md` | Roles, ownership, and risk notes |
 | `plan/FUNCTION_MAP.md` | Auto-generated function inventory (what each module defines + consumes) — regenerate with `scripts/make_function_map.py` |
+| `tutorial.html` | Beginner-friendly visual guide to the React frontend, backend pipeline, and verification status (open in any browser) |
